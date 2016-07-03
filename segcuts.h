@@ -15,9 +15,9 @@
  * Functions exported to TSP_Solver via PSEP_Segcuts object:
  * 
  *   void separate()
- *      searches for violated subtour inequalities arising from segments of the
- *      current best tour, using support graph G_s. Cuts are stored as a list of
- *      pairs, see below
+ *      searches for violated subtour inequalities arising from segments of
+ *      current best tour, using support graph G_s. Cuts are stored as a list 
+ *      of pairs, see below
  *
  *  int add_cut(int deltacout, vector<int> delta)
  *      adds subtour cut corresponding to delta to lp
@@ -27,13 +27,7 @@
  *
  * Non-reference member objects:
  *
- *    queue<pair<int, int>> segment_list
- *      -each violated segment cut found is stored as a pair of integers,
- *       indicating the start and endpoints of the tour interval
- *      -this is stored as the indices of the best tour vector, i.e., the pair
- *       (i, j) indicates that the segment is best_tour_nodes[i, ..., j]
- *      -at most 80 cuts are stored in the list at a time
- *      -dependent on existing tour_nodes/perm vector
+ *    priority_queue<seg> seg_pq is a priority queue of seg objects
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
  
