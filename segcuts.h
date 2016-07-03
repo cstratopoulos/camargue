@@ -27,7 +27,14 @@
  *
  * Non-reference member objects:
  *
- *    priority_queue<seg> seg_pq is a priority queue of seg objects
+ *    priority_queue<seg> seg_pq is a priority queue of seg objects (see below)
+ *
+ *
+ *   struct seg 
+ *       objects used to store segment cuts
+ *       -start/end are the indices of the start and endpoints of the segment
+ *        a start of i indicates the first node in the segment is 
+ *        best_tour_nodes[i]
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
  
