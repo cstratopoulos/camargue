@@ -19,9 +19,12 @@
  *      current best tour, using support graph G_s. Cuts are stored as a list 
  *      of pairs, see below
  *
- *  int add_cut(int deltacout, vector<int> delta)
+ *   int add_cut(int deltacout, vector<int> delta)
  *      adds subtour cut corresponding to delta to lp
  *
+ *   void seg_pop (int *start_p, int *end_p, double *viol_p)
+ *     -pops the seg on top of the priority queue; stores its parameters in
+ *      the variables pointed to by function args
  *
  *
  *
