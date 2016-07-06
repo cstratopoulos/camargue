@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
   vector<int> tour_node_indices;
   CCdatagroup dat;
 
-  cout << "This version of PSEP is in the master branch" << endl;
+  cout << "BRANCH VERSION: Master" << endl;
 
   if(load_tsplib(graph, &dat, argc, argv)){
     cerr << "Problem getting tsplib" << endl;
@@ -42,6 +42,8 @@ int main(int argc, char* argv[]){
 
   cout << "Pivoting until no more segment cuts" << endl;
   int num_added = -1;
+
+  double start = PSEP_zeit();
 
   while(true){
     if(solver.pivot_until_change(&old_basic, &old_nb, &old_stat, &stat))
@@ -100,7 +102,7 @@ int main(int argc, char* argv[]){
   }
 
 
-
+  cout << "Finished with total runtime: " << PSEP_zeit() - start << endl;
 
   return 0;
 }
