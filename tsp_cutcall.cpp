@@ -51,7 +51,7 @@ int TSP_Solver::blossom_cutcall(const int max_cutcount, int *num_added_p){
     int cutedge;
     bool contains;
     double cutval;
-    blossoms.pop_cut(hnodes, &cutedge, &contains, &cutval);
+    blossoms.pop(hnodes, &cutedge, &contains, &cutval);
 
     cout << "Considering blossom with cutval "
 	 << setprecision(10) << cutval << endl;

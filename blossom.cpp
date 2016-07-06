@@ -60,13 +60,13 @@ int PSEP_2match::separate(const int max_cutcount){
       }
 
       blossom new_2m(handle, cut_edge_index, cutval, contains_cutedge);
-      blossom_pq.push(new_2m);
+      pq.push(new_2m);
     }
 
     cut_ecap[i] = orig_weight;
   }
 
-  cout << "Total number of blossoms found: " << blossom_pq.size() << endl;
+  cout << "Total number of blossoms found: " << pq.size() << endl;
 
  CLEANUP:
   if(cut_nodes) free(cut_nodes);

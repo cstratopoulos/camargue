@@ -21,20 +21,21 @@ class PSEP_2match {
     support_elist(_sup_elist), support_ecap(_ecap), m_lp(_lp) {}
 
   int separate(const int max_cutcount);
+  bool q_empty() const {return pq.empty();};
+  int q_size() const {return pq.size();};
+  void pop(std::vector<int> &hnodes, int *cutedge_p, bool *contains_p,
+	       double *cutval_p){
+    hnodes = pq.top().handle;
+    *cutedge_p = pq.top().cut_edge;
+    *contains_p = pq.top().contains_cutedge;
+    *cutval_p = pq.top().cut_val;
+
+    pq.pop();
+  };
   int add_cut(const int deltacount, std::vector<int> &delta, const int cutedge,
 	      const bool contains_cutedge);
-  void pop_cut(std::vector<int> &hnodes, int *cutedge_p, bool *contains_p,
-	       double *cutval_p){
-    hnodes = blossom_pq.top().handle;
-    *cutedge_p = blossom_pq.top().cut_edge;
-    *contains_p = blossom_pq.top().contains_cutedge;
-    *cutval_p = blossom_pq.top().cut_val;
 
-    blossom_pq.pop();
-  };
 
-  void pop_cut() {blossom_pq.pop();};
-  bool q_empty() const {return blossom_pq.empty();};
   
  private:
   std::vector<int> &best_tour_edges;
@@ -61,7 +62,7 @@ class PSEP_2match {
 
   PSEPlp &m_lp;
 
-  std::priority_queue<blossom> blossom_pq;
+  std::priority_queue<blossom> pq;
 };
 
 #endif
