@@ -25,13 +25,13 @@ void PSEP_Segcuts::separate(){
       
       if(lhs > current_size - 1 && (fabs(lhs - (current_size - 1)) >= 0.002)){
 	seg new_seg(i, j, lhs - (current_size - 1));
-	if(seg_pq.size() == 250){
-	  if(new_seg < seg_pq.top()){
-	    seg_pq.pop();
-	    seg_pq.push(new_seg);
+	if(pq.size() == 250){
+	  if(new_seg < pq.top()){
+	    pq.pop();
+	    pq.push(new_seg);
 	  } 
 	} else
-	  seg_pq.push(new_seg);
+	  pq.push(new_seg);
       }
     }
     for(int l = i; l <= j; l++)

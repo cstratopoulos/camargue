@@ -12,7 +12,7 @@ int TSP_Solver::seg_cutcall(int *num_added_p){
 
   while(!segments.q_empty()){
     int start, end; double viol;
-    segments.seg_pop(&start, &end, &viol);
+    segments.pop(&start, &end, &viol);
 
     vector<int> segnodes;
     for(int i = start; i <= end; i++)
