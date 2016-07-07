@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
   vector<int> tour_node_indices;
   CCdatagroup dat;
 
-  cout << "BRANCH VERSION: Renaming" << endl;
+  cout << "BRANCH VERSION: Master" << endl;
 
   if(load_tsplib(graph, &dat, argc, argv)){
     cerr << "Problem getting tsplib" << endl;
@@ -67,10 +67,10 @@ int main(int argc, char* argv[]){
     if(stat == 2 || stat == 3)
       break;
     
-    if(solver.seg_cutcall(&num_added) == 1)
+    if(solver.blossom_cutcall(80, &num_added) == 1)
       break;
     if(num_added == 0){
-      cout << "No segment cuts found, loop terminating" << endl;
+      cout << "No blossom cuts found, loop terminating" << endl;
       break;
     }
     if(solver.pivot_back(old_basic, old_nb, old_stat))
@@ -81,6 +81,7 @@ int main(int argc, char* argv[]){
     cout << "Pivoted to new tour, nothing to do" << endl;
   else {
     cout << "Insert: Pivot again and call blossom separation" << endl;
+    /*
     solver.blossom_cutcall(80, &num_added);
     solver.pivot_back(old_basic, old_nb, old_stat);
     solver.pivot_until_change(&old_basic, &old_nb, &old_stat, &stat);
@@ -99,6 +100,7 @@ int main(int argc, char* argv[]){
     case(3):
       cout << "Tour fathomed optimal" << endl;
     }
+    */
   }
 
 

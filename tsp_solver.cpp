@@ -23,6 +23,8 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
 
   PSEPlp_bhead(&m_lp, &oldhead[0], NULL);
 
+  vector<int>rowbase(rowcount);
+
   bool dual_feas = false;
 
   while(true){
@@ -39,6 +41,8 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
 
     rval = primal_pivot();
     if(rval) goto CLEANUP;
+
+
 
 
     rval = set_edges();
@@ -72,6 +76,14 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
 
   cout << itcount << " pivots performed, "
        << "Pivot obj val: " << get_obj_val() << endl;
+
+  PSEPlp_getbase(&m_lp, NULL, &rowbase[0]);
+    cout << "Checking conjecture on rowbase...";
+    for(int i = m_graph.node_count; i < rowcount; i++){
+      cout << "row " << i << " has status: "
+	   << rowbase[i] << endl;
+    }
+    cout << "Done." << endl;
 
   rval = set_support_graph();
   if(rval) goto CLEANUP;
