@@ -38,14 +38,18 @@ int main(int argc, char* argv[]){
   solver.basis_init();
 
   double start = PSEP_zeit();
+  double piv_start;
+  double piv_time = 0;
   int old_basic, old_nb, old_stat, stat;
   int num_added;
 
   cout << "Pivoting until no more segment cuts" << endl;
 
   while(true){
+    piv_start = PSEP_zeit();
     if(solver.pivot_until_change(&old_basic, &old_nb, &old_stat, &stat))
       break;
+    piv_time += PSEP_zeit() - piv_start;
 
     cout << "Pivot status: ";
     switch(stat){
@@ -83,6 +87,7 @@ int main(int argc, char* argv[]){
   }
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
+  cout << "Time spent in pivot until change: " << piv_time << endl;
 
   return 0;
 }
