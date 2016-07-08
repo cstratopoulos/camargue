@@ -168,19 +168,21 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
  CLEANUP:
   if(rval)
     cerr << "Error entry point: pivot_until_change" << endl;
-  cout << "Values being passed to pivot back: " << endl;
+  
+  /*cout << "Values being passed to pivot back: " << endl;
   cout << "Old basic variable: " << *old_b_p << endl;
   cout << "Old non-basic variable: " << *old_nb_p << endl;
-  cout << "Non-basic status of old nb var: " << *old_nb_stat_p << endl;  
+  cout << "Non-basic status of old nb var: " << *old_nb_stat_p << endl;  */
   return rval;
 }
 
 int TSP_Solver::pivot_back(const int old_basic, const int old_nonbasic,
 			   const int old_nb_stat){  
-  cout << "Calling pivot back..." << endl;
-  cout << "Entering variable: " << old_basic << endl;
+  cout << "Calling pivot back...";
+
+  /*cout << "Entering variable: " << old_basic << endl;
   cout << "Leaving variable: " << old_nonbasic << ", with status "
-       << old_nb_stat << endl;
+  << old_nb_stat << endl;*/
   
   int rval = PSEPlp_pivot(&m_lp, old_basic, old_nonbasic, old_nb_stat);
   if(rval) goto CLEANUP;

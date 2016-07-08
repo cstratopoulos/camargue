@@ -78,7 +78,8 @@ int main(int argc, char* argv[]){
   if(stat == 2 || stat == 3)
     cout << "Pivoted to new tour, nothing to do" << endl;
   else {
-    cout << "Insert: Pivot again and call blossom separation" << endl;
+    cout << "Insert: Pivot again and call blossom separation..." << endl;
+    solver.pivot_back(old_basic, old_nb, old_stat);
   }
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
