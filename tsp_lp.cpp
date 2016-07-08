@@ -7,7 +7,21 @@ int TSP_Solver::basis_init(){
   
   int rval = PSEPlp_copybase(&m_lp, &old_base[0], &rowstat[0]);
   if(rval) goto CLEANUP;
+
     
+  rval = no_opt();
+  if(rval) goto CLEANUP;
+
+  rval = PSEPlp_bhead(&m_lp, &old_header[0], NULL);
+
+  cout << "Comparing entries of basis header with basic status of columns:"
+       << endl;
+  for(int i = 0; i < basis_headers[0].size(); i++){
+    cout << "Basis header " << i << ": " << old_header[i]
+	 << ", colstat[" << old_header[i] << "] = "
+	 << old_base[old_header[i]] << endl;
+  }
+
   rval = primal_pivot();
   if(rval) goto CLEANUP;
     
@@ -15,10 +29,10 @@ int TSP_Solver::basis_init(){
   if(rval) goto CLEANUP;
 
   if(fabs(get_obj_val() - m_min_tour_value) >= LP_EPSILON){
-    cerr << "BASIS INIT SWITCHED OBJ VAL!!!!" << endl;
+    cerr << "BASIS INIT SWITCHED OBJ VAL!!!! TO: "
+	 << get_obj_val() << endl;
     return 1;
   }
-
   
   for(int i = 0; i < m_graph.edge_count; i++){
     if(fabs(m_lp_edges[i] - best_tour_edges[i]) >= LP_EPSILON){
@@ -27,9 +41,7 @@ int TSP_Solver::basis_init(){
       return 1;
     }
   }
-
-  rval = PSEPlp_bhead(&m_lp, &old_header[0], NULL);
-  if(rval) goto CLEANUP;
+  
   
   CLEANUP:
   if(rval)

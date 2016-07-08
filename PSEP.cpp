@@ -37,11 +37,6 @@ int main(int argc, char* argv[]){
   solver.print_best_tour_nodes();
   solver.basis_init();
 
-  cout << "Comparing basis header with column basis vector..." << endl;
-
-
-
-  cout << "Finished with total runtime: " << PSEP_zeit() - start << endl;
 
   return 0;
 }
