@@ -72,6 +72,9 @@ class TSP_Solver {
   
   std::vector<double> m_lp_edges;
   std::vector<std::vector<int> > bases;
+  std::vector<std::vector<int> > basis_headers;
+  int *old_header;
+  int*new_header;
   int *old_base;
   int *new_base;
   

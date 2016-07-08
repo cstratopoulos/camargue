@@ -35,6 +35,12 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
     bases[1].resize(m_graph.edge_count, CPX_AT_LOWER);
     old_base = &bases[0][0];
     new_base = &bases[1][0];
+
+    basis_headers.resize(2);
+    basis_headers[0].resize(m_graph.node_count);
+    basis_headers[1].resize(m_graph.node_count);
+    old_header = &basis_headers[0][0];
+    new_header = &basis_headers[1][0];
     
 
     perm.resize(m_graph.node_count);

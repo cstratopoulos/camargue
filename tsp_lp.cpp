@@ -3,7 +3,7 @@
 using namespace std;
 
 int TSP_Solver::basis_init(){
-  vector<int> rowstat; rowstat.resize(m_graph.node_count, 0);
+  vector<int> rowstat(m_graph.node_count);
   
   int rval = PSEPlp_copybase(&m_lp, &old_base[0], &rowstat[0]);
   if(rval) goto CLEANUP;
@@ -18,6 +18,7 @@ int TSP_Solver::basis_init(){
     cerr << "BASIS INIT SWITCHED OBJ VAL!!!!" << endl;
     return 1;
   }
+
   
   for(int i = 0; i < m_graph.edge_count; i++){
     if(fabs(m_lp_edges[i] - best_tour_edges[i]) >= LP_EPSILON){
@@ -26,10 +27,13 @@ int TSP_Solver::basis_init(){
       return 1;
     }
   }
+
+  rval = PSEPlp_bhead(&m_lp, &old_header[0], NULL);
+  if(rval) goto CLEANUP;
   
   CLEANUP:
   if(rval)
-    cerr << "Entry point: basis_init()" << endl;
+    cerr << "Error entry point: basis_init()" << endl;
   return rval;
 }
 
