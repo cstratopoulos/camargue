@@ -19,6 +19,8 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
 
   basis_headers[0].resize(rowcount);
   basis_headers[1].resize(rowcount);
+  old_header = &basis_headers[0][0];
+  new_header = &basis_headers[1][0];
 
   while(true){
     if(++itcount == 3 * m_graph.node_count){
@@ -30,8 +32,8 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
     if((dual_feas = is_dual_feas()))
       break;
 
-    rval = (PSEPlp_bhead(&m_lp, &old_header[0], NULL) ||
-	    PSEPlp_getbase(&m_lp, &old_base[0], NULL));
+    rval = (PSEPlp_bhead(&m_lp, old_header, NULL) ||
+	    PSEPlp_getbase(&m_lp, old_base, NULL));
     if(rval) goto CLEANUP;
       
 
@@ -41,7 +43,7 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
     rval = set_edges();
     if(rval) goto CLEANUP;
 
-    rval = PSEPlp_bhead(&m_lp, &new_header[0], NULL);
+    rval = PSEPlp_bhead(&m_lp, new_header, NULL);
     if(rval) goto CLEANUP;
 
     for(int i = 0; i < rowcount; i++){
