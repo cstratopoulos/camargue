@@ -38,6 +38,8 @@ int main(int argc, char* argv[]){
   solver.basis_init();
 
   double start = PSEP_zeit();
+  int old_basic, old_nb, old_stat, stat;
+  int num_added;
 
   while(true){
     if(solver.pivot_until_change(&old_basic, &old_nb, &old_stat, &stat))

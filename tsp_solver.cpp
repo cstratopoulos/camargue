@@ -44,9 +44,6 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
     rval = PSEPlp_bhead(&m_lp, &new_header[0], NULL);
     if(rval) goto CLEANUP;
 
-    if(fabs(get_obj_val() - m_min_tour_value) >= LP_EPSILON)
-      break;
-
     for(int i = 0; i < rowcount; i++){
       if(old_header[i] != new_header[i]){
 	found_bhead_change = true;
@@ -55,6 +52,12 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
 	  if(fabs(m_lp_edges[new_header[i]] - best_tour_edges[new_header[i]])
 	     >= LP_EPSILON){
 	    found_edge_change = true;
+
+	    cout << "Disagreement: old_header[" << i << "] = "
+		 << old_header[i] << ", new_header[" << i << "] = "
+		 << new_header[i] << ", solution vec: "
+		 << best_tour_edges[new_header[i]] << " -> "
+		 << m_lp_edges[new_header[i]] << endl;
 
 	    *old_b_p = old_header[i];
 	    *old_nb_p = new_header[i];
@@ -68,6 +71,12 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
 	  if(fabs(m_lp_edges[old_header[i]] - best_tour_edges[new_header[i]])
 	     >= LP_EPSILON){
 	    found_edge_change = true;
+
+	    cout << "Disagreement: old_header[" << i << "] = "
+		 << old_header[i] << ", new_header[" << i << "] = "
+		 << new_header[i] << ", solution vec: "
+		 << best_tour_edges[old_header[i]] << " -> "
+		 << m_lp_edges[old_header[i]] << endl;
 
 	    *old_b_p = old_header[i];
 	    *old_nb_p = new_header[i];
@@ -106,6 +115,10 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
 	  *old_b_p = i;
 	  *old_nb_p = i;
 	  *old_nb_stat_p = old_base[i];
+
+	  cout << "NB status shift on column " << i << ", old status: "
+	       << *old_nb_p << ", solution vec: "
+	       << best_tour_edges[i] << " -> " << m_lp_edges[i] << endl;
 	  
 	  found_edge_change = true;
 	  break;
