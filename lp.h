@@ -109,6 +109,11 @@ int PSEPlp_getbase (PSEPlp *lp, int * colstat, int *rowstat);
 //x; either may be NULL if not needed
 int PSEPlp_bhead (PSEPlp *lp, int *head, double *x);
 
+//access the sense of the constraint in rownum:
+// 'L' for <=
+// 'G' for >=
+int PSEPlp_getsense (PSEPlp *lp, char *sense, int rownum);
+
 //access array of reduced costs
 int PSEPlp_get_redcosts (PSEPlp *lp, double * cost_array);
 

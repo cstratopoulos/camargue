@@ -448,6 +448,15 @@ int PSEPlp_bhead (PSEPlp *lp, int *head, double *x){
   return rval;
 }
 
+int PSEPlp_getsense (PSEPlp *lp, char *sense, int rownum){
+  int rval = CPXgetsense(lp->cplex_env, lp->cplex_lp, sense, rownum, rownum);
+
+  if(rval)
+    fprintf(stderr, "getsense failed, rval %d\n", rval);
+
+  return rval;
+}
+
 int PSEPlp_get_redcosts (PSEPlp *lp, double * cost_array){
   int rval = 0;
   int numcols = CPXgetnumcols(lp->cplex_env, lp->cplex_lp);
