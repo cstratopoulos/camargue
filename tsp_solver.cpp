@@ -11,6 +11,99 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
 				   int *old_nb_stat_p, int *pivot_status_p){
   int rval = 0;
   int ecount = m_graph.edge_count, itcount = 0, icount = 0;
+  int rowcount = PSEPlp_numrows(&m_lp);
+  bool found_edge_change = false, found_bhead_change = false,
+    integral = false, conn = false, dual_feas = false;
+  *old_nb_stat_p = -1;
+  *pivot_status_p = -1;
+
+  basis_headers[0].resize(rowcount);
+  basis_headers[1].resize(rowcount);
+
+  while(true){
+    if(++itcount == 3 * m_graph.node_count){
+      rval = 1;
+      cerr << "Pivot terminated due to iteration limit" << endl;
+      goto CLEANUP;
+    }
+
+    if((dual_feas = is_dual_feas()))
+      break;
+
+    rval = (PSEPlp_bhead(&m_lp, &old_header[0], NULL) ||
+	    PSEPlp_getbase(&m_lp, &old_base[0], NULL));
+    if(rval) goto CLEANUP;
+      
+
+    rval = primal_pivot();
+    if(rval) goto CLEANUP;
+
+    rval = set_edges();
+    if(rval) goto CLEANUP;
+
+    rval = (PSEPlp_bhead(&m_lp, &new_header[0], NULL) ||
+	    PSEPlp_getbase(&m_lp, &new_base[0], NULL));
+    if(rval) goto CLEANUP;
+
+    if(fabs(get_obj_val() - m_min_tour_value) >= LP_EPSILON)
+      break;
+
+    for(int i = 0; i < rowcount; i++){
+      if(old_header[i] != new_header[i]){
+	found_bhead_change = true;
+	if(old_header[i] >= 0){
+	  int edge_index = old_header[i];
+	  if(fabs(m_lp_edges[edge_index] - best_tour_edges[edge_index])
+	     >= LP_EPSILON){
+	    found_change = true;
+	    break;
+	  }
+	}
+
+	if(new_header[i] >= 0){
+	  int edge_index = new_header[i];
+	  if(fabs(m_lp_edges[edge_index] - best_tour_edges[edge_index])
+	     >= LP_EPSILON){
+	    found_change = true;
+	    break;
+	  }
+	}
+      }
+    }
+
+    if(found_change)
+      break;
+
+    if(!found_bhead_change){
+      for(int i = 0; i < ecount; i++)
+	if(fabs(m_lp_edges[i] - best_tour_edges[i]) >= LP_EPSILON){
+	  *old_b_p = i;
+	  *old_nb_p = i;
+	  *old_nb_stat_p = old_base[i];
+	  
+	  found_change = true;
+	  break;
+	}
+    }
+
+    if(found_change)
+      break;
+  }
+
+ CLEANUP:
+  if(rval)
+    cerr << "Error entry point: pivot_until_change" << endl;
+  PSEPlp_getbase(&m_lp, &old_base[0], NULL);
+  PSEPlp_bhead(&m_lp, &old_header[0], NULL);
+  return rval;
+}
+
+
+
+int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
+				   int *old_nb_stat_p, int *pivot_status_p){
+  int rval = 0;
+  int ecount = m_graph.edge_count, itcount = 0, icount = 0;
   bool found_change = false;
   bool integral = false, conn = false;
   *old_b_p = -1;
