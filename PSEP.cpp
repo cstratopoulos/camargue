@@ -41,6 +41,8 @@ int main(int argc, char* argv[]){
   int old_basic, old_nb, old_stat, stat;
   int num_added;
 
+  cout << "Pivoting until no more segment cuts" << endl;
+
   while(true){
     if(solver.pivot_until_change(&old_basic, &old_nb, &old_stat, &stat))
       break;

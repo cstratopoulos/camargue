@@ -14,14 +14,6 @@ int TSP_Solver::basis_init(){
 
   rval = PSEPlp_bhead(&m_lp, &old_header[0], NULL);
 
-  cout << "Comparing entries of basis header with basic status of columns:"
-       << endl;
-  for(int i = 0; i < basis_headers[0].size(); i++){
-    cout << "Basis header " << i << ": " << old_header[i]
-	 << ", colstat[" << old_header[i] << "] = "
-	 << old_base[old_header[i]] << endl;
-  }
-
   rval = primal_pivot();
   if(rval) goto CLEANUP;
     

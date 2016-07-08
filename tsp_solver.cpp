@@ -12,7 +12,7 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
   int rval = 0;
   int ecount = m_graph.edge_count, itcount = 0, icount = 0;
   int rowcount = PSEPlp_numrows(&m_lp);
-  bool found_edge_change = false, found_bhead_change = false,
+  bool found_edge_change = false, 
     integral = false, conn = false, dual_feas = false;
   *old_nb_stat_p = -1;
   *pivot_status_p = -1;
@@ -46,8 +46,6 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
 
     for(int i = 0; i < rowcount; i++){
       if(old_header[i] != new_header[i]){
-	found_bhead_change = true;
-
 	if(new_header[i] >= 0){//a nonbasic edge was pivoted into basis
 	  if(fabs(m_lp_edges[new_header[i]] - best_tour_edges[new_header[i]])
 	     >= LP_EPSILON){
@@ -55,9 +53,16 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
 
 	    cout << "Disagreement: old_header[" << i << "] = "
 		 << old_header[i] << ", new_header[" << i << "] = "
-		 << new_header[i] << ", solution vec: "
+		 << new_header[i] << endl;
+	    cout << "Edge num "
+		 << old_header[i] << " : "
 		 << best_tour_edges[new_header[i]] << " -> "
 		 << m_lp_edges[new_header[i]] << endl;
+	    if(old_header[i] >= 0)
+	      cout << "Edge num "
+		   << old_header[i] << " : "
+		   << best_tour_edges[old_header[i]] << " -> "
+		   << m_lp_edges[old_header[i]] << endl;
 
 	    *old_b_p = old_header[i];
 	    *old_nb_p = new_header[i];
@@ -67,37 +72,48 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
 	  }
 	}
 
-	if(old_header[i] >= 0){//newheader[i] < 0, i.e., a slack was pivoted in
-	  if(fabs(m_lp_edges[old_header[i]] - best_tour_edges[new_header[i]])
+	if(old_header[i] >= 0){
+	  if(fabs(m_lp_edges[old_header[i]] - best_tour_edges[old_header[i]])
 	     >= LP_EPSILON){
 	    found_edge_change = true;
 
 	    cout << "Disagreement: old_header[" << i << "] = "
 		 << old_header[i] << ", new_header[" << i << "] = "
-		 << new_header[i] << ", solution vec: "
+		 << new_header[i] << endl;
+	    cout << "Edge num "
+		 << old_header[i] << " : "
 		 << best_tour_edges[old_header[i]] << " -> "
 		 << m_lp_edges[old_header[i]] << endl;
+	    if(new_header[i] >= 0)
+	      cout << "Edge num "
+		   << new_header[i] << " : "
+		   << best_tour_edges[new_header[i]] << " -> "
+		   << m_lp_edges[new_header[i]] << endl;
 
 	    *old_b_p = old_header[i];
 	    *old_nb_p = new_header[i];
 
-	    int row_index = - new_header[i] - 1;
-	    char sense;
+	    if(new_header[i] >= 0){
+	      *old_nb_stat_p = old_base[new_header[i]];
+	    } else {
+	      int row_index = - new_header[i] - 1;
+	      char sense;
 
-	    rval = PSEPlp_getsense(&m_lp, &sense, row_index);
-	    if(rval) goto CLEANUP;
+	      rval = PSEPlp_getsense(&m_lp, &sense, row_index);
+	      if(rval) goto CLEANUP;
 
-	    switch(sense){
-	    case 'G':
-	      *old_nb_stat_p = CPX_AT_LOWER;
-	      break;
-	    case 'L':
-	      *old_nb_stat_p = CPX_AT_UPPER;
-	      break;
-	    default:
-	      cerr << "Problem getting sense of slack row" << endl;
-	      rval = 1;
-	      goto CLEANUP;
+	      switch(sense){
+	      case 'G':
+		*old_nb_stat_p = CPX_AT_LOWER;
+		break;
+	      case 'L':
+		*old_nb_stat_p = CPX_AT_UPPER;
+		break;
+	      default:
+		cerr << "Problem getting sense of slack row" << endl;
+		rval = 1;
+		goto CLEANUP;
+	      }
 	    }
 
 	    break;
@@ -109,21 +125,20 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
     if(found_edge_change)
       break;
 
-    if(!found_bhead_change){
-      for(int i = 0; i < ecount; i++)
-	if(fabs(m_lp_edges[i] - best_tour_edges[i]) >= LP_EPSILON){
-	  *old_b_p = i;
-	  *old_nb_p = i;
-	  *old_nb_stat_p = old_base[i];
+    for(int i = 0; i < ecount; i++)
+      if(old_base[i] != CPX_BASIC &&
+	 (fabs(m_lp_edges[i] - best_tour_edges[i]) >= LP_EPSILON)){
+	*old_b_p = i;
+	*old_nb_p = i;
+	*old_nb_stat_p = old_base[i];
 
-	  cout << "NB status shift on column " << i << ", old status: "
-	       << *old_nb_p << ", solution vec: "
-	       << best_tour_edges[i] << " -> " << m_lp_edges[i] << endl;
+	cout << "NB status shift on column " << i << ", old status: "
+	     << *old_nb_stat_p << ", solution vec: "
+	     << best_tour_edges[i] << " -> " << m_lp_edges[i] << endl;
 	  
-	  found_edge_change = true;
-	  break;
-	}
-    }
+	found_edge_change = true;
+	break;
+      }
 
     if(found_edge_change)
       break;
@@ -151,12 +166,19 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
  CLEANUP:
   if(rval)
     cerr << "Error entry point: pivot_until_change" << endl;
+  cout << "Values being passed to pivot back: " << endl;
+  cout << "Old basic variable: " << *old_b_p << endl;
+  cout << "Old non-basic variable: " << *old_nb_p << endl;
+  cout << "Non-basic status of old nb var: " << *old_nb_stat_p << endl;  
   return rval;
 }
 
 int TSP_Solver::pivot_back(const int old_basic, const int old_nonbasic,
 			   const int old_nb_stat){  
-  cout << "Calling pivot back...";
+  cout << "Calling pivot back..." << endl;
+  cout << "Entering variable: " << old_basic << endl;
+  cout << "Leaving variable: " << old_nonbasic << ", with status "
+       << old_nb_stat << endl;
   
   int rval = PSEPlp_pivot(&m_lp, old_basic, old_nonbasic, old_nb_stat);
   if(rval) goto CLEANUP;
