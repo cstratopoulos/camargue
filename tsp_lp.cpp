@@ -5,14 +5,14 @@ using namespace std;
 int TSP_Solver::basis_init(){
   vector<int> rowstat(m_graph.node_count);
   
-  int rval = PSEPlp_copybase(&m_lp, &old_base[0], &rowstat[0]);
+  int rval = PSEPlp_copybase(&m_lp, old_base, &rowstat[0]);
   if(rval) goto CLEANUP;
 
     
   rval = no_opt();
   if(rval) goto CLEANUP;
 
-  rval = PSEPlp_bhead(&m_lp, &old_header[0], NULL);
+  rval = PSEPlp_bhead(&m_lp, old_header, NULL);
 
   rval = primal_pivot();
   if(rval) goto CLEANUP;
