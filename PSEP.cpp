@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
   vector<int> tour_node_indices;
   CCdatagroup dat;
 
-  cout << "BRANCH VERSION: BHEAD PIVOT" << endl;
+  cout << "BRANCH VERSION: MASTER" << endl;
 
   if(load_tsplib(graph, &dat, argc, argv)){
     cerr << "Problem getting tsplib" << endl;
@@ -146,9 +146,9 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
   int kicks = (ncount > 400 ? 100 : ncount / 4);
   int istour;
   int seed = (int) PSEP_real_zeit();
-  seed = 1466719036; //breaks dsj1000 and pr1002
+  //seed = 1466719036; //breaks dsj1000 and pr1002
   //seed = 1466720112; //breaks pr2392
-  cout << "LK seed: " << seed << endl;
+  //  cout << "LK seed: " << seed << endl;
 
   szeit = CCutil_zeit ();
   bestval = CCtsp_LP_MAXDOUBLE;
