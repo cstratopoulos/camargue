@@ -67,7 +67,7 @@ int main(int argc, char* argv[]){
     if(stat == 2 || stat == 3)
       break;
     
-    if(solver.seg_cutcall(80, &num_added) == 1)
+    if(solver.seg_cutcall(&num_added) == 1)
       break;
     if(num_added == 0){
       cout << "No seg cuts found, loop terminating" << endl;
