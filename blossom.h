@@ -14,11 +14,12 @@ extern "C" {
 
 class PSEP_2match {
  public:
-  PSEP_2match(std::vector<int> & _tour_edges,
+ PSEP_2match(std::vector<int> & _tour_edges, std::vector<double> & _lp_edges,
 	      std::vector<int> & _sup_inds, std::vector<int> & _sup_elist,
 	      std::vector<double> & _ecap, PSEPlp & _lp) :
-  best_tour_edges(_tour_edges), support_indices(_sup_inds),
-    support_elist(_sup_elist), support_ecap(_ecap), m_lp(_lp) {}
+  best_tour_edges(_tour_edges), m_lp_edges(_lp_edges),
+    support_indices(_sup_inds), support_elist(_sup_elist),
+    support_ecap(_ecap), m_lp(_lp) {}
 
   int separate(const int max_cutcount);
   bool q_empty() const {return pq.empty();};
@@ -36,6 +37,7 @@ class PSEP_2match {
   
  private:
   std::vector<int> &best_tour_edges;
+  std::vector<double> &m_lp_edges;
   std::vector<int> &support_indices;
   std::vector<int> &support_elist;
   std::vector<double> &support_ecap;

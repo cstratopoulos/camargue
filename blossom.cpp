@@ -100,7 +100,8 @@ int PSEP_2match::add_cut(const int deltacount, vector<int> &delta,
   switch(best_tour_edges[cutedge]){
   case 0:
     for(int i = 0; i < deltacount; i++)
-      if(best_tour_edges[delta[i]] == 1 || delta[i] == cutedge){
+      if(m_lp_edges[delta[i]] > LP_EPSILON &&
+	 (best_tour_edges[delta[i]] == 1 || delta[i] == cutedge)){
 	rmatval[i] = -1.0;
 	num_teeth++;
 	cout << "Edge " << delta[i] << " is a tooth, coeff -1.0" << endl;
@@ -108,7 +109,8 @@ int PSEP_2match::add_cut(const int deltacount, vector<int> &delta,
     break;
   case 1:
     for(int i = 0; i < deltacount; i++)
-      if(best_tour_edges[delta[i]] == 1 && delta[i] != cutedge){
+      if(m_lp_edges[delta[i]] > LP_EPSILON &&
+	 (best_tour_edges[delta[i]] == 1 && delta[i] != cutedge)){
 	rmatval[i] = -1.0;
 	num_teeth++;
 	cout << "Edge " << delta[i] << " is a tooth, coeff -1.0" << endl;

@@ -6,7 +6,8 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
   m_graph(graph),
   best_tour_nodes(lk_node_indices),
   segments(G_s, edge_marks, best_tour_nodes, m_lp),
-  blossoms(best_tour_edges, support_indices, support_elist, support_ecap, m_lp)
+  blossoms(best_tour_edges, m_lp_edges, support_indices, support_elist,
+	   support_ecap, m_lp)
 {
     //Build the basic LP
     PSEPlp_init (&m_lp);
