@@ -52,25 +52,7 @@ int PSEP_2match::separate(const int max_cutcount){
       vector<int> handle;
       for(int j = 0; j < cutcount; j++){
 	handle.push_back(cut_nodes[j]);
-      }
-
-      cout << "CHECKING THE CUT FROM WITHIN BLOSSOM.CPP" << endl;
-      cout << "The cut edge is " << cut_edge_index << endl;
-      cout << "The handle (shore) of the blossom is:" << endl;
-      for(int i = 0; i < handle.size(); i++)
-	cout << handle[i] << endl;
-      vector<int>delta_h(support_indices.size());
-      int dcount;
-      vector<int>n_marks(ncount);
-      G_Utils::get_delta(handle.size(), &handle[0], support_indices.size(),
-			 &support_elist[0], &dcount, &delta_h[0], &n_marks[0]);
-      cout << "DELTA IN THE SUPPORT GRAPH:" << endl;
-      for(int i = 0; i < dcount; i++){
-	int j = delta_h[i];
-	cout << "Edge: " << support_elist[2*j] << ", "
-	     << support_elist[(2*j) + 1] << endl;
-      }
-      
+      }      
 
       blossom new_2m(handle, cut_edge_index, cutval);
       pq.push(new_2m);
@@ -94,9 +76,7 @@ int PSEP_2match::add_cut(const int deltacount, vector<int> &delta,
   double rhs[1];
   int num_teeth = 0;
   vector<double> rmatval(deltacount, 1.0);
-  cout << "All delta coefficients intialized to 1.0" << endl;
 
-  cout << "Setting tooth coeffs..." << endl;
   switch(best_tour_edges[cutedge]){
   case 0:
     for(int i = 0; i < deltacount; i++)
@@ -104,7 +84,6 @@ int PSEP_2match::add_cut(const int deltacount, vector<int> &delta,
 	 (best_tour_edges[delta[i]] == 1 || delta[i] == cutedge)){
 	rmatval[i] = -1.0;
 	num_teeth++;
-	cout << "Edge " << delta[i] << " is a tooth, coeff -1.0" << endl;
       }
     break;
   case 1:
@@ -113,35 +92,10 @@ int PSEP_2match::add_cut(const int deltacount, vector<int> &delta,
 	 (best_tour_edges[delta[i]] == 1 && delta[i] != cutedge)){
 	rmatval[i] = -1.0;
 	num_teeth++;
-	cout << "Edge " << delta[i] << " is a tooth, coeff -1.0" << endl;
       }
   }
 
-  double lhs = 0;
-  for(int i = 0; i < support_indices.size(); i++){
-    for(int j = 0; j < deltacount; j++){
-      if(support_indices[i] == delta[j]){
-	lhs += support_ecap[i] * rmatval[j];
-	cout << "Adding " << rmatval[j] << " * edge weight: "
-	     << support_ecap[i] << endl;
-      }
-    }
-  }
-
-  cout << "Number of teeth: " << num_teeth;
-  rhs[0] = 1 - num_teeth;
-  
-  cout << ", rhs: " << rhs[0] << ", lhs: " << lhs << endl;
-
-  cout << "Is the cut violated: ";
-  if(lhs < rhs[0]){
-    cout << endl << "!!!!!!!!!!!!" << endl;
-    cout << "!!!!YES!!!!!" << endl;
-    cout << "!!!!!!!!!!!!" << endl;
-  }
-  else
-    cout << "no." << endl;
-  
+  rhs[0] = 1 - num_teeth;  
 
   rval = PSEPlp_addrows (&m_lp, newrows, newnz, rhs, sense, rmatbeg,
 			 &delta[0], &rmatval[0]);
