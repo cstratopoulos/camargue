@@ -91,7 +91,7 @@ int main(int argc, char* argv[]){
 
   if(stat != 3)
     cout << "Terminated due to lack of cutting planes after "
-	 << rounds << " rounds of separation";
+	 << rounds << " rounds of separation" << endl;
 
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
