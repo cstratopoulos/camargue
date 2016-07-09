@@ -23,7 +23,7 @@ int TSP_Solver::pivot_until_change(int *old_b_p, int *old_nb_p,
   new_header = &basis_headers[1][0];
 
   while(true){
-    if(++itcount == 3 * m_graph.node_count){
+    if(++itcount == 6 * m_graph.node_count){
       rval = 1;
       cerr << "Pivot terminated due to iteration limit" << endl;
       goto CLEANUP;
