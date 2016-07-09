@@ -16,12 +16,10 @@ int PSEP_2match::separate(const int max_cutcount){
   cut_ecap.resize(support_ecap.size());
 
   for(int i = 0; i < support_indices.size(); i++){
-    if(best_tour_edges[support_indices[i]] == 0){
+    if(best_tour_edges[support_indices[i]] == 0)
       cut_ecap[i] = support_ecap[i];
-      continue;
-    }
-
-    cut_ecap[i] = 1 - support_ecap[i];
+    else
+      cut_ecap[i] = 1 - support_ecap[i];
   }
 
   for(int i = 0; i < support_indices.size(); i++){
