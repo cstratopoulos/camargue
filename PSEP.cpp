@@ -34,8 +34,6 @@ int main(int argc, char* argv[]){
   }
 
   TSP_Solver solver(graph, tour_node_indices);
-  solver.print_best_tour_nodes();
-  solver.print_best_tour_edges();
   solver.basis_init();
 
   double start = PSEP_zeit();
@@ -61,7 +59,6 @@ int main(int argc, char* argv[]){
   case(3):
     cout << "Tour fathomed optimal" << endl;
   }
-  solver.print_lp_edges();
 
   if(stat == 2 || stat == 3)
     cout << "Pivoted to new tour, nothing to do" << endl;
