@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
   vector<int> tour_node_indices;
   CCdatagroup dat;
 
-  cout << "BRANCH VERSION: UPDATING 2MATCHING PQ" << endl;
+  cout << "BRANCH VERSION: MASTER" << endl;
 
   if(load_tsplib(graph, &dat, argc, argv)){
     cerr << "Problem getting tsplib" << endl;
@@ -38,34 +38,14 @@ int main(int argc, char* argv[]){
 
   double start = PSEP_zeit();
   int old_basic, old_nb, old_stat, stat;
-  int num_added;
+  int num_seg, num_2match;
+  int segval, matchval;
 
-  cout << "Pivoting then adding blossom cuts" << endl;
+  cout << "Pivoting until optimality or no more cuts" << endl;
 
-
-  solver.pivot_until_change(&old_basic, &old_nb, &old_stat, &stat);
-
-  cout << "Pivot status: ";
-  switch(stat){
-  case(0):
-    cout << "Fractional" << endl;
-    break;
-  case(1):
-    cout << "Integral subtour" << endl;
-    break;
-  case(2):
-    cout << "New tour" << endl;
-    break;
-  case(3):
-    cout << "Tour fathomed optimal" << endl;
-  }
-
-  if(stat == 2 || stat == 3)
-    cout << "Pivoted to new tour, nothing to do" << endl;
-  else {
-    solver.blossom_cutcall(80, &num_added);
-    solver.pivot_back(old_basic, old_nb, old_stat);
-    solver.pivot_until_change(&old_basic, &old_nb, &old_stat, &stat);
+  while(true){
+    if(solver.pivot_until_change(&old_basic, &old_nb, &old_stat, &stat))
+      break;
 
     cout << "Pivot status: ";
     switch(stat){
@@ -81,7 +61,28 @@ int main(int argc, char* argv[]){
     case(3):
       cout << "Tour fathomed optimal" << endl;
     }
+
+    if(stat == 3)
+      break;
+    if(stat == 2)
+      if(solver.update_best_tour())
+	break;
+
+    segval = solver.seg_cutcall(&num_seg);
+    if(segval == 1)
+      break;
+
+    matchval = solver.blossom_cutcall(250 - num_seg, &num_2match);
+    if(matchval == 1)
+      break;
+
+    if(segval + matchval == 4)
+      break;
+
+    if(solver.pivot_back(old_basic, old_nb, old_stat))
+      break;
   }
+
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
 
