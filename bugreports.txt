@@ -1,0 +1,3 @@
+a280, LK seed: 1468091508, did not pivot back
+att48, LK seed: 1468091596, did not pivot back
+kroA150, LK seed 1468091849, did not pivot back
