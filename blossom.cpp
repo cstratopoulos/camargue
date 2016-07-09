@@ -69,8 +69,6 @@ int PSEP_2match::separate(const int max_cutcount){
     cut_ecap[i] = orig_weight;
   }
 
-  cout << "Total number of blossoms found: " << pq.size() << endl;
-
  CLEANUP:
   if(cut_nodes) free(cut_nodes);
   return rval;

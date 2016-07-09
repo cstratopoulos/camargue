@@ -37,8 +37,6 @@ void PSEP_Segcuts::separate(){
     for(int l = i; l <= j; l++)
       edge_marks[best_tour_nodes[l]] = 0;
   }
-
-  cout << "total number of seg cuts found: " << pq.size() << endl;
 }
 
 int PSEP_Segcuts::add_cut(const int deltacount, vector<int> &delta){
