@@ -7,7 +7,6 @@ int PSEP_2match::separate(const int max_cutcount){
   int cut_edge_index;
   int end0, end1;
   int best_tour_entry;
-  bool contains_cutedge;
   int ncount = 2 * support_indices.size();
   double orig_weight, changed_weight, cutval;
   int *cut_nodes = (int *) NULL;
@@ -30,12 +29,10 @@ int PSEP_2match::separate(const int max_cutcount){
     case(0):
       orig_weight = support_ecap[i];
       changed_weight = 1 - support_ecap[i];
-      contains_cutedge = true;
       break;
     case(1):
       orig_weight = 1 - support_ecap[i];
       changed_weight = support_ecap[i];
-      contains_cutedge = false;
     }
 
     cut_ecap[i] = changed_weight;
@@ -57,7 +54,25 @@ int PSEP_2match::separate(const int max_cutcount){
 	handle.push_back(cut_nodes[j]);
       }
 
-      blossom new_2m(handle, cut_edge_index, cutval, contains_cutedge);
+      cout << "CHECKING THE CUT FROM WITHIN BLOSSOM.CPP" << endl;
+      cout << "The cut edge is " << cut_edge_index << endl;
+      cout << "The handle (shore) of the blossom is:" << endl;
+      for(int i = 0; i < handle.size(); i++)
+	cout << handle[i] << endl;
+      vector<int>delta_h(support_indices.size());
+      int dcount;
+      vector<int>n_marks(ncount);
+      G_Utils::get_delta(handle.size(), &handle[0], support_indices.size(),
+			 &support_elist[0], &dcount, &delta_h[0], &n_marks[0]);
+      cout << "DELTA IN THE SUPPORT GRAPH:" << endl;
+      for(int i = 0; i < dcount; i++){
+	int j = delta_h[i];
+	cout << "Edge: " << support_elist[2*j] << ", "
+	     << support_elist[(2*j) + 1] << endl;
+      }
+      
+
+      blossom new_2m(handle, cut_edge_index, cutval);
       pq.push(new_2m);
     }
 
@@ -72,7 +87,7 @@ int PSEP_2match::separate(const int max_cutcount){
 }
 
 int PSEP_2match::add_cut(const int deltacount, vector<int> &delta,
-			 const int cutedge, const bool contains_cutedge){
+			 const int cutedge){
   int rval = 0, newrows = 1, newnz = deltacount;
   int rmatbeg[1] = {0};
   char sense[1] = {'G'};
@@ -81,32 +96,33 @@ int PSEP_2match::add_cut(const int deltacount, vector<int> &delta,
   vector<double> rmatval(deltacount, 1.0);
   cout << "All delta coefficients intialized to 1.0" << endl;
 
-  cout << "Setting tooth coefficients..." << endl;
-  if(contains_cutedge){
-    for(int i = 0; i < deltacount; i++){
-      if(best_tour_edges[delta[i]] == 1 ||
-	 delta[i] == cutedge){
-	  rmatval[i] = -1.0;
-	  num_teeth++;
-	  cout << "Edge " << delta[i] << " is a tooth, coeff -1.0" << endl;
-      }
-    }
-  } else {
-    for(int i = 0; i < deltacount; i++){
-      if(best_tour_edges[delta[i]] == 1 &&
-	 delta[i] != cutedge){
+  cout << "Setting tooth coeffs..." << endl;
+  switch(best_tour_edges[cutedge]){
+  case 0:
+    for(int i = 0; i < deltacount; i++)
+      if(best_tour_edges[delta[i]] == 1 || delta[i] == cutedge){
 	rmatval[i] = -1.0;
 	num_teeth++;
 	cout << "Edge " << delta[i] << " is a tooth, coeff -1.0" << endl;
       }
-    }
+    break;
+  case 1:
+    for(int i = 0; i < deltacount; i++)
+      if(best_tour_edges[delta[i]] == 1 && delta[i] != cutedge){
+	rmatval[i] = -1.0;
+	num_teeth++;
+	cout << "Edge " << delta[i] << " is a tooth, coeff -1.0" << endl;
+      }
   }
 
   double lhs = 0;
   for(int i = 0; i < support_indices.size(); i++){
     for(int j = 0; j < deltacount; j++){
-      if(support_indices[i] == delta[j])
+      if(support_indices[i] == delta[j]){
 	lhs += support_ecap[i] * rmatval[j];
+	cout << "Adding " << rmatval[j] << " * edge weight: "
+	     << support_ecap[i] << endl;
+      }
     }
   }
 

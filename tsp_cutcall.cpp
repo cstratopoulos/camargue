@@ -49,19 +49,18 @@ int TSP_Solver::blossom_cutcall(const int max_cutcount, int *num_added_p){
     cout << ">>>>>> POPPING A BLOSSOM <<<<<<<" << endl;
     vector<int> hnodes;
     int cutedge;
-    bool contains;
     double cutval;
-    blossoms.pop(hnodes, &cutedge, &contains, &cutval);
+    blossoms.pop(hnodes, &cutedge, &cutval);
 
     cout << "Considering blossom with cutval "
 	 << setprecision(10) << cutval << endl;
     cout << "Cut edge is " << cutedge;
-    cout << ", is cutedge one of the teeth: " << contains << endl;
+    cout << ", is cutedge in best tour: " << best_tour_edges[cutedge] << endl;
 
     int deltacount;
     G_Utils::get_delta(hnodes, m_graph.edges, &deltacount, delta, edge_marks);
 
-    cout << deltacount << " edges in delta, nonzero ones: " << endl;;
+    cout << deltacount << " edges in delta, nonzero ones: " << endl;
     for(int i = 0; i < deltacount; i++){
       if(m_lp_edges[delta[i]] > 0 || best_tour_edges[delta[i]] > 0){
 	cout << "LP val: " << m_lp_edges[delta[i]] << ", ";
@@ -82,7 +81,7 @@ int TSP_Solver::blossom_cutcall(const int max_cutcount, int *num_added_p){
       }
 
     }
-    rval = blossoms.add_cut(deltacount, delta, cutedge, contains);
+    rval = blossoms.add_cut(deltacount, delta, cutedge);
     if(rval) goto CLEANUP;
     (*num_added_p)++;
   }
@@ -94,6 +93,6 @@ int TSP_Solver::blossom_cutcall(const int max_cutcount, int *num_added_p){
 
  CLEANUP:
   if(rval == 1)
-    cerr << "Entry point: blossom_cutcall" << endl;
+    cerr << "Error entry point: blossom_cutcall" << endl;
   return rval;
 }

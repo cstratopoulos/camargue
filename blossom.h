@@ -23,17 +23,14 @@ class PSEP_2match {
   int separate(const int max_cutcount);
   bool q_empty() const {return pq.empty();};
   int q_size() const {return pq.size();};
-  void pop(std::vector<int> &hnodes, int *cutedge_p, bool *contains_p,
-	       double *cutval_p){
+  void pop(std::vector<int> &hnodes, int *cutedge_p, double *cutval_p){
     hnodes = pq.top().handle;
     *cutedge_p = pq.top().cut_edge;
-    *contains_p = pq.top().contains_cutedge;
     *cutval_p = pq.top().cut_val;
 
     pq.pop();
   };
-  int add_cut(const int deltacount, std::vector<int> &delta, const int cutedge,
-	      const bool contains_cutedge);
+  int add_cut(const int deltacount, std::vector<int> &delta, const int cutedge);
 
 
   
@@ -45,9 +42,8 @@ class PSEP_2match {
   std::vector<double> cut_ecap;
 
   struct blossom {
-  blossom(std::vector<int> _handle, int _edge, double _val, bool _contains) :
-    handle(_handle), cut_edge(_edge), cut_val(_val),
-      contains_cutedge(_contains){}
+  blossom(std::vector<int> _handle, int _edge, double _val) :
+    handle(_handle), cut_edge(_edge), cut_val(_val){}
     blossom(){}
 
     bool operator< (const blossom &val) const {
@@ -57,7 +53,6 @@ class PSEP_2match {
     std::vector<int> handle;
     int cut_edge;
     double cut_val;
-    bool contains_cutedge;
   };
 
   PSEPlp &m_lp;
