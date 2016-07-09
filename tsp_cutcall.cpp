@@ -41,6 +41,9 @@ int TSP_Solver::seg_cutcall(int *num_added_p){
 int TSP_Solver::blossom_cutcall(const int max_cutcount, int *num_added_p){
   int rval = 0;
   *num_added_p = 0;
+
+  if(max_cutcount == 0)
+    goto CLEANUP;
   
   rval = blossoms.separate(max_cutcount);
   if(rval) goto CLEANUP;
