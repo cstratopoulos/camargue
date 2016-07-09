@@ -51,6 +51,8 @@ int TSP_Solver::blossom_cutcall(const int max_cutcount, int *num_added_p){
     double cutval;
     blossoms.pop(hnodes, &cutedge, &cutval);
 
+    cout << "Popping blossom with cutval: " << cutval << endl;
+
     int deltacount;
     G_Utils::get_delta(hnodes, m_graph.edges, &deltacount, delta, edge_marks);
 

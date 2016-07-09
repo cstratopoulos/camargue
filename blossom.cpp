@@ -48,7 +48,15 @@ int PSEP_2match::separate(const int max_cutcount){
       goto CLEANUP;
     }
 
-    if(cutval < 1 - LP_EPSILON){      
+    if(cutval < 1 - LP_EPSILON){
+      if(pq.size() == max_cutcount){
+	if(cutval >= pq.top().cut_val){
+	  cut_ecap[i] = orig_weight;
+	  continue;
+	} else
+	  pq.pop();
+      }
+      
       vector<int> handle;
       for(int j = 0; j < cutcount; j++){
 	handle.push_back(cut_nodes[j]);
