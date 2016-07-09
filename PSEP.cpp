@@ -41,6 +41,7 @@ int main(int argc, char* argv[]){
   int num_seg, num_2match;
   int segval, matchval;
   int rounds = 0;
+  int total_cuts = 0;
 
   cout << "Pivoting until optimality or no more cuts" << endl;
 
@@ -80,10 +81,13 @@ int main(int argc, char* argv[]){
     segval = solver.seg_cutcall(&num_seg);
     if(segval == 1)
       break;
+    total_cuts += num_seg;
 
     matchval = solver.blossom_cutcall(250 - num_seg, &num_2match);
     if(matchval == 1)
       break;
+
+    total_cuts += num_2match;
 
 
     if(segval + matchval == 4)
@@ -96,6 +100,7 @@ int main(int argc, char* argv[]){
   if(stat != 3)
     cout << "Terminated due to lack of cutting planes after "
 	 << rounds << " rounds of separation" << endl;
+  cout << total_cuts << " cutting planes added" << endl;
 
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
