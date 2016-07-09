@@ -40,10 +40,12 @@ int main(int argc, char* argv[]){
   int old_basic, old_nb, old_stat, stat;
   int num_seg, num_2match;
   int segval, matchval;
+  int rounds = 0;
 
   cout << "Pivoting until optimality or no more cuts" << endl;
 
   while(true){
+    rounds++;
     if(solver.pivot_until_change(&old_basic, &old_nb, &old_stat, &stat))
       break;
 
@@ -64,9 +66,12 @@ int main(int argc, char* argv[]){
 
     if(stat == 3)
       break;
-    if(stat == 2)
+    if(stat == 2){
       if(solver.update_best_tour())
 	break;
+      else
+	continue;
+    }
 
     segval = solver.seg_cutcall(&num_seg);
     if(segval == 1)
@@ -85,7 +90,8 @@ int main(int argc, char* argv[]){
   }
 
   if(stat != 3)
-    cout << "Terminated due to lack of cutting planes.";
+    cout << "Terminated due to lack of cutting planes after "
+	 << rounds << " rounds of separation";
 
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
