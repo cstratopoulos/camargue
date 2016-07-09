@@ -83,6 +83,9 @@ int main(int argc, char* argv[]){
       break;
   }
 
+  if(stat != 3)
+    cout << "Terminated due to lack of cutting planes.";
+
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
 
