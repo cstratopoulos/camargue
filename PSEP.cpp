@@ -69,8 +69,12 @@ int main(int argc, char* argv[]){
     if(stat == 2){
       if(solver.update_best_tour())
 	break;
-      else
+      else{
+	cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
+	cout << "!!!AUGMENTED TOUR!!!!" << endl;
+	cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
 	continue;
+      }
     }
 
     segval = solver.seg_cutcall(&num_seg);
