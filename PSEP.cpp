@@ -38,18 +38,35 @@ int main(int argc, char* argv[]){
   solver.basis_init();
 
   double start = PSEP_zeit();
-  double piv_start;
-  double piv_time = 0;
   int old_basic, old_nb, old_stat, stat;
   int num_added;
 
-  cout << "Pivoting until no more segment cuts" << endl;
+  cout << "Pivoting then adding blossom cuts" << endl;
 
-  while(true){
-    piv_start = PSEP_zeit();
-    if(solver.pivot_until_change(&old_basic, &old_nb, &old_stat, &stat))
-      break;
-    piv_time += PSEP_zeit() - piv_start;
+
+  solver.pivot_until_change(&old_basic, &old_nb, &old_stat, &stat);
+
+  cout << "Pivot status: ";
+  switch(stat){
+  case(0):
+    cout << "Fractional" << endl;
+    break;
+  case(1):
+    cout << "Integral subtour" << endl;
+    break;
+  case(2):
+    cout << "New tour" << endl;
+    break;
+  case(3):
+    cout << "Tour fathomed optimal" << endl;
+  }
+
+  if(stat == 2 || stat == 3)
+    cout << "Pivoted to new tour, nothing to do" << endl;
+  else {
+    solver.blossom_cutcall(80, &num_added);
+    solver.pivot_back(old_basic, old_nb, old_stat);
+    solver.pivot_until_change(&old_basic, &old_nb, &old_stat, &stat);
 
     cout << "Pivot status: ";
     switch(stat){
@@ -65,29 +82,9 @@ int main(int argc, char* argv[]){
     case(3):
       cout << "Tour fathomed optimal" << endl;
     }
-
-    if(stat == 2 || stat == 3)
-      break;
-    
-    if(solver.seg_cutcall(&num_added) == 1)
-      break;
-    if(num_added == 0){
-      cout << "No seg cuts found, loop terminating" << endl;
-      break;
-    }
-    if(solver.pivot_back(old_basic, old_nb, old_stat))
-      break;    
-  }
-
-  if(stat == 2 || stat == 3)
-    cout << "Pivoted to new tour, nothing to do" << endl;
-  else {
-    cout << "Insert: Pivot again and call blossom separation..." << endl;
-    solver.pivot_back(old_basic, old_nb, old_stat);
   }
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
-  cout << "Time spent in pivot until change: " << piv_time << endl;
 
   return 0;
 }
