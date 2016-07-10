@@ -30,19 +30,8 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
                          &cmatbeg, nodes, coefficients, &lower_bound,
 			&upper_bound);
     }
-
-    bases.resize(2);
-    bases[0].resize(m_graph.edge_count, CPX_AT_LOWER);
-    bases[1].resize(m_graph.edge_count, CPX_AT_LOWER);
-    old_base = &bases[0][0];
-    new_base = &bases[1][0];
-
-    basis_headers.resize(2);
-    basis_headers[0].resize(m_graph.node_count);
-    basis_headers[1].resize(m_graph.node_count);
-    old_header = &basis_headers[0][0];
-    new_header = &basis_headers[1][0];
-    
+    old_colstat.resize(m_graph.edge_count, CPX_AT_LOWER);
+    old_rowstat.resize(m_graph.node_count, CPX_AT_LOWER);    
 
     perm.resize(m_graph.node_count);
     for(int i = 0; i < m_graph.node_count; i++){
@@ -65,19 +54,19 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
       if(ind1 - ind0 == 1 || (ind0 == 0 && ind1 == m_graph.node_count - 1)){
 	best_tour_edges[i] = 1;
 	m_min_tour_value += e.len;
-	old_base[i] = CPX_BASIC;
+	old_colstat[i] = CPX_BASIC;
 	if(m_graph.node_count %2 == 1)
 	  continue;	
       }
 
       if(m_graph.node_count % 2 == 0){
 	if(ind0 == m_graph.node_count - 2 && ind1 == m_graph.node_count - 1){
-	  old_base[i] = CPX_AT_UPPER;
+	  old_colstat[i] = CPX_AT_UPPER;
 	  continue;
 	}
 
 	if(ind0 == 0 && ind1 == m_graph.node_count - 2){
-	  old_base[i] = CPX_BASIC;
+	  old_colstat[i] = CPX_BASIC;
 	}
       } 
     }

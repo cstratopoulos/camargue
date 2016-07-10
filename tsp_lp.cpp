@@ -2,17 +2,9 @@
 
 using namespace std;
 
-int TSP_Solver::basis_init(){
-  vector<int> rowstat(m_graph.node_count);
-  
-  int rval = PSEPlp_copybase(&m_lp, old_base, &rowstat[0]);
+int TSP_Solver::basis_init(){  
+  int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
   if(rval) goto CLEANUP;
-
-    
-  rval = no_opt();
-  if(rval) goto CLEANUP;
-
-  rval = PSEPlp_bhead(&m_lp, old_header, NULL);
 
   rval = primal_pivot();
   if(rval) goto CLEANUP;
@@ -39,54 +31,6 @@ int TSP_Solver::basis_init(){
   if(rval)
     cerr << "Error entry point: basis_init()" << endl;
   return rval;
-}
-
-void TSP_Solver::test_bhead(){
-  cout << "Printing basic variables and corresponding LP solution values..."
-       << endl;
-
-  int numbasic = 0;
-  for(int i = 0; i < m_graph.edge_count; i++){
-    if(old_base[i] == CPX_BASIC){
-      cout << "Variable " << i << " is basic, lp value: "
-	   << m_lp_edges[i] << endl;
-      numbasic++;
-    }
-  }
-
-  cout << "Total number of variables in basis: " << numbasic << endl;
-
-  int numrows = PSEPlp_numrows(&m_lp);
-  vector<int> head(numrows);
-  vector<double> x(numrows);
-
-  cout << "Called bhead, rval: " << PSEPlp_bhead(&m_lp, &head[0], &x[0])
-       << endl;
-
-  cout << "Printing every entry of head and corresponding x..." << endl;
-
-  for(int i = 0; i < numrows; i++){
-    cout << "head[" << i << "] = " << head[i] << ", x[" << i << "] = "
-	 << x[i];
-    if(head[i] < 0){
-      int row = (-head[i]) - 1;
-      cout << ", lp_edges[" << row << "] = " << m_lp_edges[row]
-	   << ", old_base[" << row << "] = " << old_base[row] << endl;
-    } else {
-      cout << ", lp_edges[" << head[i] << "] = " << m_lp_edges[head[i]]
-	   << ", old_base[" << head[i] << "] = " << old_base[head[i]] << endl;
-    }
-  }
-
-  cout << "Checking if any lp entry is somehow more than 1???" << endl;
-
-  for(int i = 0; i < m_graph.edge_count; i++){
-    if(m_lp_edges[i] > 1)
-      cout << "m_lp_edges[" << i << "] = " << m_lp_edges[i] << endl;
-  }
-
-  cout << "Done. " << endl;
-  
 }
 
 
