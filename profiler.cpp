@@ -3,6 +3,7 @@
 double PSEP_Timer::pivot_time = 0;
 double PSEP_Timer::opt_time = 0;
 double PSEP_Timer::copybase_time = 0;
+double PSEP_Timer::getbase_time = 0;
   
 double PSEP_Timer::match_time = 0;
 double PSEP_Timer::seg_time = 0;

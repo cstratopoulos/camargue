@@ -14,6 +14,8 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
   bool integral = false, conn = false, dual_feas = false;
   *pivot_status_p = -1;
 
+  double routine_start;
+
   old_rowstat.resize(rowcount);
 
   while(true){
@@ -26,8 +28,10 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
     if((dual_feas = is_dual_feas()))
       break;
 
+    routine_start = PSEP_zeit();
     rval = PSEPlp_getbase(&m_lp, &old_colstat[0], &old_rowstat[0]);
     if(rval) goto CLEANUP;
+    PSEP_Timer::getbase_time += PSEP_zeit() - routine_start;
 
     rval = primal_pivot();
     if(rval) goto CLEANUP;

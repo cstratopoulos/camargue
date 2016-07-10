@@ -19,6 +19,7 @@ class PSEP_Timer {
   static double pivot_time;
   static double opt_time;
   static double copybase_time;
+  static double getbase_time;
   
   static double match_time;
 
