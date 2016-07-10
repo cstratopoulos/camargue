@@ -29,10 +29,8 @@ class TSP_Solver {
   ~TSP_Solver();
 
   //MAIN OPERATIONS -- tsp_solver.cpp
-  int pivot_until_change(int *old_b_p, int *old_nb_p, int *old_nb_stat_p,
-			 int *pivot_status_p);
-  int pivot_back(const int old_basic, const int old_nonbasic,
-		 const int old_nb_stat);
+  int pivot_until_change(int *pivot_status_p);
+  int pivot_back();
   bool update_current_tour_indices(std::vector<int> &tour_indices);
   int update_best_tour();
 
@@ -42,7 +40,6 @@ class TSP_Solver {
 
   //LP HELPER FUNCTIONS -- tsp_lp.cpp
   int basis_init();
-  void test_bhead();
   
   bool is_dual_feas();
   bool is_integral();
@@ -71,12 +68,9 @@ class TSP_Solver {
   PSEPlp m_lp;
   
   std::vector<double> m_lp_edges;
-  std::vector<std::vector<int> > bases;
-  std::vector<std::vector<int> > basis_headers;
-  int *old_header;
-  int*new_header;
-  int *old_base;
-  int *new_base;
+  
+  std::vector<int> old_colstat;
+  std::vector<int> old_rowstat;
   
   std::vector<int> support_indices;
   std::vector<int> support_elist;
