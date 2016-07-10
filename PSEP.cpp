@@ -37,7 +37,7 @@ int main(int argc, char* argv[]){
   solver.basis_init();
 
   double start = PSEP_zeit();
-  int old_basic, old_nb, old_stat, stat;
+  int stat;
   int num_seg, num_2match;
   int segval, matchval;
   int rounds = 0;
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]){
 
   while(true){
     rounds++;
-    if(solver.pivot_until_change(&old_basic, &old_nb, &old_stat, &stat))
+    if(solver.pivot_until_change(&stat))
       break;
 
     cout << "Pivot status: ";
@@ -78,6 +78,9 @@ int main(int argc, char* argv[]){
       }
     }
 
+    if(solver.pivot_back())
+      break;
+
     segval = solver.seg_cutcall(&num_seg);
     if(segval == 1)
       break;
@@ -91,9 +94,6 @@ int main(int argc, char* argv[]){
 
 
     if(segval + matchval == 4)
-      break;
-
-    if(solver.pivot_back(old_basic, old_nb, old_stat))
       break;
   }
 
