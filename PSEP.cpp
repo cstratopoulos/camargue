@@ -81,12 +81,12 @@ int main(int argc, char* argv[]){
     if(solver.pivot_back())
       break;
 
-    segval = solver.seg_cutcall(&num_seg);
+    segval = solver.cutcall.segment(&num_seg);
     if(segval == 1)
       break;
     total_cuts += num_seg;
 
-    matchval = solver.blossom_cutcall(250 - num_seg, &num_2match);
+    matchval = solver.cutcall.blossom(250 - num_seg, &num_2match);
     if(matchval == 1)
       break;
 
@@ -104,7 +104,6 @@ int main(int argc, char* argv[]){
 
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
-  cout << "Pivot time " << solver.PSEP_Timer::pivot_time << endl;
 
   return 0;
 }

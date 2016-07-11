@@ -15,8 +15,7 @@ extern "C" {
 
 #include "Graph.h"
 #include "profiler.h"
-#include "segcuts.h"
-#include "blossom.h"
+#include "cutcall.h"
 #include "lp.h"
 #include "PSEP_util.h"
 
@@ -33,10 +32,6 @@ class TSP_Solver {
   int pivot_back();
   bool update_current_tour_indices(std::vector<int> &tour_indices);
   int update_best_tour();
-
-  //CUTTING PLANE MACHINERY -- tsp_cutcall.cpp
-  int seg_cutcall(int *num_added_p);
-  int blossom_cutcall(const int max_cutcount, int *num_added_p);
 
   //LP HELPER FUNCTIONS -- tsp_lp.cpp
   int basis_init();
@@ -88,14 +83,14 @@ class TSP_Solver {
   double runtime;
 
   PSEP_Timer T;
-  PSEP_Segcuts segments;
-  PSEP_2match blossoms;
 
   G_Utils gu;
   SupportGraph G_s;
   std::vector<int> island;
   std::vector<int> delta;
-  std::vector<int> edge_marks;  
+  std::vector<int> edge_marks;
+
+  PSEP_Cutcall cutcall;
 
 };
 
