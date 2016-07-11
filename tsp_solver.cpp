@@ -7,7 +7,7 @@
 
 using namespace std;
 
-bool TSP_Solver::devex = true;
+bool TSP_Solver::devex = false;
 
 int TSP_Solver::pivot_until_change(int *pivot_status_p){
   int rval = 0;
@@ -51,7 +51,7 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
        << round_start << "s, pivot obj val: " << get_obj_val()
        << endl;
 
-  if(!devex && (itcount > m_graph.node_count / 3)){
+  if(!devex && (itcount > m_graph.node_count / 2)){
     rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient,
 			CPX_PPRIIND_DEVEX);
     if(rval)
