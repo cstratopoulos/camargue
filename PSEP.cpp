@@ -162,8 +162,6 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
   int kicks = (ncount > 400 ? 100 : ncount / 4);
   int istour;
   int seed = (int) PSEP_real_zeit();
-  //seed = 1466719036; //breaks dsj1000 and pr1002
-  //seed = 1466720112; //breaks pr2392
   cout << "LK seed: " << seed << endl;
 
   szeit = CCutil_zeit ();
