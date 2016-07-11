@@ -7,7 +7,7 @@
 
 using namespace std;
 
-bool TSP_Solver::devex = false;
+bool TSP_Solver::devex = true;
 
 int TSP_Solver::pivot_until_change(int *pivot_status_p){
   int rval = 0;
