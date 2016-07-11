@@ -14,7 +14,9 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
   bool integral = false, conn = false, dual_feas = false;
   *pivot_status_p = -1;
 
-  double routine_start;
+  bool devex = false;
+
+  double routine_start, round_start = PSEP_zeit();
 
   old_rowstat.resize(rowcount);
 
@@ -43,8 +45,22 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
       break;    
   }
 
-  cout << itcount << " pivots performed, pivot obj val: " << get_obj_val()
+  round_start = PSEP_zeit() - round_start;
+
+  cout << itcount << " pivots performed in "
+       << round_start << "s, pivot obj val: " << get_obj_val()
        << endl;
+
+  if(!devex && (itcount > m_graph.node_count / 3)){
+    rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient,
+			CPX_PPRIIND_DEVEX);
+    if(rval)
+      goto CLEANUP;
+    else{
+      cout << "////////Switched to devex/////////" << endl;
+      devex = true;
+    }
+  }
 
   rval = set_support_graph();
   if(rval) goto CLEANUP;
