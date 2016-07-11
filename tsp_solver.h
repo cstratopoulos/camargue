@@ -83,6 +83,7 @@ class TSP_Solver {
 
   
   double m_min_tour_value;
+  static bool devex; //TEMPORARY, CHANGE LATER!!!
 
   double runtime;
 

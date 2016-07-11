@@ -7,14 +7,14 @@
 
 using namespace std;
 
+bool TSP_Solver::devex = true;
+
 int TSP_Solver::pivot_until_change(int *pivot_status_p){
   int rval = 0;
   int itcount = 0, icount = 0;
   int rowcount = PSEPlp_numrows(&m_lp);
   bool integral = false, conn = false, dual_feas = false;
   *pivot_status_p = -1;
-
-  bool devex = false;
 
   double routine_start, round_start = PSEP_zeit();
 
