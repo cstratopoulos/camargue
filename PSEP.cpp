@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
   vector<int> tour_node_indices;
   CCdatagroup dat;
 
-  cout << "BRANCH VERSION: PIVOT BACK w COPY BASE" << endl;
+  cout << "BRANCH VERSION: MASTER" << endl;
 
   if(load_tsplib(graph, &dat, argc, argv)){
     cerr << "Problem getting tsplib" << endl;
@@ -104,6 +104,7 @@ int main(int argc, char* argv[]){
 
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
+  cout << "Pivot time " << solver.PSEP_Timer::pivot_time << endl;
 
   return 0;
 }
