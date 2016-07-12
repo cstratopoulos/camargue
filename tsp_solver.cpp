@@ -82,14 +82,10 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
 }
 
 int TSP_Solver::pivot_back(){
-  cout << "Calling pivot back...";
-
   int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
 
   if(rval)
     cerr << "Error entry point: pivot_back()" << endl;
-  else
-    cout << "Pivoted back successfully" << endl;
   return rval;
 }
 
