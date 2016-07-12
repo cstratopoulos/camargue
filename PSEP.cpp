@@ -73,8 +73,8 @@ int main(int argc, char* argv[]){
 
     total_cuts += num_2match;
 
-    if ((1 + (total_cuts / PSEPlp_numrows(&solver.m_lp))) > LP::size_factor){
-      LP::size_factor = (1 + (total_cuts / PSEPlp_numrows(&solver.m_lp)));
+    if ((1 + (total_cuts / solver.m_graph.node_count)) > LP::size_factor){
+      LP::size_factor = (1 + (total_cuts / solver.m_graph.node_count));
       cout << "LP is now ~" << LP::size_factor << " original size\n";
       if(LP::devex_switch && LP::size_factor >= 3){
 	cout << "/////Switching to devex/////\n";
