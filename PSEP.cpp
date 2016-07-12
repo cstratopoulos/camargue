@@ -79,6 +79,9 @@ int main(int argc, char* argv[]){
       if(LP::devex_switch && LP::size_factor >= 3){
 	cout << "/////Switching to devex/////\n";
 	LP::devex_switch = false;
+	if(CPXsetintparam(solver.m_lp.cplex_env, CPXPARAM_Simplex_PGradient,
+			  CPX_PPRIIND_DEVEX))
+	  break;
       }
     }
 
