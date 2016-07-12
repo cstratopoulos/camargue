@@ -1,10 +1,5 @@
 #include "tsp_solver.h"
 
-#define PSEP_PIV_FRAC 0
-#define PSEP_PIV_SUBTOUR 1
-#define PSEP_PIV_TOUR 2
-#define PSEP_PIV_OPT_TOUR 3
-
 using namespace std;
 
 bool TSP_Solver::devex = true;
@@ -70,13 +65,13 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
     conn = G_Utils::connected(&G_s, &icount, island, 0);
     if(integral && conn){
       if(dual_feas)
-	*pivot_status_p = PSEP_PIV_OPT_TOUR;
+	*pivot_status_p = PIVOT::FATHOMED_TOUR;
       else
-	*pivot_status_p = PSEP_PIV_TOUR;
+	*pivot_status_p = PIVOT::TOUR;
     } else
-      *pivot_status_p = PSEP_PIV_SUBTOUR;
+      *pivot_status_p = PIVOT::SUBTOUR;
   } else
-    *pivot_status_p = PSEP_PIV_FRAC;
+      *pivot_status_p = PIVOT::FRAC;
 
  CLEANUP:
     if(rval)
