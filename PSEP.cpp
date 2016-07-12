@@ -61,7 +61,7 @@ static int initial_parse(int ac, char **av, Graph &graph,
       break;
     case 'p':
       pricing_method = atoi(optarg);
-      brak;
+      break;
     case 's':
       seed = atoi(optarg);
       break;
@@ -220,6 +220,14 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
 
 static void usage(char *f){
   fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", f);
-  fprintf(stderr, "   -d    enable dynamic switch to devex\n");
-  fprintf(stderr, "   -s d  set random seed to d\n");
+  fprintf(stderr, "   -d x   set dynamic pricing switch behavior to x\n");
+  fprintf(stderr, "      x = 0 do not switch pricing methods\n");
+  fprintf(stderr, "        = 1 switch when a non-degenerate pivot takes");
+  fprintf(stderr, "            more than 3 * number of rows iterations\n");
+  fprintf(stderr, "        = 2 switch from the start\n");
+  fprintf(stderr, "   -p x   set primal pricing method to x\n");
+  fprintf(stderr, "      x = 0 devex (default)\n");
+  fprintf(stderr, "      x = 1 steepest edge, slack init norms\n");
+  fprintf(stderr, "      x = 3 full-blown steepest edge\n");
+  fprintf(stderr, "   -s x   set random seed to x\n");
 }

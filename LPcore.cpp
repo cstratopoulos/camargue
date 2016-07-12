@@ -150,7 +150,7 @@ int rval = 0;
 
   while(true){
     if(++itcount == 3 * rowcount)
-      if(LP::PRICING::BEHAVIOR::choice = LP::PRICING::BEHAVIOR::DYNAMIC)
+      if(LP::PRICING::SWITCHING::choice == LP::PRICING::SWITCHING::DYNAMIC)
 	change_pricing();
 
     if((dual_feas = is_dual_feas()))
@@ -216,8 +216,8 @@ void PSEP_LP_Core::change_pricing(){
     break;
   }
 
-  if(CPXsetintparam(lp->cplex_env, CPXPARAM_Simplex_PGradient, newprice))
+  if(CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient, newprice))
     cerr << "ERROR: PRICING SWITCH DID NOT TAKE PLACE\n";
-  LP::PRICING::SWITCHING::choice = LP::PRICING::BEHAVIOR::OFF;
+  LP::PRICING::SWITCHING::choice = LP::PRICING::SWITCHING::OFF;
 }
 
