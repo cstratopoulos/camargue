@@ -1,0 +1,1 @@
+just make timer a namespace and profiler have the void print profile functions
