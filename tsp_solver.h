@@ -15,6 +15,7 @@ extern "C" {
 
 #include "Graph.h"
 #include "profiler.h"
+#include "printer.h"
 #include "cutcall.h"
 #include "lp.h"
 #include "PSEP_util.h"
@@ -78,9 +79,6 @@ class TSP_Solver {
 
   double runtime;
 
-  PSEP_Timer T;
-  PSEP_Printer print;
-
   G_Utils gu;
   SupportGraph G_s;
   std::vector<int> island;
@@ -89,6 +87,8 @@ class TSP_Solver {
 
   PSEP_Cutcall cutcall;
 
+  PSEP_Timer T;
+  PSEP_Printer print;
 };
 
 #endif
