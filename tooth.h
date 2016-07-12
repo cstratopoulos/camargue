@@ -1,17 +1,24 @@
 #ifndef PSEP_TOOTH_H
 #define PSEP_TOOTH_H
 
+#include<memory>
+#include<list>
+
 #include "Graph.h"
 
 class PSEP_CandTooth {
  public:
  PSEP_CandTooth(std::vector<int> & _tour_nodes, SupportGraph & _G,
 		std::vector<int> & _marks) :
-  best_tour_nodes(_tour_nodes), G_s(_G) {
+  best_tour_nodes(_tour_nodes), G_s(_G), edge_marks(_marks) {
     SimpleTooth::ncount = _tour_nodes.size();
     SimpleTooth::G_s = &_G;
     SimpleTooth::edge_marks = &_marks[0];
   }
+
+  int build_collection();
+  void find_root_adjacent_teeth(const int root);
+  int find_root_distant_teeth(const int root);
 
  private:
   class SimpleTooth{
@@ -46,8 +53,12 @@ class PSEP_CandTooth {
     static int *edge_marks;
   };
 
+  std::vector<std::list<std::unique_ptr<SimpleTooth> > > light_teeth;
+  std::vector<std::list<std::unique_ptr<SimpleTooth> > > heavy_teeth;
+
   std::vector<int> &best_tour_nodes;
   SupportGraph &G_s;
+  std::vector<int> &edge_marks;
 
 };
 

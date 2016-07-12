@@ -1,9 +1,55 @@
 #include "tooth.h"
+#include "PSEP_util.h"
+
+using namespace std;
 
 int PSEP_CandTooth::SimpleTooth::ncount;
 SupportGraph * PSEP_CandTooth::SimpleTooth::G_s;
 int * PSEP_CandTooth::SimpleTooth::edge_marks;
 
+
+void PSEP_CandTooth::find_root_adjacent_teeth(const int root){
+  int ncount = SimpleTooth::ncount;
+  int body_start = (root + 1) % ncount, body_end;
+  double lhs = 0.0;
+  int rhs = -1;
+
+  bool found_dup;
+
+  for(int i = 1; i < ncount - 1; i++){
+    found_dup = false;
+    body_end = (root + i) % ncount;
+    unique_ptr<SimpleTooth> cand(new SimpleTooth(root, body_start, body_end));
+    int new_vx = best_tour_nodes[body_end];
+
+    cand->increment_slack(new_vx, &lhs, &rhs);
+
+    if(cand->slack >= 1 - LP::EPSILON || cand->slack < 0)
+      continue;
+
+    if(cand->body_size() > (ncount - 2) / 2)
+      cand->complement();
+
+    if(cand->body_size() == 1){
+      for(list<unique_ptr<SimpleTooth> >::iterator
+	    orig = light_teeth[cand->body_start].begin();
+	  orig != light_teeth[cand->body_start].end(); orig++){
+	if((*orig)->body_size() > 1) continue;
+	if((*orig)->body_start == cand->root &&
+	   cand->body_start == (*orig)->root){
+	  found_dup = true;
+	  break;
+	}
+      }
+      if(found_dup) continue;
+    }
+
+    if(cand->slack < 0.5)
+      light_teeth[root].push_back(std::move(cand));
+    else
+      heavy_teeth[root].push_back(std::move(cand));
+  }
+}
 
 int PSEP_CandTooth::SimpleTooth::body_size(){
   int add_one = (int) (!sandwich); //total is + 1 if tooth is not sandwiched
