@@ -3,7 +3,6 @@
 
 #include "blossom.h"
 #include "segcuts.h"
-#include "tooth.h"
 
 class PSEP_Cutcall {
  public:
@@ -18,9 +17,7 @@ class PSEP_Cutcall {
 	       std::vector<double> & _ecap) :
   edges(_edges), delta(_delta), edge_marks(_edge_marks), best_tour_nodes(nodes),
     segments(supgraph, _edge_marks, nodes, lp),
-    blossoms(_tour_edges, _lp_edges, _sup_inds, _sup_elist, _ecap, lp) {
-    SimpleTooth::ncount = nodes.size();
-  }
+    blossoms(_tour_edges, _lp_edges, _sup_inds, _sup_elist, _ecap, lp) {}
 	       
   
   int segment(int *num_added_p);
