@@ -45,14 +45,14 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
        << round_start << "s, pivot obj val: " << get_obj_val()
        << endl;
 
-  if(!devex && (itcount > m_graph.node_count / 2)){
+  if(LP::devex_switch && (itcount > m_graph.node_count / 2)){
     rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient,
 			CPX_PPRIIND_DEVEX);
     if(rval)
       goto CLEANUP;
     else{
       cout << "////////Switched to devex/////////" << endl;
-      devex = true;
+      LP::devex_switch = false;
     }
   }
 
