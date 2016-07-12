@@ -75,7 +75,7 @@ int main(int argc, char* argv[]){
 
     if ((1 + (total_cuts / solver.m_graph.node_count)) > LP::size_factor){
       LP::size_factor = (1 + (total_cuts / solver.m_graph.node_count));
-      cout << "LP is now ~" << LP::size_factor << " original size\n";
+      cout << "LP is now ~" << LP::size_factor << "x original size\n";
       if(LP::devex_switch && LP::size_factor >= 3){
 	cout << "/////Switching to devex/////\n";
 	LP::devex_switch = false;
