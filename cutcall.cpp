@@ -27,8 +27,6 @@ int PSEP_Cutcall::segment(int *num_added_p){
   }
 
   if(*num_added_p == 0) rval = 2;
-  else
-    cout << "Added " << *num_added_p << " segment cuts" << endl;
     
  CLEANUP:
   if(rval == 1)
@@ -60,10 +58,9 @@ int PSEP_Cutcall::blossom(const int max_cutcount, int *num_added_p){
     (*num_added_p)++;
   }
 
-  if(*num_added_p == 0){
+  if(*num_added_p == 0)
     rval = 2;
-  } else
-    cout << "Added " << *num_added_p << " blossoms in total" << endl;
+
 
  CLEANUP:
   if(rval == 1)
