@@ -53,6 +53,8 @@ class PSEP_Printer {
     case(PIVOT::FATHOMED_TOUR):
       std::cout << "Tour fathomed optimal\n";
       break;
+    default:
+      std::cerr << "Invalid value " << piv_stat << "passed to print pivot\n";
     }
   };
 
