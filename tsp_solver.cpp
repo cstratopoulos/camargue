@@ -82,3 +82,74 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
 TSP_Solver::~TSP_Solver() {
     PSEPlp_free (&m_lp);
 }
+
+int TSP_Solver::pure_cut(){
+  int rval = 0;
+
+  int stat;
+  int num_seg, num_2match, total_cuts = 0;
+  int segval, matchval;
+  int rounds = 0;
+
+  rval = LPcore.basis_init();
+  if(rval) goto CLEANUP;
+
+  cout << "Pivoting until optimality or no more cuts" << endl;
+
+  while(true){
+    rounds++;
+    
+    rval = LPcore.pivot_until_change(&stat);
+    if(rval) goto CLEANUP;
+
+    print.pivot(stat);
+
+    if(stat == PIVOT::FATHOMED_TOUR)
+      break;
+
+    if(stat == PIVOT::TOUR){
+      rval = LPcore.update_best_tour();
+      if(rval)
+	goto CLEANUP;
+      else {
+	cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
+	cout << "!!!AUGMENTED TOUR!!!!" << endl;
+	cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
+	cout << "~Call to delete slack cuts should go here~" << endl;
+	continue;
+      }
+    }
+
+    rval = LPcore.pivot_back();
+    if(rval) goto CLEANUP;
+
+    segval = cutcall.segment(&num_seg);
+    if(segval == 1)
+      break;
+
+    matchval = cutcall.blossom(250 - num_seg, &num_2match);
+    if(matchval == 1)
+      break;
+
+    //DEVEX SWITCH GOES HERE
+
+    cout << "Added " << num_seg << " segments, " << num_2match
+	 << " blossoms" << endl;
+
+    total_cuts += num_seg + num_2match;
+
+    if(segval + matchval == 4)
+      break;
+  }
+
+  if(stat != 3)
+    cout << "Terminated due to lack of cutting planes after "
+	 << rounds << " rounds of separation" << endl;
+  cout << total_cuts << " cutting planes added over "
+       << rounds << " rounds of separation" << endl;
+
+ CLEANUP:
+  if(rval)
+    cerr << "Error entry point: TSP_Solver::pure_cut()\n";
+  return rval;
+}

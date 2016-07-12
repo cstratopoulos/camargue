@@ -25,11 +25,12 @@ extern "C" {
 
 class TSP_Solver {
  public:
-  //CONSTRUCTOR & DESTRUCTOR -- tsp_constructors.cpp
   TSP_Solver(Graph &graph, const std::vector<int> &lk_node_indices);
   ~TSP_Solver();
 
-  //Member Objects
+  int pure_cut();
+
+
   Graph &m_graph;
   
   PSEPlp m_lp;

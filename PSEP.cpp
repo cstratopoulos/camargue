@@ -30,77 +30,10 @@ int main(int argc, char* argv[]){
   }
 
   TSP_Solver solver(graph, tour_node_indices);
-  solver.LPcore.basis_init();
 
   double start = PSEP_zeit();
-  int stat;
-  int num_seg, num_2match;
-  int segval, matchval;
-  int rounds = 0;
-  int total_cuts = 0;
 
-  cout << "Pivoting until optimality or no more cuts" << endl;
-
-  while(true){
-    rounds++;
-    if(solver.LPcore.pivot_until_change(&stat))
-      break;
-
-    solver.print.pivot(stat);
-
-    if(stat == 3)
-      break;
-    if(stat == 2){
-      if(solver.LPcore.update_best_tour())
-	break;
-      else{
-	cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
-	cout << "!!!AUGMENTED TOUR!!!!" << endl;
-	cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
-	continue;
-      }
-    }
-
-    if(solver.LPcore.pivot_back())
-      break;
-
-    segval = solver.cutcall.segment(&num_seg);
-    if(segval == 1)
-      break;
-    total_cuts += num_seg;
-
-    matchval = solver.cutcall.blossom(250 - num_seg, &num_2match);
-    if(matchval == 1)
-      break;
-
-    total_cuts += num_2match;
-
-    if ((1 + (total_cuts / solver.m_graph.node_count)) > LP::size_factor){
-      LP::size_factor = (1 + (total_cuts / solver.m_graph.node_count));
-      cout << "LP is now ~" << LP::size_factor << "x original size\n";
-      if(LP::devex_switch && LP::size_factor >= 3){
-	cout << "/////Switching to devex/////\n";
-	LP::devex_switch = false;
-	if(CPXsetintparam(solver.m_lp.cplex_env, CPXPARAM_Simplex_PGradient,
-			  CPX_PPRIIND_DEVEX))
-	  break;
-      }
-    }
-
-    cout << "Added " << num_seg << " segment cuts and "
-	 << num_2match << " blossom inequalities" << endl;
-
-
-    if(segval + matchval == 4)
-      break;
-  }
-
-  if(stat != 3)
-    cout << "Terminated due to lack of cutting planes after "
-	 << rounds << " rounds of separation" << endl;
-  cout << total_cuts << " cutting planes added over "
-       << rounds << " rounds of separation" << endl;
-
+  solver.pure_cut();
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
 
