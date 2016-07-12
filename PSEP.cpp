@@ -50,8 +50,6 @@ int main(int argc, char* argv[]){
     if(solver.pivot_until_change(&stat))
       break;
 
-    solver.print.pivot(stat);
-
     if(stat == 3)
       break;
     if(stat == 2){

@@ -41,10 +41,6 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
 
   round_start = PSEP_zeit() - round_start;
 
-  cout << itcount << " pivots performed in "
-       << round_start << "s, pivot obj val: " << get_obj_val()
-       << endl;
-
   if(LP::devex_switch && (itcount > m_graph.node_count / 2)){
     rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient,
 			CPX_PPRIIND_DEVEX);
@@ -71,6 +67,10 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
       *pivot_status_p = PIVOT::SUBTOUR;
   } else
       *pivot_status_p = PIVOT::FRAC;
+
+    cout << itcount << " pivots performed in "
+	 << round_start << "s, obj val: " << get_obj_val() << ", ";
+    print.pivot(*pivot_status_p);
 
  CLEANUP:
     if(rval)
