@@ -70,7 +70,7 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
   } else
       *pivot_status_p = PIVOT::FRAC;
 
-    cout << "Did" << itcount << " pivots in "
+    cout << "Did " << itcount << " pivots in "
 	 << setprecision(1) << round_start << "s, "
 	 << "obj val: " << setprecision(6) << get_obj_val() << ", ";
     print.pivot(*pivot_status_p);
