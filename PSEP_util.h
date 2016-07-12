@@ -7,6 +7,10 @@ namespace LP {
   static bool devex_switch = false;
 }
 
+namespace UTIL {
+  static int seed = 0;
+}
+
 namespace PIVOT {
   const int FRAC = 0;
   const int SUBTOUR = 1;

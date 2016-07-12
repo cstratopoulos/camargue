@@ -11,24 +11,21 @@
 
 using namespace std;
 
-static int load_tsplib (Graph &graph, CCdatagroup *dat, int ac, char **av);
+static int load_tsplib (Graph &graph, CCdatagroup *dat, char *fname);
 static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
 			       vector<int> &node_indices);
+static int initial_parse(int ac, char **av, Graph &graph,
+			 vector<int> &node_indices);
+static void usage(char *f);
 
 int main(int argc, char* argv[]){
   Graph graph;
   vector<int> tour_node_indices;
-  CCdatagroup dat;
 
-  cout << "BRANCH VERSION: MASTER" << endl;
+  cout << "BRANCH VERSION: GETOPT!!!!" << endl;
 
-  if(load_tsplib(graph, &dat, argc, argv)){
-    cerr << "Problem getting tsplib" << endl;
-    exit(1);
-  }
-  
-  if(initialize_lk_tour(graph, &dat, tour_node_indices)){
-    cerr << "Problem getting LK tour" << endl;
+  if(initial_parse(argc, argv, graph, tour_node_indices)){
+    cerr << "Problem parsing arguments" << endl;
     exit(1);
   }
 
@@ -95,16 +92,61 @@ int main(int argc, char* argv[]){
   return 0;
 }
 
-static int load_tsplib (Graph &graph, CCdatagroup *dat, int ac, char **av){
+static int initial_parse(int ac, char **av, Graph &graph,
+			 vector<int> &node_indices){
   char *fname = (char *) NULL;
-  int rval = 0;
+  int seed = 0;
+  bool devex = false;
 
-  if (ac != 2){
-    fprintf(stderr, "Enter name of TSPLIB file to be read\n");
+  int c;
+
+  if(ac == 1){
+    usage(av[0]);
     return 1;
-  } else {
-    fname = av[1];
   }
+
+  while((c = getopt(ac, av, "ads:")) != EOF) {
+    switch(c) {
+    case 'd':
+      devex = true;
+      break;
+    case 's':
+      seed = atoi(optarg);
+      break;
+    case '?':
+    default:
+      usage(av[0]);
+      return 1;
+    }
+  }
+
+  if(optind < ac) fname = av[optind++];
+
+  if(optind != ac){
+    usage (av[0]);
+    return 1;
+  }
+
+  if(!fname){
+    printf ("Must specify a problem file\n");
+    return 1;
+  }
+
+  LP::devex_switch = devex;
+  UTIL::seed = seed;
+
+  CCdatagroup dat;
+  if(load_tsplib(graph, &dat, fname))
+    return 1;
+
+  if(initialize_lk_tour(graph, &dat, node_indices))
+    return 1;
+
+  return 0;
+}
+
+static int load_tsplib (Graph &graph, CCdatagroup *dat, char *fname){
+  int rval = 0;
 
   CCutil_init_datagroup(dat);
   rval = CCutil_gettsplib(fname, &(graph.node_count), dat);
@@ -148,7 +190,12 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
   int silent = 1;
   int kicks = (ncount > 400 ? 100 : ncount / 4);
   int istour;
-  int seed = (int) PSEP_real_zeit();
+  int seed;
+  if(UTIL::seed)
+    seed = UTIL::seed;
+  else
+    seed = (int) PSEP_real_zeit();
+  
   cout << "LK seed: " << seed << endl;
 
   szeit = CCutil_zeit ();
@@ -203,4 +250,10 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
   CC_IFFREE (elist, int);
   CC_IFFREE (tlist, int);
   return rval;
+}
+
+static void usage(char *f){
+  fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", f);
+  fprintf(stderr, "   -d    enable dynamic switch to devex\n");
+  fprintf(stderr, "   -s d  set random seed to d\n");
 }
