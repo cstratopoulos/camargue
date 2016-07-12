@@ -11,7 +11,6 @@
 
 using namespace std;
 
-void print_tour(const vector<int> &tour_indices, const Graph &graph);
 static int load_tsplib (Graph &graph, CCdatagroup *dat, int ac, char **av);
 static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
 			       vector<int> &node_indices);
@@ -204,15 +203,4 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
   CC_IFFREE (elist, int);
   CC_IFFREE (tlist, int);
   return rval;
-}
-
-void print_tour(const vector<int> &tour_indices, const Graph &graph) {
-    double tour_length = 0.0;
-    cout << "Optimal tour:" << endl;
-    for(int i = 0; i < (int)tour_indices.size(); i++) {
-        Edge e = graph.edges[tour_indices[i]];
-        tour_length += e.len;
-        cout << e.end[0] << " " << e.end[1] << " " << endl;
-    }
-    cout << "Optimal tour value: " << tour_length << endl;
 }
