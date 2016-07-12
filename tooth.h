@@ -22,8 +22,6 @@ class SimpleTooth{
   void increment_slack(double *lhs_p, double *rhs_p, const SupportGraph &G);
 
   static bool C_body_subset(const SimpleTooth &T, const SimpleTooth &R);
-
-  static int ncount;
   
  private:
   int root;
@@ -33,6 +31,8 @@ class SimpleTooth{
   bool sandwich;
 
   int node_index;
+
+  static int ncount;
 };
 
 #endif
