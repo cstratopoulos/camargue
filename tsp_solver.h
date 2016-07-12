@@ -17,6 +17,7 @@ extern "C" {
 #include "profiler.h"
 #include "printer.h"
 #include "cutcall.h"
+#include "LPcore.h"
 #include "lp.h"
 #include "PSEP_util.h"
 

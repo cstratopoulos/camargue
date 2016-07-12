@@ -8,9 +8,9 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
   cutcall(m_graph.edges, delta, edge_marks, G_s, best_tour_nodes, m_lp,
 	  best_tour_edges, m_lp_edges, support_indices, support_elist,
 	  support_ecap),
-  LPcore(m_lp, m_graph, support_indices, support_elist, support_ecap,
-	 best_tour_edges,best_tour_nodes, perm, m_min_tour_val, island, delta,
-	 edge_marks)
+  LPcore(m_lp, m_graph, m_lp_edges, G_s, support_indices, support_elist,
+	 support_ecap, best_tour_edges,best_tour_nodes, perm, m_min_tour_value,
+	 island, delta, edge_marks),
   print(best_tour_nodes, best_tour_edges, m_lp_edges, m_graph.edges)
 {
     //Build the basic LP

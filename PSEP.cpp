@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
   Graph graph;
   vector<int> tour_node_indices;
 
-  cout << "BRANCH VERSION: MASTER" << endl;
+  cout << "BRANCH VERSION: LP WRAPPER" << endl;
 
   if(initial_parse(argc, argv, graph, tour_node_indices)){
     cerr << "Problem parsing arguments" << endl;
@@ -43,13 +43,13 @@ int main(int argc, char* argv[]){
 
   while(true){
     rounds++;
-    if(solver.pivot_until_change(&stat))
+    if(solver.LPcore.pivot_until_change(&stat))
       break;
 
     if(stat == 3)
       break;
     if(stat == 2){
-      if(solver.update_best_tour())
+      if(solver.LPcore.update_best_tour())
 	break;
       else{
 	cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]){
       }
     }
 
-    if(solver.pivot_back())
+    if(solver.LPcore.pivot_back())
       break;
 
     segval = solver.cutcall.segment(&num_seg);

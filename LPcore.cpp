@@ -1,5 +1,8 @@
 #include "LPcore.h"
 
+#include <math.h>
+#include <iomanip>
+
 using namespace std;
 
 inline bool PSEP_LP_Core::is_dual_feas(){
@@ -35,7 +38,7 @@ int PSEP_LP_Core::pivot_back(){
 double PSEP_LP_Core::get_obj_val(){
   double objval;
   PSEPlp_objval(&m_lp, &objval);
-  return obvjal;
+  return objval;
 }
 
 double PSEP_LP_Core::set_edges(){
@@ -131,7 +134,7 @@ int PSEP_LP_Core::update_best_tour(){
   for(int i = 0; i < m_graph.node_count; i++)
     perm[best_tour_nodes[i]] = i;
 
-  return rval;
+  return 0;
 };
 
 int PSEP_LP_Core::pivot_until_change(int *pivot_status_p){
@@ -141,7 +144,7 @@ int rval = 0;
   bool integral = false, conn = false, dual_feas = false;
   *pivot_status_p = -1;
 
-  double routine_start, round_start = PSEP_zeit();
+  double round_start = PSEP_zeit();
 
   old_rowstat.resize(rowcount);
 
@@ -155,12 +158,10 @@ int rval = 0;
     if((dual_feas = is_dual_feas()))
       break;
 
-    routine_start = PSEP_zeit();
     rval = PSEPlp_getbase(&m_lp, &old_colstat[0], &old_rowstat[0]);
     if(rval) goto CLEANUP;
-    PSEP_Timer::getbase_time += PSEP_zeit() - routine_start;
 
-    rval = primal_pivot();
+    rval = pivot();
     if(rval) goto CLEANUP;
 
     rval = set_edges();
@@ -183,18 +184,14 @@ int rval = 0;
 	*pivot_status_p = PIVOT::FATHOMED_TOUR;
       else
 	*pivot_status_p = PIVOT::TOUR;
-
-      rval = update_best_tour();
-      if(rval) goto CLEANUP;
     } else
       *pivot_status_p = PIVOT::SUBTOUR;
   } else
       *pivot_status_p = PIVOT::FRAC;
 
     cout << "Did " << itcount << " pivots in "
-	 << setprecision(1) << round_start << "s, "
-	 << "obj val: " << setprecision(6) << get_obj_val() << ", ";
-    print.pivot(*pivot_status_p);
+	 << setprecision(2) << round_start << "s, "
+	 << "obj val: " << setprecision(6) << get_obj_val() << "\n";
 
  CLEANUP:
     if(rval)

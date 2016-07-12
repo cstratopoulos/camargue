@@ -6,16 +6,18 @@
 
 class PSEP_LP_Core {
  public:
- PSEP_LP_Core(PSEPlp & _lp, Graph & _graph, std::vector<int> & _sup_inds,
-	      std::vector<int> & _sup_elist, std::vector<int> _sup_ecap,
+ PSEP_LP_Core(PSEPlp & _lp, Graph & _graph, std::vector<double> & _lp_edges,
+	      SupportGraph & _G, std::vector<int> & _sup_inds,
+	      std::vector<int> & _sup_elist, std::vector<double> & _sup_ecap,
 	      std::vector<int> & _tour_edges, std::vector<int> & _tour_nodes,
 	      std::vector<int> & _perm,
 	      double & _tour_val, std::vector<int> & _island,
 	      std::vector<int> & _delta, std::vector<int> & _edge_marks) :
-    m_lp(_lp), m_graph(_graph),
+  m_lp(_lp), m_graph(_graph), m_lp_edges(_lp_edges), G_s(_G),
     support_indices(_sup_inds), support_elist(_sup_elist),
     support_ecap(_sup_ecap), best_tour_edges(_tour_edges),
-    best_tour_nodes(_tour_nodes), perm(_perm), m_min_tour_val(_tour_val)
+    best_tour_nodes(_tour_nodes), perm(_perm), m_min_tour_value(_tour_val),
+    island(_island), delta(_delta), edge_marks(_edge_marks)
     {
     old_colstat.resize(m_graph.edge_count, CPX_AT_LOWER);
     old_rowstat.resize(m_graph.node_count, CPX_AT_LOWER);      
@@ -44,9 +46,14 @@ class PSEP_LP_Core {
   PSEPlp &m_lp;
   Graph &m_graph;
 
+  friend class TSP_Solver;
   std::vector<int> old_colstat;
   std::vector<int> old_rowstat;
 
+  std::vector<double> &m_lp_edges;
+
+  SupportGraph &G_s;
+  
   std::vector<int> &support_indices;
   std::vector<int> &support_elist;
   std::vector<double> &support_ecap;
