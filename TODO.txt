@@ -1,1 +1,7 @@
-just make timer a namespace and profiler have the void print profile functions
+just make timer a namespace and profiler have the void print profile
+functions
+or maybe re-explore timer class and name class for protection now that
+i know how static member vars work.............
+
+add devex switch to LPcore
+devex flag options: no switch, switch, forced at start
