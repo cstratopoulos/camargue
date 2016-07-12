@@ -117,7 +117,7 @@ int PSEP_LP_Core::update_best_tour(){
     best_tour_nodes[i] = island[i];
 
   for(int i = 0; i < m_graph.edge_count; i++)
-    if(m_lp_edges[i] > LP::EPSILON)
+    if(m_lp_edges[i] < LP::EPSILON)
       best_tour_edges[i] = 0;
     else {
       best_tour_edges[i] = 1;
@@ -125,7 +125,7 @@ int PSEP_LP_Core::update_best_tour(){
     }
 
   if(objval > m_min_tour_value){
-    fprintf(stderr, "New best tour is worse!\n");
+    cerr << "New best tour is worse!\n";
     return 1;
   }
 
