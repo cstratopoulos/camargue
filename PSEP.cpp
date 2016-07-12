@@ -75,6 +75,7 @@ int main(int argc, char* argv[]){
 
     cout << "Added " << num_seg << " segment cuts and "
 	 << num_2match << " blossom inequalities" << endl;
+    cout << total_cuts << " cuts in the LP" << end;
 
     if(segval + matchval == 4)
       break;
