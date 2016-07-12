@@ -75,7 +75,9 @@ int main(int argc, char* argv[]){
 
     cout << "Added " << num_seg << " segment cuts and "
 	 << num_2match << " blossom inequalities" << endl;
-    cout << total_cuts << " cuts in the LP" << end;
+    cout << total_cuts << " cuts in the LP, ~"
+	 << (1 + (total_cuts / solver.m_graph.node_count))
+	 << "x increase in LP size" << endl;
 
     if(segval + matchval == 4)
       break;
