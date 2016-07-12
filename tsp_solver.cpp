@@ -36,7 +36,7 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
     rval = set_edges();
     if(rval) goto CLEANUP;
 
-    if(fabs(get_obj_val() - m_min_tour_value) >= LP_EPSILON)
+    if(fabs(get_obj_val() - m_min_tour_value) >= LP::EPSILON)
       break;    
   }
 
@@ -119,7 +119,7 @@ int TSP_Solver::update_best_tour(){
   }
 
   for (int i = 0; i < m_graph.edge_count; i++){
-    if (m_lp_edges[i] < LP_EPSILON){
+    if (m_lp_edges[i] < LP::EPSILON){
       best_tour_edges[i] = 0;
     } else {
       best_tour_edges[i] = 1;

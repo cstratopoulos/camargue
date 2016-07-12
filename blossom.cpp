@@ -48,7 +48,7 @@ int PSEP_2match::separate(const int max_cutcount){
       goto CLEANUP;
     }
 
-    if(cutval < 1 - LP_EPSILON){
+    if(cutval < 1 - LP::EPSILON){
       if(pq.size() == max_cutcount){
 	if(cutval >= pq.top().cut_val){
 	  cut_ecap[i] = orig_weight;
@@ -86,7 +86,7 @@ int PSEP_2match::add_cut(const int deltacount, vector<int> &delta,
   switch(best_tour_edges[cutedge]){
   case 0:
     for(int i = 0; i < deltacount; i++)
-      if(m_lp_edges[delta[i]] > LP_EPSILON &&
+      if(m_lp_edges[delta[i]] > LP::EPSILON &&
 	 (best_tour_edges[delta[i]] == 1 || delta[i] == cutedge)){
 	rmatval[i] = -1.0;
 	num_teeth++;
@@ -94,7 +94,7 @@ int PSEP_2match::add_cut(const int deltacount, vector<int> &delta,
     break;
   case 1:
     for(int i = 0; i < deltacount; i++)
-      if(m_lp_edges[delta[i]] > LP_EPSILON &&
+      if(m_lp_edges[delta[i]] > LP::EPSILON &&
 	 (best_tour_edges[delta[i]] == 1 && delta[i] != cutedge)){
 	rmatval[i] = -1.0;
 	num_teeth++;

@@ -2,16 +2,16 @@
 #define __PSEP_UTIL_H
 
 namespace LP {
-  const double EPSILON 0.000001;
-  const long DEFAULT_ITLIM 9223372036800000000;
-  bool devex_switch = false;
+  const double EPSILON = 0.000001;
+  const long DEFAULT_ITLIM = 9223372036800000000;
+  static bool devex_switch = false;
 }
 
 namespace PIVOT {
-  const int FRAC 0;
-  const int SUBTOUR 1;
-  const int TOUR 2;
-  const int FATHOMED_TOUR 3;
+  const int FRAC = 0;
+  const int SUBTOUR = 1;
+  const int TOUR = 2;
+  const int FATHOMED_TOUR = 3;
 }
 
 double PSEP_zeit (void);
