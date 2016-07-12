@@ -7,7 +7,8 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
   best_tour_nodes(lk_node_indices),
   cutcall(m_graph.edges, delta, edge_marks, G_s, best_tour_nodes, m_lp,
 	  best_tour_edges, m_lp_edges, support_indices, support_elist,
-	  support_ecap)
+	  support_ecap),
+  print(best_tour_nodes, best_tour_edges, m_lp_edges, m_graph.edges)
 {
     //Build the basic LP
     PSEPlp_init (&m_lp);

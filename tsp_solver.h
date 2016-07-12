@@ -49,10 +49,6 @@ class TSP_Solver {
 	
   int set_edges();
   int set_support_graph();
-  
-  void print_lp_edges();
-  void print_best_tour_edges();
-  void print_best_tour_nodes();
 
   void printrow(const int rownum, int *rmatind0, int *rmatind1);
 
@@ -83,6 +79,7 @@ class TSP_Solver {
   double runtime;
 
   PSEP_Timer T;
+  PSEP_Printer print;
 
   G_Utils gu;
   SupportGraph G_s;

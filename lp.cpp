@@ -16,15 +16,6 @@ int PSEPlp_init (PSEPlp *lp){
     goto CLEANUP;
   }
 
-  /*
-  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_Simplex_PGradient,
-			CPX_PPRIIND_DEVEX);
-  if(rval){
-    fprintf (stderr, "Problem switching to devex\n");
-    goto CLEANUP;
-  }
-  */
-
  CLEANUP:
   return rval;
 }
@@ -245,9 +236,6 @@ int PSEPlp_primal_pivot (PSEPlp *lp, int *infeasible){
     fprintf (stderr, "Failed to set limit to 1\n");
     goto CLEANUP;
   }
-
-
-  
   
   rval = CPXprimopt (lp->cplex_env, lp->cplex_lp);
   if (rval){
@@ -272,7 +260,6 @@ int PSEPlp_primal_pivot (PSEPlp *lp, int *infeasible){
     goto CLEANUP;
   }
 
-  
   rval = CPXsetlongparam(lp->cplex_env, CPXPARAM_Simplex_Limits_Iterations,
 			 LP_DEFAULT_ITLIM);
   if (rval){
