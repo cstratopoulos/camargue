@@ -1,5 +1,7 @@
 #include "tsp_solver.h"
 
+#include<iomanip>
+
 using namespace std;
 
 
@@ -69,7 +71,8 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
       *pivot_status_p = PIVOT::FRAC;
 
     cout << itcount << " pivots performed in "
-	 << round_start << "s, obj val: " << get_obj_val() << ", ";
+	 << setprecision(1) << round_start << "s, "
+	 << "obj val: " << setprecision(6) << get_obj_val() << ", ";
     print.pivot(*pivot_status_p);
 
  CLEANUP:
