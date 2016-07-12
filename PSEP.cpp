@@ -97,7 +97,11 @@ static int initial_parse(int ac, char **av, Graph &graph,
   }
 
   LP::PRICING::SWITCHING::choice = dynamic_switch;
+  cout << "Set pricing switching to " << dynamic_switch << endl;
+  cout << "(Check actual: " << LP::PRICING::SWITCHING::choice << ")\n";
   LP::PRICING::choice = pricing_method;
+  cout << "Set pricing method to " << pricing_method << endl;
+  cout << "(Check actual: " << LP::PRICING::choice << ")\n";
 
   UTIL::seed = seed;
 
@@ -222,7 +226,7 @@ static void usage(char *f){
   fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", f);
   fprintf(stderr, "   -d x   set dynamic pricing switch behavior to x\n");
   fprintf(stderr, "      x = 0 do not switch pricing methods\n");
-  fprintf(stderr, "        = 1 switch when a non-degenerate pivot takes");
+  fprintf(stderr, "        = 1 switch when a non-degenerate pivot takes\n");
   fprintf(stderr, "            more than 3 * number of rows iterations\n");
   fprintf(stderr, "        = 2 switch from the start\n");
   fprintf(stderr, "   -p x   set primal pricing method to x\n");

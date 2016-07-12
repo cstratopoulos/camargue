@@ -17,9 +17,14 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
     PSEPlp_init (&m_lp);
     PSEPlp_create (&m_lp, "subtour");
 
+    
     if(LP::PRICING::SWITCHING::choice == LP::PRICING::SWITCHING::START){
       cout << "Immediate: ";
       LPcore.change_pricing();
+    } else {
+      cout << "Switch block of code did not execute bc choice is "
+	   << LP::PRICING::SWITCHING::choice
+	   << " but start is " << LP::PRICING::SWITCHING::START << endl;
     }
 
     /* Build a row for each degree equation */
