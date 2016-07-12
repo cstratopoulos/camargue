@@ -426,6 +426,15 @@ int PSEPlp_getbase (PSEPlp *lp, int * colstat, int * rowstat){
   return rval;
 }
 
+int PSEPlp_getslack(PSEPlp *lp, double *slack, int begin, int end){
+  int rval = 0;
+  rval = CPXgetslack(lp->cplex_env, lp->cplex_lp, slack, begin, end);
+  if(rval)
+    fprintf(stderr, "lp_getslack failed, rval %d\n", rval);
+
+  return rval;
+}
+
 int PSEPlp_bhead (PSEPlp *lp, int *head, double *x){
   int rval = CPXgetbhead(lp->cplex_env, lp->cplex_lp, head, x);
 

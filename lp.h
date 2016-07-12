@@ -48,6 +48,12 @@ int PSEPlp_numrows(PSEPlp *lp);
 //deletes specified range of rows
 int PSEPlp_delrows(PSEPlp *lp, int begin, int end);
 
+//deletes set of rows indicated by delstat, deleting those where delstat[i] = 1
+//afterwards delstat[i] is
+// -- -1 if the row was deleted
+// -- the new index number assigned if not
+int PSEPlp_delsetrows(PSEPlp *lp, int *delstat);
+
 //similarly as above
 //obj is an array of length newcols containing objective function coeffs
 //for new variables
@@ -104,6 +110,9 @@ int PSEPlp_copybase ( PSEPlp *lp, int *colstat, int *rowstat);
 
 //access resident basis. one of colstat or rowstat may be NULL if not needed
 int PSEPlp_getbase (PSEPlp *lp, int * colstat, int *rowstat);
+
+//access the slacks for a range of rows
+int PSEPlp_getslack (PSEPlp *lp, double *slack, int begin, int end);
 
 //access the basis header, stored in head, and basic variable values stored in
 //x; either may be NULL if not needed
