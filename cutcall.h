@@ -3,6 +3,7 @@
 
 #include "blossom.h"
 #include "segcuts.h"
+#include "tooth.h"
 
 class PSEP_Cutcall {
  public:
