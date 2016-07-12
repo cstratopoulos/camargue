@@ -5,10 +5,12 @@
 
 class PSEP_CandTooth {
  public:
- PSEP_CandTooth(std::vector<int> & _tour_nodes, SupportGraph & _G) :
+ PSEP_CandTooth(std::vector<int> & _tour_nodes, SupportGraph & _G,
+		std::vector<int> & _marks) :
   best_tour_nodes(_tour_nodes), G_s(_G) {
     SimpleTooth::ncount = _tour_nodes.size();
     SimpleTooth::G_s = &_G;
+    SimpleTooth::edge_marks = &_marks[0];
   }
 
  private:
@@ -27,9 +29,7 @@ class PSEP_CandTooth {
     bool body_contains(const int node_perm);
     static bool C_body_subset(const SimpleTooth &T, const SimpleTooth &R);
     void complement();
-    void increment_slack(double *lhs_p, double *rhs_p);
-
-
+    void increment_slack(const int new_vx, double *lhs_p, int *rhs_p);
   
   private:
     int root;
@@ -38,11 +38,12 @@ class PSEP_CandTooth {
     double slack;
     bool sandwich;
 
-    int node_index;
+    //int node_index;
 
     friend class PSEP_CandTooth;
     static int ncount;
     static SupportGraph *G_s;
+    static int *edge_marks;
   };
 
   std::vector<int> &best_tour_nodes;
