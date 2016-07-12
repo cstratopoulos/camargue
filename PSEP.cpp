@@ -36,8 +36,6 @@ int main(int argc, char* argv[]){
   TSP_Solver solver(graph, tour_node_indices);
   solver.basis_init();
 
-  solver.print.best_tour_nodes();
-
   double start = PSEP_zeit();
   int stat;
   int num_seg, num_2match;
@@ -104,9 +102,6 @@ int main(int argc, char* argv[]){
 	 << rounds << " rounds of separation" << endl;
   cout << total_cuts << " cutting planes added over "
        << rounds << " rounds of separation" << endl;
-
-  solver.print.best_tour_edges();
-  solver.print.lp_edges();
 
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
