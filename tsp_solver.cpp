@@ -17,7 +17,7 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
   old_rowstat.resize(rowcount);
 
   while(true){
-    if(++itcount == 3 * m_graph.node_count){
+    if(++itcount == 6 * m_graph.node_count){
       rval = 1;
       cerr << "Pivot terminated due to iteration limit" << endl;
       goto CLEANUP;
