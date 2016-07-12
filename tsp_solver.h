@@ -29,32 +29,6 @@ class TSP_Solver {
   TSP_Solver(Graph &graph, const std::vector<int> &lk_node_indices);
   ~TSP_Solver();
 
-  //MAIN OPERATIONS -- tsp_solver.cpp
-  int pivot_until_change(int *pivot_status_p);
-  int pivot_back();
-  bool update_current_tour_indices(std::vector<int> &tour_indices);
-  int update_best_tour();
-
-  //LP HELPER FUNCTIONS -- tsp_lp.cpp
-  int basis_init();
-  
-  bool is_dual_feas();
-  bool is_integral();
-	
-  int primal_opt();
-  int no_opt();
-	
-  int primal_pivot();
-  int dual_pivot();
-  
-  double get_obj_val();
-	
-  int set_edges();
-  int set_support_graph();
-
-  void printrow(const int rownum, int *rmatind0, int *rmatind1);
-
-
   //Member Objects
   Graph &m_graph;
   

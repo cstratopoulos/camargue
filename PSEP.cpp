@@ -30,7 +30,7 @@ int main(int argc, char* argv[]){
   }
 
   TSP_Solver solver(graph, tour_node_indices);
-  solver.basis_init();
+  solver.LPcore.basis_init();
 
   double start = PSEP_zeit();
   int stat;
@@ -45,6 +45,8 @@ int main(int argc, char* argv[]){
     rounds++;
     if(solver.LPcore.pivot_until_change(&stat))
       break;
+
+    solver.print.pivot(stat);
 
     if(stat == 3)
       break;
