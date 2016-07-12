@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
   Graph graph;
   vector<int> tour_node_indices;
 
-  cout << "BRANCH VERSION: LP WRAPPER" << endl;
+  cout << "BRANCH VERSION: LP WRAPPER/ENUM PIVOT LABELS??" << endl;
 
   if(initial_parse(argc, argv, graph, tour_node_indices)){
     cerr << "Problem parsing arguments" << endl;
