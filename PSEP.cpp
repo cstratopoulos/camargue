@@ -44,7 +44,8 @@ static int initial_parse(int ac, char **av, Graph &graph,
 			 vector<int> &node_indices){
   char *fname = (char *) NULL;
   int seed = 0;
-  bool devex = false;
+  int dynamic_switch = 0;
+  int pricing_method = 0;
 
   int c;
 
@@ -53,11 +54,14 @@ static int initial_parse(int ac, char **av, Graph &graph,
     return 1;
   }
 
-  while((c = getopt(ac, av, "ads:")) != EOF) {
+  while((c = getopt(ac, av, "ad:p:s:")) != EOF) {
     switch(c) {
     case 'd':
-      devex = true;
+      dynamic_switch = atoi(optarg);
       break;
+    case 'p':
+      pricing_method = atoi(optarg);
+      brak;
     case 's':
       seed = atoi(optarg);
       break;
@@ -80,7 +84,21 @@ static int initial_parse(int ac, char **av, Graph &graph,
     return 1;
   }
 
-  LP::devex_switch = devex;
+  if(dynamic_switch < 0 || dynamic_switch > 2){
+    printf("Dynamic switch %d is out of range\n", dynamic_switch);
+    usage(av[0]);
+    return 1;
+  }
+
+  if(pricing_method < 0 || pricing_method > 2){
+    printf("Pricing method %d is out of range\n", pricing_method);
+    usage(av[0]);
+    return 1;
+  }
+
+  LP::PRICING::SWITCHING::choice = dynamic_switch;
+  LP::PRICING::choice = pricing_method;
+
   UTIL::seed = seed;
 
   CCdatagroup dat;

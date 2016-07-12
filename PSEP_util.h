@@ -4,8 +4,22 @@
 namespace LP {
   const double EPSILON = 0.000001;
   const long DEFAULT_ITLIM = 9223372036800000000;
-  static bool devex_switch = false;
-  static int size_factor = 1;
+
+  namespace PRICING {
+    const int DEVEX = 0;
+    const int STEEPEST = 1;
+    const int STEEPEST_REAL = 2;
+
+    static int choice;
+
+    namespace SWITCHING{
+      const int OFF = 0;
+      const int DYNAMIC = 1;
+      const int START = 2;
+
+      static int choice;
+    }
+  }
 }
 
 namespace UTIL {

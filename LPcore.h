@@ -40,7 +40,7 @@ class PSEP_LP_Core {
 
   int update_best_tour();
 
-  void enable_devex();
+  void change_pricing();
 
  private:
   PSEPlp &m_lp;

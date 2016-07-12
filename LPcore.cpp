@@ -149,11 +149,9 @@ int rval = 0;
   old_rowstat.resize(rowcount);
 
   while(true){
-    if(++itcount == 6 * m_graph.node_count){
-      rval = 1;
-      cerr << "Pivot terminated due to iteration limit" << endl;
-      goto CLEANUP;
-    }
+    if(++itcount == 3 * rowcount)
+      if(LP::PRICING::BEHAVIOR::choice = LP::PRICING::BEHAVIOR::DYNAMIC)
+	change_pricing();
 
     if((dual_feas = is_dual_feas()))
       break;
@@ -197,5 +195,29 @@ int rval = 0;
     if(rval)
       cerr << "Error entry point: pivot_until_change" << endl;
     return rval;
+}
+
+void PSEP_LP_Core::change_pricing(){
+  int newprice;
+
+  cout << "//////SWITCHED PRICING TO ";
+  switch(LP::PRICING::choice){
+  case LP::PRICING::DEVEX:
+    newprice = CPX_PPRIIND_DEVEX;
+    cout << "DEVEX/////\n";
+    break;
+  case LP::PRICING::STEEPEST:
+    newprice = CPX_PPRIIND_STEEPQSTART;
+    cout << "STEEPEST EDGE W SLACK INITIAL NORMS\n";
+    break;
+  case LP::PRICING::STEEPEST_REAL:
+    newprice = CPX_PPRIIND_STEEP;
+    cout << "GENUINE STEEPEST EDGE////\n";
+    break;
+  }
+
+  if(CPXsetintparam(lp->cplex_env, CPXPARAM_Simplex_PGradient, newprice))
+    cerr << "ERROR: PRICING SWITCH DID NOT TAKE PLACE\n";
+  LP::PRICING::SWITCHING::choice = LP::PRICING::BEHAVIOR::OFF;
 }
 

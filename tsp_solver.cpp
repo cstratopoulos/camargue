@@ -17,6 +17,11 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
     PSEPlp_init (&m_lp);
     PSEPlp_create (&m_lp, "subtour");
 
+    if(LP::PRICING::SWITCHING::choice == LP::PRICING::SWITCHING::START){
+      cout << "Immediate: ";
+      LPcore.change_pricing();
+    }
+
     /* Build a row for each degree equation */
     for(int i = 0; i < graph.node_count; i++) {
         PSEPlp_new_row (&m_lp, 'E', 2.0);
