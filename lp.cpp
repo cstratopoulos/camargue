@@ -164,7 +164,7 @@ int PSEPlp_no_opt (PSEPlp *lp){
     }*/
   
   rval = CPXsetlongparam(lp->cplex_env, CPXPARAM_Simplex_Limits_Iterations,
-			 LP_DEFAULT_ITLIM);
+			 LP::DEFAULT_ITLIM);
   if (rval){
     fprintf (stderr, "Failed to revert limit\n");
     goto CLEANUP;
@@ -261,7 +261,7 @@ int PSEPlp_primal_pivot (PSEPlp *lp, int *infeasible){
   }
 
   rval = CPXsetlongparam(lp->cplex_env, CPXPARAM_Simplex_Limits_Iterations,
-			 LP_DEFAULT_ITLIM);
+			 LP::DEFAULT_ITLIM);
   if (rval){
     fprintf (stderr, "Failed to revert itlimit\n");
     goto CLEANUP;
@@ -306,7 +306,7 @@ int PSEPlp_dual_pivot (PSEPlp *lp, int *infeasible){
   }
 
   rval = CPXsetlongparam(lp->cplex_env, CPXPARAM_Simplex_Limits_Iterations,
-			 LP_DEFAULT_ITLIM);
+			 LP::DEFAULT_ITLIM);
   if (rval){
     fprintf (stderr, "Failed to revert itlimit\n");
     goto CLEANUP;

@@ -32,7 +32,7 @@ class PSEP_Printer {
   
   void lp_edges(){
     for(int i = 0; i < m_lp_edges.size(); i++)
-      if(m_lp_edges[i] > LP_EPSILON){
+      if(m_lp_edges[i] > LP::EPSILON){
 	print_edge(i);
 	std::cout << " LP val: " << m_lp_edges[i] << std::endl;
       }

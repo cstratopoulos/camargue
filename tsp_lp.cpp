@@ -12,14 +12,14 @@ int TSP_Solver::basis_init(){
   rval = set_edges();
   if(rval) goto CLEANUP;
 
-  if(fabs(get_obj_val() - m_min_tour_value) >= LP_EPSILON){
+  if(fabs(get_obj_val() - m_min_tour_value) >= LP::EPSILON){
     cerr << "BASIS INIT SWITCHED OBJ VAL!!!! TO: "
 	 << get_obj_val() << endl;
     return 1;
   }
   
   for(int i = 0; i < m_graph.edge_count; i++){
-    if(fabs(m_lp_edges[i] - best_tour_edges[i]) >= LP_EPSILON){
+    if(fabs(m_lp_edges[i] - best_tour_edges[i]) >= LP::EPSILON){
       cerr << "Found disagreement!!!!!: " << m_lp_edges[i] << " vs "
 	   << best_tour_edges[i] << endl;
       return 1;
@@ -41,7 +41,7 @@ bool TSP_Solver::is_dual_feas(){
 bool TSP_Solver::is_integral(){
   bool result = true;
   for(int i = 0; i < m_lp_edges.size(); i++){
-    if ((m_lp_edges[i] >= LP_EPSILON) && (m_lp_edges[i] <= (1 - LP_EPSILON))){
+    if ((m_lp_edges[i] >= LP::EPSILON) && (m_lp_edges[i] <= (1 - LP::EPSILON))){
       result = false;
       break;
     }
@@ -123,7 +123,7 @@ int TSP_Solver::set_support_graph(){
   support_ecap.clear();
 
   for(int i = 0; i < m_graph.edge_count; i++){
-    if(m_lp_edges[i] >= LP_EPSILON){
+    if(m_lp_edges[i] >= LP::EPSILON){
       support_indices.push_back(i);
       support_ecap.push_back(m_lp_edges[i]);
       support_elist.push_back(m_graph.edges[i].end[0]);
