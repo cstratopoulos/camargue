@@ -50,20 +50,7 @@ int main(int argc, char* argv[]){
     if(solver.pivot_until_change(&stat))
       break;
 
-    cout << "Pivot status: ";
-    switch(stat){
-    case(0):
-      cout << "Fractional" << endl;
-      break;
-    case(1):
-      cout << "Integral subtour" << endl;
-      break;
-    case(2):
-      cout << "New tour" << endl;
-      break;
-    case(3):
-      cout << "Tour fathomed optimal" << endl;
-    }
+    solver.print.pivot(stat);
 
     if(stat == 3)
       break;

@@ -38,6 +38,24 @@ class PSEP_Printer {
       }
   };
 
+  void pivot(const int piv_stat){
+    std::cout << "Pivot status: ";
+    switch(piv_stat){
+    case(PIVOT::FRAC):
+      std::cout << "Fractional\n";
+      break;
+    case(PIVOT::SUBTOUR):
+      std::cout << "Integral subtour\n";
+      break;
+    case(PIVOT::TOUR):
+      std::cout << "New tour\n";
+      break;
+    case(PIVOT::FATHOMED_TOUR):
+      std::cout << "Tour fathomed optimal\n";
+      break;
+    }
+  };
+
  private:
   std::vector<int> &tour_nodes;
   std::vector<int> &tour_edges;
