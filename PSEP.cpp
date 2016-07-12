@@ -44,8 +44,6 @@ static int initial_parse(int ac, char **av, Graph &graph,
 			 vector<int> &node_indices){
   char *fname = (char *) NULL;
   int seed = 0;
-  int dynamic_switch = 0;
-  int pricing_method = 0;
 
   int c;
 
@@ -57,10 +55,10 @@ static int initial_parse(int ac, char **av, Graph &graph,
   while((c = getopt(ac, av, "ad:p:s:")) != EOF) {
     switch(c) {
     case 'd':
-      dynamic_switch = atoi(optarg);
+      LP::PRICING::SWITCHING::choice = atoi(optarg);
       break;
     case 'p':
-      pricing_method = atoi(optarg);
+      LP::PRICING::choice = atoi(optarg);
       break;
     case 's':
       seed = atoi(optarg);
@@ -84,24 +82,23 @@ static int initial_parse(int ac, char **av, Graph &graph,
     return 1;
   }
 
-  if(dynamic_switch < 0 || dynamic_switch > 2){
-    printf("Dynamic switch %d is out of range\n", dynamic_switch);
+  if(LP::PRICING::SWITCHING::choice < 0 ||
+     LP::PRICING::SWITCHING::choice > 2){
+    printf("Dynamic switch is out of range\n");
     usage(av[0]);
     return 1;
   }
 
-  if(pricing_method < 0 || pricing_method > 2){
-    printf("Pricing method %d is out of range\n", pricing_method);
+  if(LP::PRICING::choice < 0 || LP::PRICING::choice > 2){
+    printf("Pricing method is out of range\n");
     usage(av[0]);
     return 1;
   }
 
-  LP::PRICING::SWITCHING::choice = dynamic_switch;
-  cout << "Set pricing switching to " << dynamic_switch << endl;
-  cout << "(Check actual: " << LP::PRICING::SWITCHING::choice << ")\n";
-  LP::PRICING::choice = pricing_method;
-  cout << "Set pricing method to " << pricing_method << endl;
-  cout << "(Check actual: " << LP::PRICING::choice << ")\n";
+  cout << "Set pricing switching to "
+       << LP::PRICING::SWITCHING::choice << "\n";
+  cout << "Set pricing method to "
+       << LP::PRICING::choice << "\n";
 
   UTIL::seed = seed;
 

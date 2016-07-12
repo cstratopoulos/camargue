@@ -10,14 +10,14 @@ namespace LP {
     const int STEEPEST = 1;
     const int STEEPEST_REAL = 2;
 
-    static int choice;
+    static int choice = 0;
 
     namespace SWITCHING{
       const int OFF = 0;
       const int DYNAMIC = 1;
       const int START = 2;
 
-      static int choice;
+      static int choice = 0;
     }
   }
 }
