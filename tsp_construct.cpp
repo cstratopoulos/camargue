@@ -8,6 +8,9 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
   cutcall(m_graph.edges, delta, edge_marks, G_s, best_tour_nodes, m_lp,
 	  best_tour_edges, m_lp_edges, support_indices, support_elist,
 	  support_ecap),
+  LPcore(m_lp, m_graph, support_indices, support_elist, support_ecap,
+	 best_tour_edges,best_tour_nodes, perm, m_min_tour_val, island, delta,
+	 edge_marks)
   print(best_tour_nodes, best_tour_edges, m_lp_edges, m_graph.edges)
 {
     //Build the basic LP
@@ -30,9 +33,7 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
         PSEPlp_addcols (&m_lp, num_vars, num_non_zero, &objective_val,
                          &cmatbeg, nodes, coefficients, &lower_bound,
 			&upper_bound);
-    }
-    old_colstat.resize(m_graph.edge_count, CPX_AT_LOWER);
-    old_rowstat.resize(m_graph.node_count, CPX_AT_LOWER);    
+    } 
 
     perm.resize(m_graph.node_count);
     for(int i = 0; i < m_graph.node_count; i++){
@@ -55,19 +56,19 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
       if(ind1 - ind0 == 1 || (ind0 == 0 && ind1 == m_graph.node_count - 1)){
 	best_tour_edges[i] = 1;
 	m_min_tour_value += e.len;
-	old_colstat[i] = CPX_BASIC;
+	LPcore.old_colstat[i] = CPX_BASIC;
 	if(m_graph.node_count %2 == 1)
 	  continue;	
       }
 
       if(m_graph.node_count % 2 == 0){
 	if(ind0 == m_graph.node_count - 2 && ind1 == m_graph.node_count - 1){
-	  old_colstat[i] = CPX_AT_UPPER;
+	  LPcore.old_colstat[i] = CPX_AT_UPPER;
 	  continue;
 	}
 
 	if(ind0 == 0 && ind1 == m_graph.node_count - 2){
-	  old_colstat[i] = CPX_BASIC;
+	  LPcore.old_colstat[i] = CPX_BASIC;
 	}
       } 
     }

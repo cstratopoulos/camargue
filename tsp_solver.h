@@ -60,10 +60,7 @@ class TSP_Solver {
   PSEPlp m_lp;
   
   std::vector<double> m_lp_edges;
-  
-  std::vector<int> old_colstat;
-  std::vector<int> old_rowstat;
-  
+    
   std::vector<int> support_indices;
   std::vector<int> support_elist;
   std::vector<double> support_ecap;
@@ -85,6 +82,7 @@ class TSP_Solver {
   std::vector<int> edge_marks;
 
   PSEP_Cutcall cutcall;
+  PSEP_LP_Core LPcore;
 
   PSEP_Timer T;
   PSEP_Printer print;
