@@ -20,7 +20,7 @@ int main(int argc, char* argv[]){
   vector<int> tour_node_indices;
   CCdatagroup dat;
 
-  cout << "BRANCH VERSION: PARAM NAMESPACE?" << endl;
+  cout << "BRANCH VERSION: MASTER" << endl;
 
   if(load_tsplib(graph, &dat, argc, argv)){
     cerr << "Problem getting tsplib" << endl;
