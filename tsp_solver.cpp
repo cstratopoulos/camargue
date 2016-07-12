@@ -43,17 +43,6 @@ int TSP_Solver::pivot_until_change(int *pivot_status_p){
 
   round_start = PSEP_zeit() - round_start;
 
-  if(LP::devex_switch && (itcount > m_graph.node_count / 2)){
-    rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient,
-			CPX_PPRIIND_DEVEX);
-    if(rval)
-      goto CLEANUP;
-    else{
-      cout << "////////Switched to devex/////////" << endl;
-      LP::devex_switch = false;
-    }
-  }
-
   rval = set_support_graph();
   if(rval) goto CLEANUP;
 

@@ -73,11 +73,18 @@ int main(int argc, char* argv[]){
 
     total_cuts += num_2match;
 
+    if ((1 + (total_cuts / PSEPlp_numrows(&solver.m_lp))) > LP::size_factor){
+      LP::size_factor = (1 + (total_cuts / PSEPlp_numrows(&solver.m_lp)));
+      cout << "LP is now ~" << LP::size_factor << " original size\n";
+      if(LP::devex_switch && LP::size_factor >= 3){
+	cout << "/////Switching to devex/////\n";
+	LP::devex_switch = false;
+      }
+    }
+
     cout << "Added " << num_seg << " segment cuts and "
 	 << num_2match << " blossom inequalities" << endl;
-    cout << total_cuts << " cuts in the LP, ~"
-	 << (1 + (total_cuts / solver.m_graph.node_count))
-	 << "x increase in LP size" << endl;
+
 
     if(segval + matchval == 4)
       break;

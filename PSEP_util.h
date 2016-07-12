@@ -5,6 +5,7 @@ namespace LP {
   const double EPSILON = 0.000001;
   const long DEFAULT_ITLIM = 9223372036800000000;
   static bool devex_switch = false;
+  static int size_factor = 1;
 }
 
 namespace UTIL {
