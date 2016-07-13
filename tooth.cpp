@@ -6,9 +6,12 @@
 using namespace std;
 
 int PSEP_CandTooth::SimpleTooth::ncount;
-SupportGraph * PSEP_CandTooth::SimpleTooth::G_s;
-int * PSEP_CandTooth::SimpleTooth::edge_marks;
-int * PSEP_CandTooth::SimpleTooth::best_tour_nodes;
+SupportGraph PSEP_CandTooth::SimpleTooth::G_s;
+std::vector<int> PSEP_CandTooth::SimpleTooth::edge_marks;
+std::vector<int> PSEP_CandTooth::SimpleTooth::best_tour_nodes;
+
+//int * PSEP_CandTooth::SimpleTooth::edge_marks;
+//int * PSEP_CandTooth::SimpleTooth::best_tour_nodes;
 
 void PSEP_CandTooth::build_collection(){
   for(int i = 0; i < SimpleTooth::ncount; i++){
@@ -217,8 +220,12 @@ void PSEP_CandTooth::SimpleTooth::increment_slack(const int new_vx,
   int other_end;
   double lp_weight;
 
+  cerr << "New vx is " << new_vx << endl;
+
   *rhs_p += 2;
+  cerr << "Setting edge marks...";
   edge_marks[new_vx] = 1;
+  cerr << "Done" << endl;
 
   for(int i = 0; i < current_node->s_degree; i++){
     other_end = current_node->adj_objs[i].other_end;
