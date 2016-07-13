@@ -14,6 +14,7 @@ class PSEP_CandTooth {
   best_tour_nodes(_tour_nodes), edge_marks(_marks) {
     SimpleTooth::ncount = _tour_nodes.size();
     SimpleTooth::G_s = &_G;
+    SimpleTooth::best_tour_nodes = &_tour_nodes[0];
     SimpleTooth::edge_marks = &_marks[0];
 
     light_teeth.resize(_tour_nodes.size());
@@ -23,8 +24,6 @@ class PSEP_CandTooth {
   void build_collection();
   void find_root_adjacent_teeth(const int root);
   void find_root_distant_teeth(const int root);
-
-  void print_tooth(const SimpleTooth &T);
 
  private:
   class SimpleTooth{
@@ -55,6 +54,9 @@ class PSEP_CandTooth {
 			  const std::unique_ptr<SimpleTooth> &R){
       return *T > *R;
     }
+
+    void print();
+
   
   private:
     int root;
@@ -64,14 +66,16 @@ class PSEP_CandTooth {
     double slack;
     bool sandwich;
 
-    //int node_index;
-
     friend class PSEP_CandTooth;
+
+    //int node_index;
     static int ncount;
     static SupportGraph *G_s;
     static int *edge_marks;
+    static int *best_tour_nodes;
   };
 
+  friend class PSEP_SimpleDP;
   std::vector<std::list<std::unique_ptr<SimpleTooth> > > light_teeth;
   std::vector<std::list<std::unique_ptr<SimpleTooth> > > heavy_teeth;
 

@@ -3,7 +3,7 @@
 
 #include "blossom.h"
 #include "segcuts.h"
-#include "tooth.h"
+#include "simpleDP.h"
 
 class PSEP_Cutcall {
  public:
@@ -18,7 +18,8 @@ class PSEP_Cutcall {
 	       std::vector<double> & _ecap) :
   edges(_edges), delta(_delta), edge_marks(_edge_marks), best_tour_nodes(nodes),
     segments(supgraph, _edge_marks, nodes, lp),
-    blossoms(_tour_edges, _lp_edges, _sup_inds, _sup_elist, _ecap, lp) {}
+    blossoms(_tour_edges, _lp_edges, _sup_inds, _sup_elist, _ecap, lp),
+    dominos(nodes, supgraph, _edge_marks) {}
 	       
   
   int segment(int *num_added_p);
@@ -33,6 +34,7 @@ class PSEP_Cutcall {
   
   PSEP_Segcuts segments;
   PSEP_2match blossoms;
+  PSEP_SimpleDP dominos;
   
 };
 

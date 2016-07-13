@@ -8,6 +8,7 @@ using namespace std;
 int PSEP_CandTooth::SimpleTooth::ncount;
 SupportGraph * PSEP_CandTooth::SimpleTooth::G_s;
 int * PSEP_CandTooth::SimpleTooth::edge_marks;
+int * PSEP_CandTooth::SimpleTooth::best_tour_nodes;
 
 void PSEP_CandTooth::build_collection(){
   for(int i = 0; i < SimpleTooth::ncount; i++){
@@ -153,23 +154,6 @@ void PSEP_CandTooth::find_root_distant_teeth(const int root){
   for(int k = 0; k < ncount; k++) edge_marks[k] = 0;
 }
 
-void PSEP_CandTooth::print_tooth(const SimpleTooth &T){
-  int ncount = SimpleTooth::ncount;
-  int current_node = T.body_start;
-  int upper_limit = T.body_size + ((int) T.sandwich);
-
-  cout << "Root: " << best_tour_nodes[T.root];
-  cout << ", Body size: " << T.body_size << "\n";
-  cout << "Body: " << best_tour_nodes[T.body_start] << "\n";
-  for(int i = 1; i < upper_limit; i++){
-    current_node = best_tour_nodes[(T.body_start + i) % ncount];
-    if(current_node != best_tour_nodes[T.root])
-      cout << setw(7) << current_node << "\n";
-  }
-  cout << "Slack: " << T.slack << "\n";
-  cout << "Sandwich: " << T.sandwich << "\n";
-}
-
 
 bool PSEP_CandTooth::SimpleTooth::body_contains(const int perm_node){
   if(perm_node == root)
@@ -250,4 +234,21 @@ void PSEP_CandTooth::SimpleTooth::increment_slack(const int new_vx,
   }
 
   slack = *rhs_p - *lhs_p;
+}
+
+void PSEP_CandTooth::SimpleTooth::print(){
+  int ncount = SimpleTooth::ncount;
+  int current_node = body_start;
+  int upper_limit = body_size + ((int) sandwich);
+
+  cout << "Root: " << best_tour_nodes[root];
+  cout << ", Body size: " << body_size << "\n";
+  cout << "Body: " << best_tour_nodes[body_start] << "\n";
+  for(int i = 1; i < upper_limit; i++){
+    current_node = best_tour_nodes[(body_start + i) % ncount];
+    if(current_node != best_tour_nodes[root])
+      cout << setw(7) << current_node << "\n";
+  }
+  cout << "Slack: " << slack << "\n";
+  cout << "Sandwich: " << sandwich << "\n";
 }
