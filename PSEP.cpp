@@ -58,10 +58,10 @@ static int initial_parse(int ac, char **av, Graph &graph,
   while((c = getopt(ac, av, "ad:p:s:")) != EOF) {
     switch(c) {
     case 'd':
-      pricing_choice = atoi(optarg);
+      switching_choice = atoi(optarg);
       break;
     case 'p':
-      switching_choice = atoi(optarg);
+      pricing_choice = atoi(optarg);
       break;
     case 's':
       seed = atoi(optarg);
