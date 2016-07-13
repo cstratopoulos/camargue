@@ -14,11 +14,14 @@ class PSEP_CandTooth {
     SimpleTooth::ncount = _tour_nodes.size();
     SimpleTooth::G_s = &_G;
     SimpleTooth::edge_marks = &_marks[0];
+
+    light_teeth.resize(_tour_nodes.size());
+    heavy_teeth.resize(_tour_nodes.size());
   }
 
-  int build_collection();
+  void build_collection();
   void find_root_adjacent_teeth(const int root);
-  int find_root_distant_teeth(const int root);
+  void find_root_distant_teeth(const int root);
 
  private:
   class SimpleTooth{
@@ -37,6 +40,15 @@ class PSEP_CandTooth {
     static bool C_body_subset(const SimpleTooth &T, const SimpleTooth &R);
     void complement();
     void increment_slack(const int new_vx, double *lhs_p, int *rhs_p);
+    
+    bool operator>(SimpleTooth& T) {
+      return body_size() > T.body_size();
+  }
+
+    static bool p_greater(std::unique_ptr<SimpleTooth> T,
+			  std::unique_ptr<SimpleTooth> R){
+      return *T > *R;
+    }
   
   private:
     int root;

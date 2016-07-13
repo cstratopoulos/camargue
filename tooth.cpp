@@ -7,6 +7,22 @@ int PSEP_CandTooth::SimpleTooth::ncount;
 SupportGraph * PSEP_CandTooth::SimpleTooth::G_s;
 int * PSEP_CandTooth::SimpleTooth::edge_marks;
 
+void PSEP_CandTooth::build_collection(){
+  for(int i = 0; i < SimpleTooth::ncount; i++){
+    if(!light_teeth[i].empty())
+      light_teeth[i].clear();
+    if(!heavy_teeth[i].empty())
+      heavy_teeth[i].clear();
+    
+    find_root_adjacent_teeth(i);
+    //find_root_distant_teeth(i);
+
+    if(!light_teeth[i].empty())
+      light_teeth[i].sort(SimpleTooth::p_greater);
+    if(!heavy_teeth[i].empty())
+      heavy_teeth[i].sort(SimpleTooth::p_greater);
+  }
+}
 
 void PSEP_CandTooth::find_root_adjacent_teeth(const int root){
   int ncount = SimpleTooth::ncount;
@@ -30,26 +46,108 @@ void PSEP_CandTooth::find_root_adjacent_teeth(const int root){
     if(cand->body_size() > (ncount - 2) / 2)
       cand->complement();
 
-    if(cand->body_size() == 1){
-      for(list<unique_ptr<SimpleTooth> >::iterator
-	    orig = light_teeth[cand->body_start].begin();
-	  orig != light_teeth[cand->body_start].end(); orig++){
-	if((*orig)->body_size() > 1) continue;
-	if((*orig)->body_start == cand->root &&
-	   cand->body_start == (*orig)->root){
-	  found_dup = true;
-	  break;
-	}
-      }
-      if(found_dup) continue;
-    }
-
-    if(cand->slack < 0.5)
+    if(cand->slack < 0.5){
+      if(cand->body_size() == 1){
+	if(!light_teeth[cand->body_start].empty())
+	  for(list<unique_ptr<SimpleTooth> >::reverse_iterator
+		orig = light_teeth[cand->body_start].rbegin();
+	      orig != light_teeth[cand->body_start].rend(); orig++){
+	    if((*orig)->body_size() > 1) break;
+	    if((*orig)->body_start == cand->root &&
+	       cand->body_start == (*orig)->root){
+	      found_dup = true;
+	      break;
+	    }
+	  }
+	if(found_dup) continue;
+      }      
       light_teeth[root].push_back(std::move(cand));
-    else
+    } else{
+      if(cand->body_size() == 1){
+	if(!heavy_teeth[cand->body_start].empty())
+	  for(list<unique_ptr<SimpleTooth> >::reverse_iterator
+		orig = heavy_teeth[cand->body_start].rbegin();
+	      orig != heavy_teeth[cand->body_start].rend(); orig++){
+	    if((*orig)->body_size() > 1) break;
+	    if((*orig)->body_start == cand->root &&
+	       cand->body_start == (*orig)->root){
+	      found_dup = true;
+	      break;
+	    }
+	  }
+	if(found_dup) continue;
+      }
       heavy_teeth[root].push_back(std::move(cand));
+    }
   }
+
+  for(int k = 0; k < ncount; k++) edge_marks[k] = 0;
 }
+
+/*
+void find_root_distant_teeth(const int root){
+  int ncount = SimpleTooth::ncount;
+  int body_start, body_end;
+  double lhs, rhs;
+
+  bool found_dup;
+
+  for(int i = 2; i < ncount - 1; i++){
+    body_start = (root + i) % ncount;
+    for(int k = 0; k < ncount; k++) edge_marks[k] = 0; //REPLACE???
+    lhs = 0.0; rhs = -1;
+    for(int j = i; j < ncount - 1; j++){
+      body_end = (root + j) % ncount;
+      unique_ptr<SimpleTooth> cand(new SimpleTooth(root, body_start, body_end));
+      int new_vx = best_tour_nodes[body_end];
+
+      cand->increment_slack(new_vx, &lhs, &rhs);
+
+      if(cand->slack >= 1 - LP::EPSILON || cand->slack < 0 )
+	continue;
+
+      if(cand->body_size() > (ncount - 2) / 2)
+	cand->complement();
+
+      if(cand->slack < 0.5){
+	if(cand->body_size() == 1){
+	  if(!light_teeth[cand->body_start].empty())
+	    for(list<unique_ptr<SimpleTooth> >::reverse_iterator
+		  orig = light_teeth[cand->body_start].rbegin();
+		orig != light_teeth[cand->body_start].rend(); orig++){
+	      if((*orig)->body_size() > 1) break;
+	      if((*orig)->body_start == cand->root &&
+		 cand->body_start == (*orig)->root){
+		found_dup = true;
+		break;
+	      }
+	    }
+	  if(found_dup) continue;
+	}      
+	light_teeth[root].push_back(std::move(cand));
+      } else {
+	if(cand->body_size() == 1){
+	  if(!heavy_teeth[cand->body_start].empty())
+	    for(list<unique_ptr<SimpleTooth> >::reverse_iterator
+		  orig = heavy_teeth[cand->body_start].rbegin();
+		orig != heavy_teeth[cand->body_start].rend(); orig++){
+	      if((*orig)->body_size() > 1) break;
+	      if((*orig)->body_start == cand->root &&
+		 cand->body_start == (*orig)->root){
+		found_dup = true;
+		break;
+	      }
+	    }
+	  if(found_dup) continue;
+	}
+	heavy_teeth[root].push_back(std::move(cand));
+      }
+    }
+  }
+
+  for(int k = 0; k < ncount; k++) edge_marks[k] = 0;
+}
+*/
 
 int PSEP_CandTooth::SimpleTooth::body_size(){
   int add_one = (int) (!sandwich); //total is + 1 if tooth is not sandwiched
