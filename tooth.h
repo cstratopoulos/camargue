@@ -21,6 +21,11 @@ class PSEP_CandTooth {
     for(int i = 0; i < _tour_nodes.size(); i++)
       std::cout << SimpleTooth::best_tour_nodes[i] << "\n";
 
+    std::cout << "Size of edge marks is " << _marks.size() << "\n";
+    std::cout << "Trying to print it...\n";
+    for(int i = 0; i < _marks.size(); i++)
+      std::cout << SimpleTooth::edge_marks[i] << "\n";
+
     light_teeth.resize(_tour_nodes.size());
     heavy_teeth.resize(_tour_nodes.size());
   }
