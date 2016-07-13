@@ -23,7 +23,7 @@ int main(int argc, char* argv[]){
   PSEP_LP_Prefs prefs;
   vector<int> tour_node_indices;
 
-  cout << "BRANCH VERSION: PRICING OPTIONS" << endl;
+  cout << "BRANCH VERSION: MASTER (tooth testing)" << endl;
 
   if(initial_parse(argc, argv, graph, tour_node_indices, prefs)){
     cerr << "Problem parsing arguments" << endl;
@@ -34,7 +34,7 @@ int main(int argc, char* argv[]){
 
   double start = PSEP_zeit();
 
-  solver.pure_cut();
+  solver.simple_test();
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
 
