@@ -221,13 +221,13 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
 static void usage(char *f){
   fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", f);
   fprintf(stderr, "   -d x   set dynamic pricing switch behavior to x\n");
-  fprintf(stderr, "      x = 0 do not switch pricing methods\n");
-  fprintf(stderr, "        = 1 switch when a non-degenerate pivot takes\n");
-  fprintf(stderr, "            more than 3 * number of rows iterations\n");
-  fprintf(stderr, "        = 2 switch from the start\n");
+  fprintf(stderr, "      0 = do not switch pricing methods\n");
+  fprintf(stderr, "      1 = switch when a non-degenerate pivot takes\n");
+  fprintf(stderr, "          more than 3 * number of rows iterations\n");
+  fprintf(stderr, "      2 = switch from the start\n");
   fprintf(stderr, "   -p x   set primal pricing method to x\n");
-  fprintf(stderr, "      x = 0 devex (default)\n");
-  fprintf(stderr, "      x = 1 steepest edge, slack init norms\n");
-  fprintf(stderr, "      x = 3 full-blown steepest edge\n");
+  fprintf(stderr, "      0 = devex (default)\n");
+  fprintf(stderr, "      1 = steepest edge, slack init norms\n");
+  fprintf(stderr, "      2 = full-blown steepest edge\n");
   fprintf(stderr, "   -s x   set random seed to x\n");
 }
