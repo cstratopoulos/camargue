@@ -2,7 +2,8 @@
 
 using namespace std;
 
-TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
+TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices,
+		       PSEP_LP_Prefs _prefs) :
   m_graph(graph),
   best_tour_nodes(lk_node_indices),
   cutcall(m_graph.edges, delta, edge_marks, G_s, best_tour_nodes, m_lp,
@@ -10,7 +11,7 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
 	  support_ecap),
   LPcore(m_lp, m_graph, m_lp_edges, G_s, support_indices, support_elist,
 	 support_ecap, best_tour_edges,best_tour_nodes, perm, m_min_tour_value,
-	 island, delta, edge_marks),
+	 island, delta, edge_marks, _prefs),
   print(best_tour_nodes, best_tour_edges, m_lp_edges, m_graph.edges)
 {
     //Build the basic LP
@@ -18,13 +19,9 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices) :
     PSEPlp_create (&m_lp, "subtour");
 
     
-    if(LP::PRICING::SWITCHING::choice == LP::PRICING::SWITCHING::START){
+    if(_prefs.switching_choice == LP::PRICING::SWITCHING::START){
       cout << "Immediate: ";
       LPcore.change_pricing();
-    } else {
-      cout << "Switch block of code did not execute bc choice is "
-	   << LP::PRICING::SWITCHING::choice
-	   << " but start is " << LP::PRICING::SWITCHING::START << endl;
     }
 
     /* Build a row for each degree equation */

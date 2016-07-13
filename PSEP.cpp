@@ -15,21 +15,22 @@ static int load_tsplib (Graph &graph, CCdatagroup *dat, char *fname);
 static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
 			       vector<int> &node_indices);
 static int initial_parse(int ac, char **av, Graph &graph,
-			 vector<int> &node_indices);
+			 vector<int> &node_indices, PSEP_LP_Prefs &prefs);
 static void usage(char *f);
 
 int main(int argc, char* argv[]){
   Graph graph;
+  PSEP_LP_Prefs prefs;
   vector<int> tour_node_indices;
 
   cout << "BRANCH VERSION: PRICING OPTIONS" << endl;
 
-  if(initial_parse(argc, argv, graph, tour_node_indices)){
+  if(initial_parse(argc, argv, graph, tour_node_indices, prefs)){
     cerr << "Problem parsing arguments" << endl;
     exit(1);
   }
 
-  TSP_Solver solver(graph, tour_node_indices);
+  TSP_Solver solver(graph, tour_node_indices, prefs);
 
   double start = PSEP_zeit();
 
@@ -41,9 +42,11 @@ int main(int argc, char* argv[]){
 }
 
 static int initial_parse(int ac, char **av, Graph &graph,
-			 vector<int> &node_indices){
+			 vector<int> &node_indices, PSEP_LP_Prefs &prefs){
   char *fname = (char *) NULL;
   int seed = 0;
+  int pricing_choice = 0;
+  int switching_choice = 0;
 
   int c;
 
@@ -55,10 +58,10 @@ static int initial_parse(int ac, char **av, Graph &graph,
   while((c = getopt(ac, av, "ad:p:s:")) != EOF) {
     switch(c) {
     case 'd':
-      LP::PRICING::SWITCHING::choice = atoi(optarg);
+      pricing_choice = atoi(optarg);
       break;
     case 'p':
-      LP::PRICING::choice = atoi(optarg);
+      switching_choice = atoi(optarg);
       break;
     case 's':
       seed = atoi(optarg);
@@ -82,24 +85,20 @@ static int initial_parse(int ac, char **av, Graph &graph,
     return 1;
   }
 
-  if(LP::PRICING::SWITCHING::choice < 0 ||
-     LP::PRICING::SWITCHING::choice > 2){
-    printf("Dynamic switch is out of range\n");
+  if(switching_choice < 0 || switching_choice > 2){
+    printf("Dynamic switch is %d out of range\n", switching_choice);
     usage(av[0]);
     return 1;
   }
 
-  if(LP::PRICING::choice < 0 || LP::PRICING::choice > 2){
-    printf("Pricing method is out of range\n");
+  if(pricing_choice < 0 || pricing_choice > 2){
+    printf("Pricing method %d is out of range\n", pricing_choice);
     usage(av[0]);
     return 1;
   }
 
-  cout << "Set pricing switching to "
-       << LP::PRICING::SWITCHING::choice << "\n";
-  cout << "Set pricing method to "
-       << LP::PRICING::choice << "\n";
-
+  prefs.pricing_choice  = pricing_choice;
+  prefs.switching_choice = switching_choice;
   UTIL::seed = seed;
 
   CCdatagroup dat;

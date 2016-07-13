@@ -25,7 +25,8 @@ extern "C" {
 
 class TSP_Solver {
  public:
-  TSP_Solver(Graph &graph, const std::vector<int> &lk_node_indices);
+  TSP_Solver(Graph &graph, const std::vector<int> &lk_node_indices,
+	     PSEP_LP_Prefs _prefs);
   ~TSP_Solver();
 
   int pure_cut();

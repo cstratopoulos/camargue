@@ -150,7 +150,7 @@ int rval = 0;
 
   while(true){
     if(++itcount == 3 * rowcount)
-      if(LP::PRICING::SWITCHING::choice == LP::PRICING::SWITCHING::DYNAMIC)
+      if(prefs.switching_choice == LP::PRICING::SWITCHING::DYNAMIC)
 	change_pricing();
 
     if((dual_feas = is_dual_feas()))
@@ -201,7 +201,7 @@ void PSEP_LP_Core::change_pricing(){
   int newprice;
 
   cout << "//////SWITCHED PRICING TO ";
-  switch(LP::PRICING::choice){
+  switch(prefs.pricing_choice){
   case LP::PRICING::DEVEX:
     newprice = CPX_PPRIIND_DEVEX;
     cout << "DEVEX/////\n";
@@ -218,6 +218,6 @@ void PSEP_LP_Core::change_pricing(){
 
   if(CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient, newprice))
     cerr << "ERROR: PRICING SWITCH DID NOT TAKE PLACE\n";
-  LP::PRICING::SWITCHING::choice = LP::PRICING::SWITCHING::OFF;
+  prefs.switching_choice = LP::PRICING::SWITCHING::OFF;
 }
 

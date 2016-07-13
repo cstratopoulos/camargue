@@ -2,25 +2,29 @@
 #define __PSEP_UTIL_H
 
 namespace LP {
-  const double EPSILON = 0.000001;
-  const long DEFAULT_ITLIM = 9223372036800000000;
+  static const double EPSILON = 0.000001;
+  static const long DEFAULT_ITLIM = 9223372036800000000;
 
   namespace PRICING {
-    const int DEVEX = 0;
-    const int STEEPEST = 1;
-    const int STEEPEST_REAL = 2;
-
-    static int choice = 0;
+    static const int DEVEX = 0;
+    static const int STEEPEST = 1;
+    static const int STEEPEST_REAL = 2;
 
     namespace SWITCHING{
-      const int OFF = 0;
-      const int DYNAMIC = 1;
-      const int START = 2;
-
-      static int choice = 0;
+      static const int OFF = 0;
+      static const int DYNAMIC = 1;
+      static const int START = 2;
     }
   }
 }
+
+struct PSEP_LP_Prefs {
+PSEP_LP_Prefs() : pricing_choice(0), switching_choice(0) {}
+PSEP_LP_Prefs(int _price, int _switch) : pricing_choice(_price),
+    switching_choice(_switch) {}
+  int pricing_choice;
+  int switching_choice;
+};
 
 namespace UTIL {
   static int seed = 0;
