@@ -85,20 +85,44 @@ static int initial_parse(int ac, char **av, Graph &graph,
     return 1;
   }
 
-  if(switching_choice < 0 || switching_choice > 2){
-    printf("Dynamic switch is %d out of range\n", switching_choice);
+  switch(switching_choice){
+  case 0:
+    prefs.switching_choice = LP::PRICING::SWITCHING::OFF;
+    cout << "No switching" << endl;
+    break;
+  case 1:
+    prefs.switching_choice = LP::PRICING::SWITCHING::DYNAMIC;
+    cout << "Dynamic switching" << endl;
+    break;
+  case 2:
+    prefs.switching_choice = LP::PRICING::SWITCHING::START;
+    cout << "Switch from the start" << endl;
+    break;
+  default:
+    cout << "Switching method " << switching_choice << " out of range\n";
     usage(av[0]);
     return 1;
   }
 
-  if(pricing_choice < 0 || pricing_choice > 2){
-    printf("Pricing method %d is out of range\n", pricing_choice);
+  switch(pricing_choice){
+  case 0:
+    prefs.pricing_choice = LP::PRICING::DEVEX;
+    cout << "Devex pricing\n";
+    break;
+  case 1:
+    prefs.pricing_choice = LP::PRICING::STEEPEST;
+    cout << "Steepest edge w slack initial norms\n";
+    break;
+  case 2:
+    prefs.pricing_choice = LP::PRICING::STEEPEST_REAL;
+    cout << "True steepest edge\n";
+    break;
+  default:
+    cout << "Pricing method " << pricing_choice << " out of range\n";
     usage(av[0]);
     return 1;
   }
-
-  prefs.pricing_choice  = pricing_choice;
-  prefs.switching_choice = switching_choice;
+  
   UTIL::seed = seed;
 
   CCdatagroup dat;
