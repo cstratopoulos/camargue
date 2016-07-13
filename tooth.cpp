@@ -6,12 +6,9 @@
 using namespace std;
 
 int PSEP_CandTooth::SimpleTooth::ncount;
-SupportGraph PSEP_CandTooth::SimpleTooth::G_s;
-std::vector<int> PSEP_CandTooth::SimpleTooth::edge_marks;
-std::vector<int> PSEP_CandTooth::SimpleTooth::best_tour_nodes;
-
-//int * PSEP_CandTooth::SimpleTooth::edge_marks;
-//int * PSEP_CandTooth::SimpleTooth::best_tour_nodes;
+SupportGraph * PSEP_CandTooth::SimpleTooth::G_s;
+int * PSEP_CandTooth::SimpleTooth::edge_marks;
+int * PSEP_CandTooth::SimpleTooth::best_tour_nodes;
 
 void PSEP_CandTooth::build_collection(){
   for(int i = 0; i < SimpleTooth::ncount; i++){

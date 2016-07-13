@@ -13,9 +13,13 @@ class PSEP_CandTooth {
 		std::vector<int> & _marks) :
   best_tour_nodes(_tour_nodes), edge_marks(_marks) {
     SimpleTooth::ncount = _tour_nodes.size();
-    SimpleTooth::G_s = _G;
-    SimpleTooth::best_tour_nodes = _tour_nodes;
-    SimpleTooth::edge_marks = _marks;
+    SimpleTooth::G_s = &_G;
+    SimpleTooth::best_tour_nodes = &_tour_nodes[0];
+    SimpleTooth::edge_marks = &_marks[0];
+
+    std::cout << "Printing best tour nodes static reference from tooth\n";
+    for(int i = 0; i < _tour_nodes.size(); i++)
+      std::cout << SimpleTooth::best_tour_nodes[i] << "\n";
 
     light_teeth.resize(_tour_nodes.size());
     heavy_teeth.resize(_tour_nodes.size());
@@ -70,9 +74,9 @@ class PSEP_CandTooth {
 
     //int node_index;
     static int ncount;
-    static SupportGraph &G_s;
-    static std::vector<int> &edge_marks;
-    static std::vector<int> &best_tour_nodes;
+    static SupportGraph *G_s;
+    static int *edge_marks;
+    static int *best_tour_nodes;
   };
 
   friend class PSEP_SimpleDP;
