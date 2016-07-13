@@ -24,6 +24,8 @@ class PSEP_CandTooth {
   void find_root_adjacent_teeth(const int root);
   void find_root_distant_teeth(const int root);
 
+  void print_tooth(const SimpleTooth &T);
+
  private:
   class SimpleTooth{
   public:
@@ -53,7 +55,6 @@ class PSEP_CandTooth {
 			  const std::unique_ptr<SimpleTooth> &R){
       return *T > *R;
     }
-
   
   private:
     int root;
