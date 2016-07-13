@@ -67,3 +67,9 @@ int PSEP_Cutcall::blossom(const int max_cutcount, int *num_added_p){
     cerr << "Error entry point: blossom_cutcall" << endl;
   return rval;
 }
+
+int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
+  dominos.test_build_collection();
+
+  return 0;
+}

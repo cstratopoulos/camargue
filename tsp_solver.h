@@ -30,6 +30,7 @@ class TSP_Solver {
   ~TSP_Solver();
 
   int pure_cut();
+  int simple_test();
 
 
   Graph &m_graph;

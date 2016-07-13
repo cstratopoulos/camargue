@@ -160,3 +160,22 @@ int TSP_Solver::pure_cut(){
     cerr << "Error entry point: TSP_Solver::pure_cut()\n";
   return rval;
 }
+
+int TSP_Solver::simple_test(){
+  if(LPcore.basis_init())
+    return 1;
+
+  int stat, x = 1, y = 1;
+
+  cout << "Pivoting to new solution\n";
+  
+  if(LPcore.pivot_until_change(&stat))
+     return 1;
+
+  print.pivot(stat);
+
+  cutcall.simpleDP(x, &y);
+
+  return 0;
+  
+}
