@@ -15,8 +15,9 @@ void PSEP_CandTooth::build_collection(){
       heavy_teeth[i].clear();
     
     find_root_adjacent_teeth(i);
-    //find_root_distant_teeth(i);
+    find_root_distant_teeth(i);
 
+    
     if(!light_teeth[i].empty())
       light_teeth[i].sort(SimpleTooth::p_greater);
     if(!heavy_teeth[i].empty())
@@ -35,7 +36,8 @@ void PSEP_CandTooth::find_root_adjacent_teeth(const int root){
   for(int i = 1; i < ncount - 1; i++){
     found_dup = false;
     body_end = (root + i) % ncount;
-    unique_ptr<SimpleTooth> cand(new SimpleTooth(root, body_start, body_end));
+    std::unique_ptr<SimpleTooth>
+      cand(new SimpleTooth(root, body_start, body_end));
     int new_vx = best_tour_nodes[body_end];
 
     cand->increment_slack(new_vx, &lhs, &rhs);
@@ -43,16 +45,16 @@ void PSEP_CandTooth::find_root_adjacent_teeth(const int root){
     if(cand->slack >= 1 - LP::EPSILON || cand->slack < 0)
       continue;
 
-    if(cand->body_size() > (ncount - 2) / 2)
+    if(cand->body_size > (ncount - 2) / 2)
       cand->complement();
 
     if(cand->slack < 0.5){
-      if(cand->body_size() == 1){
+      if(cand->body_size == 1){
 	if(!light_teeth[cand->body_start].empty())
-	  for(list<unique_ptr<SimpleTooth> >::reverse_iterator
+	  for(list<std::unique_ptr<SimpleTooth> >::reverse_iterator
 		orig = light_teeth[cand->body_start].rbegin();
 	      orig != light_teeth[cand->body_start].rend(); orig++){
-	    if((*orig)->body_size() > 1) break;
+	    if((*orig)->body_size > 1) break;
 	    if((*orig)->body_start == cand->root &&
 	       cand->body_start == (*orig)->root){
 	      found_dup = true;
@@ -63,12 +65,12 @@ void PSEP_CandTooth::find_root_adjacent_teeth(const int root){
       }      
       light_teeth[root].push_back(std::move(cand));
     } else{
-      if(cand->body_size() == 1){
+      if(cand->body_size == 1){
 	if(!heavy_teeth[cand->body_start].empty())
-	  for(list<unique_ptr<SimpleTooth> >::reverse_iterator
+	  for(list<std::unique_ptr<SimpleTooth> >::reverse_iterator
 		orig = heavy_teeth[cand->body_start].rbegin();
 	      orig != heavy_teeth[cand->body_start].rend(); orig++){
-	    if((*orig)->body_size() > 1) break;
+	    if((*orig)->body_size > 1) break;
 	    if((*orig)->body_start == cand->root &&
 	       cand->body_start == (*orig)->root){
 	      found_dup = true;
@@ -84,11 +86,12 @@ void PSEP_CandTooth::find_root_adjacent_teeth(const int root){
   for(int k = 0; k < ncount; k++) edge_marks[k] = 0;
 }
 
-/*
-void find_root_distant_teeth(const int root){
+
+void PSEP_CandTooth::find_root_distant_teeth(const int root){
   int ncount = SimpleTooth::ncount;
   int body_start, body_end;
-  double lhs, rhs;
+  double lhs;
+  int rhs;
 
   bool found_dup;
 
@@ -106,16 +109,16 @@ void find_root_distant_teeth(const int root){
       if(cand->slack >= 1 - LP::EPSILON || cand->slack < 0 )
 	continue;
 
-      if(cand->body_size() > (ncount - 2) / 2)
+      if(cand->body_size > (ncount - 2) / 2)
 	cand->complement();
 
       if(cand->slack < 0.5){
-	if(cand->body_size() == 1){
+	if(cand->body_size == 1){
 	  if(!light_teeth[cand->body_start].empty())
 	    for(list<unique_ptr<SimpleTooth> >::reverse_iterator
 		  orig = light_teeth[cand->body_start].rbegin();
 		orig != light_teeth[cand->body_start].rend(); orig++){
-	      if((*orig)->body_size() > 1) break;
+	      if((*orig)->body_size > 1) break;
 	      if((*orig)->body_start == cand->root &&
 		 cand->body_start == (*orig)->root){
 		found_dup = true;
@@ -126,12 +129,12 @@ void find_root_distant_teeth(const int root){
 	}      
 	light_teeth[root].push_back(std::move(cand));
       } else {
-	if(cand->body_size() == 1){
+	if(cand->body_size == 1){
 	  if(!heavy_teeth[cand->body_start].empty())
 	    for(list<unique_ptr<SimpleTooth> >::reverse_iterator
 		  orig = heavy_teeth[cand->body_start].rbegin();
 		orig != heavy_teeth[cand->body_start].rend(); orig++){
-	      if((*orig)->body_size() > 1) break;
+	      if((*orig)->body_size > 1) break;
 	      if((*orig)->body_start == cand->root &&
 		 cand->body_start == (*orig)->root){
 		found_dup = true;
@@ -147,14 +150,7 @@ void find_root_distant_teeth(const int root){
 
   for(int k = 0; k < ncount; k++) edge_marks[k] = 0;
 }
-*/
 
-int PSEP_CandTooth::SimpleTooth::body_size(){
-  int add_one = (int) (!sandwich); //total is + 1 if tooth is not sandwiched
-
-  return (body_start <= body_end) ? (body_end - body_start + add_one) :
-    ((ncount - body_start) + body_end + add_one);
-}
 
 bool PSEP_CandTooth::SimpleTooth::body_contains(const int perm_node){
   if(perm_node == root)
