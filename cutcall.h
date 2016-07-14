@@ -17,6 +17,7 @@ class PSEP_Cutcall {
 	       std::vector<int> & _sup_inds, std::vector<int> & _sup_elist,
 	       std::vector<double> & _ecap) :
   edges(_edges), delta(_delta), edge_marks(_edge_marks), best_tour_nodes(nodes),
+    support_elist(_sup_elist), support_ecap(_ecap),
     segments(supgraph, _edge_marks, nodes, lp),
     blossoms(_tour_edges, _lp_edges, _sup_inds, _sup_elist, _ecap, lp),
     dominos(nodes, supgraph, _edge_marks, _sup_elist, _ecap) {}
@@ -26,11 +27,16 @@ class PSEP_Cutcall {
   int blossom(const int max_cutcount, int *num_added_p);
   int simpleDP(const int max_cutcount, int *num_added_p);
 
+  int in_subtour_poly(bool *result_p);
+
  private:
   std::vector<Edge> &edges;
   std::vector<int> &delta;
   std::vector<int> &edge_marks;
   std::vector<int> &best_tour_nodes;
+
+  std::vector<int> &support_elist;
+  std::vector<int> &support_ecap;
   
   PSEP_Segcuts segments;
   PSEP_2match blossoms;

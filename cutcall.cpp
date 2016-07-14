@@ -69,16 +69,28 @@ int PSEP_Cutcall::blossom(const int max_cutcount, int *num_added_p){
 }
 
 int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
-  bool in_sep = false;
-
-  if(dominos.in_subtour_poly(&in_sep))
-    return 1;
+  dominos.test_build_collection();
   
-  if(in_sep){
-    cout << "Solution is in the subtour polytope, building collection..\n";
-    dominos.test_build_collection();
-  } else
-    cout << "Solution is not in subtour polytope, exiting\n";
+  return 0;
+}
 
+int PSEP_SimpleDP::in_subtour_poly(bool *result_p){
+  int ecount = support_ecap.size(), ncount = support_ecap.size() / 2;
+  int end0 = 0;
+  double cutval = 2;
+  *result_p = false;
+  
+  for(int end1 = 1; end1 < ncount; end1++){
+    if(CCcut_mincut_st(ncount, ecount, &support_elist[0], &support_ecap[0],
+		       end0, end1, &cutval, (int **) NULL, (int *) NULL)){
+      cerr << "Problem in SimpleDP::separate with Concorde st-cut" << endl;
+      return 1;
+    }
+
+    if(cutval < 2)
+      return 0;
+  }
+
+  *result_p = true;
   return 0;
 }
