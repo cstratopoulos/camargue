@@ -188,6 +188,9 @@ int TSP_Solver::simple_test(){
 	continue;
     }
 
+    if(LPcore.pivot_back())
+      return 1;
+
     segval = cutcall.segment(&num_seg);
     if(segval == 1)
       return 1;
