@@ -74,7 +74,7 @@ int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
   return 0;
 }
 
-int PSEP_SimpleDP::in_subtour_poly(bool *result_p){
+int PSEP_Cutcall::in_subtour_poly(bool *result_p){
   int ecount = support_ecap.size(), ncount = support_ecap.size() / 2;
   int end0 = 0;
   double cutval = 2;

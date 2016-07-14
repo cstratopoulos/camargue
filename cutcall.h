@@ -36,7 +36,7 @@ class PSEP_Cutcall {
   std::vector<int> &best_tour_nodes;
 
   std::vector<int> &support_elist;
-  std::vector<int> &support_ecap;
+  std::vector<double> &support_ecap;
   
   PSEP_Segcuts segments;
   PSEP_2match blossoms;

@@ -164,13 +164,48 @@ int TSP_Solver::simple_test(){
     return 1;
 
   int stat, x = 1, y = 1;
+  int num_seg = 0, segval = 0;
+  int num_2match = 0, matchval = 0;
+  bool in_sep = false;
 
-  cout << "Pivoting to new solution\n";
-  
-  if(LPcore.pivot_until_change(&stat))
+  cout << "Pivoting until solution in subtour polytope...\n";
+
+  while(!in_sep){
+    if(LPcore.pivot_until_change(&stat))
      return 1;
 
-  print.pivot(stat);
+    print.pivot(stat);
+
+    if(stat == PIVOT::FATHOMED_TOUR){
+      cout << "Somehow solved problem, exiting\n";
+      return 0;
+    }
+
+    if(stat == PIVOT::TOUR){
+      if(LPcore.update_best_tour())
+	return 1;
+      else
+	continue;
+    }
+
+    segval = cutcall.segment(&num_seg);
+    if(segval == 1)
+      return 1;
+
+    matchval = cutcall.blossom(250 - num_seg, &num_2match);
+    if(matchval == 1)
+      return 1;
+
+    if(num_seg == 0 && stat != PIVOT::SUBTOUR){
+      if(cutcall.in_subtour_poly(&in_sep))
+	return 1;
+    }
+
+    if(segval + matchval == 4 && !in_sep){
+      cout << "No more cuts to add and still not in subtour polytope :'(\n";
+      return 1;
+    }
+  }
 
   cutcall.simpleDP(x, &y);
 
