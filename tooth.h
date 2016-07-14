@@ -57,7 +57,7 @@ class PSEP_CandTooth {
     void print();
 
   
-  private:
+    //private:
     int root;
     int body_start;
     int body_end;

@@ -1,1 +1,10 @@
+The following LK seeds eventually allow for pivoting to a solution in
+the subtour polytope from which we can build candidate teeth
+
 pr76, 1468518083
+bier 127, 1468523087
+ch130 1468526873
+eil51 1468527018
+eil101 1468527070
+gr120 1468527146
+gr48 1468527200
