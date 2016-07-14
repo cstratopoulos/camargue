@@ -19,7 +19,7 @@ class PSEP_Cutcall {
   edges(_edges), delta(_delta), edge_marks(_edge_marks), best_tour_nodes(nodes),
     segments(supgraph, _edge_marks, nodes, lp),
     blossoms(_tour_edges, _lp_edges, _sup_inds, _sup_elist, _ecap, lp),
-    dominos(nodes, supgraph, _edge_marks) {}
+    dominos(nodes, supgraph, _edge_marks, _sup_elist, _ecap) {}
 	       
   
   int segment(int *num_added_p);
