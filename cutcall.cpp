@@ -69,7 +69,16 @@ int PSEP_Cutcall::blossom(const int max_cutcount, int *num_added_p){
 }
 
 int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
-  dominos.test_build_collection();
+  bool in_sep = false;
+
+  if(dominos.in_subtour_poly(&in_sep))
+    return 1;
+  
+  if(in_sep){
+    cout << "Solution is in the subtour polytope, building collection..\n";
+    dominos.test_build_collection();
+  } else
+    cout << "Solution is not in subtour polytope, exiting\n";
 
   return 0;
 }

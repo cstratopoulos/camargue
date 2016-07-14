@@ -138,8 +138,6 @@ int TSP_Solver::pure_cut(){
     if(matchval == 1)
       break;
 
-    //DEVEX SWITCH GOES HERE
-
     cout << "Added " << num_seg << " segments, " << num_2match
 	 << " blossoms" << endl;
 
