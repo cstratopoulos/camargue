@@ -7,3 +7,6 @@ create different datagroup structures e.g., SupportGroup for support
 indices, elist,  ecap, and support graph, BestGroup for best tour
 nodes and edge, lp  group for lp edges and lp object, etc. etc. and
 pass groups to  initializers rather than long lists of disjointed vectors
+
+possibly switch to unique_ptr vectors for segments and blossoms as
+well, could be faster for priority queue sorting/inseration
