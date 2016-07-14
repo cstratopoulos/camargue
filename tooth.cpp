@@ -13,6 +13,9 @@ int * PSEP_CandTooth::SimpleTooth::best_tour_nodes;
 void PSEP_CandTooth::build_collection(){
   SimpleTooth::edge_marks = &edge_marks[0];
 
+  cout << "At time of collection building, ncount is " << SimpleTooth::ncount
+       << "\n";
+
   for(int i = 0; i < SimpleTooth::ncount; i++){
     if(!light_teeth[i].empty())
       light_teeth[i].clear();
