@@ -34,8 +34,6 @@ int main(int argc, char* argv[]){
 
   double start = PSEP_zeit();
 
-  solver.print.best_tour_nodes();
-
   solver.simple_test();
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
