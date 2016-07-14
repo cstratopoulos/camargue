@@ -15,12 +15,12 @@ class PSEP_Cutcall {
 	       //2match inits
 	       std::vector<int> & _tour_edges, std::vector<double> & _lp_edges,
 	       std::vector<int> & _sup_inds, std::vector<int> & _sup_elist,
-	       std::vector<double> & _ecap) :
+	       std::vector<double> & _ecap, std::vector<int> & _perm) :
   edges(_edges), delta(_delta), edge_marks(_edge_marks), best_tour_nodes(nodes),
     support_elist(_sup_elist), support_ecap(_ecap),
     segments(supgraph, _edge_marks, nodes, lp),
     blossoms(_tour_edges, _lp_edges, _sup_inds, _sup_elist, _ecap, lp),
-    dominos(nodes, supgraph, _edge_marks, _sup_elist, _ecap) {}
+    dominos(nodes, _perm, supgraph, _edge_marks, _sup_elist, _ecap) {}
 	       
   
   int segment(int *num_added_p);

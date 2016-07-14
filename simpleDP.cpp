@@ -108,7 +108,52 @@ void PSEP_SimpleDP::build_light_cuttree(){
   for(int i = 0; i < num_cutnodes; i++)
     if(node_marks[i])
       cut_marks.push_back(i);
-  
+  cout << "Done building light cuttree\n";
+}
+
+void PSEP_SimpleDP::add_web_edges(){
+  double lp_weight;
+  bool end1_in = false, end0_in = false;
+
+  for(int end0 = 0; end0 < G_s.node_count; end0++){
+    for(int j = 0; j < G_s.nodelist[end0].s_degree; j++){
+      end0_in = false; end1_in = false;
+      int end1 = G_s.nodelist[end0].adj_objs[j].other_end;
+      if(end0 > end1) continue;
+      lp_weight = G_s.nodelist[end0].adj_objs[j].lp_weight;
+      if(!candidates.light_teeth[end0].empty()){
+	for(list<shared_ptr<PSEP_CandTooth::SimpleTooth> >::reverse_iterator
+	      root_end0 = candidates.light_teeth[end0].rbegin();
+	    root_end0 != candidates.light_teeth[end0].rend(); root_end0++){
+	  end1_in = (*root_end0)->body_contains(perm[end1]);
+	  if(end1_in){
+	    cut_elist.push_back((*root_end0)->node_index);
+	    break;
+	  }
+	}
+      }
+      if(!end1_in)
+	cut_elist.push_back(end0);
+
+      if(!candidates.light_teeth[end1].empty()){
+	for(list<shared_ptr<PSEP_CandTooth::SimpleTooth> >::reverse_iterator
+	      root_end1 = candidates.light_teeth[end1].rbegin();
+	    root_end1 != candidates.light_teeth[end1].rend(); root_end1++){
+	  end0_in = (*root_end1)->body_contains(perm[end0]);
+	  if(end0_in){
+	    cut_elist.push_back((*root_end1)->node_index);
+	    break;
+	  }
+	}
+      }
+      if(!end0_in)
+	cut_elist.push_back(end1);
+
+      cut_ecap.push_back(lp_weight);
+    }
+  }
+
+  cout << "Done adding web edges\n";
 }
 
 void PSEP_SimpleDP::test_build_collection(){
@@ -145,5 +190,8 @@ void PSEP_SimpleDP::test_build_collection(){
 
   cout << "Now calling build light cuttree..................\n";
   build_light_cuttree();
+
+  cout << "Now calling add web edges......\n";
+  add_web_edges();
 
 }
