@@ -3,5 +3,7 @@ functions
 or maybe re-explore timer class and name class for protection now that
 i know how static member vars work.............
 
-add devex switch to LPcore
-devex flag options: no switch, switch, forced at start
+create different datagroup structures e.g., SupportGroup for support
+indices, elist,  ecap, and support graph, BestGroup for best tour
+nodes and edge, lp  group for lp edges and lp object, etc. etc. and
+pass groups to  initializers rather than long lists of disjointed vectors
