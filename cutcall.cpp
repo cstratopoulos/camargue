@@ -75,7 +75,7 @@ int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
 }
 
 int PSEP_Cutcall::in_subtour_poly(bool *result_p){
-  int ecount = support_ecap.size(), ncount = support_ecap.size() / 2;
+  int ecount = support_ecap.size(), ncount = best_tour_nodes.size();  
   int end0 = 0;
   double cutval = 2;
   *result_p = false;
@@ -83,7 +83,7 @@ int PSEP_Cutcall::in_subtour_poly(bool *result_p){
   for(int end1 = 1; end1 < ncount; end1++){
     if(CCcut_mincut_st(ncount, ecount, &support_elist[0], &support_ecap[0],
 		       end0, end1, &cutval, (int **) NULL, (int *) NULL)){
-      cerr << "Problem in SimpleDP::separate with Concorde st-cut" << endl;
+      cerr << "Problem in Cutcall::in_subtour_poly w Concorde st-cut" << endl;
       return 1;
     }
 
