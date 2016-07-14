@@ -16,6 +16,7 @@ class PSEP_SimpleDP {
     candidates(_tour_nodes, _G, _edge_marks) {}
 		
   int separate(const int max_cutcount);
+  void build_light_cuttree();
   void test_build_collection();
 
  private:
@@ -23,6 +24,13 @@ class PSEP_SimpleDP {
 
   std::vector<int> &support_elist;
   std::vector<double> &support_ecap;
+
+  std::vector<std::shared_ptr<PSEP_CandTooth::SimpleTooth> > light_nodes;
+  std::vector<int> cut_elist;
+  std::vector<double> cut_ecap;
+  std::vector<int> cut_marks;
+  std::vector<bool> node_marks;
+  
   PSEP_CandTooth candidates;
 };
 

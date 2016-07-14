@@ -49,8 +49,8 @@ class PSEP_CandTooth {
       return body_size > T.body_size;
     }
 
-    static bool p_greater(const std::unique_ptr<SimpleTooth>  &T,
-			  const std::unique_ptr<SimpleTooth> &R){
+    static bool p_greater(const std::shared_ptr<SimpleTooth>  &T,
+			  const std::shared_ptr<SimpleTooth> &R){
       return *T > *R;
     }
 
@@ -65,7 +65,10 @@ class PSEP_CandTooth {
     double slack;
     bool sandwich;
 
+    int node_index;
+
     friend class PSEP_CandTooth;
+    friend class PSEP_SimpleDP;
 
     //int node_index;
     static int ncount;
@@ -75,8 +78,8 @@ class PSEP_CandTooth {
   };
 
   friend class PSEP_SimpleDP;
-  std::vector<std::list<std::unique_ptr<SimpleTooth> > > light_teeth;
-  std::vector<std::list<std::unique_ptr<SimpleTooth> > > heavy_teeth;
+  std::vector<std::list<std::shared_ptr<SimpleTooth> > > light_teeth;
+  std::vector<std::list<std::shared_ptr<SimpleTooth> > > heavy_teeth;
 
   std::vector<int> &best_tour_nodes;
   std::vector<int> &edge_marks;
