@@ -191,7 +191,7 @@ bool PSEP_CandTooth::SimpleTooth::C_body_subset(const SimpleTooth &T,
 }
 
 void PSEP_CandTooth::SimpleTooth::complement(){
-  int c_start, c_end;
+  int c_start, c_end, c_body_size = ncount - body_size - 1;
   bool c_sandwich;
 
   if((body_start == ((root + 1) % ncount)) ||
@@ -212,6 +212,7 @@ void PSEP_CandTooth::SimpleTooth::complement(){
 
   body_start = c_start;
   body_end = c_end;
+  body_size = c_body_size;
   sandwich = c_sandwich;
 }
 
