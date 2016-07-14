@@ -5,7 +5,7 @@ void PSEP_SimpleDP::test_build_collection(){
   candidates.build_collection();
   int ncount = G_s.node_count;
 
-  /*
+  
   cout << "Printing light teeth...\n";
   for(int i = 0; i < ncount; i++){
     cout << "|||||| i = " << i << ", root = best_tour_nodes[" << i << "] = "
@@ -17,5 +17,4 @@ void PSEP_SimpleDP::test_build_collection(){
 	  it != candidates.light_teeth[i].end(); it++)
 	(*it)->print();
   }
-  */
 }
