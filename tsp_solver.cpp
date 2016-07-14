@@ -84,8 +84,6 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices,
     island.resize(m_graph.node_count);
     delta.resize(m_graph.edge_count, 0);
     edge_marks.resize(m_graph.node_count, 0);
-
-    //edge marks is pointed before it is resized hence reference is invalid
 }
 
 TSP_Solver::~TSP_Solver() {
