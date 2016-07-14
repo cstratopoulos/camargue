@@ -16,7 +16,6 @@ class PSEP_SimpleDP {
     candidates(_tour_nodes, _G, _edge_marks) {}
 		
   int separate(const int max_cutcount);
-  int in_subtour_poly(bool *result_p);
   void test_build_collection();
 
  private:
