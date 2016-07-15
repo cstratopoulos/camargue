@@ -1,3 +1,4 @@
 lin105 0.85s
 berlin52 0.01s
 eil76 0.06s
+gr24 0.00s
