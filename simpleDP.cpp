@@ -1,6 +1,43 @@
 #include "simpleDP.h"
 using namespace std;
 
+int PSEP_SimpleDP::separate(const int max_cutcount){
+  int rval = 0;
+  int ncount = G_s.node_count;
+  int light_total = 0, heavy_total = 0;
+
+  candidates.build_collection();
+
+  for(int i = 0; i < ncount; i++){
+    light_total += candidates.light_teeth[i].size();
+    heavy_total += candidates.heavy_teeth[i].size();
+  }
+
+  cout << light_total << "light teeth, " << heavy_total << " heavy teeth\n";
+  cout << "Total num teeth / n^3 = "
+       << ((double) (light_total + heavy_total) / (ncount * ncount * ncount))
+       << "\n";
+
+  cout << "Building light cuttree...."; build_light_cuttree();
+  cout << "Done\n";
+
+  cout << "Adding web edges...."; add_web_edges(); cout << "Done\n";
+
+  cout << "Calling concorde and building toothlists...";
+  rval = call_CC_gomoryhu(max_cutcount);
+  if(rval)
+    goto CLEANUP;
+  cout << "Done\n";
+
+  cout << "Number of inequalities for consideration: "
+       << toothlists.size() << "\n";
+
+ CLEANUP:
+  if(rval)
+    cerr << "Error entry point: SimpleDP::separate\n";
+  return rval;
+}
+
 void PSEP_SimpleDP::build_light_cuttree(){
   int num_cutnodes = 0;
   int current_index, star_index;
@@ -156,42 +193,40 @@ void PSEP_SimpleDP::add_web_edges(){
   cout << "Done adding web edges\n";
 }
 
-void PSEP_SimpleDP::test_build_collection(){
-  candidates.build_collection();
-  int ncount = G_s.node_count;
-  int light_total = 0, heavy_total = 0;
+int PSEP_SimpleDP::call_CC_gomoryhu(const int max_cutcount){
+  int rval = 0;
+  int ncount = light_nodes.size();
+  int ecount = cut_ecap.size();
+  int markcount = cut_marks.size();
+  
+  CCrandstate rstate;
+  CC_GHtree T;
+  int seed = (int) PSEP_real_zeit();
+  CCutil_sprand(seed, &rstate);
+  CCcut_GHtreeinit(&T);
 
-  cout << "Printing light teeth...\n";
-  for(int i = 0; i < ncount; i++){
-    light_total += candidates.light_teeth[i].size();
+  CC::GH::cut_pq node_pq;
+
+  toothlists.clear();
+
+  if(cut_elist.empty() || cut_ecap.empty() || cut_marks.empty()){
+    cerr << "Passed empty vector to gomoryhu\n";
+    rval = 1; goto CLEANUP;
   }
 
-  cout << light_total << " light teeth in total\n";
+  rval = CCcut_gomory_hu(&T, ncount, ecount, &cut_elist[0], &cut_ecap[0],
+			 markcount, &cut_marks[0], &rstate);
 
-  cout << "Printing heavy teeth...\n";
-  for(int i = 0; i < ncount; i++){
-    heavy_total += candidates.heavy_teeth[i].size();
+  if(rval){
+    cerr << "Problem calling CCcut_gomory_hu\n";
+    goto CLEANUP;
   }
 
-  cout << heavy_total << " heavy teeth in total\n";
+  CC::GH::get_all_toothlists(&T, max_cutcount, node_pq, toothlists);
 
-  cout << "Total number of teeth with slack less than one: "
-       << light_total + heavy_total << endl;
-
-  cout << "Ratio of light teeth to n^2 is : "
-       << ((double) light_total / (ncount * ncount)) << "\n";
-
-  cout << "Ratio of heavy teeth to n^3 is : "
-       << ((double) heavy_total / (ncount * ncount * ncount)) << "\n";
-
-  cout << "Ratio of total number of teeth to n^3 is: "
-       << ((double) (light_total + heavy_total) / (ncount * ncount * ncount))
-       << "\n";
-
-  cout << "Now calling build light cuttree..................\n";
-  build_light_cuttree();
-
-  cout << "Now calling add web edges......\n";
-  add_web_edges();
-
+ CLEANUP:
+  CCcut_GHtreefree(&T);
+  if(rval)
+    cerr << "Error entry point: SimpleDP::call_CC_gomoryhu\n";
+  return rval;
 }

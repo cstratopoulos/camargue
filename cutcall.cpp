@@ -69,7 +69,7 @@ int PSEP_Cutcall::blossom(const int max_cutcount, int *num_added_p){
 }
 
 int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
-  dominos.test_build_collection();
+  dominos.separate(max_cutcount);
   
   return 0;
 }

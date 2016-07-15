@@ -31,7 +31,8 @@ class PSEP_2match {
 
     pq.pop();
   };
-  int add_cut(const int deltacount, std::vector<int> &delta, const int cutedge);
+  int add_cut(const int deltacount, std::vector<int> &delta,
+	      const int cutedge);
 
 
   

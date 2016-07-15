@@ -174,8 +174,12 @@ void CC::GH::get_all_toothlists(CC_GHtree *T, const int max_cutcount,
   if(T && T->root)
     pq_dfs(T->root, max_cutcount, pq);
 
-  for(int i = 0; i < pq.size(); i++)
+  toothlists.resize(pq.size());
+
+  for(int i = 0; i < pq.size(); i++){
     grab_cut_dfs(pq.top(), toothlists[i]);
+    pq.pop();
+    }
 }
 
 

@@ -20,7 +20,7 @@ class PSEP_SimpleDP {
   int separate(const int max_cutcount);
   void build_light_cuttree();
   void add_web_edges();
-  void test_build_collection();
+  int call_CC_gomoryhu(const int max_cutcount);
 
  private:
   SupportGraph &G_s;
@@ -36,6 +36,8 @@ class PSEP_SimpleDP {
   std::vector<double> cut_ecap;
   std::vector<int> cut_marks;
   std::vector<bool> node_marks;
+
+  std::vector<std::vector<int> > toothlists;
   
   PSEP_CandTooth candidates;
 };
