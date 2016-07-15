@@ -6,6 +6,8 @@ int PSEP_SimpleDP::separate(const int max_cutcount){
   int ncount = G_s.node_count;
   int light_total = 0, heavy_total = 0;
 
+  toothlists.clear();
+
   candidates.build_collection();
 
   for(int i = 0; i < ncount; i++){

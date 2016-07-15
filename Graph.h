@@ -107,9 +107,9 @@ struct CC {
       Comparator> cut_pq;
 
     static void grab_cut_dfs(CC_GHnode *n, std::vector<int> &cut_nlist);
-    static void pq_dfs(CC_GHnode *n, const int max_cutcount, cut_pq pq);
+    static void pq_dfs(CC_GHnode *n, const int max_cutcount, cut_pq &pq);
     static void get_all_toothlists(CC_GHtree *T, const int max_cutcount,
-				   cut_pq pq,
+				   cut_pq &pq,
 				   std::vector<std::vector<int> >
 				   &toothlists);
   };

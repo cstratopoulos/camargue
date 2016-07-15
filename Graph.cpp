@@ -153,12 +153,12 @@ void CC::GH::grab_cut_dfs(CC_GHnode *n, vector<int> &cut_nlist){
 }
 
 //for building a list of GH cut nodes
-void CC::GH::pq_dfs(CC_GHnode *n, const int max_cutcount, cut_pq pq){
+void CC::GH::pq_dfs(CC_GHnode *n, const int max_cutcount, cut_pq &pq){
   if(n->parent)
     if((n->cutval < 1) && (n->ndescendants %2) == 1){
-      if(pq.size() < max_cutcount)
+      if(pq.size() < max_cutcount){
 	pq.push(n);
-      else
+      } else
 	if(n->cutval < pq.top()->cutval){
 	  pq.pop();
 	  pq.push(n);
@@ -170,9 +170,12 @@ void CC::GH::pq_dfs(CC_GHnode *n, const int max_cutcount, cut_pq pq){
 }
 
 void CC::GH::get_all_toothlists(CC_GHtree *T, const int max_cutcount,
-				cut_pq pq, vector<vector<int> > &toothlists){
+				cut_pq &pq, vector<vector<int> > &toothlists){
   if(T && T->root)
     pq_dfs(T->root, max_cutcount, pq);
+
+  cout << "\n" << pq.size()
+       << " nodes in the toothlist after DFSing the tree\n";
 
   toothlists.resize(pq.size());
 
