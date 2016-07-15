@@ -1,8 +1,0 @@
-printer.h
-
-contains routines to print lp edges, best tour nodes, bases, etc.
-
-graphwork.h
-
-contains constructors and destructors for support graphs and component graphs, all
-as static int/static void functions
