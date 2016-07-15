@@ -143,11 +143,31 @@ int G_Utils::build_s_graph (int node_count, int edge_count,
   return 0;
 }
 
-void G_Utils::GH_grab_cut_dfs(CC_GHnode *n, vector<int> &cut_nlist){
+//for expanding the cut associated with a given node
+void CC::GH::grab_cut_dfs(CC_GHnode *n, vector<int> &cut_nlist){
   for(int i = 0; i < n->listcount; i++)
     cut_nlist.push_back(n->nlist[i]);
 
   for(n = n->child; n; n = n->sibling)
-    GH_grab_cut_dfs(n, cut_nlist);
+    grab_cut_dfs(n, cut_nlist);
 }
+
+//for building a list of GH cut nodes
+void CC::GH::pq_dfs(CC_GHnode *n, const int max_cutcount, cut_pq pq){
+  if(n->parent)
+    if((n->cutval < 1) && (n->ndescendants %2) == 1){
+      if(pq.size() < max_cutcount)
+	pq.push(n);
+      else
+	if(n->cutval < pq.top()->cutval){
+	  pq.pop();
+	  pq.push(n);
+	}
+    }
+
+  for(n = n->child; n; n = n->sibling)
+    pq_dfs(n, max_cutcount, pq);
+}
+
+
 

@@ -2,6 +2,7 @@
 #define PSEP_GRAPH_H
 
 #include <vector>
+#include<queue>
 #include<utility>
 #include <iostream>
 
@@ -74,9 +75,10 @@ SupportGraph() :
   s_adjobj *adjspace;
 };
 
+
 struct G_Utils {
-  static int connected (SupportGraph *G, int *icount, std::vector<int> &island,
-			int starting_node);
+  static int connected (SupportGraph *G, int *icount,
+			std::vector<int> &island, int starting_node);
   static void dfs (int n, SupportGraph *G, int *icount,
 		   std::vector<int> &island);  
   static void get_delta (std::vector<int> &nodelist, std::vector<Edge> &elist,
@@ -90,9 +92,23 @@ struct G_Utils {
 			    std::vector<int> &support_indices,
 			    std::vector<double> &m_lp_edges,
 			    SupportGraph *G_s);
+};
 
-  static void GH_grab_cut_dfs(CC_GHnode *n, std::vector<int> &cut_nlist);
+struct CC {
+  struct GH {
+    class Comparator {
+    public:
+      bool operator() (const CC_GHnode *a, const CC_GHnode *b){
+	return a->cutval < b->cutval;
+      }
+    };
 
+    typedef std::priority_queue<CC_GHnode*, std::vector<CC_GHnode*>,
+      Comparator> cut_pq;
+
+    static void grab_cut_dfs(CC_GHnode *n, std::vector<int> &cut_nlist);
+    static void pq_dfs(CC_GHnode *n, const int max_cutcount, cut_pq pq);
+  };
 };
 
 #endif
