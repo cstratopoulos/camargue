@@ -13,7 +13,9 @@ int PSEP_SimpleDP::separate(const int max_cutcount){
     heavy_total += candidates.heavy_teeth[i].size();
   }
 
-  cout << light_total << "light teeth, " << heavy_total << " heavy teeth\n";
+  cout << light_total << " light teeth, " << heavy_total << " heavy teeth\n";
+  cout << "Light teeth / n^2 = "
+       << ((double) light_total / (ncount * ncount)) << "\n";
   cout << "Total num teeth / n^3 = "
        << ((double) (light_total + heavy_total) / (ncount * ncount * ncount))
        << "\n";

@@ -163,7 +163,7 @@ int TSP_Solver::simple_test(){
   if(LPcore.basis_init())
     return 1;
 
-  int stat, x = 1, y = 1;
+  int stat, x = 250, y = 1;
   int num_seg = 0, segval = 0;
   int num_2match = 0, matchval = 0;
   bool in_sep = false;
