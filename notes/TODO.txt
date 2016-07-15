@@ -11,4 +11,8 @@ pass groups to  initializers rather than long lists of disjointed vectors
 possibly switch to unique_ptr vectors for segments and blossoms as
 well, could be faster for priority queue sorting/inseration
 
-in subtour poly should be G_Utils::CC_cut?
+idea: .....maybe just a CCutils.h file for things we need from
+concorde along with wrappers? eg.,
+struct CC with sub-structs GH (for gomoryhu), cut for st_cut
+(including subtour poly)
+learn to call CPXaddrowS for multiple cuts
