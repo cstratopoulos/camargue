@@ -10,3 +10,5 @@ pass groups to  initializers rather than long lists of disjointed vectors
 
 possibly switch to unique_ptr vectors for segments and blossoms as
 well, could be faster for priority queue sorting/inseration
+
+in subtour poly should be G_Utils::CC_cut?
