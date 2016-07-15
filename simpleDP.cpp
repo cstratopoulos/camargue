@@ -53,31 +53,16 @@ void PSEP_SimpleDP::build_light_cuttree(){
 
   //NULL shared ptrs for the degree eqn on each root
   light_nodes.resize(candidates.light_teeth.size());
-  cout << "Use count of one of the null degree eqn nodes: "
-       << light_nodes.begin()->use_count() << " = first one, "
-       << light_nodes.end()->use_count() << " = last one\n";
 
   current_index = light_nodes.size();
 
-  cout << "Checking the use count on all the shared ptrs...";
-  for(int i = 0; i < candidates.light_teeth.size(); i++)
-    for(list<shared_ptr<PSEP_CandTooth::SimpleTooth> >::iterator it
-	  = candidates.light_teeth[i].begin();
-	it != candidates.light_teeth[i].end(); it++)
-      if(it->use_count() != 1)
-	cout << "\nFound one w wrong use count???\n";
-  cout << "Done\n";
-
   //number a light node for each tooth ineq, add to vector
-  cout << "Building non-NULL list of light nodes, checking use counts....";
   for(int i = 0; i < candidates.light_teeth.size(); i++){
     for(list<shared_ptr<PSEP_CandTooth::SimpleTooth> >::iterator
 	  it = candidates.light_teeth[i].begin();
 	it != candidates.light_teeth[i].end(); it++){
       light_nodes.push_back(*it);
       (*it)->node_index = current_index++;
-      if(it->use_count() != 2)
-	cout << "\n found one with wrong use count????\n";
     }
   }
   cout << "Done\n";
@@ -145,7 +130,6 @@ void PSEP_SimpleDP::build_light_cuttree(){
   for(int i = 0; i < num_cutnodes; i++)
     if(node_marks[i])
       cut_marks.push_back(i);
-  cout << "Done building light cuttree\n";
 }
 
 void PSEP_SimpleDP::add_web_edges(){
@@ -189,8 +173,6 @@ void PSEP_SimpleDP::add_web_edges(){
       cut_ecap.push_back(lp_weight);
     }
   }
-
-  cout << "Done adding web edges\n";
 }
 
 int PSEP_SimpleDP::call_CC_gomoryhu(const int max_cutcount){
