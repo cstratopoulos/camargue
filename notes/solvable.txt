@@ -1,4 +1,5 @@
-lin105 0.85s
-berlin52 0.01s
-eil76 0.06s
-gr24 0.00s
+lin105
+rd100
+berlin52 
+eil76 
+gr24 
