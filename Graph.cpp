@@ -143,3 +143,11 @@ int G_Utils::build_s_graph (int node_count, int edge_count,
   return 0;
 }
 
+void G_Utils::GH_grab_cut_dfs(CC_GHnode *n, vector<int> &cut_nlist){
+  for(int i = 0; i < n->listcount; i++)
+    cut_nlist.push_back(n->nlist[i]);
+
+  for(n = n->child; n; n = n->sibling)
+    GH_grab_cut_dfs(n, cut_nlist);
+}
+

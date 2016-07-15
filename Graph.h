@@ -2,9 +2,15 @@
 #define PSEP_GRAPH_H
 
 #include <vector>
+#include<utility>
 #include <iostream>
 
+extern "C" {
+#include "../programs/concorde/concorde.h"
+}
+
 #include "PSEP_util.h"
+
 
 struct Edge {
   Edge() {}
@@ -84,6 +90,9 @@ struct G_Utils {
 			    std::vector<int> &support_indices,
 			    std::vector<double> &m_lp_edges,
 			    SupportGraph *G_s);
+
+  static void GH_grab_cut_dfs(CC_GHnode *n, std::vector<int> &cut_nlist);
+
 };
 
 #endif
