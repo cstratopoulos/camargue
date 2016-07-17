@@ -140,7 +140,7 @@ int PSEP_LP_Core::update_best_tour(){
 int PSEP_LP_Core::pivot_until_change(int *pivot_status_p){
 int rval = 0;
   int itcount = 0, icount = 0;
-  int rowcount = PSEPlp_numrows(&m_lp);
+  int rowcount = PSEPlp_numrows(&m_lp), ncount = m_graph.node_count;  
   bool integral = false, conn = false, dual_feas = false;
   *pivot_status_p = -1;
 
@@ -149,7 +149,7 @@ int rval = 0;
   old_rowstat.resize(rowcount);
 
   while(true){
-    if(++itcount == 3 * rowcount)
+    if(++itcount == 3 * ncount)
       if(prefs.switching_choice == LP::PRICING::SWITCHING::DYNAMIC)
 	change_pricing();
 
