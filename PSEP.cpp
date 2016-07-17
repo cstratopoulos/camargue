@@ -248,7 +248,7 @@ static void usage(char *f){
   fprintf(stderr, "   -d x   set dynamic pricing switch behavior to x\n");
   fprintf(stderr, "      0 = do not switch pricing methods\n");
   fprintf(stderr, "      1 = switch when a non-degenerate pivot takes\n");
-  fprintf(stderr, "          more than 3 * number of rows iterations\n");
+  fprintf(stderr, "          more than 3 * number of nodes iterations\n");
   fprintf(stderr, "      2 = switch from the start\n");
   fprintf(stderr, "   -p x   set primal pricing method to x\n");
   fprintf(stderr, "      0 = devex (default)\n");
