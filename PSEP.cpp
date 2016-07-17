@@ -23,7 +23,7 @@ int main(int argc, char* argv[]){
   PSEP_LP_Prefs prefs;
   vector<int> tour_node_indices;
 
-  cout << "BRANCH VERSION: SHARED_PTR" << endl;
+  cout << "BRANCH VERSION: MASTER" << endl;
 
   if(initial_parse(argc, argv, graph, tour_node_indices, prefs)){
     cerr << "Problem parsing arguments" << endl;
