@@ -21,7 +21,8 @@ void PSEP_CandTooth::build_collection(){
       light_teeth[i].clear();
     if(!heavy_teeth[i].empty())
       heavy_teeth[i].clear();
-    
+
+    cout << "==== ROOT " << i << " ====\n";
     find_root_adjacent_teeth(i);
     cout << light_teeth[i].size() << " root adjacent light teeth, "
 	 << ((double) light_teeth[i].size() / SimpleTooth::ncount)
@@ -111,7 +112,7 @@ void PSEP_CandTooth::find_root_distant_teeth(const int root){
 
   for(int i = 2; i < ncount - 1; i++){
     body_start = (root + i) % ncount;
-    for(int k = 0; k < ncount; k++) edge_marks[k] = 0; //REPLACE???
+    //for(int k = 0; k < ncount; k++) edge_marks[k] = 0; //WRONG LMAO
     lhs = 0.0; rhs = -1;
     for(int j = i; j < ncount - 1; j++){
       body_end = (root + j) % ncount;
@@ -120,6 +121,12 @@ void PSEP_CandTooth::find_root_distant_teeth(const int root){
       int new_vx = best_tour_nodes[body_end];
 
       cand->increment_slack(new_vx, &lhs, &rhs);
+
+      if(j == i){
+	cand->print();
+	cout << "The slack was " << cand->slack << "\n";
+	cout << "rhs: " << rhs << ", lhs: " << lhs << "\n";
+      }
 
       if(cand->slack >= 1 - LP::EPSILON || cand->slack < 0 )
 	continue;
@@ -243,7 +250,7 @@ void PSEP_CandTooth::SimpleTooth::increment_slack(const int new_vx,
       continue;
     }
 
-    if(other_end == root)
+    if(other_end == best_tour_nodes[root])
       *lhs_p += lp_weight;
   }
 

@@ -27,7 +27,7 @@ int PSEP_SimpleDP::separate(const int max_cutcount){
 
   cout << "Adding web edges...."; add_web_edges(); cout << "Done\n";
 
-  /*
+  
   cout << "Calling concorde and building toothlists...";
   rval = call_CC_gomoryhu(max_cutcount);
   if(rval)
@@ -36,7 +36,6 @@ int PSEP_SimpleDP::separate(const int max_cutcount){
 
   cout << "Number of inequalities for consideration: "
        << toothlists.size() << "\n";
-  */
 
  CLEANUP:
   if(rval)

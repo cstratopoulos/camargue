@@ -210,6 +210,10 @@ int TSP_Solver::simple_test(){
     }
   }
 
+  print.best_tour_nodes();
+
+  print.lp_edges();
+
   if(in_sep){
     cout << "Solution is in subtour polytope, building collection...\n";
     cutcall.simpleDP(x, &y);
