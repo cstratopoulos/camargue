@@ -210,7 +210,10 @@ int TSP_Solver::simple_test(){
     }
   }
 
-  cutcall.simpleDP(x, &y);
+  if(in_sep){
+    cout << "Solution is in subtour polytope, building collection...\n";
+    cutcall.simpleDP(x, &y);
+  }
 
   return 0;
   
