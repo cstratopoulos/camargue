@@ -13,6 +13,8 @@ int * PSEP_CandTooth::SimpleTooth::best_tour_nodes;
 void PSEP_CandTooth::build_collection(){
   SimpleTooth::edge_marks = &edge_marks[0];
 
+  int oldsize;
+
   cout << "At time of collection building, ncount is " << SimpleTooth::ncount
        << "\n";
 
@@ -22,15 +24,9 @@ void PSEP_CandTooth::build_collection(){
     if(!heavy_teeth[i].empty())
       heavy_teeth[i].clear();
 
-    cout << "==== ROOT " << i << " ====\n";
     find_root_adjacent_teeth(i);
-    cout << light_teeth[i].size() << " root adjacent light teeth, "
-	 << ((double) light_teeth[i].size() / SimpleTooth::ncount)
-	 << " ratio\n";
+    oldsize = light_teeth[i].size();
     find_root_distant_teeth(i);
-    cout << light_teeth[i].size() << " light teeth total"
-	 << ", " << ((double) light_teeth[i].size() / SimpleTooth::ncount)
-	 << " ratio\n";
 
     
     if(!light_teeth[i].empty())
@@ -77,7 +73,7 @@ void PSEP_CandTooth::find_root_adjacent_teeth(const int root){
 	    }
 	  }
 	if(found_dup) continue;
-      }      
+      }
       light_teeth[root].push_back(std::move(cand));
     } else{
       if(cand->body_size == 1){
@@ -122,12 +118,6 @@ void PSEP_CandTooth::find_root_distant_teeth(const int root){
 
       cand->increment_slack(new_vx, &lhs, &rhs);
 
-      if(j == i){
-	cand->print();
-	cout << "The slack was " << cand->slack << "\n";
-	cout << "rhs: " << rhs << ", lhs: " << lhs << "\n";
-      }
-
       if(cand->slack >= 1 - LP::EPSILON || cand->slack < 0 )
 	continue;
 
@@ -148,7 +138,7 @@ void PSEP_CandTooth::find_root_distant_teeth(const int root){
 	      }
 	    }
 	  if(found_dup) continue;
-	}      
+	}
 	light_teeth[root].push_back(std::move(cand));
       } else {
 	if(cand->body_size == 1){
