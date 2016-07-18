@@ -27,7 +27,7 @@ void PSEP_CandTooth::build_collection(){
 	 << ((double) light_teeth[i].size() / SimpleTooth::ncount)
 	 << " ratio\n";
     find_root_distant_teeth(i);
-    cout << light_teeth[i].size() << " light teeth total after adding distant"
+    cout << light_teeth[i].size() << " light teeth total"
 	 << ", " << ((double) light_teeth[i].size() / SimpleTooth::ncount)
 	 << " ratio\n";
 
@@ -115,7 +115,8 @@ void PSEP_CandTooth::find_root_distant_teeth(const int root){
     lhs = 0.0; rhs = -1;
     for(int j = i; j < ncount - 1; j++){
       body_end = (root + j) % ncount;
-      shared_ptr<SimpleTooth> cand(new SimpleTooth(root, body_start, body_end));
+      shared_ptr<SimpleTooth>
+	cand(new SimpleTooth(root, body_start, body_end));
       int new_vx = best_tour_nodes[body_end];
 
       cand->increment_slack(new_vx, &lhs, &rhs);
@@ -160,9 +161,10 @@ void PSEP_CandTooth::find_root_distant_teeth(const int root){
 	heavy_teeth[root].push_back(std::move(cand));
       }
     }
+    for(int k = 0; k < ncount; k++) edge_marks[k] = 0;
   }
 
-  for(int k = 0; k < ncount; k++) edge_marks[k] = 0;
+
 }
 
 
