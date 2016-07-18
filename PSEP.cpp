@@ -34,8 +34,8 @@ int main(int argc, char* argv[]){
 
   double start = PSEP_zeit();
 
-  //  solver.simple_test();
-  solver.pure_cut();
+    solver.simple_test();
+  //  solver.pure_cut();
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
 
