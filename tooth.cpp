@@ -23,7 +23,13 @@ void PSEP_CandTooth::build_collection(){
       heavy_teeth[i].clear();
     
     find_root_adjacent_teeth(i);
+    cout << light_teeth[i].size() << " root adjacent light teeth, "
+	 << ((double) light_teeth[i].size() / SimpleTooth::ncount)
+	 << " ratio\n";
     find_root_distant_teeth(i);
+    cout << light_teeth[i].size() << " light teeth total after adding distant"
+	 << ", " << ((double) light_teeth[i].size() / SimpleTooth::ncount)
+	 << " ratio\n";
 
     
     if(!light_teeth[i].empty())
