@@ -7,6 +7,7 @@ int PSEP_SimpleDP::separate(const int max_cutcount){
   int light_total = 0, heavy_total = 0;
 
   toothlists.clear();
+  
 
   candidates.build_collection();
 
@@ -238,7 +239,9 @@ void PSEP_SimpleDP::parse_domino(const int deltacount,
 			      best_tour_nodes[T2->root]);
 	int graph_end2 = fmax(best_tour_nodes[T1->root],
 			      best_tour_nodes[T2->root]);
-	rmatval[0 /*INSERT RETRIEVE INDEX*/] -= 1.0;
+	rmatval[edge_lookup[IntPair(graph_end1, graph_end2)]] -= 1.0;
+	cout << "Added nonnegativity inequality for edge "
+	     << graph_end1 << ", " << graph_end2 << "\n";
 	continue;
       }
 
@@ -260,8 +263,12 @@ void PSEP_SimpleDP::parse_domino(const int deltacount,
 	handle_nodes.push_back(end0);
 	continue;
       }
-
-      rmatval[0/*RETRIEVE INDEX*/] -= 1.0;
+      
+      //else both are indices of actual nodes in graph
+      rmatval[edge_lookup[IntPair(fmin(end0, end1),
+				  fmax(end0, end1))]] -= 1.0;
+      cout << "Added nonnegativity inequality for " << end0 << ", "
+	   << end1 << "\n";
       continue;
     }
 
@@ -276,9 +283,44 @@ void PSEP_SimpleDP::parse_domino(const int deltacount,
     }
   }
 
+  cout << "Parsing handle nodes (those where degree eqn is used\n";
+  cout << "Rhs before handle parse: " << *rhs_p << "\n";
+  cout << handle_nodes.size() << " nodes in handle\n";
   PSEP_CandTooth::SimpleTooth::parse_handle(handle_nodes, rmatval, rhs_p);
 
-  for(int i = 0; i < used_teeth.size(); i++)
+  cout << "Parsing the used teeth\n";
+  for(int i = 0; i < used_teeth.size(); i++){
+    cout << "The " << i << "th used tooth is \n";
+    used_teeth[i]->print();
     used_teeth[i]->parse(rmatval, rhs_p);
+  }
 }
 
+int PSEP_SimpleDP::add_cut(const vector<double> &agg_coeffs,
+			   const double RHS){
+  int rval = 0, newrows = 1, newnz;
+  vector<int> rmatind;
+  vector<double> rmatval;
+  char sense[1];
+  double rhs[1];
+  int rmatbeg[1];
+
+  rmatbeg[0] = 0;
+  rhs[0] = RHS;
+  sense[0] = 'L';
+
+  for(int i = 0; i < agg_coeffs.size(); i++){
+    if(agg_coeffs[i] != 0.0){
+      rmatind.push_back(i);
+      rmatval.push_back(agg_coeffs[i]);
+    }
+  }
+  newnz = rmatind.size();
+
+  rval = PSEPlp_addrows(&m_lp, newrows, newnz, rhs, sense, rmatbeg,
+			&rmatind[0], &rmatval[0]);
+
+  if(rval)
+    cerr << "Problem in PSEP_SimpleDP::add_cut\n";
+  return rval;
+}

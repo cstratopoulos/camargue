@@ -16,6 +16,7 @@ void PSEP_CandTooth::build_collection(){
   int oldsize;
 
   for(int i = 0; i < SimpleTooth::ncount; i++){
+
     if(!light_teeth[i].empty())
       light_teeth[i].clear();
     if(!heavy_teeth[i].empty())
@@ -159,11 +160,21 @@ void PSEP_CandTooth::find_root_distant_teeth(const int root){
   }
 }
 
+
+
+//aggregates the coefficients/RHS for the degree equations summed over the
+//nodes in the handle of the DP inequality, handle_nodes. If H is the set of
+//handle nodes, this is
+//                 2x(E(H)) + x(delta(H)) <= 2|H|.
+//edge marks are again used to get E(H)/delta(H). Each edge in E(H) is naturally
+//visited twice, hence we add one each time.
+//edges in delta(H) are only visited once
 void PSEP_CandTooth::SimpleTooth::parse_handle(const vector<int>&handle_nodes,
 				  vector<double> &rmatval, double *rhs_p){
   int current_node, other_end;
 
   *rhs_p += (2 * handle_nodes.size());
+  cout << "Rhs is now: " << *rhs_p << "\n";
 
   for(int i = 0; i < handle_nodes.size(); i++)
     edge_marks[handle_nodes[i]] = 1;
@@ -174,11 +185,24 @@ void PSEP_CandTooth::SimpleTooth::parse_handle(const vector<int>&handle_nodes,
       other_end = G_s->nodelist[current_node].adj_objs[j].other_end;
       if(edge_marks[current_node] + edge_marks[other_end] == 2){
 	rmatval[G_s->nodelist[current_node].adj_objs[j].edge_index] += 1.0;
+	cout << "Adding edge no. "
+	     << G_s->nodelist[current_node].adj_objs[j].edge_index
+	     << ": " << current_node << ", " << other_end
+	     << ", lp: "
+	     << G_s->nodelist[current_node].adj_objs[j].lp_weight
+	     << " in E(H)\n";
 	continue;
       }
 
-      if(edge_marks[current_node] + edge_marks[other_end] == 1)
+      if(edge_marks[current_node] + edge_marks[other_end] == 1){
 	rmatval[G_s->nodelist[current_node].adj_objs[j].edge_index] += 1.0;
+	cout << "Adding edge no. "
+	     <<  G_s->nodelist[current_node].adj_objs[j].edge_index
+	     << ": " << current_node << ", " << other_end
+	     << ", lp: "
+	     << G_s->nodelist[current_node].adj_objs[j].lp_weight
+	     << " in d(H)\n";
+      }
     }
   }
 
@@ -186,6 +210,16 @@ void PSEP_CandTooth::SimpleTooth::parse_handle(const vector<int>&handle_nodes,
     edge_marks[handle_nodes[i]] = 0;
 }
 
+//aggregates the coefficients/RHS for the tooth inequality for T into the
+//domino-parity inequality with coeffs rmatval and rhs *rhs_p
+//If T=(i, S), i.e., root i, body S, this is
+//                 2x(E(S)) + x(E(i:S)) <= 2|S| - 1
+//Very similar to get_slack: a set of edge marks is used to keep track of
+// x(E(S)).
+//Function traverses support graph nodes/edges so each edge in E(S) is naturally
+//visited twice, hence we add one each time it is seen
+//To get E(i:S), we traverse the adjspace of node i, thus each edge is visited
+//precisely once
 void PSEP_CandTooth::SimpleTooth::parse(vector<double> &rmatval,
 					double *rhs_p){
   int upper_limit = body_size + ((int) sandwich);
@@ -193,6 +227,7 @@ void PSEP_CandTooth::SimpleTooth::parse(vector<double> &rmatval,
   int current_node, other_end;
 
   *rhs_p = ((2 * body_size) - 1);
+  cout << "rhs incremented by " << ((2 * body_size) - 1) << "\n";
 
   for(int i = 0; i < upper_limit; i++)
     edge_marks[best_tour_nodes[(body_start +i) % ncount]] = 1;
@@ -203,14 +238,28 @@ void PSEP_CandTooth::SimpleTooth::parse(vector<double> &rmatval,
     if(current_node == best_tour_nodes[root]) continue;
     for(int j = 0; j < G_s->nodelist[current_node].s_degree; j++){
       other_end = G_s->nodelist[current_node].adj_objs[j].other_end;
-      if(edge_marks[current_node] + edge_marks[other_end] == 2)
+      if(edge_marks[current_node] + edge_marks[other_end] == 2){
 	rmatval[G_s->nodelist[current_node].adj_objs[j].edge_index] += 1.0;
+	cout << "Adding edge no. "
+	     << G_s->nodelist[current_node].adj_objs[j].edge_index
+	     << ": " << current_node << ", " << other_end
+	     << ", lp: "
+	     << G_s->nodelist[current_node].adj_objs[j].lp_weight
+	     << " in E(S)\n";
+      }
     }
   }
 
   for(int j = 0; j < rootnode->s_degree; j++)
-    if(edge_marks[rootnode->adj_objs[j].other_end] == 1)
+    if(edge_marks[rootnode->adj_objs[j].other_end] == 1){
       rmatval[rootnode->adj_objs[j].edge_index] += 1.0;
+      cout << "Adding edge no. "
+	   << G_s->nodelist[current_node].adj_objs[j].edge_index
+	     << ": " << current_node << ", " << other_end
+	     << ", lp: "
+	     << G_s->nodelist[current_node].adj_objs[j].lp_weight
+	     << " in E(i:S)\n";
+    }
 
   for(int i = 0; i < upper_limit; i++)
     edge_marks[best_tour_nodes[(body_start + i) % ncount]] = 0;

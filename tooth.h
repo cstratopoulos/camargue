@@ -43,9 +43,9 @@ class PSEP_CandTooth {
 	((ncount - body_start) + body_end + add_one);
     }
 
-    void parse(std::vector<double> &rmatval, double *rhs_p);
+    void parse(std::vector<double> &agg_coeffs, double *rhs_p);
     static void parse_handle(const std::vector<int> &handle_nodes,
-			     std::vector<double> &rmatval, double *rhs_p);
+			     std::vector<double> &agg_coeffs, double *rhs_p);
     
     bool body_contains(const int node_perm);
     static bool C_body_subset(const SimpleTooth &T, const SimpleTooth &R);

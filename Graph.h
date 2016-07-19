@@ -3,7 +3,6 @@
 
 #include <vector>
 #include<queue>
-#include<utility>
 #include<math.h>
 #include <iostream>
 
@@ -12,7 +11,6 @@ extern "C" {
 }
 
 #include "PSEP_util.h"
-
 
 struct Edge {
   Edge() {}
@@ -36,6 +34,7 @@ Graph() : node_count(0), edge_count(0) {}
   int node_count;
   int edge_count;
   std::vector<Edge> edges;
+  IntPairMap edge_lookup;
 
   void print_edge(int i){
     if(i >= edge_count)

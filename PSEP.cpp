@@ -169,6 +169,7 @@ static int load_tsplib (Graph &graph, CCdatagroup *dat, char *fname){
       graph.edges[e_index].end[0] = i;
       graph.edges[e_index].end[1] = j;
       graph.edges[e_index].len = CCutil_dat_edgelen(i, j, dat);
+      graph.edge_lookup.emplace(IntPair(i,j), e_index);
       e_index++;
     }
   }

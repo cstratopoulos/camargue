@@ -8,7 +8,7 @@ TSP_Solver::TSP_Solver(Graph &graph, const vector<int> &lk_node_indices,
   best_tour_nodes(lk_node_indices),
   cutcall(m_graph.edges, delta, edge_marks, G_s, best_tour_nodes, m_lp,
 	  best_tour_edges, m_lp_edges, support_indices, support_elist,
-	  support_ecap, perm),
+	  support_ecap, perm, m_graph.edge_lookup),
   LPcore(m_lp, m_graph, m_lp_edges, G_s, support_indices, support_elist,
 	 support_ecap, best_tour_edges,best_tour_nodes, perm, m_min_tour_value,
 	 island, delta, edge_marks, _prefs),
@@ -241,7 +241,7 @@ int TSP_Solver::simple_test(){
 
   //print.best_tour_nodes();
 
-  //print.lp_edges();
+  print.lp_edges();
 
   if(in_sep){
     cout << "Solution is in subtour polytope, building collection...\n";
