@@ -254,11 +254,12 @@ void PSEP_CandTooth::SimpleTooth::parse(vector<double> &rmatval,
     if(edge_marks[rootnode->adj_objs[j].other_end] == 1){
       rmatval[rootnode->adj_objs[j].edge_index] += 1.0;
       cout << "Adding edge no. "
-	   << G_s->nodelist[current_node].adj_objs[j].edge_index
-	     << ": " << current_node << ", " << other_end
-	     << ", lp: "
-	     << G_s->nodelist[current_node].adj_objs[j].lp_weight
-	     << " in E(i:S)\n";
+	   << rootnode->adj_objs[j].edge_index
+	   << ": " << best_tour_nodes[root] << ", "
+	   << rootnode->adj_objs[j].other_end
+	   << ", lp: "
+	   << G_s->nodelist[current_node].adj_objs[j].lp_weight
+	   << " in E(i:S)\n";
     }
 
   for(int i = 0; i < upper_limit; i++)
