@@ -174,9 +174,6 @@ void CC::GH::get_all_toothlists(CC_GHtree *T, const int max_cutcount,
   if(T && T->root)
     pq_dfs(T->root, max_cutcount, pq);
 
-  cout << "\n" << pq.size()
-       << " nodes in the toothlist after DFSing the tree\n";
-
   toothlists.resize(pq.size());
 
   for(int i = 0; i < pq.size(); i++){

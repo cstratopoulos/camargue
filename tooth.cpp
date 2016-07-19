@@ -15,9 +15,6 @@ void PSEP_CandTooth::build_collection(){
 
   int oldsize;
 
-  cout << "At time of collection building, ncount is " << SimpleTooth::ncount
-       << "\n";
-
   for(int i = 0; i < SimpleTooth::ncount; i++){
     if(!light_teeth[i].empty())
       light_teeth[i].clear();

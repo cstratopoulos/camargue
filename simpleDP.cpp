@@ -70,7 +70,6 @@ void PSEP_SimpleDP::build_light_cuttree(){
       (*it)->node_index = current_index++;
     }
   }
-  cout << "Done\n";
 
   light_nodes.emplace_back((PSEP_CandTooth::SimpleTooth *) NULL);
   num_cutnodes = light_nodes.size();

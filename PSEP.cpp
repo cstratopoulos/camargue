@@ -11,6 +11,7 @@
 
 using namespace std;
 
+static int tooth = 0;
 static int load_tsplib (Graph &graph, CCdatagroup *dat, char *fname);
 static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
 			       vector<int> &node_indices);
@@ -23,7 +24,10 @@ int main(int argc, char* argv[]){
   PSEP_LP_Prefs prefs;
   vector<int> tour_node_indices;
 
-  cout << "BRANCH VERSION: MASTER" << endl;
+  cout << "BRANCH VERSION: MASTER";
+  if(tooth)
+    cout << ", Tooth testing";
+  cout << "\n";
 
   if(initial_parse(argc, argv, graph, tour_node_indices, prefs)){
     cerr << "Problem parsing arguments" << endl;
@@ -34,8 +38,10 @@ int main(int argc, char* argv[]){
 
   double start = PSEP_zeit();
 
+  if(tooth)
     solver.simple_test();
-  //  solver.pure_cut();
+  else
+    solver.pure_cut();
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
 
@@ -56,8 +62,11 @@ static int initial_parse(int ac, char **av, Graph &graph,
     return 1;
   }
 
-  while((c = getopt(ac, av, "ad:p:s:")) != EOF) {
+  while((c = getopt(ac, av, "Tad:p:s:")) != EOF) {
     switch(c) {
+    case 'T':
+      tooth = 1;
+      break;
     case 'd':
       switching_choice = atoi(optarg);
       break;
@@ -89,15 +98,15 @@ static int initial_parse(int ac, char **av, Graph &graph,
   switch(switching_choice){
   case 0:
     prefs.switching_choice = LP::PRICING::SWITCHING::OFF;
-    cout << "No switching" << endl;
+    cout << "No primal pricing switching\n";
     break;
   case 1:
     prefs.switching_choice = LP::PRICING::SWITCHING::DYNAMIC;
-    cout << "Dynamic switching" << endl;
+    cout << "Dynamic switching, ";
     break;
   case 2:
     prefs.switching_choice = LP::PRICING::SWITCHING::START;
-    cout << "Switch from the start" << endl;
+    cout << "Switch from the start, ";
     break;
   default:
     cout << "Switching method " << switching_choice << " out of range\n";
@@ -108,15 +117,18 @@ static int initial_parse(int ac, char **av, Graph &graph,
   switch(pricing_choice){
   case 0:
     prefs.pricing_choice = LP::PRICING::DEVEX;
-    cout << "Devex pricing\n";
+    if(switching_choice)
+      cout << "Devex pricing\n";
     break;
   case 1:
     prefs.pricing_choice = LP::PRICING::STEEPEST;
-    cout << "Steepest edge w slack initial norms\n";
+    if(switching_choice)
+      cout << "Steepest edge w slack initial norms\n";
     break;
   case 2:
     prefs.pricing_choice = LP::PRICING::STEEPEST_REAL;
-    cout << "True steepest edge\n";
+    if(switching_choice)
+      cout << "True steepest edge\n";
     break;
   default:
     cout << "Pricing method " << pricing_choice << " out of range\n";
@@ -245,6 +257,7 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
 
 static void usage(char *f){
   fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", f);
+  fprintf(stderr, "   -T     engage tooth testing protocol\n");
   fprintf(stderr, "   -d x   set dynamic pricing switch behavior to x\n");
   fprintf(stderr, "      0 = do not switch pricing methods\n");
   fprintf(stderr, "      1 = switch when a non-degenerate pivot takes\n");

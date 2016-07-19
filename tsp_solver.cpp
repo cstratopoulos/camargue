@@ -96,6 +96,7 @@ int TSP_Solver::pure_cut(){
   int stat;
   int num_seg, num_2match, total_cuts = 0;
   int segval, matchval;
+  double segtime, matchtime;
   int rounds = 0;
 
   rval = LPcore.basis_init();
@@ -130,16 +131,23 @@ int TSP_Solver::pure_cut(){
     rval = LPcore.pivot_back();
     if(rval) goto CLEANUP;
 
+    segtime = PSEP_zeit();
     segval = cutcall.segment(&num_seg);
     if(segval == 1)
       break;
+    segtime = PSEP_zeit() - segtime;
 
+    matchtime = PSEP_zeit();
     matchval = cutcall.blossom(250 - num_seg, &num_2match);
     if(matchval == 1)
       break;
+    matchtime = PSEP_zeit() - matchtime;
 
-    cout << "Added " << num_seg << " segments, " << num_2match
-	 << " blossoms" << endl;
+    cout << "Added " << num_seg << " segments"
+	 << " (in " << segtime << "s)"
+	 <<", " << num_2match
+	 << " blossoms"
+	 << " (in " << matchtime << "s)" << endl;
 
     total_cuts += num_seg + num_2match;
 
@@ -166,6 +174,10 @@ int TSP_Solver::simple_test(){
   int stat, x = 250, y = 1;
   int num_seg = 0, segval = 0;
   int num_2match = 0, matchval = 0;
+  double segtime, matchtime, routine_start;
+  int rounds = 0;
+  int total_cuts = 0;
+
   bool in_sep = false;
 
   cout << "Pivoting until solution in subtour polytope...\n";
@@ -191,13 +203,26 @@ int TSP_Solver::simple_test(){
     if(LPcore.pivot_back())
       return 1;
 
+    segtime = PSEP_zeit();
     segval = cutcall.segment(&num_seg);
     if(segval == 1)
       return 1;
+    segtime = PSEP_zeit() - segtime;
 
+    matchtime = PSEP_zeit();
     matchval = cutcall.blossom(250 - num_seg, &num_2match);
     if(matchval == 1)
       return 1;
+    matchtime = PSEP_zeit() - matchtime;
+
+   
+    cout << "Added " << num_seg << " segments"
+	 << " (in " << segtime << "s)"
+	 <<", " << num_2match
+	 << " blossoms"
+	 << " (in " << matchtime << "s)" << endl;
+
+    total_cuts += num_seg + num_2match;
 
     if(num_seg == 0 && stat != PIVOT::SUBTOUR){
       if(cutcall.in_subtour_poly(&in_sep))
@@ -208,15 +233,22 @@ int TSP_Solver::simple_test(){
       cout << "No more cuts to add and still not in subtour polytope :'(\n";
       return 1;
     }
+    rounds++;
   }
 
-  print.best_tour_nodes();
+  cout << "Added " << total_cuts << " cuts in "
+       << rounds << " rounds\n";
 
-  print.lp_edges();
+  //print.best_tour_nodes();
+
+  //print.lp_edges();
 
   if(in_sep){
     cout << "Solution is in subtour polytope, building collection...\n";
+    routine_start = PSEP_zeit();
     cutcall.simpleDP(x, &y);
+    cout << (PSEP_zeit() - routine_start) << "s finding candidate teeth "
+	 << "and building light cutgraph/GH tree\n";
   }
 
   return 0;
