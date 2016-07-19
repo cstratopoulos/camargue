@@ -157,8 +157,64 @@ void PSEP_CandTooth::find_root_distant_teeth(const int root){
     }
     for(int k = 0; k < ncount; k++) edge_marks[k] = 0;
   }
+}
 
+void PSEP_CandTooth::SimpleTooth::parse_handle(const vector<int>&handle_nodes,
+				  vector<double> &rmatval, double *rhs_p){
+  int current_node, other_end;
 
+  *rhs_p += (2 * handle_nodes.size());
+
+  for(int i = 0; i < handle_nodes.size(); i++)
+    edge_marks[handle_nodes[i]] = 1;
+
+  for(int i = 0; i < handle_nodes.size(); i++){
+    current_node = handle_nodes[i];
+    for(int j = 0; j < G_s->nodelist[current_node].s_degree; j++){
+      other_end = G_s->nodelist[current_node].adj_objs[j].other_end;
+      if(edge_marks[current_node] + edge_marks[other_end] == 2){
+	rmatval[G_s->nodelist[current_node].adj_objs[j].edge_index] += 1.0;
+	continue;
+      }
+
+      if(edge_marks[current_node] + edge_marks[other_end] == 1)
+	rmatval[G_s->nodelist[current_node].adj_objs[j].edge_index] += 1.0;
+    }
+  }
+
+  for(int i = 0; i < handle_nodes.size(); i++)
+    edge_marks[handle_nodes[i]] = 0;
+}
+
+void PSEP_CandTooth::SimpleTooth::parse(vector<double> &rmatval,
+					double *rhs_p){
+  int upper_limit = body_size + ((int) sandwich);
+  SNode *rootnode = &G_s->nodelist[best_tour_nodes[root]];
+  int current_node, other_end;
+
+  *rhs_p = ((2 * body_size) - 1);
+
+  for(int i = 0; i < upper_limit; i++)
+    edge_marks[best_tour_nodes[(body_start +i) % ncount]] = 1;
+  edge_marks[best_tour_nodes[root]] = 0;
+
+  for(int i = 0; i < upper_limit; i++){
+    current_node = best_tour_nodes[(body_start + i) % ncount];
+    if(current_node == best_tour_nodes[root]) continue;
+    for(int j = 0; j < G_s->nodelist[current_node].s_degree; j++){
+      other_end = G_s->nodelist[current_node].adj_objs[j].other_end;
+      if(edge_marks[current_node] + edge_marks[other_end] == 2)
+	rmatval[G_s->nodelist[current_node].adj_objs[j].edge_index] += 1.0;
+    }
+  }
+
+  for(int j = 0; j < rootnode->s_degree; j++)
+    if(edge_marks[rootnode->adj_objs[j].other_end] == 1)
+      rmatval[rootnode->adj_objs[j].edge_index] += 1.0;
+
+  for(int i = 0; i < upper_limit; i++)
+    edge_marks[best_tour_nodes[(body_start + i) % ncount]] = 0;
+  edge_marks[best_tour_nodes[root]] = 0;
 }
 
 

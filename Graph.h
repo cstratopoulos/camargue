@@ -4,6 +4,7 @@
 #include <vector>
 #include<queue>
 #include<utility>
+#include<math.h>
 #include <iostream>
 
 extern "C" {

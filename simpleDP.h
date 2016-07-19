@@ -21,6 +21,8 @@ class PSEP_SimpleDP {
   void build_light_cuttree();
   void add_web_edges();
   int call_CC_gomoryhu(const int max_cutcount);
+  void parse_domino(const int deltacount, const std::vector<int> &dom_delta,
+		    std::vector<double> &rmatval, double *rhs_p);
 
  private:
   SupportGraph &G_s;

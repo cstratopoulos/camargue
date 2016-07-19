@@ -216,3 +216,69 @@ int PSEP_SimpleDP::call_CC_gomoryhu(const int max_cutcount){
     cerr << "Error entry point: SimpleDP::call_CC_gomoryhu\n";
   return rval;
 }
+
+void PSEP_SimpleDP::parse_domino(const int deltacount,
+				 const vector<int> &dom_delta,
+				 vector<double> &rmatval, double *rhs_p){
+  *rhs_p = 0.0;
+  vector<int> handle_nodes;
+  vector<shared_ptr<PSEP_CandTooth::SimpleTooth> > used_teeth;
+  int end0, end1, edge_ind, special_ind = light_nodes.size() - 1;
+
+  for(int i = 0; i < deltacount; i++){
+    edge_ind = dom_delta[i];
+    end0 = cut_elist[2 * edge_ind];
+    end1 = cut_elist[(2 * edge_ind) + 1];
+    shared_ptr<PSEP_CandTooth::SimpleTooth> T1 = light_nodes[end0];
+    shared_ptr<PSEP_CandTooth::SimpleTooth> T2 = light_nodes[end1];
+
+    if(T1 && T2){
+      if(T1->root != T2->root){
+	int graph_end1 = fmin(best_tour_nodes[T1->root],
+			      best_tour_nodes[T2->root]);
+	int graph_end2 = fmax(best_tour_nodes[T1->root],
+			      best_tour_nodes[T2->root]);
+	rmatval[0 /*INSERT RETRIEVE INDEX*/] -= 1.0;
+	continue;
+      }
+
+      if(PSEP_CandTooth::SimpleTooth::C_body_subset(*T1, *T2))
+	used_teeth.push_back(std::move(T1));
+      else
+	used_teeth.push_back(std::move(T2));
+
+      continue;
+    }
+
+    if(!T1 && !T2){
+      if(end0 == special_ind){
+	handle_nodes.push_back(end1);
+	continue;
+      }
+
+      if(end1 == special_ind){
+	handle_nodes.push_back(end0);
+	continue;
+      }
+
+      rmatval[0/*RETRIEVE INDEX*/] -= 1.0;
+      continue;
+    }
+
+    if(!T1 && T2){
+      used_teeth.push_back(std::move(T2));
+      continue;
+    }
+
+    if(T1 && !T2){
+      used_teeth.push_back(std::move(T1));
+      continue;
+    }
+  }
+
+  PSEP_CandTooth::SimpleTooth::parse_handle(handle_nodes, rmatval, rhs_p);
+
+  for(int i = 0; i < used_teeth.size(); i++)
+    used_teeth[i]->parse(rmatval, rhs_p);
+}
+

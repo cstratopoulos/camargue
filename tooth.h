@@ -24,6 +24,8 @@ class PSEP_CandTooth {
   void find_root_adjacent_teeth(const int root);
   void find_root_distant_teeth(const int root);
 
+
+
  private:
   class SimpleTooth{
   public:
@@ -36,10 +38,15 @@ class PSEP_CandTooth {
 	sandwich = (body_start <= root || root <= body_end);
 
       int add_one = (int) (!sandwich);
-      body_size = (body_start <= body_end) ? (body_end - body_start + add_one) :
+      body_size = (body_start <= body_end) ?
+	(body_end - body_start + add_one) :
 	((ncount - body_start) + body_end + add_one);
     }
 
+    void parse(std::vector<double> &rmatval, double *rhs_p);
+    static void parse_handle(const std::vector<int> &handle_nodes,
+			     std::vector<double> &rmatval, double *rhs_p);
+    
     bool body_contains(const int node_perm);
     static bool C_body_subset(const SimpleTooth &T, const SimpleTooth &R);
     void complement();
