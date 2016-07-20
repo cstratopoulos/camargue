@@ -1,0 +1,5 @@
+simpleDP:
+sometimes tries to add cuts with an odd LHS coefficient
+probably due to not correctly building web edges/adding
+nonneg inequalities or something
+should try to fix later
