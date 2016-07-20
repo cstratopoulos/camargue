@@ -133,13 +133,11 @@ int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
       if(((int) agg_coeffs[j]) % 2 == 1){
 	cout << "Bad inequality, edge " << j
 	     << " has coefficient: " << agg_coeffs[j] << "\n";
+	agg_coeffs[j] -= 1;
 	found_odd = true;
       }
       agg_coeffs[j] /= 2;
     }
-
-    if(found_odd)
-      continue;
 
 
 
@@ -147,12 +145,16 @@ int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
       lhs += m_lp_edges[j] * agg_coeffs[j];
 
     if(lhs <= rhs){
+      if(found_odd)
+	cout << "(~~~DESPITE RESCUE ATTEMPT~~~) ";
       cout << "Bad inequality won't be added, lhs: " << lhs << ", rhs: "
 	   << rhs << "\n";
       continue;
     } else {
       cout << "Found simple DP with lhs: "
 	   << lhs << ", rhs: " << rhs << "......";
+      if(found_odd)
+	cout << "(~~~RESCUED INEQUALITY~~~~)...";
     }
     
 
