@@ -84,15 +84,12 @@ int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
     goto CLEANUP;
   }
 
-  cout << "simpleDP is calling dominos.separate!\n";
   rval = dominos.separate(max_cutcount);
   if(rval) goto CLEANUP;
 
   if(dominos.toothlists.empty()){
     rval = 2; goto CLEANUP;
   }
-
-  cout << "dominos.toothlists.size is " << dominos.toothlists.size() << "\n";
 
   ncount = dominos.light_nodes.size();
   ecount = dominos.cut_ecap.size();
@@ -110,51 +107,49 @@ int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
     
     G_Utils::get_delta(current_toothlist.size(),
 		       &current_toothlist[0], ecount,
-		       &(dominos.cut_elist)[0], &deltacount, &domino_delta[0],
+		       &(dominos.cut_elist)[0], &deltacount,
+		       &domino_delta[0],
 		       &cut_node_marks[0]);
 
-    cout << "============================\n";
-    cout << "NOW PARSING TOOTHLIST " << i << "\n";
-    cout << "Deltacount: " << deltacount << "\n";
-    cout << "Contains " << current_toothlist.size() << " nodes: \n";
-    for(int j = 0; j < current_toothlist.size(); j++)
-      cout << current_toothlist[j] << "\n";
+    // cout << "============================\n";
+    // cout << "NOW PARSING TOOTHLIST " << i << "\n";
+    // cout << "Deltacount: " << deltacount << "\n";
+    // cout << "Contains " << current_toothlist.size() << " nodes: \n";
+    // for(int j = 0; j < current_toothlist.size(); j++)
+    //   cout << current_toothlist[j] << "\n";
 
     dominos.parse_domino(deltacount, domino_delta, agg_coeffs, &rhs);
 
-    cout << "rhs: " << rhs;
+    //    cout << "rhs: " << rhs;
     rhs /= 2;
     RHS = (int) rhs;
     rhs = RHS;
-    cout << " rounded to " << rhs << "\n";
+    //    cout << " rounded to " << rhs << "\n";
 
-    cout << "rounding down coeffs....\n";     
+    //    cout << "rounding down coeffs....\n";     
     for(int j = 0; j < agg_coeffs.size(); j++){
       if(((int) agg_coeffs[j]) % 2 == 1){
-	cout << "Bad inequality, edge " << j
-	     << " has coefficient: " << agg_coeffs[j] << "\n";
-	agg_coeffs[j] -= 1;
+	// cout << "Bad inequality, edge " << j
+	//      << " has coefficient: " << agg_coeffs[j] << "\n";
 	found_odd = true;
       }
       agg_coeffs[j] /= 2;
     }
 
+    if(found_odd)
+      continue;
 
-
-    for(int j = 0; j < m_lp_edges.size(); j++)
+    for(int j = 0; j < m_lp_edges.size(); j++){
       lhs += m_lp_edges[j] * agg_coeffs[j];
+    }
 
     if(lhs <= rhs){
-      if(found_odd)
-	cout << "(~~~DESPITE RESCUE ATTEMPT~~~) ";
-      cout << "Bad inequality won't be added, lhs: " << lhs << ", rhs: "
-	   << rhs << "\n";
+      // cout << "Bad inequality won't be added, lhs: " << lhs << ", rhs: "
+      // 	   << rhs << "\n";
       continue;
     } else {
       cout << "Found simple DP with lhs: "
 	   << lhs << ", rhs: " << rhs << "......";
-      if(found_odd)
-	cout << "(~~~RESCUED INEQUALITY~~~~)...";
     }
     
 

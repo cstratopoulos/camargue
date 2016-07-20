@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
   PSEP_LP_Prefs prefs;
   vector<int> tour_node_indices;
 
-  cout << "BRANCH VERSION: CHECKING LIGHT NODE INDEXING";
+  cout << "BRANCH VERSION: MASTER";
   if(tooth)
     cout << ", Tooth testing";
   cout << "\n";

@@ -3,8 +3,8 @@ using namespace std;
 
 int PSEP_SimpleDP::separate(const int max_cutcount){
   int rval = 0;
-  int ncount = G_s.node_count;
-  int light_total = 0, heavy_total = 0;
+  //  int ncount = G_s.node_count;
+  //  int light_total = 0, heavy_total = 0;
 
 
   toothlists.clear();
@@ -12,40 +12,42 @@ int PSEP_SimpleDP::separate(const int max_cutcount){
 
   candidates.build_collection();
 
-  for(int i = 0; i < ncount; i++){
-    light_total += candidates.light_teeth[i].size();
-    heavy_total += candidates.heavy_teeth[i].size();
-  }
+  // for(int i = 0; i < ncount; i++){
+  //   light_total += candidates.light_teeth[i].size();
+  //   heavy_total += candidates.heavy_teeth[i].size();
+  // }
 
-  cout << light_total << " light teeth, " << heavy_total << " heavy teeth\n";
-  cout << "Light teeth / n^2 = "
-       << ((double) light_total / (ncount * ncount)) << "\n";
-  cout << "Total num teeth / n^3 = "
-       << ((double) (light_total + heavy_total) / (ncount * ncount * ncount))
-       << "\n";
+  // cout << light_total << " light teeth, " << heavy_total << " heavy teeth\n";
+  // cout << "Light teeth / n^2 = "
+  //      << ((double) light_total / (ncount * ncount)) << "\n";
+  // cout << "Total num teeth / n^3 = "
+  //      << ((double) (light_total + heavy_total) / (ncount * ncount * ncount))
+  //      << "\n";
 
-  cout << G_s.edge_count << " edges in support graph\n";
+  // cout << G_s.edge_count << " edges in support graph\n";
 
-  cout << "Building light cuttree...."; build_light_cuttree();
-  cout << "Done (" << cut_ecap.size() << " cut edges)\n";
-  int webcount = cut_ecap.size();
+  //cout << "Building light cuttree....";
+  build_light_cuttree();
+  //  cout << "Done (" << cut_ecap.size() << " cut edges)\n";
+  //  int webcount = cut_ecap.size();
   
 
-  cout << "Adding web edges...."; add_web_edges();
-  cout << "Done (Now " << cut_ecap.size() << " cut edges)\n";
+  //cout << "Adding web edges....";
+  add_web_edges();
+  //  cout << "Done (Now " << cut_ecap.size() << " cut edges)\n";
 
-  cout << "Printing cutgraph........\n";
-  print_cutgraph(G_s.node_count, webcount);
+  //cout << "Printing cutgraph........\n";
+  //print_cutgraph(G_s.node_count, webcount);
 
   
-  cout << "Calling concorde and building toothlists...";
+  //  cout << "Calling concorde and building toothlists...";
   rval = call_CC_gomoryhu(max_cutcount);
   if(rval)
     goto CLEANUP;
-  cout << "Done\n";
+  //  cout << "Done\n";
 
-  cout << "Number of inequalities for consideration: "
-       << toothlists.size() << "\n";
+  // cout << "Number of inequalities for consideration: "
+  //      << toothlists.size() << "\n";
 
  CLEANUP:
   if(rval)
@@ -261,8 +263,8 @@ void PSEP_SimpleDP::parse_domino(const int deltacount,
 	int graph_end2 = fmax(best_tour_nodes[T1->root],
 			      best_tour_nodes[T2->root]);
 	rmatval[edge_lookup[IntPair(graph_end1, graph_end2)]] -= 1.0;
-	cout << "Added nonnegativity inequality for edge "
-	     << graph_end1 << ", " << graph_end2 << "\n";
+	// cout << "Added nonnegativity inequality for edge "
+	//      << graph_end1 << ", " << graph_end2 << "\n";
 	continue;
       }
 
@@ -288,8 +290,8 @@ void PSEP_SimpleDP::parse_domino(const int deltacount,
       //else both are indices of actual nodes in graph
       rmatval[edge_lookup[IntPair(fmin(end0, end1),
 				  fmax(end0, end1))]] -= 1.0;
-      cout << "Added nonnegativity inequality for " << end0 << ", "
-	   << end1 << "\n";
+      // cout << "Added nonnegativity inequality for " << end0 << ", "
+      // 	   << end1 << "\n";
       continue;
     }
 
@@ -304,18 +306,18 @@ void PSEP_SimpleDP::parse_domino(const int deltacount,
     }
   }
 
-  cout << "Parsing handle nodes:\n";
-  cout << "Rhs before handle parse: " << *rhs_p << "\n";
-  cout << handle_nodes.size() << " nodes in handle:\n";
-  for(int i = 0; i < handle_nodes.size(); i++)
-    cout << handle_nodes[i] << "\n";
+  // cout << "Parsing handle nodes:\n";
+  // cout << "Rhs before handle parse: " << *rhs_p << "\n";
+  // cout << handle_nodes.size() << " nodes in handle:\n";
+  // for(int i = 0; i < handle_nodes.size(); i++)
+  //   cout << handle_nodes[i] << "\n";
 
   PSEP_CandTooth::SimpleTooth::parse_handle(handle_nodes, rmatval, rhs_p);
 
-  cout << "Parsing the used teeth, " << used_teeth.size() << " total\n";
+  //  cout << "Parsing the used teeth, " << used_teeth.size() << " total\n";
   for(int i = 0; i < used_teeth.size(); i++){
-    cout << "The " << i << "th used tooth is \n";
-    used_teeth[i]->print();
+    // cout << "The " << i << "th used tooth is \n";
+    // used_teeth[i]->print();
     used_teeth[i]->parse(rmatval, rhs_p);
   }
 }
