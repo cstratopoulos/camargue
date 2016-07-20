@@ -147,16 +147,16 @@ int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
       // cout << "Bad inequality won't be added, lhs: " << lhs << ", rhs: "
       // 	   << rhs << "\n";
       continue;
-    } else {
-      cout << "Found simple DP with lhs: "
-	   << lhs << ", rhs: " << rhs << "......";
-    }
+    }//  else {
+    //   cout << "Found simple DP with lhs: "
+    // 	   << lhs << ", rhs: " << rhs << "......";
+    // }
     
 
     rval = dominos.add_cut(agg_coeffs, rhs);
     if(rval)
       goto CLEANUP;
-    cout << "Added inequality.\n";
+    //    cout << "Added inequality.\n";
 
     (*num_added_p)++;
   }

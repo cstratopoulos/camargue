@@ -230,7 +230,7 @@ int PSEP_SimpleDP::call_CC_gomoryhu(const int max_cutcount){
     goto CLEANUP;
   }
 
-  CCcut_GHtreeprint(&T);
+  //  CCcut_GHtreeprint(&T);
 
   CC::GH::get_all_toothlists(&T, max_cutcount, node_pq, toothlists);
 

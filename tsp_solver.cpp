@@ -171,7 +171,7 @@ int TSP_Solver::simple_test(){
   if(LPcore.basis_init())
     return 1;
 
-  int stat, x = 250, y = 1;
+  int stat, x = 250, num_dp = 0;
   int num_seg = 0, segval = 0;
   int num_2match = 0, matchval = 0;
   double segtime, matchtime, routine_start;
@@ -239,14 +239,14 @@ int TSP_Solver::simple_test(){
   cout << "Added " << total_cuts << " cuts in "
        << rounds << " rounds\n";
 
-  print.best_tour_nodes();
-
-  print.lp_edges();
+  // print.best_tour_nodes();
+  // print.lp_edges();
 
   if(in_sep){
     cout << "Solution is in subtour polytope, building collection...\n";
     routine_start = PSEP_zeit();
-    cutcall.simpleDP(x, &y);
+    cutcall.simpleDP(x, &num_dp);
+    cout << num_dp << " dp inequalities added\n";
     cout << (PSEP_zeit() - routine_start) << "s finding candidate teeth "
 	 << "and building light cutgraph/GH tree\n";
   }
