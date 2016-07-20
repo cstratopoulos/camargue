@@ -19,7 +19,8 @@ class PSEP_Printer {
   
   void best_tour_nodes(){
     for(int i = 0; i < tour_nodes.size(); i++)
-      std::cout << tour_nodes[i] << std::endl;
+      std::cout << "tour_nodes[" << i << "] = "
+		<< tour_nodes[i] << std::endl;
     };
   
   void best_tour_edges(){

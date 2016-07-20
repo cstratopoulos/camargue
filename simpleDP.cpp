@@ -6,6 +6,7 @@ int PSEP_SimpleDP::separate(const int max_cutcount){
   int ncount = G_s.node_count;
   int light_total = 0, heavy_total = 0;
 
+
   toothlists.clear();
   
 
@@ -23,10 +24,18 @@ int PSEP_SimpleDP::separate(const int max_cutcount){
        << ((double) (light_total + heavy_total) / (ncount * ncount * ncount))
        << "\n";
 
-  cout << "Building light cuttree...."; build_light_cuttree();
-  cout << "Done\n";
+  cout << G_s.edge_count << " edges in support graph\n";
 
-  cout << "Adding web edges...."; add_web_edges(); cout << "Done\n";
+  cout << "Building light cuttree...."; build_light_cuttree();
+  cout << "Done (" << cut_ecap.size() << " cut edges)\n";
+  int webcount = cut_ecap.size();
+  
+
+  cout << "Adding web edges...."; add_web_edges();
+  cout << "Done (Now " << cut_ecap.size() << " cut edges)\n";
+
+  cout << "Printing cutgraph........\n";
+  print_cutgraph(G_s.node_count, webcount);
 
   
   cout << "Calling concorde and building toothlists...";
@@ -58,7 +67,8 @@ void PSEP_SimpleDP::build_light_cuttree(){
   node_marks.clear();
 
   //NULL shared ptrs for the degree eqn on each root
-  light_nodes.resize(candidates.light_teeth.size());
+  for(int i = 0; i < candidates.light_teeth.size(); i++)
+    light_nodes.emplace_back((PSEP_CandTooth::SimpleTooth *) NULL);
 
   current_index = light_nodes.size();
 
@@ -68,13 +78,15 @@ void PSEP_SimpleDP::build_light_cuttree(){
 	  it = candidates.light_teeth[i].begin();
 	it != candidates.light_teeth[i].end(); it++){
       light_nodes.push_back(*it);
-      (*it)->node_index = current_index++;
+      (*it)->node_index = current_index;
+      current_index++;
     }
   }
 
   light_nodes.emplace_back((PSEP_CandTooth::SimpleTooth *) NULL);
   num_cutnodes = light_nodes.size();
   star_index = num_cutnodes - 1; // the special central node
+
   
   node_marks.resize(num_cutnodes, false);
 
@@ -125,7 +137,8 @@ void PSEP_SimpleDP::build_light_cuttree(){
 	cut_elist.push_back((*child)->node_index);
 	cut_elist.push_back(i);
 	node_marks[i] = !(node_marks[i]);
-	node_marks[(*child)->node_index] = !(node_marks[(*child)->node_index]);
+	node_marks[(*child)->node_index] =
+	  !(node_marks[(*child)->node_index]);
 	cut_ecap.push_back((*child)->slack);
       }
     }
@@ -147,32 +160,34 @@ void PSEP_SimpleDP::add_web_edges(){
       int end1 = G_s.nodelist[end0].adj_objs[j].other_end;
       if(end0 > end1) continue;
       lp_weight = G_s.nodelist[end0].adj_objs[j].lp_weight;
+      //search for smallest body with root end0 containing end1
       if(!candidates.light_teeth[end0].empty()){
 	for(list<shared_ptr<PSEP_CandTooth::SimpleTooth> >::reverse_iterator
 	      root_end0 = candidates.light_teeth[end0].rbegin();
 	    root_end0 != candidates.light_teeth[end0].rend(); root_end0++){
 	  end1_in = (*root_end0)->body_contains(perm[end1]);
-	  if(end1_in){
+	  if(end1_in){//found tooth w root end0, smallest set containing end1
 	    cut_elist.push_back((*root_end0)->node_index);
 	    break;
 	  }
 	}
       }
-      if(!end1_in)
+      if(!end1_in)//none found, take degree eqn end0
 	cut_elist.push_back(end0);
 
+      //search for smallest body with root end1 containing end0
       if(!candidates.light_teeth[end1].empty()){
 	for(list<shared_ptr<PSEP_CandTooth::SimpleTooth> >::reverse_iterator
 	      root_end1 = candidates.light_teeth[end1].rbegin();
 	    root_end1 != candidates.light_teeth[end1].rend(); root_end1++){
 	  end0_in = (*root_end1)->body_contains(perm[end0]);
-	  if(end0_in){
+	  if(end0_in){//found tooth w root end1, smallest set containing end0
 	    cut_elist.push_back((*root_end1)->node_index);
 	    break;
 	  }
 	}
       }
-      if(!end0_in)
+      if(!end0_in)//none found, take degree eqn end1
 	cut_elist.push_back(end1);
 
       cut_ecap.push_back(lp_weight);
@@ -188,7 +203,11 @@ int PSEP_SimpleDP::call_CC_gomoryhu(const int max_cutcount){
   
   CCrandstate rstate;
   CC_GHtree T;
-  int seed = (int) PSEP_real_zeit();
+  int seed;
+  if(UTIL::seed)
+    seed = UTIL::seed;
+  else
+    seed = (int) PSEP_real_zeit();
   CCutil_sprand(seed, &rstate);
   CCcut_GHtreeinit(&T);
 
@@ -208,6 +227,8 @@ int PSEP_SimpleDP::call_CC_gomoryhu(const int max_cutcount){
     cerr << "Problem calling CCcut_gomory_hu\n";
     goto CLEANUP;
   }
+
+  CCcut_GHtreeprint(&T);
 
   CC::GH::get_all_toothlists(&T, max_cutcount, node_pq, toothlists);
 
@@ -283,12 +304,15 @@ void PSEP_SimpleDP::parse_domino(const int deltacount,
     }
   }
 
-  cout << "Parsing handle nodes (those where degree eqn is used\n";
+  cout << "Parsing handle nodes:\n";
   cout << "Rhs before handle parse: " << *rhs_p << "\n";
-  cout << handle_nodes.size() << " nodes in handle\n";
+  cout << handle_nodes.size() << " nodes in handle:\n";
+  for(int i = 0; i < handle_nodes.size(); i++)
+    cout << handle_nodes[i] << "\n";
+
   PSEP_CandTooth::SimpleTooth::parse_handle(handle_nodes, rmatval, rhs_p);
 
-  cout << "Parsing the used teeth\n";
+  cout << "Parsing the used teeth, " << used_teeth.size() << " total\n";
   for(int i = 0; i < used_teeth.size(); i++){
     cout << "The " << i << "th used tooth is \n";
     used_teeth[i]->print();
@@ -323,4 +347,47 @@ int PSEP_SimpleDP::add_cut(const vector<double> &agg_coeffs,
   if(rval)
     cerr << "Problem in PSEP_SimpleDP::add_cut\n";
   return rval;
+}
+
+void PSEP_SimpleDP::print_cutgraph(const int ncount, const int webcount){
+  PSEP_CandTooth::SimpleTooth *end0, *end1;
+
+  for(int i = 0; i < cut_ecap.size(); i++){
+    if(i == 0)
+      cout << "***********************\n"
+	   << "* PRINTING STAR EDGES *\n"
+	   << "***********************\n";
+  
+    if(i == ncount)
+      cout << "****************************\n"
+	   << "* PRINTING MAIN TREE EDGES *\n"
+	   << "****************************\n";
+    if(i == webcount)
+      cout << "**********************\n"
+	   << "* PRINTING WEB EDGES *\n"
+	   << "**********************\n";
+    cout << "Edge number: " << i
+	 << " [" << cut_elist[2 * i] << ", " << cut_elist[(2 * i) + 1]
+	 << "] cap: " << cut_ecap[i] << ", joins....\n";
+    end0 = light_nodes[cut_elist[2*i]].get();
+    end1 = light_nodes[cut_elist[(2*i) + 1]].get();
+
+    if(end0 == NULL){
+      if(cut_elist[2*i] == (light_nodes.size() - 1))
+	cout << "STAR node\n";
+      else
+	cout << "Degree eqn node " << cut_elist[(2*i)] << "\n";
+    } else
+      end0->print();
+
+    cout << "And...\n";
+
+    if(end1 == NULL){
+      if(cut_elist[(2*i)+1] == (light_nodes.size() - 1))
+	cout << "STAR node\n";
+      else
+	cout << "Degree eqn node " << cut_elist[(2*i)+1] << "\n";
+    } else
+      end1->print();      
+  }
 }

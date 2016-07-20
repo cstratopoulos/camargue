@@ -103,6 +103,7 @@ int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
     double rhs = 0.0;
     double lhs = 0.0;
     int RHS = 0;
+    bool found_odd = false;
     vector<int> &current_toothlist = dominos.toothlists[i];
     for(int j = 0; j < agg_coeffs.size(); j++)
       agg_coeffs[j] = 0;
@@ -114,21 +115,39 @@ int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
 
     cout << "============================\n";
     cout << "NOW PARSING TOOTHLIST " << i << "\n";
+    cout << "Deltacount: " << deltacount << "\n";
+    cout << "Contains " << current_toothlist.size() << " nodes: \n";
+    for(int j = 0; j < current_toothlist.size(); j++)
+      cout << current_toothlist[j] << "\n";
 
     dominos.parse_domino(deltacount, domino_delta, agg_coeffs, &rhs);
 
-    for(int j = 0; j < agg_coeffs.size(); j++)
-      agg_coeffs[j] /= 2;
-
+    cout << "rhs: " << rhs;
     rhs /= 2;
     RHS = (int) rhs;
     rhs = RHS;
+    cout << " rounded to " << rhs << "\n";
+
+    cout << "rounding down coeffs....\n";     
+    for(int j = 0; j < agg_coeffs.size(); j++){
+      if(((int) agg_coeffs[j]) % 2 == 1){
+	cout << "Bad inequality, edge " << j
+	     << " has coefficient: " << agg_coeffs[j] << "\n";
+	found_odd = true;
+      }
+      agg_coeffs[j] /= 2;
+    }
+
+    if(found_odd)
+      continue;
+
+
 
     for(int j = 0; j < m_lp_edges.size(); j++)
       lhs += m_lp_edges[j] * agg_coeffs[j];
 
     if(lhs <= rhs){
-      cerr << "Bad inequality won't be added, lhs: " << lhs << ", rhs: "
+      cout << "Bad inequality won't be added, lhs: " << lhs << ", rhs: "
 	   << rhs << "\n";
       continue;
     } else {

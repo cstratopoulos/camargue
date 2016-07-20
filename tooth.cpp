@@ -226,8 +226,9 @@ void PSEP_CandTooth::SimpleTooth::parse(vector<double> &rmatval,
   SNode *rootnode = &G_s->nodelist[best_tour_nodes[root]];
   int current_node, other_end;
 
-  *rhs_p = ((2 * body_size) - 1);
-  cout << "rhs incremented by " << ((2 * body_size) - 1) << "\n";
+  *rhs_p += ((2 * body_size) - 1);
+  cout << "rhs incremented by " << ((2 * body_size) - 1)
+       << ", now is " << *rhs_p << "\n";
 
   for(int i = 0; i < upper_limit; i++)
     edge_marks[best_tour_nodes[(body_start +i) % ncount]] = 1;
@@ -355,8 +356,12 @@ void PSEP_CandTooth::SimpleTooth::print(){
   int current_node = body_start;
   int upper_limit = body_size + ((int) sandwich);
 
+
   cout << "Root: " << best_tour_nodes[root];
-  cout << ", Body size: " << body_size << "\n";
+  cout << ", Body size: " << body_size;
+  if(node_index != -1)
+    cout << " - Node index " << node_index << " -"
+	 << "\n";
   cout << "Body: " << best_tour_nodes[body_start] << "\n";
   for(int i = 1; i < upper_limit; i++){
     current_node = best_tour_nodes[(body_start + i) % ncount];

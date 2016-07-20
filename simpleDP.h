@@ -26,6 +26,7 @@ class PSEP_SimpleDP {
   void parse_domino(const int deltacount, const std::vector<int> &dom_delta,
 		    std::vector<double> &agg_coeffs, double *rhs_p);
   int add_cut(const std::vector<double> &agg_coeffs, const double RHS);
+  void print_cutgraph(const int ncount, const int webcount);
 
  private:
   friend class PSEP_Cutcall;

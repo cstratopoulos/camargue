@@ -29,9 +29,10 @@ class PSEP_CandTooth {
  private:
   class SimpleTooth{
   public:
-    SimpleTooth() {root = -1; body_start = -1; body_end = -1;}
+  SimpleTooth() : root(-1), body_start(-1), body_end(-1), node_index(-1){}
   SimpleTooth(const int _root, const int _body_start, const int _body_end) :
-    root(_root), body_start(_body_start), body_end(_body_end) {
+    root(_root), body_start(_body_start), body_end(_body_end),
+      node_index(-1){
       if(body_start <= body_end) // [____<---*--->__] gives sandwich
 	sandwich = (body_start <= root && root <= body_end);
       else //        [--->____<--*--]  OR [--*->____<--] gives sandwich

@@ -1,4 +1,5 @@
 #include <fstream>
+		   
 #include <iostream>
 
 #include "Graph.h"
@@ -155,7 +156,7 @@ void CC::GH::grab_cut_dfs(CC_GHnode *n, vector<int> &cut_nlist){
 //for building a list of GH cut nodes
 void CC::GH::pq_dfs(CC_GHnode *n, const int max_cutcount, cut_pq &pq){
   if(n->parent)
-    if((n->cutval < 1) && (n->ndescendants %2) == 1){
+    if((n->cutval < (1 - LP::EPSILON)) && (n->ndescendants %2) == 1){
       if(pq.size() < max_cutcount){
 	pq.push(n);
       } else

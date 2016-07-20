@@ -239,7 +239,7 @@ int TSP_Solver::simple_test(){
   cout << "Added " << total_cuts << " cuts in "
        << rounds << " rounds\n";
 
-  //print.best_tour_nodes();
+  print.best_tour_nodes();
 
   print.lp_edges();
 
