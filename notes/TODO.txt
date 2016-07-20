@@ -19,3 +19,9 @@ learn to call CPXaddrowS for multiple cuts
 
 see edgegen.c and edgegen.h, also tsp_call.c for ideas how to use
 concorde to build initial edge set
+
+tooth aggregated coefficients: instead of an ecount length vector, 
+create a map of type <Int, Double> mapping edges to their coeff
+to be aggregated. With some checking: can call increment/decrement
+even if the entries have not yet been initialized; they should
+default to zero. 
