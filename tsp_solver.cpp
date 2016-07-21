@@ -100,8 +100,8 @@ int TSP_Solver::pure_cut(){
   int rounds = 0, augrounds = 0;
   bool in_subtour;
 
-  double total_segtime = 0;
-  int total_segcalls = 0;
+  double total_segtime = 0, total_2mtime = 0;
+  int total_segcalls = 0, total_2mcalls = 0;
 
   rval = LPcore.basis_init();
   if(rval) goto CLEANUP;
@@ -150,6 +150,7 @@ int TSP_Solver::pure_cut(){
     if(matchval == 1)
       break;
     matchtime = PSEP_zeit() - matchtime;
+    total_2mtime += matchtime; total_2mcalls++;
 
     cout << "Added " << num_seg << " segments"
 	 << " (in " << segtime << "s)"
@@ -190,6 +191,8 @@ int TSP_Solver::pure_cut(){
 
   cout << "Average time per segcall: "
        << ((double) (total_segtime / total_segcalls)) << "\n";
+  cout << "Average time per blossom call: "
+       << ((double) (total_2mtime / total_2mcalls)) << "\n";
 
  CLEANUP:
   if(rval)
