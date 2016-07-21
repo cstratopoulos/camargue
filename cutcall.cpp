@@ -68,9 +68,10 @@ int PSEP_Cutcall::blossom(const int max_cutcount, int *num_added_p){
   return rval;
 }
 
-int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
+int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p,
+			   int *num_bad_p){
   int rval = 0;
-  *num_added_p = 0;
+  *num_added_p = 0; *num_bad_p = 0;
   vector<double> agg_coeffs(m_lp_edges.size(), 0);
   // double rhs, lhs;
   // int RHS;
@@ -132,18 +133,22 @@ int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
 	// cout << "Bad inequality, edge " << j
 	//      << " has coefficient: " << agg_coeffs[j] << "\n";
 	found_odd = true;
+	
       }
       agg_coeffs[j] /= 2;
     }
 
-    if(found_odd)
+    if(found_odd){
+      (*num_bad_p)++;
       continue;
+    }
 
     for(int j = 0; j < m_lp_edges.size(); j++){
       lhs += m_lp_edges[j] * agg_coeffs[j];
     }
 
     if(lhs <= rhs){
+      (*num_bad_p)++;
       // cout << "Bad inequality won't be added, lhs: " << lhs << ", rhs: "
       // 	   << rhs << "\n";
       continue;
@@ -160,6 +165,9 @@ int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p){
 
     (*num_added_p)++;
   }
+
+  if(*num_added_p == 0)
+    rval = 2;
 
 
  CLEANUP:

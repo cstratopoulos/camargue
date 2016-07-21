@@ -100,6 +100,12 @@ int PSEPlp_delrows(PSEPlp *lp, int begin, int end){
   return rval;
 }
 
+int PSEPlp_delsetrows(PSEPlp *lp, int *delstat){
+  int rval = CPXdelsetrows(lp->cplex_env, lp->cplex_lp, delstat);
+  if(rval) {fprintf(stderr, "CPXdelsetrows failed, rval %d\n", rval);}
+  return rval;
+}
+
 int PSEPlp_numrows(PSEPlp *lp){
   return CPXgetnumrows (lp->cplex_env, lp->cplex_lp);
 }

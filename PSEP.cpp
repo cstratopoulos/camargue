@@ -54,6 +54,7 @@ static int initial_parse(int ac, char **av, Graph &graph,
   int seed = 0;
   int pricing_choice = 0;
   int switching_choice = 0;
+  int dp_factor = 3;
 
   int c;
 
@@ -62,10 +63,13 @@ static int initial_parse(int ac, char **av, Graph &graph,
     return 1;
   }
 
-  while((c = getopt(ac, av, "Tad:p:s:")) != EOF) {
+  while((c = getopt(ac, av, "TaD:d:p:s:")) != EOF) {
     switch(c) {
     case 'T':
       tooth = 1;
+      break;
+    case 'D':
+      dp_factor = atoi(optarg);
       break;
     case 'd':
       switching_choice = atoi(optarg);
@@ -135,6 +139,15 @@ static int initial_parse(int ac, char **av, Graph &graph,
     usage(av[0]);
     return 1;
   }
+
+  if(dp_factor > 4){
+    cout << "DP factor " << dp_factor << " too high\n";
+    usage(av[0]);
+    return 1;
+  }
+  prefs.dp_threshold = 5 * dp_factor;
+  cout << "DP separation will be tried after "
+       << prefs.dp_threshold << " non-degenerate pivots w no augmentation\n";
   
   UTIL::seed = seed;
 
@@ -190,7 +203,8 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
   //int *bestcyc = (int *) NULL;
   int *perm = (int *) NULL;
   int *cyc = (int *) NULL;
-  double bestval, szeit;
+  double bestval, val, szeit;
+  int trials = 1;
   int silent = 1;
   int kicks = (ncount > 400 ? 100 : ncount / 4);
   int istour;
@@ -208,8 +222,12 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
   //code copies from static int find_tour from concorde
   CCutil_sprand(seed, &rand_state);
   CCrandstate *rstate = &rand_state;
+  cyc = CC_SAFE_MALLOC(ncount, int);
   perm = CC_SAFE_MALLOC (ncount, int);
-  CCcheck_NULL (perm, "out of memory for perm");
+  if(!cyc || !perm){
+    cerr << "Out of memory for find_tour\n";
+    rval = 1; goto CLEANUP;
+  }
   
   node_indices.resize(ncount);
 
@@ -243,10 +261,43 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
 			 (char *) NULL,
 			 CC_LK_GEOMETRIC_KICK, rstate);
   CCcheck_rval (rval, "CClinkern_tour failed");
-  //end of copied code
+  if(rval) goto CLEANUP;
+  //end of copied code (from find_tour)
+  cout << "LK initial run: " << bestval << endl;
+
+  //begin copied code from find_good_tour in tsp_call.c
+
+  
+  for(int i = 0; i < trials; i++){
+    rval = CClinkern_tour(ncount, dat, ecount, elist, ncount, kicks,
+			  (int *) NULL, cyc, &val, 1, 0.0, 0.0,
+			  (char *) NULL, CC_LK_GEOMETRIC_KICK, rstate);
+    if(rval)
+      cerr << "CClinkern_tour failed\n";
+    cout << "LK run " << i << ": " << val << "\n";
+    if(val < bestval){
+      for(int j = 0; j < ncount; j++)
+	node_indices[j] = cyc[j];
+      bestval = val;
+    }
+  }
+
+  if (trials > 0){
+    rval = CClinkern_tour(ncount, dat, ecount, elist, ncount, 2 * kicks,
+			  &node_indices[0], cyc, &bestval, 1, 0.0, 0.0,
+			  (char *) NULL,
+			  CC_LK_GEOMETRIC_KICK, rstate);
+    if(rval){
+      cerr << "CClinkern_tour failed\n"; goto CLEANUP;
+    }
+
+    cout << "LK run from best tour: " << bestval << "\n";
+    for(int j = 0; j < ncount; j++)
+      node_indices[j] = cyc[j];
+  }
   
   ecount = graph.edge_count;
-  cout << "bestcyc has value " << bestval << endl;
+
 
  CLEANUP:
 
@@ -259,6 +310,9 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
 static void usage(char *f){
   fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", f);
   fprintf(stderr, "   -T     engage tooth testing protocol\n");
+  fprintf(stderr, "   -D x   sets number of rounds with no augmentation\n");
+  fprintf(stderr, "          needed to attempt simple DP separation to 5*x\n");
+  fprintf(stderr, "          (x = 0, 1, 2, 3, 4), default 5*3 = 15\n");
   fprintf(stderr, "   -d x   set dynamic pricing switch behavior to x\n");
   fprintf(stderr, "      0 = do not switch pricing methods\n");
   fprintf(stderr, "      1 = switch when a non-degenerate pivot takes\n");

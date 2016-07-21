@@ -112,6 +112,7 @@ double PSEP_LP_Core::set_support_graph(){
 
 int PSEP_LP_Core::update_best_tour(){
   double objval = 0;
+  int num_removed = 0;
   
   for(int i = 0; i < m_graph.node_count; i++)
     best_tour_nodes[i] = island[i];
@@ -133,6 +134,14 @@ int PSEP_LP_Core::update_best_tour(){
 
   for(int i = 0; i < m_graph.node_count; i++)
     perm[best_tour_nodes[i]] = i;
+
+  /*
+  if(prune_cuts(&num_removed)){
+    cerr << "Error entry point: LP_Core::update_best_tour\n";
+    return 1;
+  } else
+    cout << num_removed << " non-tight cuts pruned from LP after augmenting\n";
+  */
 
   return 0;
 };
@@ -219,5 +228,31 @@ void PSEP_LP_Core::change_pricing(){
   if(CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient, newprice))
     cerr << "ERROR: PRICING SWITCH DID NOT TAKE PLACE\n";
   prefs.switching_choice = LP::PRICING::SWITCHING::OFF;
+}
+
+int PSEP_LP_Core::prune_cuts(int *num_removed){
+  int rval = 0;
+  *num_removed = 0;
+  int ncount = best_tour_nodes.size();
+  int rowcount = PSEPlp_numrows(&m_lp);
+  vector<int> delset(rowcount, 0);
+  vector<double> slacks(rowcount - ncount, 0);
+
+  rval = PSEPlp_getslack(&m_lp, &slacks[0], ncount, rowcount - 1);
+  if(rval)
+    return 1;
+
+  for(int i = 0; i < slacks.size(); i++){
+    if(slacks[i] >= LP::EPSILON){
+      delset[ncount + i] = 1;
+      (*num_removed)++;
+    }
+  }
+
+  rval = PSEPlp_delsetrows(&m_lp, &delset[0]);
+  if(rval)
+    return 1;
+
+  return 0;
 }
 

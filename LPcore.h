@@ -41,6 +41,8 @@ class PSEP_LP_Core {
 
   int update_best_tour();
 
+  int prune_cuts(int *num_removed);
+
   void change_pricing();
 
  private:
@@ -50,6 +52,7 @@ class PSEP_LP_Core {
   PSEP_LP_Prefs prefs;
 
   friend class TSP_Solver;
+  friend class PSEP_Cutcall;
   std::vector<int> old_colstat;
   std::vector<int> old_rowstat;
 

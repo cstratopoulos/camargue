@@ -29,7 +29,7 @@ class PSEP_Cutcall {
   
   int segment(int *num_added_p);
   int blossom(const int max_cutcount, int *num_added_p);
-  int simpleDP(const int max_cutcount, int *num_added_p);
+  int simpleDP(const int max_cutcount, int *num_added_p, int *num_bad_p);
 
   int in_subtour_poly(bool *result_p);
 

@@ -94,10 +94,11 @@ int TSP_Solver::pure_cut(){
   int rval = 0;
 
   int stat;
-  int num_seg, num_2match, total_cuts = 0;
-  int segval, matchval;
-  double segtime, matchtime;
-  int rounds = 0;
+  int num_seg, num_2match, num_dp, num_bad, total_cuts = 0;
+  int segval, matchval, dpval;
+  double segtime, matchtime, dptime;
+  int rounds = 0, augrounds = 0;
+  bool in_subtour;
 
   rval = LPcore.basis_init();
   if(rval) goto CLEANUP;
@@ -106,6 +107,8 @@ int TSP_Solver::pure_cut(){
 
   while(true){
     rounds++;
+    augrounds++;
+    in_subtour = false;
     
     rval = LPcore.pivot_until_change(&stat);
     if(rval) goto CLEANUP;
@@ -116,6 +119,7 @@ int TSP_Solver::pure_cut(){
       break;
 
     if(stat == PIVOT::TOUR){
+      augrounds = 0;
       rval = LPcore.update_best_tour();
       if(rval)
 	goto CLEANUP;
@@ -149,9 +153,28 @@ int TSP_Solver::pure_cut(){
 	 << " blossoms"
 	 << " (in " << matchtime << "s)" << endl;
 
-    total_cuts += num_seg + num_2match;
+    dpval = 2; num_dp = 0;
+    if(augrounds >= LPcore.prefs.dp_threshold){
+      if(num_seg == 0 && stat != PIVOT::SUBTOUR){
+	rval = cutcall.in_subtour_poly(&in_subtour);
+	if(rval) goto CLEANUP;
 
-    if(segval + matchval == 4)
+	if(in_subtour){
+	  dptime = PSEP_zeit();
+	  dpval = cutcall.simpleDP(250 - num_2match, &num_dp, &num_bad);
+	  if(dpval == 1)
+	    break;
+	  dptime = PSEP_zeit() - dptime;
+	  cout << "*** Added " << num_dp << " simple DP cuts "
+	       << "(in " << dptime << "s) (" << num_bad << " bad cuts found)"
+	       << " ***\n";
+	}
+      }
+    }
+
+    total_cuts += num_seg + num_2match + num_dp;
+
+    if(num_seg == 0 && num_2match == 0 && num_dp == 0)
       break;
   }
 
@@ -171,7 +194,7 @@ int TSP_Solver::simple_test(){
   if(LPcore.basis_init())
     return 1;
 
-  int stat, x = 250, num_dp = 0;
+  int stat, x = 250, num_dp = 0, num_bad = 0;
   int num_seg = 0, segval = 0;
   int num_2match = 0, matchval = 0;
   double segtime, matchtime, routine_start;
@@ -245,8 +268,9 @@ int TSP_Solver::simple_test(){
   if(in_sep){
     cout << "Solution is in subtour polytope, building collection...\n";
     routine_start = PSEP_zeit();
-    cutcall.simpleDP(x, &num_dp);
+    cutcall.simpleDP(x, &num_dp, &num_bad);
     cout << num_dp << " dp inequalities added\n";
+    cout << num_bad << " bad inequalities found\n";
     cout << (PSEP_zeit() - routine_start) << "s finding candidate teeth "
 	 << "and building light cutgraph/GH tree\n";
   }

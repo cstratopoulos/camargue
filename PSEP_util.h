@@ -22,11 +22,13 @@ namespace LP {
 }
 
 struct PSEP_LP_Prefs {
-PSEP_LP_Prefs() : pricing_choice(0), switching_choice(0) {}
-PSEP_LP_Prefs(int _price, int _switch) : pricing_choice(_price),
-    switching_choice(_switch) {}
+PSEP_LP_Prefs() : pricing_choice(0), switching_choice(0),
+    dp_threshold(15){}
+PSEP_LP_Prefs(int _price, int _switch, int _dp) : pricing_choice(_price),
+    switching_choice(_switch), dp_threshold(_dp) {}
   int pricing_choice;
   int switching_choice;
+  int dp_threshold;
 };
 
 namespace UTIL {
