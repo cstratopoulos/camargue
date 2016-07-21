@@ -77,6 +77,7 @@ static int initial_parse(int ac, char **av, Graph &graph,
       break;
     case 'j':
       jumpstart = true;
+      break;
     case 'p':
       pricing_choice = atoi(optarg);
       break;
