@@ -45,6 +45,9 @@ class PSEP_LP_Core {
 
   void change_pricing();
 
+  void enable_jumpstart();
+  void disable_jumpstart();
+
  private:
   PSEPlp &m_lp;
   Graph &m_graph;
