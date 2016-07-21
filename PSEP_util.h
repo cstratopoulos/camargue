@@ -5,18 +5,18 @@
 #include<unordered_map>
 
 namespace LP {
-  static const double EPSILON = 0.000001;
-  static const long DEFAULT_ITLIM = 9223372036800000000;
+  constexpr double EPSILON = 0.000001;
+  constexpr long DEFAULT_ITLIM = 9223372036800000000;
 
   namespace PRICING {
-    static const int DEVEX = 0;
-    static const int STEEPEST = 1;
-    static const int STEEPEST_REAL = 2;
+    constexpr int DEVEX = 0;
+    constexpr int STEEPEST = 1;
+    constexpr int STEEPEST_REAL = 2;
 
     namespace SWITCHING{
-      static const int OFF = 0;
-      static const int DYNAMIC = 1;
-      static const int START = 2;
+      constexpr int OFF = 0;
+      constexpr int DYNAMIC = 1;
+      constexpr int START = 2;
     }
   }
 }
@@ -36,10 +36,10 @@ namespace UTIL {
 }
 
 namespace PIVOT {
-  const int FRAC = 0;
-  const int SUBTOUR = 1;
-  const int TOUR = 2;
-  const int FATHOMED_TOUR = 3;
+  constexpr int FRAC = 0;
+  constexpr int SUBTOUR = 1;
+  constexpr int TOUR = 2;
+  constexpr int FATHOMED_TOUR = 3;
 }
 
 //hash function taken from boost hash_combine
