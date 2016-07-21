@@ -100,6 +100,9 @@ int TSP_Solver::pure_cut(){
   int rounds = 0, augrounds = 0;
   bool in_subtour;
 
+  double total_segtime = 0;
+  int total_segcals = 0;
+
   rval = LPcore.basis_init();
   if(rval) goto CLEANUP;
 
@@ -140,6 +143,7 @@ int TSP_Solver::pure_cut(){
     if(segval == 1)
       break;
     segtime = PSEP_zeit() - segtime;
+    total_segtime += segtime; total_segcals++;
 
     matchtime = PSEP_zeit();
     matchval = cutcall.blossom(250 - num_seg, &num_2match);
@@ -183,6 +187,9 @@ int TSP_Solver::pure_cut(){
 	 << rounds << " rounds of separation" << endl;
   cout << total_cuts << " cutting planes added over "
        << rounds << " rounds of separation" << endl;
+
+  cout << "Average time per segcall: "
+       << ((double) (total_segtime / total_segcals)) << "\n";
 
  CLEANUP:
   if(rval)
