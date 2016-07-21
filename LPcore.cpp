@@ -155,12 +155,26 @@ int rval = 0;
 
   double round_start = PSEP_zeit();
 
+  bool did_jumpstart;
+
   old_rowstat.resize(rowcount);
 
   while(true){
+    did_jumpstart = false;
     if(++itcount == 3 * ncount)
       if(prefs.switching_choice == LP::PRICING::SWITCHING::DYNAMIC)
 	change_pricing();
+
+    if(itcount > 3 * ncount){
+      if(prefs.switching_choice == LP::PRICING::SWITCHING::OFF)
+	if(prefs.jumpstart){
+	  cout << "Attempting to jumpstart degenerate pivots w temporary"
+	       << " steepest edge...";
+	  enable_jumpstart();
+	  did_jumpstart = true;
+
+	}
+    }
 
     if((dual_feas = is_dual_feas()))
       break;
@@ -176,6 +190,11 @@ int rval = 0;
 
     if(fabs(get_obj_val() - m_min_tour_value) >= LP::EPSILON)
       break;    
+  }
+
+  if(did_jumpstart){
+    cout << "Now reverting to original pricing\n";
+    disable_jumpstart();
   }
 
   round_start = PSEP_zeit() - round_start;
@@ -228,6 +247,34 @@ void PSEP_LP_Core::change_pricing(){
   if(CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient, newprice))
     cerr << "ERROR: PRICING SWITCH DID NOT TAKE PLACE\n";
   prefs.switching_choice = LP::PRICING::SWITCHING::OFF;
+}
+
+void PSEP_LP_Core::enable_jumpstart(){
+  if(CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient,
+		    CPX_PPRIIND_STEEP))
+    cerr << "ERROR: JUMPSTART PRICING DID NOT TAKE PLACE\n";
+}
+
+void PSEP_LP_Core::disable_jumpstart(){
+  int oldprice;
+  switch(prefs.switching_choice){
+  case LP::PRICING::SWITCHING::OFF:
+    oldprice = CPX_PPRIIND_PARTIAL;
+    break;
+  default:
+    switch(prefs.pricing_choice){
+    case LP::PRICING::DEVEX:
+      oldprice = CPX_PPRIIND_DEVEX;
+      break;
+    case LP::PRICING::STEEPEST:
+      oldprice = CPX_PPRIIND_STEEPQSTART;
+      break;
+    }
+  }
+
+  if(CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient,
+		    oldprice))
+    cerr << "ERROR: JUMPSTART UNDO DID NOT TAKE PLACE\n";
 }
 
 int PSEP_LP_Core::prune_cuts(int *num_removed){

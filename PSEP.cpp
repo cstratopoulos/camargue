@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
   PSEP_LP_Prefs prefs;
   vector<int> tour_node_indices;
 
-  cout << "BRANCH VERSION: MASTER";
+  cout << "BRANCH VERSION: STEEPEST EDGE JUMPSTART";
   if(tooth)
     cout << ", Tooth testing";
   cout << "\n";
@@ -55,6 +55,7 @@ static int initial_parse(int ac, char **av, Graph &graph,
   int pricing_choice = 0;
   int switching_choice = 0;
   int dp_factor = 3;
+  bool jumpstart = false;
 
   int c;
 
@@ -63,7 +64,7 @@ static int initial_parse(int ac, char **av, Graph &graph,
     return 1;
   }
 
-  while((c = getopt(ac, av, "TaD:d:p:s:")) != EOF) {
+  while((c = getopt(ac, av, "TaD:d:jp:s:")) != EOF) {
     switch(c) {
     case 'T':
       tooth = 1;
@@ -74,6 +75,8 @@ static int initial_parse(int ac, char **av, Graph &graph,
     case 'd':
       switching_choice = atoi(optarg);
       break;
+    case 'j':
+      jumpstart = true;
     case 'p':
       pricing_choice = atoi(optarg);
       break;
@@ -99,6 +102,12 @@ static int initial_parse(int ac, char **av, Graph &graph,
     return 1;
   }
 
+  if(jumpstart && pricing_choice == LP::PRICING::STEEPEST){
+    cout << "Made redundant choice of parameters!\n";
+    usage(av[0]);
+    return 1;
+  }
+
   switch(switching_choice){
   case 0:
     prefs.switching_choice = LP::PRICING::SWITCHING::OFF;
@@ -116,6 +125,11 @@ static int initial_parse(int ac, char **av, Graph &graph,
     cout << "Switching method " << switching_choice << " out of range\n";
     usage(av[0]);
     return 1;
+  }
+
+  if(jumpstart){
+    prefs.jumpstart = true;
+    cout << "Slow pivots will be jumpstarted, ";
   }
 
   switch(pricing_choice){
@@ -322,5 +336,10 @@ static void usage(char *f){
   fprintf(stderr, "      0 = devex (default)\n");
   fprintf(stderr, "      1 = steepest edge, slack init norms\n");
   fprintf(stderr, "      2 = full-blown steepest edge\n");
+  fprintf(stderr, "   -j     engage steepest edge jumpstart: if in a pivot\n");
+  fprintf(stderr, "          sequence of more than 3 * ncount iterations\n");
+  fprintf(stderr, "          temporarily switch to steepest edge.\n");
+  fprintf(stderr, "          (Cannot be used when steepest edge is the\n");
+  fprintf(stderr, "           existing pricing criterion)\n");
   fprintf(stderr, "   -s x   set random seed to x\n");
 }
