@@ -155,21 +155,20 @@ int rval = 0;
 
   double round_start = PSEP_zeit();
 
-  bool did_jumpstart;
+  bool did_jumpstart = false;
 
   old_rowstat.resize(rowcount);
 
   while(true){
-    did_jumpstart = false;
     if(++itcount == 3 * ncount)
       if(prefs.switching_choice == LP::PRICING::SWITCHING::DYNAMIC)
 	change_pricing();
 
     if(itcount > 3 * ncount){
-      if(prefs.switching_choice == LP::PRICING::SWITCHING::OFF)
+      if(!did_jumpstart &&
+	 prefs.switching_choice == LP::PRICING::SWITCHING::OFF)
 	if(prefs.jumpstart){
-	  cout << "Attempting to jumpstart degenerate pivots w temporary"
-	       << " steepest edge...";
+	  cout << "Temporarily engaging steepest edge...";
 	  enable_jumpstart();
 	  did_jumpstart = true;
 
