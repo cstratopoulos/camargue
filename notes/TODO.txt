@@ -24,4 +24,7 @@ tooth aggregated coefficients: instead of an ecount length vector,
 create a map of type <Int, Double> mapping edges to their coeff
 to be aggregated. With some checking: can call increment/decrement
 even if the entries have not yet been initialized; they should
-default to zero. 
+default to zero.
+
+-Include parameter for cut behavior: one segment cut, 2 - num_seg
+ blossoms, 2 - num_blossom dp cuts, or 250 max cutcount

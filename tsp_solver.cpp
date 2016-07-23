@@ -146,7 +146,7 @@ int TSP_Solver::pure_cut(){
     total_segtime += segtime; total_segcalls++;
 
     matchtime = PSEP_zeit();
-    matchval = cutcall.blossom(250 - num_seg, &num_2match);
+    matchval = cutcall.blossom(2 - num_seg, &num_2match);
     if(matchval == 1)
       break;
     matchtime = PSEP_zeit() - matchtime;
@@ -166,7 +166,7 @@ int TSP_Solver::pure_cut(){
 
 	if(in_subtour){
 	  dptime = PSEP_zeit();
-	  dpval = cutcall.simpleDP(250 - num_2match, &num_dp, &num_bad);
+	  dpval = cutcall.simpleDP(2 - num_2match, &num_dp, &num_bad);
 	  if(dpval == 1)
 	    break;
 	  dptime = PSEP_zeit() - dptime;

@@ -25,7 +25,7 @@ void PSEP_Segcuts::separate(){
       
       if(lhs > current_size - 1 && (fabs(lhs - (current_size - 1)) >= 0.002)){
 	seg new_seg(i, j, lhs - (current_size - 1));
-	if(pq.size() == 250){
+	if(pq.size() == 1){
 	  if(new_seg < pq.top()){
 	    pq.pop();
 	    pq.push(new_seg);

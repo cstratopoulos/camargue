@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
   PSEP_LP_Prefs prefs;
   vector<int> tour_node_indices;
 
-  cout << "BRANCH VERSION: MASTER";
+  cout << "BRANCH VERSION: Suboptimal LK Seeds";
   if(tooth)
     cout << ", Tooth testing";
   cout << "\n";
@@ -237,7 +237,7 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
   //code copies from static int find_tour from concorde
   CCutil_sprand(seed, &rand_state);
   CCrandstate *rstate = &rand_state;
-  //  cyc = CC_SAFE_MALLOC(ncount, int);
+  //  cyc = CC_SAFE_MALLOC(ncount, int); //commented out to allow dummy tour
   perm = CC_SAFE_MALLOC (ncount, int);
   if(!perm){
     cerr << "Out of memory for find_tour\n";
@@ -282,7 +282,7 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
 
   /*
   //begin copied code from find_good_tour in tsp_call.c
-
+  //must be commented out for dummy tour
   
   for(int i = 0; i < trials; i++){
     rval = CClinkern_tour(ncount, dat, ecount, elist, ncount, kicks,
