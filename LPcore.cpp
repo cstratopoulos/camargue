@@ -171,7 +171,6 @@ int rval = 0;
 	  cout << "Temporarily engaging steepest edge...";
 	  enable_jumpstart();
 	  did_jumpstart = true;
-
 	}
     }
 
