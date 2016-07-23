@@ -237,9 +237,9 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
   //code copies from static int find_tour from concorde
   CCutil_sprand(seed, &rand_state);
   CCrandstate *rstate = &rand_state;
-  cyc = CC_SAFE_MALLOC(ncount, int);
+  //  cyc = CC_SAFE_MALLOC(ncount, int);
   perm = CC_SAFE_MALLOC (ncount, int);
-  if(!cyc || !perm){
+  if(!perm){
     cerr << "Out of memory for find_tour\n";
     rval = 1; goto CLEANUP;
   }
@@ -280,6 +280,7 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
   //end of copied code (from find_tour)
   cout << "LK initial run: " << bestval << endl;
 
+  /*
   //begin copied code from find_good_tour in tsp_call.c
 
   
@@ -310,6 +311,7 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
     for(int j = 0; j < ncount; j++)
       node_indices[j] = cyc[j];
   }
+  */
   
   ecount = graph.edge_count;
 
