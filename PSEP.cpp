@@ -356,7 +356,7 @@ static void usage(char *f){
        << setw(8) << "FLAG OPTIONS (no argument) ------------------------\n"
        << setw(8) << "-tooth     enable tooth testing.\n"
        << setw(8) << "-jump      jumpstart slow pivots w temporary switch\n"
-       << setw(8) << setw(10) << "to steepest edge pricing."
+       << setw(8) << setw(10) << "to steepest edge pricing.\n"
        << setw(8) << "PARAMETER OPTIONS (all take argument x) -----------\n"
        << setw(8) << "-DPfactor  only call simpleDP separation after 5 * x\n"
        << setw(8) << setw(10) << "rounds of cuts w no augmentation.\n"
