@@ -112,7 +112,7 @@ double PSEP_LP_Core::set_support_graph(){
 
 int PSEP_LP_Core::update_best_tour(){
   double objval = 0;
-  int num_removed = 0;
+  int num_removed;
   
   for(int i = 0; i < m_graph.node_count; i++)
     best_tour_nodes[i] = island[i];
@@ -135,13 +135,11 @@ int PSEP_LP_Core::update_best_tour(){
   for(int i = 0; i < m_graph.node_count; i++)
     perm[best_tour_nodes[i]] = i;
 
-  /*
   if(prune_cuts(&num_removed)){
     cerr << "Error entry point: LP_Core::update_best_tour\n";
     return 1;
   } else
-    cout << num_removed << " non-tight cuts pruned from LP after augmenting\n";
-  */
+    cout << num_removed << " slack cuts pruned from LP after augmenting\n";
 
   return 0;
 };
@@ -287,8 +285,14 @@ int PSEP_LP_Core::prune_cuts(int *num_removed){
   if(rval)
     return 1;
 
+  // cout << "Called getslack after augmentation, here are the values: \n";
+  // for(int i = 0; i < slacks.size(); i++){
+  //   cout << "Row " << ncount + i << ": "
+  // 	 << slacks[i] << "\n";
+  // }
+
   for(int i = 0; i < slacks.size(); i++){
-    if(slacks[i] >= LP::EPSILON){
+    if(fabs(slacks[i]) >= LP::EPSILON){
       delset[ncount + i] = 1;
       (*num_removed)++;
     }

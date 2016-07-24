@@ -96,7 +96,7 @@ int TSP_Solver::pure_cut(){
   int stat;
   int num_seg, num_2match, num_dp, num_bad, total_cuts = 0;
   int segval, matchval, dpval;
-  double segtime, matchtime, dptime;
+  double segtime, matchtime, dptime, pivtime;
   int rounds = 0, augrounds = 0;
   bool in_subtour;
 
@@ -104,6 +104,7 @@ int TSP_Solver::pure_cut(){
 
   double total_segtime = 0, total_2mtime = 0;
   int total_segcalls = 0, total_2mcalls = 0;
+  double total_pivtime = 0;
 
   rval = LPcore.basis_init();
   if(rval) goto CLEANUP;
@@ -114,9 +115,11 @@ int TSP_Solver::pure_cut(){
     rounds++;
     augrounds++;
     in_subtour = false;
-    
+
+    pivtime = PSEP_zeit();
     rval = LPcore.pivot_until_change(&stat);
     if(rval) goto CLEANUP;
+    total_pivtime += PSEP_zeit() - pivtime;
 
     print.pivot(stat);
 
@@ -124,17 +127,13 @@ int TSP_Solver::pure_cut(){
       break;
 
     if(stat == PIVOT::TOUR){
-      augrounds = 0;
-      rval = LPcore.update_best_tour();
-      if(rval)
+      cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
+      cout << "!!!AUGMENTED TOUR!!!!" << endl;
+      cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
+      cout << "~Call to delete slack cuts should go here~" << endl;
+      if(LPcore.update_best_tour())
 	goto CLEANUP;
-      else {
-	cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
-	cout << "!!!AUGMENTED TOUR!!!!" << endl;
-	cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
-	cout << "~Call to delete slack cuts should go here~" << endl;
-	continue;
-      }
+      continue;
     }
 
     rval = LPcore.pivot_back();
@@ -191,6 +190,8 @@ int TSP_Solver::pure_cut(){
 	 << rounds << " rounds of separation" << endl;
   cout << total_cuts << " cutting planes added over "
        << rounds << " rounds of separation" << endl;
+  cout << "Average time per non-degenerate pivot: "
+       << ((double) (total_pivtime / rounds)) << "\n";
 
   cout << "Average time per segcall: "
        << ((double) (total_segtime / total_segcalls)) << "\n";

@@ -56,45 +56,18 @@ static int initial_parse(int ac, char **av, Graph &graph,
   int dp_factor = 3;
   bool jumpstart = false;
   int max_per_round = 2;
-  int jump = 0;
 
   int c;
-  int optind = 0;
 
   if(ac == 1){
     usage(av[0]);
     return 1;
   }
 
-  while(true){
-    static struct option long_options[ ] = {
-      //FLAG OPTIONS
-      {"tooth", no_argument, &tooth, 1},
-      {"jump", no_argument, &jump, 1},
-      //PARAMETER OPTIONS
-      {"DPfactor", required_argument, 0, 'D'},
-      {"dynamic", required_argument, 0, 'd'},
-      {"pricing", required_argument, 0, 'p'},
-      {"seed", required_argument, 0, 's'},
-      {"max-cuts", required_argument, 0, 'm'},
-      {0, 0, 0, 0}
-    };
-
-    c = getopt_long_only(ac, av, "aD:d:p:s:", long_options, &optind);
-
-    if(c == -1) break;
-
-    switch (c) {
-    case 0:
-      if(long_options[optind].flag != 0)
-	break;
-      printf("option %s", long_options[optind].name);
-      if(optarg)
-	printf(" with arg %s", optarg);
-      printf(" ");
-      break;
-    case 'm':
-      max_per_round = atoi(optarg);
+while((c = getopt(ac, av, "Tam:D:d:jp:s:")) != EOF) {
+    switch(c) {
+    case 'T':
+      tooth = 1;
       break;
     case 'D':
       dp_factor = atoi(optarg);
@@ -102,11 +75,17 @@ static int initial_parse(int ac, char **av, Graph &graph,
     case 'd':
       switching_choice = atoi(optarg);
       break;
+    case 'j':
+      jumpstart = true;
+      break;
     case 'p':
       pricing_choice = atoi(optarg);
       break;
     case 's':
       seed = atoi(optarg);
+      break;
+    case 'm':
+      max_per_round = atoi(optarg);
       break;
     case '?':
     default:
@@ -115,7 +94,8 @@ static int initial_parse(int ac, char **av, Graph &graph,
     }
   }
 
-  if(optind < ac) fname = av[optind++];
+  if(optind < ac)
+    fname = av[optind++];
   if(optind != ac){
     usage(av[0]);
     return 1;
@@ -352,23 +332,24 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
 }
 
 static void usage(char *f){
-  cerr << "Usage: " << f << " [-see below-] [prob file\n"
-       << setw(8) << "FLAG OPTIONS (no argument) ------------------------\n"
-       << setw(8) << "-tooth     enable tooth testing.\n"
-       << setw(8) << "-jump      jumpstart slow pivots w temporary switch\n"
-       << setw(8) << setw(10) << "to steepest edge pricing.\n"
-       << setw(8) << "PARAMETER OPTIONS (all take argument x) -----------\n"
-       << setw(8) << "-DPfactor  only call simpleDP separation after 5 * x\n"
-       << setw(8) << setw(10) << "rounds of cuts w no augmentation.\n"
-       << setw(8) << "-dynamic   set dynamic switch of pricing protocol:\n"
-       << setw(18) << "0 (default) stay on reduced cost pricing\n"
-       << setw(18) << "1 switch after 3 * ncount iterations needed for a\n"
-       << setw(18) << "  non-degenerate pivot\n"
-       << setw(18) << "2 switch immediately\n"
-       << setw(8) << "-pricing   set primal pricing protocol to x:\n"
-       << setw(18) << "0 (default) devex\n"
-       << setw(18) << "1 steepest edge, slack initial norms\n"
-       << setw(18) << "2 full-blown steepest edge\n"
-       << setw(8) << "-seed      set random seed to x.\n"
-       << setw(8) << "max-cuts   set max number of cuts added per round.\n";
+  fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", f);
+  fprintf(stderr, "------ FLAG OPTIONS (no argument)--------------------\n");
+  fprintf(stderr, "-T       enable simpleDP/simple tooth testing.\n");
+  fprintf(stderr, "-j       jumpstart slow sequences of pivots with\n");
+  fprintf(stderr, "         a temporary switch to steepest edge.\n");
+  fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ---------------\n");
+  fprintf(stderr, "-D    only call simpleDP sep after 5x rounds\n");
+  fprintf(stderr, "      of cuts with no augmentation.\n");
+  fprintf(stderr, "-d    set dynamic switch of pricing protocol:\n");
+  fprintf(stderr, "    0 (default) stay on reduced cost pricing\n");
+  fprintf(stderr, "    1 switch after 3*ncount iterations needed\n");
+  fprintf(stderr, "      for a non-degenerate pivot\n");
+  fprintf(stderr, "    2 switch immediately\n");
+  fprintf(stderr, "-p     set primal pricing protocol to:\n");
+  fprintf(stderr, "    0 (default) devex\n");
+  fprintf(stderr, "    1 steepest edge with slack initial norms\n");
+  fprintf(stderr, "    2 true steepest edge.\n");
+  fprintf(stderr, "-s    set LK random seed to x.\n");
+  fprintf(stderr, "-m    set max number of cuts added per round\n");
+  fprintf(stderr, "              of pivoting.\n");
 }
