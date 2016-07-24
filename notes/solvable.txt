@@ -1,5 +1,6 @@
 lin105
 rd100
 berlin52 
+brazil58 (max cuts 2 per round)
 eil76 
 gr24 
