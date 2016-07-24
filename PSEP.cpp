@@ -25,7 +25,7 @@ int main(int argc, char* argv[]){
   PSEP_LP_Prefs prefs;
   vector<int> tour_node_indices;
 
-  cout << "BRANCH VERSION: Suboptimal LK Seeds\n";
+  cout << "BRANCH VERSION: MASTER\n";
 
   if(initial_parse(argc, argv, graph, tour_node_indices, prefs)){
     cerr << "Problem parsing arguments" << endl;
