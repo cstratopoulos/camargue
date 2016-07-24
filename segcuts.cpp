@@ -2,7 +2,7 @@
 
 using namespace std;
 
-void PSEP_Segcuts::separate(){
+void PSEP_Segcuts::separate(const int max_cuts){
   int ncount = G_s.node_count;
   int current_start, current_end, current_size;
   SNode current_snode;
@@ -25,7 +25,7 @@ void PSEP_Segcuts::separate(){
       
       if(lhs > current_size - 1 && (fabs(lhs - (current_size - 1)) >= 0.002)){
 	seg new_seg(i, j, lhs - (current_size - 1));
-	if(pq.size() == 1){
+	if(pq.size() == max_cuts - 1){
 	  if(new_seg < pq.top()){
 	    pq.pop();
 	    pq.push(new_seg);

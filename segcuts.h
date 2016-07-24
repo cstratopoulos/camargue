@@ -49,7 +49,7 @@ class PSEP_Segcuts {
 	      std::vector<int> &nodes, PSEPlp &lp) :
   G_s(supgraph), edge_marks(marks), best_tour_nodes(nodes), m_lp(lp){};
   
-  void separate();
+  void separate(const int max_cuts);
   bool q_empty() const {return pq.empty();};
   int q_size() const {return pq.size();};
   void pop(int *start_p, int *end_p, double *viol_p){

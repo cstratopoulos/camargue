@@ -1,3 +1,5 @@
+change options to getopt_long
+
 just make timer a namespace and profiler have the void print profile
 functions
 or maybe re-explore timer class and name class for protection now that

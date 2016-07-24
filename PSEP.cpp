@@ -1,4 +1,5 @@
 #include<iostream>
+#include<string>
 #include<iomanip>
 #include<vector>
 
@@ -24,10 +25,7 @@ int main(int argc, char* argv[]){
   PSEP_LP_Prefs prefs;
   vector<int> tour_node_indices;
 
-  cout << "BRANCH VERSION: Suboptimal LK Seeds";
-  if(tooth)
-    cout << ", Tooth testing";
-  cout << "\n";
+  cout << "BRANCH VERSION: Suboptimal LK Seeds\n";
 
   if(initial_parse(argc, argv, graph, tour_node_indices, prefs)){
     cerr << "Problem parsing arguments" << endl;
@@ -49,34 +47,60 @@ int main(int argc, char* argv[]){
 }
 
 static int initial_parse(int ac, char **av, Graph &graph,
-			 vector<int> &node_indices, PSEP_LP_Prefs &prefs){
+			 vector<int> &node_indices,
+			 PSEP_LP_Prefs & prefs){
   char *fname = (char *) NULL;
   int seed = 0;
   int pricing_choice = 0;
   int switching_choice = 0;
   int dp_factor = 3;
   bool jumpstart = false;
+  int max_per_round = 2;
+  int jump = 0;
 
   int c;
+  int optind = 0;
 
   if(ac == 1){
     usage(av[0]);
     return 1;
   }
 
-  while((c = getopt(ac, av, "TaD:d:jp:s:")) != EOF) {
-    switch(c) {
-    case 'T':
-      tooth = 1;
+  while(true){
+    static struct option long_options[ ] = {
+      //FLAG OPTIONS
+      {"tooth", no_argument, &tooth, 1},
+      {"jump", no_argument, &jump, 1},
+      //PARAMETER OPTIONS
+      {"DPfactor", required_argument, 0, 'D'},
+      {"dynamic", required_argument, 0, 'd'},
+      {"pricing", required_argument, 0, 'p'},
+      {"seed", required_argument, 0, 's'},
+      {"max-cuts", required_argument, 0, 'm'},
+      {0, 0, 0, 0}
+    };
+
+    c = getopt_long_only(ac, av, "aD:d:p:s:", long_options, &optind);
+
+    if(c == -1) break;
+
+    switch (c) {
+    case 0:
+      if(long_options[optind].flag != 0)
+	break;
+      printf("option %s", long_options[optind].name);
+      if(optarg)
+	printf(" with arg %s", optarg);
+      printf(" ");
+      break;
+    case 'm':
+      max_per_round = atoi(optarg);
       break;
     case 'D':
       dp_factor = atoi(optarg);
       break;
     case 'd':
       switching_choice = atoi(optarg);
-      break;
-    case 'j':
-      jumpstart = true;
       break;
     case 'p':
       pricing_choice = atoi(optarg);
@@ -92,20 +116,13 @@ static int initial_parse(int ac, char **av, Graph &graph,
   }
 
   if(optind < ac) fname = av[optind++];
-
   if(optind != ac){
-    usage (av[0]);
+    usage(av[0]);
     return 1;
   }
 
   if(!fname){
-    printf ("Must specify a problem file\n");
-    return 1;
-  }
-
-  if(jumpstart && pricing_choice == LP::PRICING::STEEPEST){
-    cout << "Made redundant choice of parameters!\n";
-    usage(av[0]);
+    printf("Must specify a problem file\n");
     return 1;
   }
 
@@ -155,6 +172,15 @@ static int initial_parse(int ac, char **av, Graph &graph,
     return 1;
   }
 
+  if(max_per_round < 2){
+    cout << "Entered too few number of cuts per round\n";
+    usage(av[0]);
+    return 1;
+  }
+
+  cout << "at most " << max_per_round << "cuts will be added per round\n";
+  prefs.max_cuts_round = max_per_round;
+
   if(dp_factor > 4){
     cout << "DP factor " << dp_factor << " too high\n";
     usage(av[0]);
@@ -175,6 +201,7 @@ static int initial_parse(int ac, char **av, Graph &graph,
 
   return 0;
 }
+
 
 static int load_tsplib (Graph &graph, CCdatagroup *dat, char *fname){
   int rval = 0;
@@ -325,24 +352,23 @@ static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
 }
 
 static void usage(char *f){
-  fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", f);
-  fprintf(stderr, "   -T     engage tooth testing protocol\n");
-  fprintf(stderr, "   -D x   sets number of rounds with no augmentation\n");
-  fprintf(stderr, "          needed to attempt simple DP separation to 5*x\n");
-  fprintf(stderr, "          (x = 0, 1, 2, 3, 4), default 5*3 = 15\n");
-  fprintf(stderr, "   -d x   set dynamic pricing switch behavior to x\n");
-  fprintf(stderr, "      0 = do not switch pricing methods\n");
-  fprintf(stderr, "      1 = switch when a non-degenerate pivot takes\n");
-  fprintf(stderr, "          more than 3 * number of nodes iterations\n");
-  fprintf(stderr, "      2 = switch from the start\n");
-  fprintf(stderr, "   -p x   set primal pricing method to x\n");
-  fprintf(stderr, "      0 = devex (default)\n");
-  fprintf(stderr, "      1 = steepest edge, slack init norms\n");
-  fprintf(stderr, "      2 = full-blown steepest edge\n");
-  fprintf(stderr, "   -j     engage steepest edge jumpstart: if in a pivot\n");
-  fprintf(stderr, "          sequence of more than 3 * ncount iterations\n");
-  fprintf(stderr, "          temporarily switch to steepest edge.\n");
-  fprintf(stderr, "          (Cannot be used when steepest edge is the\n");
-  fprintf(stderr, "           existing pricing criterion)\n");
-  fprintf(stderr, "   -s x   set random seed to x\n");
+  cerr << "Usage: " << f << " [-see below-] [prob file\n"
+       << setw(8) << "FLAG OPTIONS (no argument) ------------------------\n"
+       << setw(8) << "-tooth     enable tooth testing.\n"
+       << setw(8) << "-jump      jumpstart slow pivots w temporary switch\n"
+       << setw(8) << setw(10) << "to steepest edge pricing."
+       << setw(8) << "PARAMETER OPTIONS (all take argument x) -----------\n"
+       << setw(8) << "-DPfactor  only call simpleDP separation after 5 * x\n"
+       << setw(8) << setw(10) << "rounds of cuts w no augmentation.\n"
+       << setw(8) << "-dynamic   set dynamic switch of pricing protocol:\n"
+       << setw(18) << "0 (default) stay on reduced cost pricing\n"
+       << setw(18) << "1 switch after 3 * ncount iterations needed for a\n"
+       << setw(18) << "  non-degenerate pivot\n"
+       << setw(18) << "2 switch immediately\n"
+       << setw(8) << "-pricing   set primal pricing protocol to x:\n"
+       << setw(18) << "0 (default) devex\n"
+       << setw(18) << "1 steepest edge, slack initial norms\n"
+       << setw(18) << "2 full-blown steepest edge\n"
+       << setw(8) << "-seed      set random seed to x.\n"
+       << setw(8) << "max-cuts   set max number of cuts added per round.\n";
 }

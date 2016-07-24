@@ -23,14 +23,16 @@ namespace LP {
 
 struct PSEP_LP_Prefs {
 PSEP_LP_Prefs() : pricing_choice(0), switching_choice(0),
-    dp_threshold(15), jumpstart(false){}
+    dp_threshold(15), jumpstart(false), max_cuts_round(2){}
 PSEP_LP_Prefs(int _price, int _switch, int _dp,
-	      bool _jump) : pricing_choice(_price),
-    switching_choice(_switch), dp_threshold(_dp), jumpstart(_jump) {}
+	      bool _jump, int _max) : pricing_choice(_price),
+    switching_choice(_switch), dp_threshold(_dp), jumpstart(_jump),
+    max_cuts_round(_max){}
   int pricing_choice;
   int switching_choice;
   int dp_threshold;
   bool jumpstart;
+  int max_cuts_round;
 };
 
 namespace UTIL {

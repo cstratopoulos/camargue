@@ -2,11 +2,11 @@
 
 using namespace std;
 
-int PSEP_Cutcall::segment(int *num_added_p){
+int PSEP_Cutcall::segment(const int max_cutcount, int *num_added_p){
   int rval = 0;
   *num_added_p = 0;
 
-  segments.separate();
+  segments.separate(max_cutcount);
 
   while(!segments.q_empty()){
     int start, end; double viol;

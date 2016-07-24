@@ -100,6 +100,8 @@ int TSP_Solver::pure_cut(){
   int rounds = 0, augrounds = 0;
   bool in_subtour;
 
+  int max_per_round = LPcore.prefs.max_cuts_round;
+
   double total_segtime = 0, total_2mtime = 0;
   int total_segcalls = 0, total_2mcalls = 0;
 
@@ -139,14 +141,14 @@ int TSP_Solver::pure_cut(){
     if(rval) goto CLEANUP;
 
     segtime = PSEP_zeit();
-    segval = cutcall.segment(&num_seg);
+    segval = cutcall.segment(max_per_round, &num_seg);
     if(segval == 1)
       break;
     segtime = PSEP_zeit() - segtime;
     total_segtime += segtime; total_segcalls++;
 
     matchtime = PSEP_zeit();
-    matchval = cutcall.blossom(2 - num_seg, &num_2match);
+    matchval = cutcall.blossom(max_per_round - num_seg, &num_2match);
     if(matchval == 1)
       break;
     matchtime = PSEP_zeit() - matchtime;
@@ -166,7 +168,8 @@ int TSP_Solver::pure_cut(){
 
 	if(in_subtour){
 	  dptime = PSEP_zeit();
-	  dpval = cutcall.simpleDP(2 - num_2match, &num_dp, &num_bad);
+	  dpval = cutcall.simpleDP(max_per_round - num_2match,
+				   &num_dp, &num_bad);
 	  if(dpval == 1)
 	    break;
 	  dptime = PSEP_zeit() - dptime;
@@ -204,12 +207,14 @@ int TSP_Solver::simple_test(){
   if(LPcore.basis_init())
     return 1;
 
-  int stat, x = 250, num_dp = 0, num_bad = 0;
+  int stat, num_dp = 0, num_bad = 0;
   int num_seg = 0, segval = 0;
   int num_2match = 0, matchval = 0;
   double segtime, matchtime, routine_start;
   int rounds = 0;
   int total_cuts = 0;
+
+  int max_per_round = LPcore.prefs.max_cuts_round;
 
   bool in_sep = false;
 
@@ -237,13 +242,13 @@ int TSP_Solver::simple_test(){
       return 1;
 
     segtime = PSEP_zeit();
-    segval = cutcall.segment(&num_seg);
+    segval = cutcall.segment(max_per_round, &num_seg);
     if(segval == 1)
       return 1;
     segtime = PSEP_zeit() - segtime;
 
     matchtime = PSEP_zeit();
-    matchval = cutcall.blossom(250 - num_seg, &num_2match);
+    matchval = cutcall.blossom(max_per_round - num_seg, &num_2match);
     if(matchval == 1)
       return 1;
     matchtime = PSEP_zeit() - matchtime;
@@ -278,7 +283,7 @@ int TSP_Solver::simple_test(){
   if(in_sep){
     cout << "Solution is in subtour polytope, building collection...\n";
     routine_start = PSEP_zeit();
-    cutcall.simpleDP(x, &num_dp, &num_bad);
+    cutcall.simpleDP(250, &num_dp, &num_bad);
     cout << num_dp << " dp inequalities added\n";
     cout << num_bad << " bad inequalities found\n";
     cout << (PSEP_zeit() - routine_start) << "s finding candidate teeth "

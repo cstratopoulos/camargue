@@ -27,7 +27,7 @@ class PSEP_Cutcall {
 	    _edge_lookup, lp) {}
 	       
   
-  int segment(int *num_added_p);
+  int segment(const int max_cutcount, int *num_added_p);
   int blossom(const int max_cutcount, int *num_added_p);
   int simpleDP(const int max_cutcount, int *num_added_p, int *num_bad_p);
 
