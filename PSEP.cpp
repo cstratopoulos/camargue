@@ -18,8 +18,8 @@ static void usage(char *f);
 
 int main(int argc, char* argv[]){
   PSEP_LP_Prefs prefs;
-  CCdatagroup dat;
-  char *fname;
+  CCdatagroup *dat = new CCdatagroup;
+  char *fname;  
 
   cout << "BRANCH VERSION: MAJOR RESTRUCTURE\n";
 
@@ -28,7 +28,9 @@ int main(int argc, char* argv[]){
     exit(1);
   }
 
-  TSP_Solver solver(fname, prefs, &dat);
+  TSP_Solver solver(fname, prefs, dat);
+
+  delete dat;
 
   double start = PSEP_zeit();
 
