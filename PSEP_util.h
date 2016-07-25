@@ -77,8 +77,4 @@ namespace std
 double PSEP_zeit (void);
 double PSEP_real_zeit (void);
 
-int PSEP_build_xy (int ncount, double *xlist, double *ylist, int gridsize);
-
-bool is_almost_integral(double x);
-
 #endif
