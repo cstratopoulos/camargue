@@ -348,5 +348,5 @@ static void usage(char *f){
   fprintf(stderr, "    2 true steepest edge.\n");
   fprintf(stderr, "-s    set LK random seed to x.\n");
   fprintf(stderr, "-m    set max number of cuts added per round\n");
-  fprintf(stderr, "              of pivoting.\n");
+  fprintf(stderr, "      of pivoting.\n");
 }
