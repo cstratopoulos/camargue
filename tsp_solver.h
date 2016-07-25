@@ -29,6 +29,10 @@ class TSP_Solver {
   PSEP_LPGroup LPGroup;
   
   PSEP_PureCut PureCut;
+
+  int call(){
+    return PureCut.solve();
+  }
 };
 
 #endif

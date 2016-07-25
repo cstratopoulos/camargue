@@ -13,40 +13,35 @@
 using namespace std;
 
 static int tooth = 0;
-static int initial_parse(int ac, char **av, Graph &graph,
-			 vector<int> &node_indices, PSEP_LP_Prefs &prefs);
+static int initial_parse(int ac, char **av,char **fname, PSEP_LP_Prefs &prefs);
 static void usage(char *f);
 
 int main(int argc, char* argv[]){
-  Graph graph;
   PSEP_LP_Prefs prefs;
-  vector<int> tour_node_indices;
+  CCdatagroup dat;
+  char *fname;
 
   cout << "BRANCH VERSION: MAJOR RESTRUCTURE\n";
 
-  if(initial_parse(argc, argv, graph, tour_node_indices, prefs)){
+  if(initial_parse(argc, argv, &fname, prefs)){
     cerr << "Problem parsing arguments" << endl;
     exit(1);
   }
 
-  TSP_Solver solver(graph, tour_node_indices, prefs);
+  TSP_Solver solver(fname, prefs, &dat);
 
   double start = PSEP_zeit();
 
-  if(tooth)
-    solver.simple_test();
-  else
-    solver.pure_cut();
+  solver.call();
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
 
   return 0;
 }
 
-static int initial_parse(int ac, char **av, Graph &graph,
-			 vector<int> &node_indices,
+static int initial_parse(int ac, char **av, char **fname,
 			 PSEP_LP_Prefs & prefs){
-  char *fname = (char *) NULL;
+  *fname = (char *) NULL;
   int seed = 0;
   int pricing_choice = 0;
   int switching_choice = 0;
@@ -61,7 +56,7 @@ static int initial_parse(int ac, char **av, Graph &graph,
     return 1;
   }
 
-while((c = getopt(ac, av, "Tam:D:d:jp:s:")) != EOF) {
+  while((c = getopt(ac, av, "Tam:D:d:jp:s:")) != EOF) {
     switch(c) {
     case 'T':
       tooth = 1;
@@ -92,13 +87,13 @@ while((c = getopt(ac, av, "Tam:D:d:jp:s:")) != EOF) {
   }
 
   if(optind < ac)
-    fname = av[optind++];
+    *fname = av[optind++];
   if(optind != ac){
     usage(av[0]);
     return 1;
   }
 
-  if(!fname){
+  if(!(*fname)){
     printf("Must specify a problem file\n");
     return 1;
   }
@@ -169,22 +164,7 @@ while((c = getopt(ac, av, "Tam:D:d:jp:s:")) != EOF) {
   
   UTIL::seed = seed;
 
-  CCdatagroup dat;
-  if(load_tsplib(graph, &dat, fname))
-    return 1;
-
-  if(initialize_lk_tour(graph, &dat, node_indices))
-    return 1;
-
   return 0;
-}
-
-
-
-
-static int initialize_lk_tour (Graph &graph, CCdatagroup *dat,
-			       vector<int> &node_indices){
-
 }
 
 static void usage(char *f){
