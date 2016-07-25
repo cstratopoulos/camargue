@@ -3,9 +3,9 @@ INCLUDES = -I /Users/christos/Applications/IBM/ILOG/CPLEX_Studio1261/cplex/inclu
 LIBS = /Users/christos/Applications/IBM/ILOG/CPLEX_Studio1261/cplex/lib/x86-64_osx/static_pic/libcplex.a
 CONCORDE_LIBS = /Users/christos/Dropbox/school/research/programs/concorde/concorde.a
 CC = g++
-CFLAGS =  -g -Wall -pedantic -Wno-long-long -ggdb -std=c++11
-#-O3
-#-O3
+CFLAGS =  -O3 -Wall -pedantic -Wno-long-long -std=c++11
+# -g
+# -ggdb
 .PHONY: default all clean
 
 default: $(TARGET)
