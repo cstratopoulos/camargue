@@ -6,24 +6,24 @@ PSEP_GraphGroup::PSEP_GraphGroup(char *fname, CCdatagroup *dat){
   int rval = 0;
 
   CCutil_init_datagroup(dat);
-  rval = CCutil_gettsplib(fname, &(graph.node_count), dat);
+  rval = CCutil_gettsplib(fname, &(m_graph.node_count), dat);
   if (rval){
     fprintf(stderr, "get tsplib failed\n");
     exit(1);
   }
   
-  int ncount = graph.node_count;
+  int ncount = m_graph.node_count;
   int ecount = (ncount * (ncount -1 )) / 2;
-  graph.edge_count = ecount;
-  graph.edges.resize(ecount);
+  m_graph.edge_count = ecount;
+  m_graph.edges.resize(ecount);
   int e_index = 0;
   
   for (int i = 0; i < ncount; i++){
     for (int j = i+1; j < ncount; j++){
-      graph.edges[e_index].end[0] = i;
-      graph.edges[e_index].end[1] = j;
-      graph.edges[e_index].len = CCutil_dat_edgelen(i, j, dat);
-      graph.edge_lookup.emplace(IntPair(i,j), e_index);
+      m_graph.edges[e_index].end[0] = i;
+      m_graph.edges[e_index].end[1] = j;
+      m_graph.edges[e_index].len = CCutil_dat_edgelen(i, j, dat);
+      m_graph.edge_lookup.emplace(IntPair(i,j), e_index);
       e_index++;
     }
   }
@@ -33,17 +33,16 @@ PSEP_GraphGroup::PSEP_GraphGroup(char *fname, CCdatagroup *dat){
   edge_marks.resize(m_graph.node_count, 0);
 }
 
-PSEP_BestGroup::PSEP_BestGroup(const Graph &graph, CCdatagroup *dat){
+PSEP_BestGroup::PSEP_BestGroup(const Graph &m_graph, CCdatagroup *dat){
   int rval = 0;
   CCrandstate rand_state;
   CCedgegengroup plan;
-  int ncount = graph.node_count;
+  int ncount = m_graph.node_count;
   int ecount = 0;
   int *elist = (int *) NULL;
   int tcount = 0;
   int *tlist = (int *) NULL;
   int *cyc = (int *) NULL;
-  int *perm = (int *) NULL;
   double bestval, val, szeit;
   int trials = 1;
   int silent = 1;
@@ -64,15 +63,14 @@ PSEP_BestGroup::PSEP_BestGroup(const Graph &graph, CCdatagroup *dat){
   CCutil_sprand(seed, &rand_state);
   CCrandstate *rstate = &rand_state;
   cyc = CC_SAFE_MALLOC(ncount, int); //commented out to allow dummy tour
-  perm = CC_SAFE_MALLOC (ncount, int);
-  if(!perm || !cyc){
+  if(!cyc){
     cerr << "Out of memory for find_tour\n";
     rval = 1; goto CLEANUP;
   }
   
   best_tour_nodes.resize(ncount);
   perm.resize(ncount);
-  best_tour_edges.resize(graph.edge_count, 0);
+  best_tour_edges.resize(m_graph.edge_count, 0);
 
   CCedgegen_init_edgegengroup (&plan);
   plan.quadnearest = 2;
@@ -139,15 +137,13 @@ PSEP_BestGroup::PSEP_BestGroup(const Graph &graph, CCdatagroup *dat){
       best_tour_nodes[j] = cyc[j];
   }
 
+  for(int i = 0; i < m_graph.node_count; i++)
+    perm[best_tour_nodes[i]] = i;
   
-  
-  ecount = graph.edge_count;
+  ecount = m_graph.edge_count;
   min_tour_value = bestval;
 
-  for(int i = 0; i < graph.edge_count; i++){
-    Edge e = graph.edges[i];
-    int ind0, ind1;
-
+  for(int i = 0; i < m_graph.edge_count; i++){
     Edge e = m_graph.edges[i];
     int ind0, ind1;
     if(perm[e.end[0]] < perm[e.end[1]]){
@@ -169,13 +165,14 @@ PSEP_BestGroup::PSEP_BestGroup(const Graph &graph, CCdatagroup *dat){
     exit(1);
 }
 
-PSEP_LPGroup::PSEP_LPGroup(const Graph &m_graph, PSEP_LP_Prefs &_prefs){
+PSEP_LPGroup::PSEP_LPGroup(const Graph &m_graph, PSEP_LP_Prefs &_prefs,
+			   const vector<int> &perm){
   //Build the basic LP
   PSEPlp_init (&m_lp);
   PSEPlp_create (&m_lp, "subtour");
 
   /* Build a row for each degree equation */
-  for(int i = 0; i < graph.node_count; i++) {
+  for(int i = 0; i < m_graph.node_count; i++) {
     PSEPlp_new_row (&m_lp, 'E', 2.0);
   }
 
@@ -184,9 +181,9 @@ PSEP_LPGroup::PSEP_LPGroup(const Graph &m_graph, PSEP_LP_Prefs &_prefs){
   double coefficients[2] = {1.0, 1.0};
   double lower_bound = 0.0;
   double upper_bound = 1.0;
-  for(int j = 0; j < graph.edge_count; j++) {
-    int *nodes = (int*)graph.edges[j].end;
-    double objective_val = (double)graph.edges[j].len;
+  for(int j = 0; j < m_graph.edge_count; j++) {
+    int *nodes = (int*)m_graph.edges[j].end;
+    double objective_val = (double)m_graph.edges[j].len;
     PSEPlp_addcols (&m_lp, num_vars, num_non_zero, &objective_val,
 		    &cmatbeg, nodes, coefficients, &lower_bound,
 		    &upper_bound);
@@ -208,19 +205,19 @@ PSEP_LPGroup::PSEP_LPGroup(const Graph &m_graph, PSEP_LP_Prefs &_prefs){
     }
       
     if(ind1 - ind0 == 1 || (ind0 == 0 && ind1 == m_graph.node_count - 1)){
-      LPcore.old_colstat[i] = CPX_BASIC;
+      old_colstat[i] = CPX_BASIC;
       if(m_graph.node_count %2 == 1)
 	continue;	
     }
 
     if(m_graph.node_count % 2 == 0){
       if(ind0 == m_graph.node_count - 2 && ind1 == m_graph.node_count - 1){
-	LPcore.old_colstat[i] = CPX_AT_UPPER;
+	old_colstat[i] = CPX_AT_UPPER;
 	continue;
       }
 
       if(ind0 == 0 && ind1 == m_graph.node_count - 2){
-	LPcore.old_colstat[i] = CPX_BASIC;
+	old_colstat[i] = CPX_BASIC;
       }
     } 
   }

@@ -26,8 +26,9 @@ struct PSEP_BestGroup {
 };
 
 struct PSEP_LPGroup {
-  PSEP_LPGroup(const Graph &m_graph, PSEP_LP_Prefs &_prefs);
-  ~PSEP_LPGroup{PSEPlp_free(&m_lp);}
+  PSEP_LPGroup(const Graph &m_graph, PSEP_LP_Prefs &_prefs,
+	       const std::vector<int> &perm);
+  ~PSEP_LPGroup(){PSEPlp_free(&m_lp);}
   PSEPlp m_lp;  
   std::vector<double> m_lp_edges;
   std::vector<int> old_colstat;

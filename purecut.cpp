@@ -2,7 +2,7 @@
 
 using namespace std;
 
-int solve(){
+int PSEP_PureCut::solve(){
   int rval = 0;
 
   int stat;

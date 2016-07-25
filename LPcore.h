@@ -1,6 +1,8 @@
 #ifndef PSEP_LPWORK_H
 #define PSEP_LPWORK_H
 
+#include<iostream>
+
 #include "lp.h"
 #include "Graph.h"
 #include "datagroups.h"
@@ -11,8 +13,8 @@ class PSEP_LP_Core {
 	       PSEP_SupportGroup &SupportGroup,
 	       PSEP_BestGroup &BestGroup) :
   m_lp(LPGroup.m_lp), m_graph(GraphGroup.m_graph), prefs(LPGroup.prefs),
-    old_colstat(LPgroup.old_colstat), old_rowstat(LPgroup.old_rowstat),
-    m_lp_edges(LPgroup.m_lp_edges), G_s(SupportGroup.G_s),
+    old_colstat(LPGroup.old_colstat), old_rowstat(LPGroup.old_rowstat),
+    m_lp_edges(LPGroup.m_lp_edges), G_s(SupportGroup.G_s),
     support_indices(SupportGroup.support_indices),
     support_elist(SupportGroup.support_elist),
     support_ecap(SupportGroup.support_ecap),
@@ -23,7 +25,7 @@ class PSEP_LP_Core {
     edge_marks(GraphGroup.edge_marks) {
     basis_init();
     if(prefs.switching_choice == LP::PRICING::SWITCHING::START){
-      cout << "Immediate: ";
+      std::cout << "Immediate: ";
       change_pricing();
     }
   }
@@ -59,7 +61,7 @@ class PSEP_LP_Core {
   PSEP_LP_Prefs prefs;
 
   friend class TSP_Solver;
-  friend class PSEP_PureCut
+  friend class PSEP_PureCut;
   friend class PSEP_Cutcall;
   std::vector<int> &old_colstat;
   std::vector<int> &old_rowstat;

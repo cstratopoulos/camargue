@@ -13,7 +13,7 @@ extern "C" {
 #include "../programs/concorde/concorde.h"
 }
 
-#include "datagroup.h"
+#include "datagroups.h"
 #include "purecut.h"
 #include "PSEP_util.h"
 
