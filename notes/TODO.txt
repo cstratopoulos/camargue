@@ -10,6 +10,24 @@ indices, elist,  ecap, and support graph, BestGroup for best tour
 nodes and edge, lp  group for lp edges and lp object, etc. etc. and
 pass groups to  initializers rather than long lists of disjointed vectors
 
+Hierarchy idea:
+tsp_solver contains:
+	   GraphGroup
+	   SupportGroup
+	   BestGroup
+	   LPgroup
+
+	   purecut
+	   abc
+
+
+and purecut/abc contain the disjointed scattering of vectors/LP objects
+that we currently have w the TSP solver class. Solver to be implemented
+purely with fname and LPprefs?
+
+can implement seperate constructors for LPgroup and BestGroup to take
+stuff away from PSEP.cpp that doesn't need to be there
+
 possibly switch to unique_ptr vectors for segments and blossoms as
 well, could be faster for priority queue sorting/inseration
 
@@ -33,3 +51,15 @@ default to zero.
  -given that at most two cuts are added per round.....maybe make it so
  that branching would take place after number of rounds leading to the
  addition of atmost K cuts for some K?
+
+
+LP PREFS AND ENUM PARAMETERS:
+Consider making it so that, e.g., the switching prefs member of the LPprefs
+class is implemented as
+enum SWITCHING{
+     LP::PREFS::SWITCHING::DYNAMIC,
+     etc,
+     etc
+};
+
+and it has a member called switching....
