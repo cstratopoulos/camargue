@@ -2,16 +2,6 @@
 #define TSP_SOLVER_H
 
 #include <vector>
-#include <list>
-#include <iostream>
-#include <math.h>
-#include <memory>
-
-#include <cplex.h>
-
-extern "C" {
-#include "../programs/concorde/concorde.h"
-}
 
 #include "datagroups.h"
 #include "purecut.h"
