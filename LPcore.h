@@ -3,26 +3,30 @@
 
 #include "lp.h"
 #include "Graph.h"
+#include "datagroups.h"
 
 class PSEP_LP_Core {
  public:
- PSEP_LP_Core(PSEPlp & _lp, Graph & _graph, std::vector<double> & _lp_edges,
-	      SupportGraph & _G, std::vector<int> & _sup_inds,
-	      std::vector<int> & _sup_elist, std::vector<double> & _sup_ecap,
-	      std::vector<int> & _tour_edges, std::vector<int> & _tour_nodes,
-	      std::vector<int> & _perm,
-	      double & _tour_val, std::vector<int> & _island,
-	      std::vector<int> & _delta, std::vector<int> & _edge_marks,
-	      PSEP_LP_Prefs _prefs) :
-  m_lp(_lp), m_graph(_graph), prefs(_prefs), m_lp_edges(_lp_edges), G_s(_G),
-    support_indices(_sup_inds), support_elist(_sup_elist),
-    support_ecap(_sup_ecap), best_tour_edges(_tour_edges),
-    best_tour_nodes(_tour_nodes), perm(_perm), m_min_tour_value(_tour_val),
-    island(_island), delta(_delta), edge_marks(_edge_marks)
-    {
-    old_colstat.resize(m_graph.edge_count, CPX_AT_LOWER);
-    old_rowstat.resize(m_graph.node_count, CPX_AT_LOWER);      
+  PSEP_LP_Core(PSEP_LPGroup &LPGroup, PSEP_GraphGroup &GraphGroup,
+	       PSEP_SupportGroup &SupportGroup,
+	       PSEP_BestGroup &BestGroup) :
+  m_lp(LPGroup.m_lp), m_graph(GraphGroup.m_graph), prefs(LPGroup.prefs),
+    old_colstat(LPgroup.old_colstat), old_rowstat(LPgroup.old_rowstat),
+    m_lp_edges(LPgroup.m_lp_edges), G_s(SupportGroup.G_s),
+    support_indices(SupportGroup.support_indices),
+    support_elist(SupportGroup.support_elist),
+    support_ecap(SupportGroup.support_ecap),
+    best_tour_edges(BestGroup.best_tour_edges),
+    best_tour_nodes(BestGroup.best_tour_nodes), perm(BestGroup.perm),
+    m_min_tour_value(BestGroup.min_tour_value),
+    island(GraphGroup.island), delta(GraphGroup.delta),
+    edge_marks(GraphGroup.edge_marks) {
+    basis_init();
+    if(prefs.switching_choice == LP::PRICING::SWITCHING::START){
+      cout << "Immediate: ";
+      change_pricing();
     }
+  }
     
   bool is_dual_feas();
   bool is_integral();

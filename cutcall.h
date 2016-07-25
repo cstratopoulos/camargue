@@ -1,30 +1,36 @@
 #ifndef PSEP_CUTCALL_H
 #define PSEP_CUTCALL_H
 
+#include "datagroups.h"
 #include "blossom.h"
 #include "segcuts.h"
 #include "simpleDP.h"
 
 class PSEP_Cutcall {
  public:
-  PSEP_Cutcall(//its own objects
-	       std::vector<Edge> & _edges, std::vector<int> & _delta,
-	       std::vector<int> & _edge_marks,
-	       //segments inits
-	       SupportGraph &supgraph, std::vector<int> &nodes, PSEPlp &lp,
-	       //2match inits
-	       std::vector<int> & _tour_edges,
-	       std::vector<double> & _lp_edges,
-	       std::vector<int> & _sup_inds, std::vector<int> & _sup_elist,
-	       std::vector<double> & _ecap, std::vector<int> & _perm,
-	       IntPairMap & _edge_lookup) :
-  edges(_edges), delta(_delta), edge_marks(_edge_marks),
-    best_tour_nodes(nodes),
-    support_elist(_sup_elist), support_ecap(_ecap), m_lp_edges(_lp_edges),
-    segments(supgraph, _edge_marks, nodes, lp),
-    blossoms(_tour_edges, _lp_edges, _sup_inds, _sup_elist, _ecap, lp),
-    dominos(nodes, _perm, supgraph, _edge_marks, _sup_elist, _ecap,
-	    _edge_lookup, lp) {}
+  PSEP_Cutcall(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
+	       PSEP_LPGroup &LPGroup, PSEP_SupportGroup &SupportGroup):
+  //GraphGroup
+  edges(GraphGroup.m_graph.edges),
+    delta(GraphGroup.delta),
+    edge_marks(GraphGroup.edge_marks),
+    //BestGroup
+    best_tour_nodes(BestGroup.best_tour_nodes),
+    //SupportGroup
+    support_elist(SupportGroup.support_elist),
+    support_ecap(SupportGroup.support_ecap),
+    //LPGroup
+    m_lp_edges(LPGroup.m_lp_edges),
+    //separate cut classes
+    segments(SupportGroup.G_s, GraphGroup.edge_marks,
+	     BestGroup.best_tour_nodes, LPGroup.m_lp),
+    blossoms(BestGroup.best_tour_edges, LPGroup.m_lp_edges,
+	     SupportGroup.support_indices, SupportGroup.support_elist,
+	     SupportGroup.support_ecap, LPGroup.m_lp),
+    dominos(BestGroup.best_tour_nodes, BestGroup.perm, SupportGroup.G_s,
+	    GraphGroup.edge_marks, SupportGroup.support_elist,
+	    SupportGroup.support_ecap, GraphGroup.m_graph.edge_lookup,
+	    LPGroup.m_lp){}
 	       
   
   int segment(const int max_cutcount, int *num_added_p);

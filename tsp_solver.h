@@ -13,57 +13,27 @@ extern "C" {
 #include "../programs/concorde/concorde.h"
 }
 
-#include "Graph.h"
+#include "datagroup.h"
+#include "purecut.h"
+
 #include "profiler.h"
 #include "printer.h"
-#include "cutcall.h"
-#include "LPcore.h"
-#include "lp.h"
 #include "PSEP_util.h"
 
 
 
 class TSP_Solver {
  public:
-  TSP_Solver(Graph &graph, const std::vector<int> &lk_node_indices,
-	     PSEP_LP_Prefs _prefs);
-  ~TSP_Solver();
+  TSP_Solver(char *fname, PSEP_LP_Prefs _prefs, CCdatagroup *dat);
 
-  int pure_cut();
-  int simple_test();
-
-
-  Graph &m_graph;
+  PSEP_GraphGroup GraphGroup;
+  PSEP_BestGroup BestGroup;
+  PSEP_SupportGroup SupportGroup;
+  PSEP_LPGroup LPGroup;
   
-  PSEPlp m_lp;
-  
-  std::vector<double> m_lp_edges;
-    
-  std::vector<int> support_indices;
-  std::vector<int> support_elist;
-  std::vector<double> support_ecap;
-  
-  std::vector<int> best_tour_edges;
-  std::vector<int> best_tour_nodes;
-  //perm[best_tour_nodes[i]] == i, perm[j] returns index of j in best tour
-  std::vector<int> perm;
-
-  
-  double m_min_tour_value;
-
-  double runtime;
+  PSEP_PureCut PureCut;
 
   G_Utils gu;
-  SupportGraph G_s;
-  std::vector<int> island;
-  std::vector<int> delta;
-  std::vector<int> edge_marks;
-
-  PSEP_Cutcall cutcall;
-  PSEP_LP_Core LPcore;
-
-  PSEP_Timer T;
-  PSEP_Printer print;
 };
 
 #endif

@@ -3,6 +3,7 @@
 
 #include<vector>
 
+#include "PSEP_util.h"
 #include "Graph.h"
 #include "lp.h"
 
@@ -24,16 +25,21 @@ struct PSEP_BestGroup {
   double min_tour_value;
 };
 
+struct PSEP_LPGroup {
+  PSEP_LPGroup(const Graph &m_graph, PSEP_LP_Prefs &_prefs);
+  ~PSEP_LPGroup{PSEPlp_free(&m_lp);}
+  PSEPlp m_lp;  
+  std::vector<double> m_lp_edges;
+  std::vector<int> old_colstat;
+  std::vector<int> old_rowstat;
+  PSEP_LP_Prefs prefs;
+};
+
 struct PSEP_SupportGroup {
   SupportGraph G_s;
   std::vector<int> support_indices;
   std::vector<int> support_elist;
   std::vector<double> support_ecap;
-};
-
-struct PSEP_LPGroup {
-  PSEPlp m_lp;  
-  std::vector<double> m_lp_edges;
 };
 
 #endif
