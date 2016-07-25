@@ -4,3 +4,4 @@ berlin52
 brazil58 (max cuts 2 per round)
 eil76 
 gr24 
+eil51, mc 2
