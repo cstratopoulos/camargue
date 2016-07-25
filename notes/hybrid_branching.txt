@@ -1,0 +1,23 @@
+HYBRID BRANCHING IDEAS:
+
+NAIVE
+The naive branching rule: add x_i = 0, x_i>=x_j for some x_j=0 (more cases via
+complementation)
+
+Extremely simple, but every solution vector with x_i = 0 is feasible in
+both branches
+
+MAIN
+Add x_i = 0 then x_i >= x_j for every variable not yet fixed.
+
+The only vector feasible in both branches is the incumbent solution, but
+the basis will grow dramatically in size.
+
+
+HYBRID 1:
+Do not adhere to one protocol from the get-go, only engage in main branching
+if we have reached some depth of left branches such that we won't be adding
+too many rows
+
+HYBRID 2:
+For some constant K, we only add K rows at a time to explore a right branch
