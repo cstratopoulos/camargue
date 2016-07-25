@@ -59,9 +59,10 @@ class PSEP_LP_Core {
   PSEP_LP_Prefs prefs;
 
   friend class TSP_Solver;
+  friend class PSEP_PureCut
   friend class PSEP_Cutcall;
-  std::vector<int> old_colstat;
-  std::vector<int> old_rowstat;
+  std::vector<int> &old_colstat;
+  std::vector<int> &old_rowstat;
 
   std::vector<double> &m_lp_edges;
 

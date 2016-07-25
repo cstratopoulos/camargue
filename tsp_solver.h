@@ -15,9 +15,6 @@ extern "C" {
 
 #include "datagroup.h"
 #include "purecut.h"
-
-#include "profiler.h"
-#include "printer.h"
 #include "PSEP_util.h"
 
 
@@ -32,8 +29,6 @@ class TSP_Solver {
   PSEP_LPGroup LPGroup;
   
   PSEP_PureCut PureCut;
-
-  G_Utils gu;
 };
 
 #endif
