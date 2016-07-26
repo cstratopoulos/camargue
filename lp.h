@@ -92,6 +92,8 @@ int PSEPlp_dual_pivot (PSEPlp *lp, int *infeasible);
 int PSEPlp_pivot (PSEPlp *lp, const int entering_var, const int leaving_var,
 		  const int nb_status);
 
+int PSEPlp_getobj (PSEPlp *lp, double *obj, int numcols);
+
 //calls CPXgetobjval to obtain the optimal objective value of lp, with a
 //pointer to obj, where the result is to be stored
 int PSEPlp_objval (PSEPlp *lp, double *obj);

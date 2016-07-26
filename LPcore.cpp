@@ -28,13 +28,16 @@ int PSEP_LP_Core::pivot(){
 
 int PSEP_LP_Core::primal_opt(){
   int infeasible = 0;
+  double start = PSEP_zeit();
   int rval = PSEPlp_primal_opt(&m_lp, &infeasible);
+  start = PSEP_zeit() - start;
 
   if(rval)
     cerr << "Entry point LP_Core::primal_opt(), infeasible "
 	 << infeasible << "\n";
   else
-    cout << "Primal optimized with obj val " << get_obj_val() << "\n";
+    cout << "Primal optimized with obj val " << get_obj_val()
+	 << " in " << start << "s.\n";
 
   return rval;
 }
@@ -64,6 +67,35 @@ double PSEP_LP_Core::set_edges(){
   if(rval)
     fprintf(stderr, "failed to set_edges(), rval %d\n", rval);
 
+  return rval;
+}
+
+int PSEP_LP_Core::rebuild_basis(){
+  int rval = 0;
+  int ecount = m_lp_edges.size();
+  vector<double> tour_obj(ecount);
+  vector<double> old_obj(ecount);
+  vector<int> lp_indices(ecount);
+
+  rval = PSEPlp_getobj(&m_lp, &old_obj[0], ecount);
+  if(rval) return rval;
+
+  for(int i = 0; i < ecount; i++){
+    tour_obj[i] = 1 - (2 * best_tour_edges[i]);
+    lp_indices[i] = i;
+  }
+
+  rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &tour_obj[0]);
+  if(rval) return rval;
+
+  rval = primal_opt();
+  if(rval) return rval;
+
+  rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &old_obj[0]);
+  if(rval) return rval;
+    
+  if(!rval)
+    cout << "Call to rebuild_basis appears successful\n";
   return rval;
 }
 

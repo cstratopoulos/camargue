@@ -49,6 +49,8 @@ int PSEP_PureCut::solve(const bool heur){
 	    goto CLEANUP;
 	  cout << "Now Aug.active() is: " << Aug.active() << "\n";
 	  augrounds = 0;
+	  if(LPcore.rebuild_basis())
+	    goto CLEANUP;
 	  continue;
 	}
       }
@@ -113,7 +115,8 @@ int PSEP_PureCut::solve(const bool heur){
       }
     }
 
-    if(augrounds >= 25 && (augrounds % 25) == 0
+    if(augrounds % 5 == 0
+       //augrounds >= 25 && (augrounds % 15) == 10
        && stat != PIVOT::SUBTOUR){
       if(heur){
 	rval = Aug.add_clamp();

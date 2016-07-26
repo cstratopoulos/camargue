@@ -37,6 +37,7 @@ class PSEP_LP_Core {
   int pivot_back();
   int primal_opt();
 
+  int rebuild_basis();
   int basis_init();
   
   int pivot_until_change(int *pivot_status_p);

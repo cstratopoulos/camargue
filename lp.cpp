@@ -352,6 +352,13 @@ int PSEPlp_pivot (PSEPlp *lp, const int entering_var, const int leaving_var,
   return rval;
 }
 
+int PSEPlp_getobj (PSEPlp *lp, double *obj, int numcols){
+  int rval = CPXgetobj(lp->cplex_env, lp->cplex_lp, obj, 0, numcols - 1);
+  if(rval)
+    fprintf(stderr, "CPXgetobj failed, rval %d\n", rval);
+  return rval;
+}
+
 int PSEPlp_objval (PSEPlp *lp, double *obj){
   int rval = 0;
 
