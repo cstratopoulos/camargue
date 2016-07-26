@@ -38,12 +38,6 @@ int PSEP_PureCut::solve(const bool heur){
     if(stat == PIVOT::FATHOMED_TOUR){
       if(heur){
 	if(Aug.active()){
-	  stat = PIVOT::TOUR;
-
-	  cout << "!!!! Treating fathom like augment bc clamps !!!!!!\n";
-	  if(LPcore.update_best_tour())
-	    goto CLEANUP;
-	  
 	  rval = Aug.clear_clamps();
 	  if(rval)
 	    goto CLEANUP;
@@ -51,7 +45,6 @@ int PSEP_PureCut::solve(const bool heur){
 	  augrounds = 0;
 	  if(LPcore.rebuild_basis())
 	    goto CLEANUP;
-	  continue;
 	}
       }
       
@@ -66,8 +59,9 @@ int PSEP_PureCut::solve(const bool heur){
       if(LPcore.update_best_tour())
 	goto CLEANUP;
       if(heur)
-	if(Aug.clear_clamps())
-	  goto CLEANUP;
+	if(Aug.active())
+	  if(Aug.clear_clamps())
+	    goto CLEANUP;
       augrounds = 0;
       continue;
     }
@@ -115,8 +109,7 @@ int PSEP_PureCut::solve(const bool heur){
       }
     }
 
-    if(augrounds % 5 == 0
-       //augrounds >= 25 && (augrounds % 15) == 10
+    if(augrounds >= 25 && (augrounds % 15) == 10
        && stat != PIVOT::SUBTOUR){
       if(heur){
 	rval = Aug.add_clamp();
@@ -142,6 +135,10 @@ int PSEP_PureCut::solve(const bool heur){
        << ((double) (total_segtime / total_segcalls)) << "\n";
   cout << "Average time per blossom call: "
        << ((double) (total_2mtime / total_2mcalls)) << "\n";
+
+  if(heur){
+    cout << "VVV SOME PRICING OF CLAMPED EDGES SHOULD GO HERE? VVV " << endl;
+  }
 
   rval = LPcore.primal_opt();
   if(rval) goto CLEANUP;
