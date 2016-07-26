@@ -3,6 +3,8 @@
 
 #include<vector>
 
+#include<math.h>
+
 #include "PSEP_util.h"
 #include "Graph.h"
 #include "lp.h"
