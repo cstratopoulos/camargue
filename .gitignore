@@ -1,0 +1,12 @@
+#no .o files
+*.o
+
+#no TSPlib problems
+*.tsp
+
+#no dSYM
+
+*.dSYM
+
+#no main executable
+PSEP
