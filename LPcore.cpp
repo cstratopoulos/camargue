@@ -26,6 +26,19 @@ int PSEP_LP_Core::pivot(){
   return rval;
 }
 
+int PSEP_LP_Core::primal_opt(){
+  int infeasible = 0;
+  int rval = PSEPlp_primal_opt(&m_lp, &infeasible);
+
+  if(rval)
+    cerr << "Entry point LP_Core::primal_opt(), infeasible "
+	 << infeasible << "\n";
+  else
+    cout << "Primal optimized with obj val " << get_obj_val() << "\n";
+
+  return rval;
+}
+
 
 int PSEP_LP_Core::pivot_back(){
   int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
