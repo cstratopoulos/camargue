@@ -68,6 +68,11 @@ int PSEPlp_addcols (PSEPlp *lp, int newcols, int newnz, double *obj,
 int PSEPlp_setbnd (PSEPlp *lp, int col, char lower_or_upper,
 		   double bnd);
 
+int PSEPlp_clampbnd (PSEPlp *lp, int col, double bnd);
+int PSEPlp_relaxbds (PSEPlp *lp, int count, int const *indices,
+		     char const *lower_or_upper, double const * bd);
+
+
 //performs zero simplex iterations
 int PSEPlp_no_opt (PSEPlp *lp);
 

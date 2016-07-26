@@ -145,6 +145,25 @@ int PSEPlp_setbnd (PSEPlp *lp, int col, char lower_or_upper,
   return rval;
 }
 
+int PSEPlp_clampbnd(PSEPlp *lp, int col, double bnd){
+  int rval = 0, count = 1;
+  char lu = 'B';
+
+  rval = CPXtightenbds(lp->cplex_env, lp->cplex_lp, count, &col, &lu, &bnd);
+  if(rval)
+    fprintf(stderr, "Problem clamping with CPXtightenbds, rval %d\n", rval);
+  return rval;
+}
+
+int PSEPlp_relaxbds(PSEPlp *lp, int count, int const *indices,
+		    char const *lower_or_upper, double const *bd){
+  int rval = CPXtightenbds(lp->cplex_env, lp->cplex_lp, count, indices,
+			   lower_or_upper, bd);
+  if(rval)
+    fprintf(stderr, "Problem relaxing w CPXtightenbds, rval %d\n", rval);
+  return rval;
+}
+
 int PSEPlp_no_opt (PSEPlp *lp){
   int rval = 0, solstat;
 
