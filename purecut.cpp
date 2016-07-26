@@ -38,14 +38,21 @@ int PSEP_PureCut::solve(const bool heur){
     if(stat == PIVOT::FATHOMED_TOUR){
       if(heur){
 	if(Aug.active()){
-	  augrounds = 0;
+	  stat = PIVOT::TOUR;
+
+	  cout << "!!!! Treating fathom like augment bc clamps !!!!!!\n";
+	  if(LPcore.update_best_tour())
+	    goto CLEANUP;
 	  
 	  rval = Aug.clear_clamps();
-	  if(rval) goto CLEANUP;
-	  
+	  if(rval)
+	    goto CLEANUP;
+	  cout << "Now Aug.active() is: " << Aug.active() << "\n";
+	  augrounds = 0;
 	  continue;
 	}
       }
+      
       break;
     }
 
@@ -119,7 +126,7 @@ int PSEP_PureCut::solve(const bool heur){
     if(num_seg == 0 && num_2match == 0 && num_dp == 0)
       break;
   }
-
+   
   if(stat != 3)
     cout << "Terminated due to lack of cutting planes after "
 	 << rounds << " rounds of separation" << endl;
@@ -132,6 +139,9 @@ int PSEP_PureCut::solve(const bool heur){
        << ((double) (total_segtime / total_segcalls)) << "\n";
   cout << "Average time per blossom call: "
        << ((double) (total_2mtime / total_2mcalls)) << "\n";
+
+  rval = LPcore.primal_opt();
+  if(rval) goto CLEANUP;
 
  CLEANUP:
   if(rval)

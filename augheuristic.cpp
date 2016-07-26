@@ -1,9 +1,11 @@
 #include "augheuristic.h"
 
+using namespace std;
+
 int PSEP_AugHeuristic::add_clamp(){
   int rval = 0;
   double min_dif = 1.0;
-  int best_edge = -1;
+  int best_edge = -1, found_ind = -1;
   double newbound;
 
   for(int i = 0; i < support_indices.size(); i++){
@@ -12,6 +14,7 @@ int PSEP_AugHeuristic::add_clamp(){
     if(fabs(support_ecap[i] - best_tour_edges[index]) < min_dif){
       min_dif = fabs(support_ecap[i] - best_tour_edges[index]);
       best_edge = index;
+      found_ind = i;
     }
   }
 
@@ -23,7 +26,7 @@ int PSEP_AugHeuristic::add_clamp(){
     newbound = 1.0;
   }
 
-  rval = PSEPlp_setbnd(&m_lp, best_edge, 'B', newbound);
+  rval = PSEPlp_clampbnd(&m_lp, best_edge, newbound);
   if(rval)
     std::cerr << "Error entry point: AugHeuristic::add_clamps()\n";
   else{
@@ -31,6 +34,8 @@ int PSEP_AugHeuristic::add_clamp(){
 	      << ", clamped to " << newbound << " ("
 	      << best_tour_edges[best_edge] << "), dif: "
 	      << min_dif << "\n";
+    std::cout << "Check support index: " << support_indices[found_ind]
+	      << ", cap: " << support_ecap[found_ind] << "\n";
     clamp_edges.push_back(best_edge);
   }
 
@@ -39,22 +44,30 @@ int PSEP_AugHeuristic::add_clamp(){
 
 int PSEP_AugHeuristic::clear_clamps(){
   int rval = 0;
-  while(active()){
-    int current_edge = clamp_edges.back();
-    clamp_edges.pop_back();
-    
-    rval = PSEPlp_setbnd(&m_lp, current_edge, 'L', 0.0);
-    if(rval) goto CLEANUP;
-    
-    rval = PSEPlp_setbnd(&m_lp, current_edge, 'U', 1.0);
-    if(rval) goto CLEANUP;
+  std::vector<double> bounds(clamp_edges.size(), 0.0);
+  std::vector<char> lower_or_upper(clamp_edges.size(), 'L');
+
+  rval = PSEPlp_relaxbds(&m_lp, clamp_edges.size(), &clamp_edges[0],
+			 &lower_or_upper[0], &bounds[0]);
+  if(rval) goto CLEANUP;
+
+  for(int i = 0; i < clamp_edges.size(); i++){
+    bounds[i] = 1.0; lower_or_upper[i] = 'U';
   }
+
+  rval = PSEPlp_relaxbds(&m_lp, clamp_edges.size(), &clamp_edges[0],
+			 &lower_or_upper[0], &bounds[0]);
+  if(rval) goto CLEANUP;
+
+  cout << "Relaxed bounds on: ";
+  for(int i = 0; i < clamp_edges.size(); i++)
+    cout << clamp_edges[i] << "\n";
+  clamp_edges.clear();
 
  CLEANUP:
   if(rval){
     std::cerr << "Error entry point: AugHeuristic::clear_clamps()\n";
     clamp_edges.clear();
-  } else
-    std::cout << "|||||| Removed all clamps successfully. ||||||\n";
+  }
   return rval;
 }

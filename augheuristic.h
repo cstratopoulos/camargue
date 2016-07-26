@@ -18,7 +18,7 @@ class PSEP_AugHeuristic {
   
   int add_clamp();
   int clear_clamps();
-  bool active(){ return clamp_edges.empty();}
+  bool active(){ return !clamp_edges.empty();}
 
  private:
   std::vector<int> clamp_edges;
