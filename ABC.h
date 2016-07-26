@@ -13,7 +13,8 @@ class PSEP_ABC {
   PSEP_ABC(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
 	   PSEP_LPGroup &LPGroup, PSEP_SupportGroup &SupportGroup):
   cutcall(GraphGroup, BestGroup, LPGroup, SupportGroup),
-    LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup) {}
+    LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup),
+    ConstraintMgr(BestGroup, LPGroup, RightBranch, EdgeStats){}
   
   int solve();
   
@@ -26,6 +27,9 @@ class PSEP_ABC {
   PSEP_Cutcall cutcall;
   PSEP_LP_Core LPcore;
   std::stack<std::unique_ptr<PSEP_BBNode> > BBtree;
+  PSEP_EdgeStatuses EdgeStats;
+  PSEP_RightBranch RightBranch;
+  PSEP_BBConstraints ConstraintMgr;
 };
 
 #endif
