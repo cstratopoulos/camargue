@@ -18,6 +18,8 @@ int PSEP_PureCut::solve(const bool heur){
   int total_segcalls = 0, total_2mcalls = 0;
   double total_pivtime = 0;
 
+  bool called_heur = false;
+
   rval = LPcore.basis_init();
   if(rval) goto CLEANUP;
 
@@ -41,8 +43,7 @@ int PSEP_PureCut::solve(const bool heur){
 	  rval = Aug.clear_clamps();
 	  if(rval)
 	    goto CLEANUP;
-	  cout << "Now Aug.active() is: " << Aug.active() << "\n";
-	  augrounds = 0;
+	  called_heur = true;
 	  if(LPcore.rebuild_basis())
 	    goto CLEANUP;
 	}
@@ -136,7 +137,7 @@ int PSEP_PureCut::solve(const bool heur){
   cout << "Average time per blossom call: "
        << ((double) (total_2mtime / total_2mcalls)) << "\n";
 
-  if(heur){
+  if(called_heur){
     cout << "VVV SOME PRICING OF CLAMPED EDGES SHOULD GO HERE? VVV " << endl;
   }
 
