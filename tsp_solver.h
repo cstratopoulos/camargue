@@ -20,8 +20,8 @@ class TSP_Solver {
   
   PSEP_PureCut PureCut;
 
-  int call(){
-    return PureCut.solve();
+  int call(const bool heur){
+    return PureCut.solve(heur);
   }
 };
 

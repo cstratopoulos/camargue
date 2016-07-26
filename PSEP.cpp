@@ -13,13 +13,14 @@
 using namespace std;
 
 static int tooth = 0;
+static bool heur = false;
 static int initial_parse(int ac, char **av,char **fname, PSEP_LP_Prefs &prefs);
 static void usage(char *f);
 
 int main(int argc, char* argv[]){
   PSEP_LP_Prefs prefs;
   CCdatagroup *dat = new CCdatagroup;
-  char *fname;  
+  char *fname;
 
   cout << "BRANCH VERSION: MAJOR RESTRUCTURE\n";
 
@@ -34,7 +35,7 @@ int main(int argc, char* argv[]){
 
   double start = PSEP_zeit();
 
-  solver.call();
+  solver.call(heur);
 
   cout << "Finished with runtime " << PSEP_zeit() - start << endl;
 
@@ -58,10 +59,13 @@ static int initial_parse(int ac, char **av, char **fname,
     return 1;
   }
 
-  while((c = getopt(ac, av, "Tam:D:d:jp:s:")) != EOF) {
+  while((c = getopt(ac, av, "Tham:D:d:jp:s:")) != EOF) {
     switch(c) {
     case 'T':
       tooth = 1;
+      break;
+    case 'h':
+      heur = true;
       break;
     case 'D':
       dp_factor = atoi(optarg);
@@ -124,6 +128,9 @@ static int initial_parse(int ac, char **av, char **fname,
     cout << "Slow pivots will be jumpstarted, ";
   }
 
+  if(heur)
+    cout << "Augmentation heuristic enabled, ";
+
   switch(pricing_choice){
   case 0:
     prefs.pricing_choice = LP::PRICING::DEVEX;
@@ -175,6 +182,7 @@ static void usage(char *f){
   fprintf(stderr, "-T       enable simpleDP/simple tooth testing.\n");
   fprintf(stderr, "-j       jumpstart slow sequences of pivots with\n");
   fprintf(stderr, "         a temporary switch to steepest edge.\n");
+  fprintf(stderr, "-h       enable the clamp edge augmentation heuristic\n");
   fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ---------------\n");
   fprintf(stderr, "-D    only call simpleDP sep after 5x rounds\n");
   fprintf(stderr, "      of cuts with no augmentation.\n");

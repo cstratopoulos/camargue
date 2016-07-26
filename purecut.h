@@ -11,6 +11,7 @@
 #include "cutcall.h"
 #include "LPcore.h"
 #include "printer.h"
+#include "augheuristic.h"
 
 class PSEP_PureCut {
  public:
@@ -19,14 +20,16 @@ class PSEP_PureCut {
     print(BestGroup.best_tour_nodes, BestGroup.best_tour_edges,
 	  LPGroup.m_lp_edges, GraphGroup.m_graph.edges),
     cutcall(GraphGroup, BestGroup, LPGroup, SupportGroup),
-    LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup){}
+      LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup),
+      Aug(BestGroup, LPGroup, SupportGroup){}
 
-  int solve();
+  int solve(const bool heuristic);
   PSEP_Printer print;
   
  private:
   PSEP_Cutcall cutcall;
   PSEP_LP_Core LPcore;
+  PSEP_AugHeuristic Aug;
 };
 
 #endif

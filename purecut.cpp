@@ -2,7 +2,7 @@
 
 using namespace std;
 
-int PSEP_PureCut::solve(){
+int PSEP_PureCut::solve(const bool heur){
   int rval = 0;
 
   int stat;
@@ -35,8 +35,19 @@ int PSEP_PureCut::solve(){
 
     print.pivot(stat);
 
-    if(stat == PIVOT::FATHOMED_TOUR)
+    if(stat == PIVOT::FATHOMED_TOUR){
+      if(heur){
+	if(Aug.active()){
+	  augrounds = 0;
+	  
+	  rval = Aug.clear_clamps();
+	  if(rval) goto CLEANUP;
+	  
+	  continue;
+	}
+      }
       break;
+    }
 
     if(stat == PIVOT::TOUR){
       cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
@@ -45,6 +56,10 @@ int PSEP_PureCut::solve(){
       cout << "~Call to delete slack cuts should go here~" << endl;
       if(LPcore.update_best_tour())
 	goto CLEANUP;
+      if(heur)
+	if(Aug.clear_clamps())
+	  goto CLEANUP;
+      augrounds = 0;
       continue;
     }
 
@@ -88,6 +103,13 @@ int PSEP_PureCut::solve(){
 	       << "(in " << dptime << "s) (" << num_bad << " bad cuts found)"
 	       << " ***\n";
 	}
+      }
+    }
+
+    if(augrounds >= 25 && (augrounds % 25) == 0){
+      if(heur){
+	rval = Aug.add_clamp();
+	if(rval) goto CLEANUP;
       }
     }
 
