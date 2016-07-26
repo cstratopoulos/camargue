@@ -7,7 +7,8 @@ TSP_Solver::TSP_Solver(char *fname, PSEP_LP_Prefs _prefs,
   GraphGroup(fname, dat),
   BestGroup(GraphGroup.m_graph, dat),
   LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm),
-  PureCut(GraphGroup, BestGroup, LPGroup, SupportGroup) {}
+  PureCut(GraphGroup, BestGroup, LPGroup, SupportGroup),
+  ABC(GraphGroup, BestGroup, LPGroup, SupportGroup) {}
   
 /*
 int TSP_Solver::simple_test(){

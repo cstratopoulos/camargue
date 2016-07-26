@@ -3,22 +3,22 @@
 
 class PSEP_BBNode {
  public:
- PSEP_BBNode(PSEP_BBNode::NType _type, int _edge) :
-  node_type(_type), branch_edge(_edge), node_stat(PSEP_BBNode::UNVISITED) {}
-  
   enum class NType {
     ROOT, LEFT, RIGHT
   };
-
-  NType &type() const {
-    return node_type;
-  }
 
   enum class NStat {
     UNVISITED, VISITED, FATHOMED
   };
 
-  NStat &status() const {
+ PSEP_BBNode(NType _type, int _edge) :
+  node_type(_type), node_stat(NStat::UNVISITED), branch_edge(_edge) {}
+
+  NType type() const {
+    return node_type;
+  }
+
+  NStat status() const {
     return node_stat;
   }
 
@@ -30,8 +30,8 @@ class PSEP_BBNode {
   }
 
  private:
-  PSEP_BBNode::Ntype node_type;
-  PSEP_BBNode::NStat node_stat;
+  NType node_type;
+  NStat node_stat;
   int branch_edge;
 };
 

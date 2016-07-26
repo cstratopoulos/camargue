@@ -5,6 +5,7 @@
 
 #include "datagroups.h"
 #include "purecut.h"
+#include "ABC.h"
 #include "PSEP_util.h"
 
 
@@ -19,6 +20,7 @@ class TSP_Solver {
   PSEP_LPGroup LPGroup;
   
   PSEP_PureCut PureCut;
+  PSEP_ABC ABC;
 
   int call(const bool heur){
     return PureCut.solve(heur);
