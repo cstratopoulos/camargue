@@ -6,7 +6,8 @@ int PSEP_AugHeuristic::add_clamp(){
   int rval = 0;
   double min_dif = 1.0;
   int best_edge = -1, found_ind = -1;
-  double newbound;
+  double newbound, oldbound;
+  char lower_or_upper;
 
   for(int i = 0; i < support_indices.size(); i++){
     if(support_ecap[i] > 1 - LP::EPSILON) continue;
@@ -21,12 +22,16 @@ int PSEP_AugHeuristic::add_clamp(){
   switch(best_tour_edges[best_edge]){
   case 0:
     newbound = 0.0;
+    lower_or_upper = 'U';
+    oldbound = 1.0;
     break;
   case 1:
     newbound = 1.0;
+    lower_or_upper = 'L';
+    oldbound = 0.0;
   }
 
-  rval = PSEPlp_clampbnd(&m_lp, best_edge, newbound);
+  rval = PSEPlp_clampbnd(&m_lp, best_edge, lower_or_upper, newbound);
   if(rval)
     std::cerr << "Error entry point: AugHeuristic::add_clamps()\n";
   else{
@@ -37,6 +42,8 @@ int PSEP_AugHeuristic::add_clamp(){
     std::cout << "Check support index: " << support_indices[found_ind]
 	      << ", cap: " << support_ecap[found_ind] << "\n";
     clamp_edges.push_back(best_edge);
+    old_bounds.push_back(oldbound);
+    old_lus.push_back(lower_or_upper);
   }
 
   return rval;
@@ -44,30 +51,25 @@ int PSEP_AugHeuristic::add_clamp(){
 
 int PSEP_AugHeuristic::clear_clamps(){
   int rval = 0;
-  std::vector<double> bounds(clamp_edges.size(), 0.0);
-  std::vector<char> lower_or_upper(clamp_edges.size(), 'L');
 
   rval = PSEPlp_relaxbds(&m_lp, clamp_edges.size(), &clamp_edges[0],
-			 &lower_or_upper[0], &bounds[0]);
+			 &old_lus[0], &old_bounds[0]);
   if(rval) goto CLEANUP;
 
-  for(int i = 0; i < clamp_edges.size(); i++){
-    bounds[i] = 1.0; lower_or_upper[i] = 'U';
-  }
-
-  rval = PSEPlp_relaxbds(&m_lp, clamp_edges.size(), &clamp_edges[0],
-			 &lower_or_upper[0], &bounds[0]);
-  if(rval) goto CLEANUP;
 
   cout << "Relaxed bounds on: ";
   for(int i = 0; i < clamp_edges.size(); i++)
     cout << clamp_edges[i] << "\n";
   clamp_edges.clear();
+  old_bounds.clear();
+  old_lus.clear();
 
  CLEANUP:
   if(rval){
     std::cerr << "Error entry point: AugHeuristic::clear_clamps()\n";
     clamp_edges.clear();
+    old_bounds.clear();
+    old_lus.clear();
   }
   return rval;
 }

@@ -22,6 +22,8 @@ class PSEP_AugHeuristic {
 
  private:
   std::vector<int> clamp_edges;
+  std::vector<double> old_bounds;
+  std::vector<char> old_lus;
 
   std::vector<int> &best_tour_edges;
   PSEPlp &m_lp;

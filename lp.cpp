@@ -145,11 +145,11 @@ int PSEPlp_setbnd (PSEPlp *lp, int col, char lower_or_upper,
   return rval;
 }
 
-int PSEPlp_clampbnd(PSEPlp *lp, int col, double bnd){
+int PSEPlp_clampbnd(PSEPlp *lp, int col, char lower_or_upper, double bnd){
   int rval = 0, count = 1;
-  char lu = 'B';
-
-  rval = CPXtightenbds(lp->cplex_env, lp->cplex_lp, count, &col, &lu, &bnd);
+  
+  rval = CPXtightenbds(lp->cplex_env, lp->cplex_lp, count, &col,
+		       &lower_or_upper, &bnd);
   if(rval)
     fprintf(stderr, "Problem clamping with CPXtightenbds, rval %d\n", rval);
   return rval;
