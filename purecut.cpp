@@ -106,7 +106,8 @@ int PSEP_PureCut::solve(const bool heur){
       }
     }
 
-    if(augrounds >= 25 && (augrounds % 25) == 0){
+    if(augrounds >= 25 && (augrounds % 25) == 0
+       && stat != PIVOT::SUBTOUR){
       if(heur){
 	rval = Aug.add_clamp();
 	if(rval) goto CLEANUP;
