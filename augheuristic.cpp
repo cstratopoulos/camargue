@@ -27,7 +27,7 @@ int PSEP_AugHeuristic::add_clamp(){
   if(rval)
     std::cerr << "Error entry point: AugHeuristic::add_clamps()\n";
   else{
-    std::cout << "Added heuristic clamp on edge "<< best_edge
+    std::cout << "||||| Added heuristic clamp on edge "<< best_edge
 	      << ", clamped to " << newbound << " ("
 	      << best_tour_edges[best_edge] << "), dif: "
 	      << min_dif << "\n";
@@ -55,6 +55,6 @@ int PSEP_AugHeuristic::clear_clamps(){
     std::cerr << "Error entry point: AugHeuristic::clear_clamps()\n";
     clamp_edges.clear();
   } else
-    std::cout << "Removed all clamps successfully.\n";
+    std::cout << "|||||| Removed all clamps successfully. ||||||\n";
   return rval;
 }
