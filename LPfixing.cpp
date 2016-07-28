@@ -40,16 +40,13 @@ int PSEP_LPfix::price(){
     }
 
     fixtotal++;
-    cout << "Edge " << i << "has reduced cost " << redcosts[i] << ", ";
     if(cur_red > 0){
       edge_delset[i] = FixStats::DELETE;
-      cout << "deleting it.\n";
       continue;
     }
 
     if(cur_red < 0){
       edge_delset[i] = FixStats::FIXED;
-      cout << "permanently fixing to 1.\n";
     }
   }
 

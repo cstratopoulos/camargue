@@ -145,7 +145,8 @@ int PSEP_PureCut::solve(const bool heur){
     cout << "VVV SOME PRICING OF CLAMPED EDGES SHOULD GO HERE? VVV " << endl;
   }
 
-  rval = LPcore.primal_opt();
+  cout << "Calling LPfix pricing after termination....\n";
+  rval = LPfix.price();
   if(rval) goto CLEANUP;
 
  CLEANUP:
