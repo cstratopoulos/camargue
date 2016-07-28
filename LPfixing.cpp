@@ -1,4 +1,5 @@
 #include<iostream>
+#include<iomanip>
 #include<algorithm>
 #include<math.h>
 
@@ -15,20 +16,22 @@ int PSEP_LPfix::price(int *clamptotal, int *deltotal){
   double total_time = PSEP_zeit();
   *clamptotal = 0; *deltotal = 0;
 
+  edge_delset.resize(ecount);
+
   int infeasible = 0;
   opt_time = PSEP_zeit();
   rval = PSEPlp_primal_opt(&m_lp, &infeasible);
   if(rval) goto CLEANUP;
   opt_time = PSEP_zeit() - opt_time;
   cout << "Optimized LP relaxation in "
-       << opt_time << "s, objective val: ";
+       << setprecision(0) << opt_time << "s, obj val: " << setprecision(6);
 
   rval = PSEPlp_objval(&m_lp, &lp_LB);
   if(rval) goto CLEANUP;
-  cout << lp_LB << "\n";
+  cout << lp_LB << ", ";
 
   GAP = m_min_tour_value - lp_LB;
-  cout << "Integrality gap: " << GAP << ", ";
+  cout << "Integrality gap: " << GAP << ".\n";
 
   rval = PSEPlp_get_redcosts(&m_lp, &redcosts[0]);
   if(rval) goto CLEANUP;
@@ -53,10 +56,12 @@ int PSEP_LPfix::price(int *clamptotal, int *deltotal){
     }
   }
 
-  cout << *clamptotal << " edges shall be fixed to 1, "
-       << *deltotal << " shall be deleted.\n"
-       << (*clamptotal + *deltotal) << " total fixable, computed in "
-       << (PSEP_zeit() - total_time) << "s\n";
+  if(*clamptotal != 0)
+    cout << *clamptotal << " edges shall be fixed to 1, ";
+  if(*deltotal != 0)
+    cout << *deltotal << " edges shall be deleted, "
+	 << "computed in " << setprecision(0)
+	 << (PSEP_zeit() - total_time) << "s\n";
   
 
  CLEANUP:
@@ -93,6 +98,7 @@ int PSEP_LPfix::delete_cols(){
 }
 
 void PSEP_LPfix::delete_edges(){
+  int orig_ecount = m_graph.edge_count;
   double total_time = PSEP_zeit();
   for(int i = 0; i < m_graph.edge_count; i++)
     edge_lookup[IntPair(edges[i].end[0], edges[i].end[1])] = edge_delset[i];
@@ -119,7 +125,10 @@ void PSEP_LPfix::delete_edges(){
   total_time = PSEP_zeit() - total_time;
 
   cout << "Number of edges is now " << edges.size() << ", deleted in "
-       << total_time << "s\n";
+       << total_time << "s.\n (Down from " << orig_ecount << ", ";
+  cout << "ratio "
+       << setprecision(3) << ((double) edges.size() / m_graph.node_count)
+       << " * ncount)\n";
 }
 
 

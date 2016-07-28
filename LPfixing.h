@@ -17,7 +17,7 @@ class PSEP_LPfix {
     m_graph(GraphGroup.m_graph), edges(GraphGroup.m_graph.edges),
     edge_lookup(GraphGroup.m_graph.edge_lookup), delta(GraphGroup.delta),
     m_lp(LPGroup.m_lp), m_lp_edges(LPGroup.m_lp_edges)
-    { edge_delset.resize(m_graph.edge_count);}
+    {}
 
   enum FixStats {
     LEAVE = 0, DELETE = 1, FIXED = 2
