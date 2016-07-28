@@ -113,6 +113,10 @@ int PSEP_LP_Core::rebuild_basis(){
 }
 
 int PSEP_LP_Core::basis_init(){
+  old_colstat.resize(m_graph.edge_count);
+  for(int i = 0; i < old_colstat.size(); i++)
+    old_colstat[i] = CPX_AT_LOWER;
+  
   for(int i = 0; i < m_graph.edge_count; i++){
     Edge e = m_graph.edges[i];
     int ind0, ind1;
@@ -149,6 +153,7 @@ int PSEP_LP_Core::basis_init(){
   rval = set_edges();
   if(rval) goto CLEANUP;
 
+  /*
   if(fabs(get_obj_val() - m_min_tour_value) >= LP::EPSILON){
     cerr << "BASIS INIT SWITCHED OBJ VAL!!!! TO: "
 	 << get_obj_val() << endl;
@@ -162,6 +167,7 @@ int PSEP_LP_Core::basis_init(){
       return 1;
     }
   }
+  */
   
   
   CLEANUP:
