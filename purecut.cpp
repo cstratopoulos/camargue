@@ -1,5 +1,7 @@
 #include "purecut.h"
 
+#include<iomanip>
+
 using namespace std;
 
 int PSEP_PureCut::solve(const bool heur){
@@ -14,21 +16,34 @@ int PSEP_PureCut::solve(const bool heur){
 
   int max_per_round = LPcore.prefs.max_cuts_round;
 
-  double total_segtime = 0, total_2mtime = 0;
+  double total_segtime = 0, total_2mtime = 0, total_dptime = 0;
   int total_segcalls = 0, total_2mcalls = 0;
   double total_pivtime = 0;
-
+  double routine_start, fixing_start, rebuild_start;
+  
   bool called_heur = false;
+  bool fixing = LPcore.prefs.redcost_fixing;
 
-  cout << "Calling LPfix pricing....\n";
-  rval = LPfix.price();
-  if(rval) goto CLEANUP;
+  if(fixing){
+    cout << "Calling LPfix pricing....\n";
+    fixing_start = PSEP_zeit();
+    rval = LPfix.redcost_fixing();
+    if(rval) goto CLEANUP;
 
-  rval = LPcore.basis_init();
-  if(rval) goto CLEANUP;
-
+    rebuild_start = PSEP_zeit();
+    rval = LPcore.rebuild_basis();
+    if(rval) goto CLEANUP;
+    rebuild_start = PSEP_zeit() - rebuild_start;
+    fixing_start = PSEP_zeit() - fixing_start;
+  } else{
+    rebuild_start = PSEP_zeit();
+    rval = LPcore.basis_init();
+    if(rval) goto CLEANUP;
+    rebuild_start = PSEP_zeit() - rebuild_start;
+  }
+  
   cout << "Pivoting until optimality or no more cuts" << endl;
-
+  routine_start = PSEP_zeit();
   while(true){
     rounds++;
     augrounds++;
@@ -107,6 +122,7 @@ int PSEP_PureCut::solve(const bool heur){
 	  if(dpval == 1)
 	    break;
 	  dptime = PSEP_zeit() - dptime;
+	  total_dptime += dptime;
 	  cout << "*** Added " << num_dp << " simple DP cuts "
 	       << "(in " << dptime << "s) (" << num_bad << " bad cuts found)"
 	       << " ***\n";
@@ -131,6 +147,7 @@ int PSEP_PureCut::solve(const bool heur){
   if(stat != 3)
     cout << "Terminated due to lack of cutting planes after "
 	 << rounds << " rounds of separation" << endl;
+  cout << "\n";
   cout << total_cuts << " cutting planes added over "
        << rounds << " rounds of separation" << endl;
   cout << "Average time per non-degenerate pivot: "
@@ -140,14 +157,23 @@ int PSEP_PureCut::solve(const bool heur){
        << ((double) (total_segtime / total_segcalls)) << "\n";
   cout << "Average time per blossom call: "
        << ((double) (total_2mtime / total_2mcalls)) << "\n";
+  cout << total_dptime << "s calling simpleDP separation\n";
 
   if(called_heur){
     cout << "VVV SOME PRICING OF CLAMPED EDGES SHOULD GO HERE? VVV " << endl;
   }
 
-  cout << "Calling LPfix pricing after termination....\n";
-  rval = LPfix.price();
-  if(rval) goto CLEANUP;
+  if(!fixing)
+    cout << "\n Time calling basis_init() before solving: "
+	 << rebuild_start << "\n";
+  else
+    cout <<"\n Total time for LPfix::redcost_fixing: "
+	 << fixing_start << "s\n "
+	 << setw(38) << "(" << rebuild_start << "s building basis)\n";
+    
+  cout << "\n Total time for Purecut::solve: "
+       << (PSEP_zeit() - routine_start) << "\n";
+
 
  CLEANUP:
   if(rval)
