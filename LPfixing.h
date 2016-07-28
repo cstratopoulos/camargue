@@ -1,0 +1,47 @@
+#ifndef PSEP_LP_FIXING_H
+#define PSEP_LP_FIXING_H
+
+#include<vector>
+
+#include "lp.h"
+#include "datagroups.h"
+#include "Graph.h"
+#include "PSEP_util.h"
+
+class PSEP_LPfix {
+ public:
+ PSEP_LPfix(PSEP_BestGroup &BestGroup, PSEP_GraphGroup &GraphGroup,
+	    PSEP_LPGroup &LPGroup) :
+  m_min_tour_value(BestGroup.min_tour_value),
+    m_graph(GraphGroup.m_graph), edges(GraphGroup.m_graph.edges),
+    edge_lookup(GraphGroup.m_graph.edge_lookup), delta(GraphGroup.delta),
+    m_lp(LPGroup.m_lp), m_lp_edges(LPGroup.m_lp_edges)
+    { edge_delset.resize(m_graph.edge_count);}
+
+  enum FixStats {
+    LEAVE = 0, DELETE = 1, FIXED = 2
+  };
+
+  int price();
+  int fixup();
+  int delete_cols();
+  int delete_edges();
+
+  int redcost_fixing();
+  
+
+ private:
+  double &m_min_tour_value;
+  
+  Graph &m_graph;
+  std::vector<Edge> &edges;
+  IntPairMap &edge_lookup;
+  std::vector<int> &delta;
+
+  PSEPlp &m_lp;
+  std::vector<double> &m_lp_edges;
+
+  std::vector<int> edge_delset;    
+};
+
+#endif
