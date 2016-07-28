@@ -20,6 +20,10 @@ int PSEP_PureCut::solve(const bool heur){
 
   bool called_heur = false;
 
+  cout << "Calling LPfix pricing....\n";
+  rval = LPfix.price();
+  if(rval) goto CLEANUP;
+
   rval = LPcore.basis_init();
   if(rval) goto CLEANUP;
 
