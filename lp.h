@@ -48,11 +48,13 @@ int PSEPlp_numrows(PSEPlp *lp);
 //deletes specified range of rows
 int PSEPlp_delrows(PSEPlp *lp, int begin, int end);
 
-//deletes set of rows indicated by delstat, deleting those where delstat[i] = 1
+//deletes set of rows (resp cols) indicated by delstat, deleting those where
+//delstat[i] = 1
 //afterwards delstat[i] is
-// -- -1 if the row was deleted
+// -- -1 if the row (resp col) was deleted
 // -- the new index number assigned if not
 int PSEPlp_delsetrows(PSEPlp *lp, int *delstat);
+int PSEPlp_delsetcols(PSEPlp *lp, int *delstat);
 
 //similarly as above
 //obj is an array of length newcols containing objective function coeffs
