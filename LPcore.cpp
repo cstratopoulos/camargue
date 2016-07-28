@@ -71,11 +71,14 @@ double PSEP_LP_Core::set_edges(){
 }
 
 int PSEP_LP_Core::rebuild_basis(){
-  int rval = 0;
+  int rval = 0, infeas = 0;
   int ecount = m_lp_edges.size();
+  int ncount = best_tour_nodes.size();
+  double objval;
   vector<double> tour_obj(ecount);
   vector<double> old_obj(ecount);
   vector<int> lp_indices(ecount);
+  old_colstat.resize(ecount);
 
   rval = PSEPlp_getobj(&m_lp, &old_obj[0], ecount);
   if(rval) return rval;
@@ -88,18 +91,55 @@ int PSEP_LP_Core::rebuild_basis(){
   rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &tour_obj[0]);
   if(rval) return rval;
 
-  rval = primal_opt();
+  rval = PSEPlp_primal_opt(&m_lp, &infeas);
+  if(rval) return rval;
+
+  rval = PSEPlp_objval(&m_lp, &objval);
+  if(objval != -ncount){
+    cerr << "Basis rebuild gave wrong solution\n";
+    return rval;
+  }
+
+  rval = set_edges();
+  if(rval) return rval;
+
+  rval = PSEPlp_getbase(&m_lp, &old_colstat[0], NULL);
   if(rval) return rval;
 
   rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &old_obj[0]);
   if(rval) return rval;
     
-  if(!rval)
-    cout << "Call to rebuild_basis appears successful\n";
   return rval;
 }
 
 int PSEP_LP_Core::basis_init(){
+  for(int i = 0; i < m_graph.edge_count; i++){
+    Edge e = m_graph.edges[i];
+    int ind0, ind1;
+    if(perm[e.end[0]] < perm[e.end[1]]){
+      ind0 = perm[e.end[0]]; ind1 = perm[e.end[1]];
+    } else {
+      ind1 = perm[e.end[0]]; ind0 = perm[e.end[1]];
+    }
+      
+    if(ind1 - ind0 == 1 || (ind0 == 0 && ind1 == m_graph.node_count - 1)){
+      old_colstat[i] = CPX_BASIC;
+      if(m_graph.node_count %2 == 1)
+	continue;	
+    }
+
+    if(m_graph.node_count % 2 == 0){
+      if(ind0 == m_graph.node_count - 2 && ind1 == m_graph.node_count - 1){
+	old_colstat[i] = CPX_AT_UPPER;
+	continue;
+      }
+
+      if(ind0 == 0 && ind1 == m_graph.node_count - 2){
+	old_colstat[i] = CPX_BASIC;
+      }
+    } 
+  }
+  
   int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
   if(rval) goto CLEANUP;
 

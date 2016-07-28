@@ -194,31 +194,4 @@ PSEP_LPGroup::PSEP_LPGroup(const Graph &m_graph, PSEP_LP_Prefs &_prefs,
 
   old_colstat.resize(m_graph.edge_count, CPX_AT_LOWER);
   old_rowstat.resize(m_graph.node_count, CPX_AT_LOWER);
-
-  for(int i = 0; i < m_graph.edge_count; i++){
-    Edge e = m_graph.edges[i];
-    int ind0, ind1;
-    if(perm[e.end[0]] < perm[e.end[1]]){
-      ind0 = perm[e.end[0]]; ind1 = perm[e.end[1]];
-    } else {
-      ind1 = perm[e.end[0]]; ind0 = perm[e.end[1]];
-    }
-      
-    if(ind1 - ind0 == 1 || (ind0 == 0 && ind1 == m_graph.node_count - 1)){
-      old_colstat[i] = CPX_BASIC;
-      if(m_graph.node_count %2 == 1)
-	continue;	
-    }
-
-    if(m_graph.node_count % 2 == 0){
-      if(ind0 == m_graph.node_count - 2 && ind1 == m_graph.node_count - 1){
-	old_colstat[i] = CPX_AT_UPPER;
-	continue;
-      }
-
-      if(ind0 == 0 && ind1 == m_graph.node_count - 2){
-	old_colstat[i] = CPX_BASIC;
-      }
-    } 
-  }
 }
