@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
   CCdatagroup *dat = new CCdatagroup;
   char *fname;
 
-  cout << "BRANCH VERSION: MAJOR RESTRUCTURE\n";
+  cout << "BRANCH VERSION: EDGE FIXING\n";
 
   if(initial_parse(argc, argv, &fname, prefs)){
     cerr << "Problem parsing arguments" << endl;
