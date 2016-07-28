@@ -33,12 +33,8 @@ int main(int argc, char* argv[]){
 
   delete dat;
 
-  double start = PSEP_zeit();
-
   solver.call(heur);
-
-  cout << "Finished with runtime " << PSEP_zeit() - start << endl;
-
+  
   return 0;
 }
 
@@ -50,6 +46,7 @@ static int initial_parse(int ac, char **av, char **fname,
   int switching_choice = 0;
   int dp_factor = 3;
   bool jumpstart = false;
+  bool redfix = true;
   int max_per_round = 2;
 
   int c;
@@ -59,13 +56,16 @@ static int initial_parse(int ac, char **av, char **fname,
     return 1;
   }
 
-  while((c = getopt(ac, av, "Tham:D:d:jp:s:")) != EOF) {
+  while((c = getopt(ac, av, "Thxam:D:d:jp:s:")) != EOF) {
     switch(c) {
     case 'T':
       tooth = 1;
       break;
     case 'h':
       heur = true;
+      break;
+    case 'x':
+      redfix = false;
       break;
     case 'D':
       dp_factor = atoi(optarg);
@@ -131,6 +131,11 @@ static int initial_parse(int ac, char **av, char **fname,
   if(heur)
     cout << "Augmentation heuristic enabled, ";
 
+  if(!redfix){
+    prefs.redcost_fixing = false;
+    cout << "Edges will not be fixed via reduced cost, ";
+  }
+
   switch(pricing_choice){
   case 0:
     prefs.pricing_choice = LP::PRICING::DEVEX;
@@ -182,6 +187,7 @@ static void usage(char *f){
   fprintf(stderr, "-T       enable simpleDP/simple tooth testing.\n");
   fprintf(stderr, "-j       jumpstart slow sequences of pivots with\n");
   fprintf(stderr, "         a temporary switch to steepest edge.\n");
+  fprintf(stderr, "-x       turn off reduced cost fixing (on by default).\n");
   fprintf(stderr, "-h       enable the clamp edge augmentation heuristic\n");
   fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ---------------\n");
   fprintf(stderr, "-D    only call simpleDP sep after 5x rounds\n");
