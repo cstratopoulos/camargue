@@ -19,7 +19,7 @@ int PSEP_PureCut::solve(const bool heur){
   double total_segtime = 0, total_2mtime = 0, total_dptime = 0;
   int total_segcalls = 0, total_2mcalls = 0;
   double total_pivtime = 0;
-  double routine_start, fixing_start, rebuild_start;
+  double routine_start, fixing_start;
   
   bool called_heur = false;
   bool fixing = LPcore.prefs.redcost_fixing;
@@ -29,23 +29,16 @@ int PSEP_PureCut::solve(const bool heur){
     fixing_start = PSEP_zeit();
     rval = LPfix.redcost_fixing();
     if(rval) goto CLEANUP;
-
-    rebuild_start = PSEP_zeit();
-    rval = LPcore.rebuild_basis();
-    if(rval) goto CLEANUP;
-    rebuild_start = PSEP_zeit() - rebuild_start;
-    fixing_start = PSEP_zeit() - fixing_start;
-  } else{
-    rebuild_start = PSEP_zeit();
-    rval = LPcore.basis_init();
-    if(rval) goto CLEANUP;
-    rebuild_start = PSEP_zeit() - rebuild_start;
+    fixing_start = PSEP_zeit() - fixing_start; //previously called rebuild
   }
+  
+  rval = LPcore.basis_init();
+  if(rval) goto CLEANUP;
   
   cout << "Pivoting until optimality or no more cuts" << endl;
   routine_start = PSEP_zeit();
-  while(true){
-    rounds++;
+  while(/*true*/++rounds < 50){
+    //    rounds++;
     augrounds++;
     in_subtour = false;
 
@@ -143,8 +136,8 @@ int PSEP_PureCut::solve(const bool heur){
     if(num_seg == 0 && num_2match == 0 && num_dp == 0)
       break;
   }
-   
-  if(stat != 3)
+
+  if(stat != 3 || rounds == 50)
     cout << "Terminated due to lack of cutting planes after "
 	 << rounds << " rounds of separation" << endl;
   cout << "\n";
@@ -163,16 +156,15 @@ int PSEP_PureCut::solve(const bool heur){
     cout << "VVV SOME PRICING OF CLAMPED EDGES SHOULD GO HERE? VVV " << endl;
   }
 
-  if(!fixing)
-    cout << "\n Time calling basis_init() before solving: "
-	 << rebuild_start << "\n";
-  else
+  if(fixing)
     cout <<"\n Total time for LPfix::redcost_fixing: "
-	 << fixing_start << "s\n "
-	 << setw(38) << "(" << rebuild_start << "s building basis)\n";
+	 << fixing_start << "s\n";
     
   cout << "\n Total time for Purecut::solve: "
        << (PSEP_zeit() - routine_start) << "\n";
+
+  if(stat != PIVOT::FATHOMED_TOUR)
+    LPfix.redcost_fixing();
 
 
  CLEANUP:
