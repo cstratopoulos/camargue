@@ -44,7 +44,7 @@ PSEP_BestGroup::PSEP_BestGroup(const Graph &m_graph, CCdatagroup *dat){
   int *tlist = (int *) NULL;
   int *cyc = (int *) NULL;
   double bestval, val, szeit;
-  int trials = 1;
+  int trials = (int) ncount / 100;
   int silent = 1;
   int kicks = (ncount > 400 ? 100 : ncount / 4);
   int istour;
@@ -54,7 +54,7 @@ PSEP_BestGroup::PSEP_BestGroup(const Graph &m_graph, CCdatagroup *dat){
   else
     seed = (int) PSEP_real_zeit();
   
-  cout << "LK seed: " << seed << endl;
+  cout << "LK seed: " << seed << ", " << trials << " trials\n";
 
   szeit = CCutil_zeit ();
   bestval = CCtsp_LP_MAXDOUBLE;
