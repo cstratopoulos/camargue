@@ -175,7 +175,7 @@ int PSEP_PureCut::solve(const bool heur){
   cout << "\n Total time for Purecut::solve: "
        << (PSEP_zeit() - routine_start) << "\n";
   if(fixing)
-    cout <<"          LPfix::redcost_fixing: "
+    cout <<"         LPfix::redcost_fixing: "
 	 << fixing_start << "s\n";
 
   if(stat != PIVOT::FATHOMED_TOUR)
