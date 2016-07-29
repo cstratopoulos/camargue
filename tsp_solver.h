@@ -2,6 +2,7 @@
 #define TSP_SOLVER_H
 
 #include <vector>
+#include <memory>
 
 #include "datagroups.h"
 #include "purecut.h"
@@ -19,11 +20,11 @@ class TSP_Solver {
   PSEP_SupportGroup SupportGroup;
   PSEP_LPGroup LPGroup;
   
-  PSEP_PureCut PureCut;
-  PSEP_ABC ABC;
+  std::unique_ptr<PSEP_PureCut> PureCut;
+  std::unique_ptr<PSEP_ABC> ABC;
 
   int call(const bool heur){
-    return PureCut.solve(heur);
+    return PureCut->solve(heur);
   }
 };
 

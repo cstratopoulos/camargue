@@ -6,9 +6,12 @@ TSP_Solver::TSP_Solver(char *fname, PSEP_LP_Prefs _prefs,
 		       CCdatagroup *dat) :
   GraphGroup(fname, dat),
   BestGroup(GraphGroup.m_graph, dat),
-  LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm),
-  PureCut(GraphGroup, BestGroup, LPGroup, SupportGroup),
-  ABC(GraphGroup, BestGroup, LPGroup, SupportGroup) {}
+  LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm)// ,
+  // PureCut((PSEP_PureCut *) NULL), ABC((PSEP_ABC *) NULL)
+{
+  PureCut.reset(new PSEP_PureCut(GraphGroup, BestGroup, LPGroup, SupportGroup));
+   //   ABC = new PSEP_ABC(GraphGroup, BestGroup, LPGroup, SupportGroup);
+}
   
 /*
 int TSP_Solver::simple_test(){
