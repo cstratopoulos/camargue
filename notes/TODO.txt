@@ -42,3 +42,13 @@ enum SWITCHING{
 };
 
 and it has a member called switching....
+
+
+CLASSES/GENERIC PROGRAMMING
+Could have something like....generic functions for 
+template<cut_t cuttype>
+basically each cut must support the operations:
+	  separate
+	  add (to CPLEX)
+	  parse (get coeffs for CPLEX)
+and could write a specialization of these for each class...
