@@ -50,6 +50,9 @@ class PSEP_LP_Core {
   int update_best_tour();
 
   int prune_cuts(int *num_removed);
+  int numrows(){
+    return PSEPlp_numrows(&m_lp);
+  }
 
   void change_pricing();
 

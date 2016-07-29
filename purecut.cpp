@@ -11,6 +11,7 @@ int PSEP_PureCut::solve(const bool heur){
   int num_seg, num_2match, num_dp, num_bad, total_cuts = 0;
   int segval, matchval, dpval;
   double segtime, matchtime, dptime, pivtime;
+  double piv_val;
   int rounds = 0, augrounds = 0;
   bool in_subtour;
 
@@ -25,7 +26,6 @@ int PSEP_PureCut::solve(const bool heur){
   bool fixing = LPcore.prefs.redcost_fixing;
 
   if(fixing){
-    cout << "Calling LPfix pricing....\n";
     fixing_start = PSEP_zeit();
     rval = LPfix.redcost_fixing();
     if(rval) goto CLEANUP;
@@ -47,9 +47,13 @@ int PSEP_PureCut::solve(const bool heur){
     if(rval) goto CLEANUP;
     total_pivtime += PSEP_zeit() - pivtime;
 
-    print.pivot(stat);
+    if(rounds % 10 == 0)
+      piv_val = LPcore.get_obj_val();
+    //print.pivot(stat);
 
     if(stat == PIVOT::FATHOMED_TOUR){
+      cout << "\n\n    ROUND " << rounds << " -- ";
+      print.pivot(stat);
       if(heur){
 	if(Aug.active()){
 	  rval = Aug.clear_clamps();
@@ -96,11 +100,18 @@ int PSEP_PureCut::solve(const bool heur){
     matchtime = PSEP_zeit() - matchtime;
     total_2mtime += matchtime; total_2mcalls++;
 
-    cout << "Added " << num_seg << " segments"
-	 << " (in " << segtime << "s)"
-	 <<", " << num_2match
-	 << " blossoms"
-	 << " (in " << matchtime << "s)" << endl;
+    if(rounds % 10 == 0){
+      cout << "\n PIVOTING ROUND: " << rounds << " [ "
+	   << (LPcore.numrows() - LPcore.best_tour_nodes.size())
+	   << " cuts in the LP ]\n";
+      cout << "   ";
+      print.pivot(stat);
+      cout << "   Pivot objval: " << piv_val << "\n";
+      cout << "   Avg piv time: " << setprecision(2)
+	   << ((double) (total_pivtime / rounds)) <<"s\n"
+	   << setprecision(6);
+	   
+    }
 
     dpval = 2; num_dp = 0;
     if(augrounds >= LPcore.prefs.dp_threshold){
@@ -116,9 +127,12 @@ int PSEP_PureCut::solve(const bool heur){
 	    break;
 	  dptime = PSEP_zeit() - dptime;
 	  total_dptime += dptime;
-	  cout << "*** Added " << num_dp << " simple DP cuts "
-	       << "(in " << dptime << "s) (" << num_bad << " bad cuts found)"
-	       << " ***\n";
+	  cout << "  Round: " << rounds << ", ";
+	  cout << "added " << num_dp << " simple DP cuts "
+	       << "in " << setprecision(2) << dptime << "s" << setprecision(6);
+	  if(num_bad != 0)
+	    cout << "!! " << num_bad << " bad cuts found)";
+	  cout << "\n";
 	}
       }
     }
@@ -141,27 +155,28 @@ int PSEP_PureCut::solve(const bool heur){
     cout << "Terminated due to lack of cutting planes after "
 	 << rounds << " rounds of separation" << endl;
   cout << "\n";
-  cout << total_cuts << " cutting planes added over "
+  cout << "  " << total_cuts << " cutting planes added over "
        << rounds << " rounds of separation" << endl;
-  cout << "Average time per non-degenerate pivot: "
-       << ((double) (total_pivtime / rounds)) << "\n";
+  // cout << "Average time per non-degenerate pivot: "
+  //      << ((double) (total_pivtime / rounds)) << "\n";
 
-  cout << "Average time per segcall: "
+  cout << "   Total time during lightDP sep: "
+       << total_dptime << "s\n";
+  cout << "   Average time per segment call: "
        << ((double) (total_segtime / total_segcalls)) << "\n";
-  cout << "Average time per blossom call: "
+  cout << "                     2match call: "
        << ((double) (total_2mtime / total_2mcalls)) << "\n";
-  cout << total_dptime << "s calling simpleDP separation\n";
+
 
   if(called_heur){
     cout << "VVV SOME PRICING OF CLAMPED EDGES SHOULD GO HERE? VVV " << endl;
   }
-
-  if(fixing)
-    cout <<"\n Total time for LPfix::redcost_fixing: "
-	 << fixing_start << "s\n";
     
   cout << "\n Total time for Purecut::solve: "
        << (PSEP_zeit() - routine_start) << "\n";
+  if(fixing)
+    cout <<"\n          LPfix::redcost_fixing: "
+	 << fixing_start << "s\n";
 
   if(stat != PIVOT::FATHOMED_TOUR)
     LPfix.redcost_fixing();

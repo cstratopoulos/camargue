@@ -302,9 +302,9 @@ int rval = 0;
   } else
       *pivot_status_p = PIVOT::FRAC;
 
-    cout << "Did " << itcount << " pivots in "
-	 << setprecision(2) << round_start << "s, "
-	 << "obj val: " << setprecision(6) << get_obj_val() << "\n";
+    // cout << "Did " << itcount << " pivots in "
+    // 	 << setprecision(2) << round_start << "s, "
+    // 	 << "obj val: " << setprecision(6) << get_obj_val() << "\n";
 
  CLEANUP:
     if(rval)
