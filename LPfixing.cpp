@@ -24,11 +24,10 @@ int PSEP_LPfix::price(int *clamptotal, int *deltotal){
   if(rval) goto CLEANUP;
   opt_time = PSEP_zeit() - opt_time;
   cout << "Optimized LP relaxation in "
-       << setprecision(0) << opt_time << "s, obj val: " << setprecision(6);
+       << setprecision(0) << opt_time << "s, " << setprecision(6);
 
   rval = PSEPlp_objval(&m_lp, &lp_LB);
   if(rval) goto CLEANUP;
-  cout << lp_LB << ", ";
 
   GAP = m_min_tour_value - lp_LB;
   cout << "Integrality gap: " << GAP << ".\n";
@@ -153,5 +152,6 @@ int PSEP_LPfix::redcost_fixing(){
  CLEANUP:
   if(rval)
     cerr << "Problem in LPfix::redcost_fixing.\n";
+  cout << setprecision(6);
   return rval;
 }
