@@ -46,7 +46,7 @@ PSEP_BestGroup::PSEP_BestGroup(const Graph &m_graph, CCdatagroup *dat){
   double bestval, val, szeit;
   int trials = (int) ncount / 100;
   int silent = 1;
-  int kicks = (ncount > 400 ? 100 : ncount / 4);
+  int kicks = (ncount > 1000 ? 500 : ncount / 2);
   int istour;
   int seed;
   if(UTIL::seed)
