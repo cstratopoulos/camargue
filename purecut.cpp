@@ -19,7 +19,7 @@ int PSEP_PureCut::solve(const bool heur){
 
   double total_segtime = 0, total_2mtime = 0, total_dptime = 0;
   int total_segcalls = 0, total_2mcalls = 0;
-  double total_pivtime = 0;
+  double total_pivtime = 0, max_pivtime = 0;
   double routine_start, fixing_start;
   
   bool called_heur = false;
@@ -45,7 +45,9 @@ int PSEP_PureCut::solve(const bool heur){
     pivtime = PSEP_zeit();
     rval = LPcore.pivot_until_change(&stat);
     if(rval) goto CLEANUP;
-    total_pivtime += PSEP_zeit() - pivtime;
+    pivtime = PSEP_zeit() - pivtime;
+    total_pivtime += pivtime;
+    if(pivtime > max_pivtime) max_pivtime = pivtime;
 
     if(rounds % 10 == 0)
       piv_val = LPcore.get_obj_val();
@@ -108,8 +110,9 @@ int PSEP_PureCut::solve(const bool heur){
       print.pivot(stat);
       cout << "   Pivot objval: " << piv_val << "\n";
       cout << "   Avg piv time: " << setprecision(2)
-	   << ((double) (total_pivtime / rounds)) <<"s\n"
-	   << setprecision(6);
+	   << ((double) (total_pivtime / rounds)) <<"s, (longest "
+	   << max_pivtime << "s)\n" << setprecision(6);
+      max_pivtime = 0;
 	   
     }
 
@@ -173,7 +176,7 @@ int PSEP_PureCut::solve(const bool heur){
   }
     
   cout << "\n Total time for Purecut::solve: "
-       << (PSEP_zeit() - routine_start) << "\n";
+       << (PSEP_zeit() - routine_start) << "s\n";
   if(fixing)
     cout <<"         LPfix::redcost_fixing: "
 	 << fixing_start << "s\n";
