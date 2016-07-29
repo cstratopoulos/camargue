@@ -2,38 +2,6 @@
 
 using namespace std;
 
-int PSEP_Cutcall::segment(const int max_cutcount, int *num_added_p){
-  int rval = 0;
-  *num_added_p = 0;
-
-  segments.separate(max_cutcount);
-
-  while(!segments.q_empty()){
-    int start, end; double viol;
-    segments.pop(&start, &end, &viol);
-
-    vector<int> segnodes;
-    for(int i = start; i <= end; i++)
-      segnodes.push_back(best_tour_nodes[i]);
-    
-    int deltacount;
-    G_Utils::get_delta(segnodes, edges, &deltacount, delta,
-		       edge_marks);
-
-    rval = segments.add_cut(deltacount, delta);
-    if(rval) goto CLEANUP;
-      
-    (*num_added_p)++;
-  }
-
-  if(*num_added_p == 0) rval = 2;
-    
- CLEANUP:
-  if(rval == 1)
-    cerr << "Entry point: PSEP_Cutcall::segment" << endl;
-  return rval;
-}
-
 int PSEP_Cutcall::blossom(const int max_cutcount, int *num_added_p){
   int rval = 0;
   *num_added_p = 0;

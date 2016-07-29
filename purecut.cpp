@@ -88,10 +88,13 @@ int PSEP_PureCut::solve(const bool heur){
     rval = LPcore.pivot_back();
     if(rval) goto CLEANUP;
 
+    num_seg = 0;
     segtime = PSEP_zeit();
-    segval = cutcall.segment(max_per_round, &num_seg);
+    segval = cutcall.segments.cut_call();
     if(segval == 1)
       break;
+    if(segval == 0)
+      num_seg = 1;
     segtime = PSEP_zeit() - segtime;
     total_segtime += segtime; total_segcalls++;
 

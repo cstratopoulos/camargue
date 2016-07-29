@@ -2,14 +2,16 @@
 #define PSEP_CUTCALL_H
 
 #include "datagroups.h"
+#include "cuts.h"
 #include "blossom.h"
-#include "segcuts.h"
+#include "segments2.h"
 #include "simpleDP.h"
 
 class PSEP_Cutcall {
  public:
   PSEP_Cutcall(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
 	       PSEP_LPGroup &LPGroup, PSEP_SupportGroup &SupportGroup):
+  segments(GraphGroup, BestGroup, SupportGroup, LPGroup),
   //GraphGroup
   edges(GraphGroup.m_graph.edges),
     delta(GraphGroup.delta),
@@ -22,8 +24,6 @@ class PSEP_Cutcall {
     //LPGroup
     m_lp_edges(LPGroup.m_lp_edges),
     //separate cut classes
-    segments(SupportGroup.G_s, GraphGroup.edge_marks,
-	     BestGroup.best_tour_nodes, LPGroup.m_lp),
     blossoms(BestGroup.best_tour_edges, LPGroup.m_lp_edges,
 	     SupportGroup.support_indices, SupportGroup.support_elist,
 	     SupportGroup.support_ecap, LPGroup.m_lp),
@@ -32,8 +32,8 @@ class PSEP_Cutcall {
 	    SupportGroup.support_ecap, GraphGroup.m_graph.edge_lookup,
 	    LPGroup.m_lp){}
 	       
-  
-  int segment(const int max_cutcount, int *num_added_p);
+
+  PSEP::Cuts<PSEP::seg> segments;
   int blossom(const int max_cutcount, int *num_added_p);
   int simpleDP(const int max_cutcount, int *num_added_p, int *num_bad_p);
 
@@ -49,8 +49,7 @@ class PSEP_Cutcall {
   std::vector<double> &support_ecap;
 
   std::vector<double> &m_lp_edges;
-  
-  PSEP_Segcuts segments;
+   
   PSEP_2match blossoms;
   PSEP_SimpleDP dominos;
   
