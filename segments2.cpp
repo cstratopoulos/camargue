@@ -1,19 +1,11 @@
-#include<vector>
 #include<iostream>
 
 #include "segments2.h"
-#include "Graph.h"
-#include "lp.h"
 
 using namespace std;
 using namespace PSEP;
 
-template<>
-int Cuts<seg>::separate(){
-  SupportGraph &G_s = SupportGroup.G_s;
-  std::vector<int> &edge_marks = GraphGroup.edge_marks;
-  std::vector<int> &best_tour_nodes = BestGroup.best_tour_nodes;
-
+int Cut<seg>::separate(){
   int ncount = G_s.node_count;
   int current_start, current_end, current_size;
   SNode current_snode;
@@ -49,35 +41,25 @@ int Cuts<seg>::separate(){
   return 0;
 }
 
-template<>
-int Cuts<seg>::get_coefficients(int *deltacount){
+int Cut<seg>::parse_coeffs(){
   if(!best){
     cerr << "Cuts<seg>::get_coefficients tried to parse null pointer\n";
     return 1;
   }
 
-  *deltacount = 0;
-
-  std::vector<int> &best_tour_nodes = BestGroup.best_tour_nodes;
-  std::vector<Edge> &edges = GraphGroup.m_graph.edges;
-  std::vector<int> &delta = GraphGroup.delta;
-  std::vector<int> &edge_marks = GraphGroup.edge_marks;
+  deltacount = 0;
 
   std::vector<int> segnodes;
 
   for(int i = best->start; i <= best->end; i++)
     segnodes.push_back(best_tour_nodes[i]);
 
-  G_Utils::get_delta(segnodes, edges, deltacount, delta, edge_marks);
+  G_Utils::get_delta(segnodes, edges, &deltacount, delta, edge_marks);
   
   return 0;
 }
 
-template<>
-int Cuts<seg>::add_cut(const int deltacount){
-  PSEPlp &m_lp = LPGroup.m_lp;
-  
-  std::vector<int> &delta = GraphGroup.delta;
+int Cut<seg>::add_cut(){
   int rval = 0, newrows = 1, newnz = deltacount;
   int rmatbeg[1] = {0};
   char sense[1] = {'G'};
@@ -92,17 +74,16 @@ int Cuts<seg>::add_cut(const int deltacount){
   return rval;
 }
 
-template<>
-int Cuts<seg>::cut_call(){
-  int rval = 0, deltacount = 0;
+int Cut<seg>::cutcall(){
+  int rval = 0;
 
   rval = separate();
   if(rval) goto CLEANUP;
 
-  rval = get_coefficients(&deltacount);
-  if(rval || deltacount < 0) goto CLEANUP;
+  rval = parse_coeffs();
+  if(rval || deltacount == 0) goto CLEANUP;
 
-  rval = add_cut(deltacount);
+  rval = add_cut();
   if(rval) goto CLEANUP;
 
  CLEANUP:

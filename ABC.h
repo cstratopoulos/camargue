@@ -12,7 +12,7 @@ class PSEP_ABC {
  public:
   PSEP_ABC(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
 	   PSEP_LPGroup &LPGroup, PSEP_SupportGroup &SupportGroup):
-  cutcall(GraphGroup, BestGroup, LPGroup, SupportGroup),
+  CutControl(GraphGroup, BestGroup, LPGroup, SupportGroup),
     LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup),
     ConstraintMgr(BestGroup, LPGroup, RightBranch, EdgeStats){}
   
@@ -24,7 +24,7 @@ class PSEP_ABC {
   int unenforce(std::unique_ptr<PSEP_BBNode> &v);
 
  private:
-  PSEP_Cutcall cutcall;
+  PSEP::CutControl CutControl;
   PSEP_LP_Core LPcore;
   std::stack<std::unique_ptr<PSEP_BBNode> > BBtree;
   PSEP_EdgeStatuses EdgeStats;

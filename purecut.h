@@ -20,7 +20,7 @@ class PSEP_PureCut {
 	       PSEP_LPGroup &LPGroup, PSEP_SupportGroup &SupportGroup):
     print(BestGroup.best_tour_nodes, BestGroup.best_tour_edges,
 	  LPGroup.m_lp_edges, GraphGroup.m_graph.edges),
-    cutcall(GraphGroup, BestGroup, LPGroup, SupportGroup),
+      CutControl(GraphGroup, BestGroup, LPGroup, SupportGroup),
       LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup),
       LPfix(BestGroup, GraphGroup, LPGroup),
       Aug(BestGroup, LPGroup, SupportGroup){}
@@ -29,7 +29,7 @@ class PSEP_PureCut {
   PSEP_Printer print;
   
  private:
-  PSEP_Cutcall cutcall;
+  PSEP::CutControl CutControl;
   PSEP_LP_Core LPcore;
   PSEP_LPfix LPfix;
   PSEP_AugHeuristic Aug;

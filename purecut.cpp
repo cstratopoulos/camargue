@@ -8,8 +8,8 @@ int PSEP_PureCut::solve(const bool heur){
   int rval = 0;
 
   int stat;
-  int num_seg, num_2match, num_dp, num_bad, total_cuts = 0;
-  int segval, matchval, dpval;
+  int num_seg = 0, num_2match = 0, num_dp = 0, num_bad, total_cuts = 0;
+  int segval = 2, matchval = 2, dpval = 2;
   double segtime, matchtime, dptime, pivtime;
   double piv_val;
   int rounds = 0, augrounds = 0;
@@ -29,7 +29,7 @@ int PSEP_PureCut::solve(const bool heur){
     fixing_start = PSEP_zeit();
     rval = LPfix.redcost_fixing();
     if(rval) goto CLEANUP;
-    fixing_start = PSEP_zeit() - fixing_start; //previously called rebuild
+    fixing_start = PSEP_zeit() - fixing_start; 
   }
   
   rval = LPcore.basis_init();
@@ -55,18 +55,7 @@ int PSEP_PureCut::solve(const bool heur){
 
     if(stat == PIVOT::FATHOMED_TOUR){
       cout << "\n\n    ROUND " << rounds << " -- ";
-      print.pivot(stat);
-      if(heur){
-	if(Aug.active()){
-	  rval = Aug.clear_clamps();
-	  if(rval)
-	    goto CLEANUP;
-	  called_heur = true;
-	  if(LPcore.rebuild_basis())
-	    goto CLEANUP;
-	}
-      }
-      
+      print.pivot(stat);      
       break;
     }
 
@@ -77,10 +66,6 @@ int PSEP_PureCut::solve(const bool heur){
       cout << "~Call to delete slack cuts should go here~" << endl;
       if(LPcore.update_best_tour())
 	goto CLEANUP;
-      if(heur)
-	if(Aug.active())
-	  if(Aug.clear_clamps())
-	    goto CLEANUP;
       augrounds = 0;
       continue;
     }
@@ -90,7 +75,7 @@ int PSEP_PureCut::solve(const bool heur){
 
     num_seg = 0;
     segtime = PSEP_zeit();
-    segval = cutcall.segments.cut_call();
+    segval = CutControl.segments.cutcall();
     if(segval == 1)
       break;
     if(segval == 0)
@@ -98,12 +83,6 @@ int PSEP_PureCut::solve(const bool heur){
     segtime = PSEP_zeit() - segtime;
     total_segtime += segtime; total_segcalls++;
 
-    matchtime = PSEP_zeit();
-    matchval = cutcall.blossom(max_per_round - num_seg, &num_2match);
-    if(matchval == 1)
-      break;
-    matchtime = PSEP_zeit() - matchtime;
-    total_2mtime += matchtime; total_2mcalls++;
 
     if(rounds % 10 == 0){
       cout << "\n PIVOTING ROUND: " << rounds << " [ "
@@ -117,38 +96,6 @@ int PSEP_PureCut::solve(const bool heur){
 	   << max_pivtime << "s)\n" << setprecision(6);
       max_pivtime = 0;
 	   
-    }
-
-    dpval = 2; num_dp = 0;
-    if(augrounds >= LPcore.prefs.dp_threshold){
-      if(num_seg == 0 && stat != PIVOT::SUBTOUR){
-	rval = cutcall.in_subtour_poly(&in_subtour);
-	if(rval) goto CLEANUP;
-
-	if(in_subtour){
-	  dptime = PSEP_zeit();
-	  dpval = cutcall.simpleDP(max_per_round - num_2match,
-				   &num_dp, &num_bad);
-	  if(dpval == 1)
-	    break;
-	  dptime = PSEP_zeit() - dptime;
-	  total_dptime += dptime;
-	  cout << "  Round: " << rounds << ", ";
-	  cout << "added " << num_dp << " simple DP cuts "
-	       << "in " << setprecision(2) << dptime << "s" << setprecision(6);
-	  if(num_bad != 0)
-	    cout << "!! " << num_bad << " bad cuts found)";
-	  cout << "\n";
-	}
-      }
-    }
-
-    if(augrounds >= 25 && (augrounds % 15) == 10
-       && stat != PIVOT::SUBTOUR){
-      if(heur){
-	rval = Aug.add_clamp();
-	if(rval) goto CLEANUP;
-      }
     }
 
     total_cuts += num_seg + num_2match + num_dp;
