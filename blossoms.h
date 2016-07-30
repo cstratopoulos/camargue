@@ -7,21 +7,6 @@
 #include "Graph.h"
 #include "lp.h"
 
-namespace PSEP {
-  struct blossom {
-  blossom(std::vector<int> _handle, int _cut_edge, double _val) :
-    handle(_handle), cut_edge(_cut_edge), cut_val(_val){}
-
-    bool operator< (const blossom &val) const {
-      return cut_val < val.cut_val;
-    }
-
-    std::vector<int> handle;
-    int cut_edge;
-    double cut_val;
-  };
-}
-
 namespace PSEP{
   template<> class Cut<blossom> {
   public:
