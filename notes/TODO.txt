@@ -52,3 +52,29 @@ basically each cut must support the operations:
 	  add (to CPLEX)
 	  parse (get coeffs for CPLEX)
 and could write a specialization of these for each class...
+
+
+New idea:
+previous approach may have been misguided? So we have three cut classes:
+	 segments
+	 blossoms
+	 simpleDP
+each of which will have (more or less)
+     definition of storage struct
+     unique_ptr to best cut found
+     functions:
+	separate/separate_pq(const int max cutcount)
+	parse/get coefficients (get delta)
+	add_cut
+	cut_call -- wraps all of the above
+
+Thus we just provide
+template<typename cut_type>
+	public:
+	 cut_call
+	private:
+	 separate/parse/add
+	 unique_ptr
+
+and in the header files for segments/blossoms/simpleDP, include a FULL class 
+specialization of each
