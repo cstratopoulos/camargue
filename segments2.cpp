@@ -27,7 +27,7 @@ int Cut<seg>::separate(){
 	  lhs += current_snode.adj_objs[k].lp_weight;
       
       if(lhs > current_size - 1 && (fabs(lhs - (current_size - 1)) >= 0.002)){
-	if((lhs - (current_size - 1)) > best->viol)
+	if(!best || (lhs - (current_size - 1)) > best->viol)
 	  best.reset(new seg(i, j,lhs - (current_size - 1)));
       }
     }
@@ -87,7 +87,7 @@ int Cut<seg>::cutcall(){
   if(rval) goto CLEANUP;
 
  CLEANUP:
-  if(rval)
+  if(rval == 1)
     cerr << "Problem in Cuts<seg>::cutcall()\n";
   best.reset(NULL);
   return rval;
