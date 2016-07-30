@@ -12,7 +12,6 @@
 #include "LPcore.h"
 #include "LPfixing.h"
 #include "printer.h"
-#include "augheuristic.h"
 
 class PSEP_PureCut {
  public:
@@ -22,17 +21,15 @@ class PSEP_PureCut {
 	  LPGroup.m_lp_edges, GraphGroup.m_graph.edges),
       CutControl(GraphGroup, BestGroup, LPGroup, SupportGroup),
       LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup),
-      LPfix(BestGroup, GraphGroup, LPGroup),
-      Aug(BestGroup, LPGroup, SupportGroup){}
+      LPfix(BestGroup, GraphGroup, LPGroup){}
 
-  int solve(const bool heuristic);
+  int solve();
   PSEP_Printer print;
   
  private:
   PSEP::CutControl CutControl;
   PSEP_LP_Core LPcore;
   PSEP_LPfix LPfix;
-  PSEP_AugHeuristic Aug;
 };
 
 #endif

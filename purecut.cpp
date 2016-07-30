@@ -4,25 +4,22 @@
 
 using namespace std;
 
-int PSEP_PureCut::solve(const bool heur){
+int PSEP_PureCut::solve(){
   int rval = 0;
 
   int stat;
-  int num_seg = 0, num_2match = 0, num_dp = 0, num_bad, total_cuts = 0;
-  int segval = 2, matchval = 2, dpval = 2;
-  double segtime, matchtime, dptime, pivtime;
+  int num_seg = 0, num_2match = 0, num_dp = 0, /*num_bad,*/ total_cuts = 0;
+  int segval = 2, matchval = 2;//dpval = 2
+  double segtime, matchtime, /*dptime,*/ pivtime;
   double piv_val;
   int rounds = 0, augrounds = 0;
   bool in_subtour;
-
-  int max_per_round = LPcore.prefs.max_cuts_round;
 
   double total_segtime = 0, total_2mtime = 0, total_dptime = 0;
   int total_segcalls = 0, total_2mcalls = 0;
   double total_pivtime = 0, max_pivtime = 0;
   double routine_start, fixing_start;
-  
-  bool called_heur = false;
+
   bool fixing = LPcore.prefs.redcost_fixing;
 
   if(fixing){
@@ -130,10 +127,6 @@ int PSEP_PureCut::solve(const bool heur){
   cout << "                     2match call: "
        << ((double) (total_2mtime / total_2mcalls)) << "\n";
 
-
-  if(called_heur){
-    cout << "VVV SOME PRICING OF CLAMPED EDGES SHOULD GO HERE? VVV " << endl;
-  }
     
   cout << "\n Total time for Purecut::solve: "
        << (PSEP_zeit() - routine_start) << "s\n";

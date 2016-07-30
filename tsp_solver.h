@@ -23,8 +23,8 @@ class TSP_Solver {
   std::unique_ptr<PSEP_PureCut> PureCut;
   std::unique_ptr<PSEP_ABC> ABC;
 
-  int call(const bool heur){
-    return PureCut->solve(heur);
+  int call(){
+    return PureCut->solve();
   }
 };
 

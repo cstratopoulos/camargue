@@ -13,7 +13,6 @@
 using namespace std;
 
 static int tooth = 0;
-static bool heur = false;
 static int initial_parse(int ac, char **av,char **fname, PSEP_LP_Prefs &prefs);
 static void usage(char *f);
 
@@ -33,7 +32,7 @@ int main(int argc, char* argv[]){
 
   delete dat;
 
-  solver.call(heur);
+  solver.call();
   
   return 0;
 }
@@ -47,7 +46,6 @@ static int initial_parse(int ac, char **av, char **fname,
   int dp_factor = 3;
   bool jumpstart = false;
   bool redfix = true;
-  int max_per_round = 2;
 
   int c;
 
@@ -56,13 +54,10 @@ static int initial_parse(int ac, char **av, char **fname,
     return 1;
   }
 
-  while((c = getopt(ac, av, "Thxam:D:d:jp:s:")) != EOF) {
+  while((c = getopt(ac, av, "ThxaD:d:jp:s:")) != EOF) {
     switch(c) {
     case 'T':
       tooth = 1;
-      break;
-    case 'h':
-      heur = true;
       break;
     case 'x':
       redfix = false;
@@ -81,9 +76,6 @@ static int initial_parse(int ac, char **av, char **fname,
       break;
     case 's':
       seed = atoi(optarg);
-      break;
-    case 'm':
-      max_per_round = atoi(optarg);
       break;
     case '?':
     default:
@@ -128,9 +120,6 @@ static int initial_parse(int ac, char **av, char **fname,
     cout << "Slow pivots will be jumpstarted, ";
   }
 
-  if(heur)
-    cout << "Augmentation heuristic enabled, ";
-
   if(!redfix){
     prefs.redcost_fixing = false;
     cout << "Edges will not be fixed via reduced cost, ";
@@ -158,20 +147,6 @@ static int initial_parse(int ac, char **av, char **fname,
     return 1;
   }
 
-  if(max_per_round < 2){
-    cout << "Entered too few number of cuts per round\n";
-    usage(av[0]);
-    return 1;
-  }
-
-  cout << "at most " << max_per_round << "cuts will be added per round\n";
-  prefs.max_cuts_round = max_per_round;
-
-  if(dp_factor > 4){
-    cout << "DP factor " << dp_factor << " too high\n";
-    usage(av[0]);
-    return 1;
-  }
   prefs.dp_threshold = 5 * dp_factor;
   cout << "DP separation will be tried after "
        << prefs.dp_threshold << " non-degenerate pivots w no augmentation\n";
@@ -188,7 +163,6 @@ static void usage(char *f){
   fprintf(stderr, "-j       jumpstart slow sequences of pivots with\n");
   fprintf(stderr, "         a temporary switch to steepest edge.\n");
   fprintf(stderr, "-x       turn off reduced cost fixing (on by default).\n");
-  fprintf(stderr, "-h       enable the clamp edge augmentation heuristic\n");
   fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ---------------\n");
   fprintf(stderr, "-D    only call simpleDP sep after 5x rounds\n");
   fprintf(stderr, "      of cuts with no augmentation.\n");
@@ -202,6 +176,4 @@ static void usage(char *f){
   fprintf(stderr, "    1 steepest edge with slack initial norms\n");
   fprintf(stderr, "    2 true steepest edge.\n");
   fprintf(stderr, "-s    set LK random seed to x.\n");
-  fprintf(stderr, "-m    set max number of cuts added per round\n");
-  fprintf(stderr, "      of pivoting.\n");
 }
