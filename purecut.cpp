@@ -20,6 +20,8 @@ int PSEP_PureCut::solve(){
   double total_pivtime = 0, max_pivtime = 0;
   double routine_start, fixing_start;
 
+  int roundlimit = 500;
+
   bool fixing = LPcore.prefs.redcost_fixing;
 
   if(fixing){
@@ -34,10 +36,16 @@ int PSEP_PureCut::solve(){
   
   cout << "Pivoting until optimality or no more cuts" << endl;
   routine_start = PSEP_zeit();
-  while(/*true*/++rounds < 50){
+  while(/*true*/++rounds < roundlimit){
     //    rounds++;
     augrounds++;
     in_subtour = false;
+
+    if(rounds % 50 == 0){
+      cout << "Calling edge elimination again...\n";
+      LPfix.redcost_fixing();
+      LPcore.rebuild_basis();
+    }
 
     pivtime = PSEP_zeit();
     rval = LPcore.pivot_until_change(&stat);
@@ -75,8 +83,10 @@ int PSEP_PureCut::solve(){
     num_seg = 0;
     segtime = PSEP_zeit();
     segval = CutControl.segments.cutcall();
-    if(segval == 1)
-      break;
+    if(segval == 1){
+      rval = 1;
+      goto CLEANUP;
+    }
     if(segval == 0)
       num_seg = 1;
     segtime = PSEP_zeit() - segtime;
@@ -85,7 +95,10 @@ int PSEP_PureCut::solve(){
     num_2match = 0;
     matchtime = PSEP_zeit();
     matchval = CutControl.blossoms.cutcall();
-    if(matchval == 1) break;
+    if(matchval == 1){
+      rval = 1;
+      goto CLEANUP;
+    }
     if(matchval == 0) num_2match = 1;
     matchtime = PSEP_zeit() - matchtime;
     total_2mtime += matchtime; total_2mcalls++;
@@ -111,10 +124,17 @@ int PSEP_PureCut::solve(){
       break;
   }
 
-  if(stat != 3 || rounds == 50)
-    cout << "Terminated due to lack of cutting planes after "
-	 << rounds << " rounds of separation" << endl;
-  cout << "\n";
+  if(stat != 3 || rounds == roundlimit){
+    cout << "\n Terminated due to: ";
+    if(num_seg == 0 && num_2match == 0 && num_dp == 0){
+      cout << "lack of cutting planes.\n      ";
+      print.pivot(stat);
+      cout << "\n";
+    }
+    else if(rounds == roundlimit)
+      cout << "artificial round limit\n";
+  }
+  
   cout << "  " << total_cuts << " cutting planes added over "
        << rounds << " rounds of separation" << endl;
   // cout << "Average time per non-degenerate pivot: "
@@ -139,6 +159,10 @@ int PSEP_PureCut::solve(){
 
 
  CLEANUP:
+  if(segval == 1)
+    cerr << "Problem in Cuts<seg>::cutcall()\n";
+  if(matchval == 1)
+    cerr << "Problem in Cuts<blossom>::cutcall()\n";
   if(rval)
     cerr << "Error entry point: PureCut::solve()\n";
   return rval;
