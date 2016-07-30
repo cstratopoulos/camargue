@@ -83,6 +83,14 @@ int PSEP_PureCut::solve(const bool heur){
     segtime = PSEP_zeit() - segtime;
     total_segtime += segtime; total_segcalls++;
 
+    num_2match = 0;
+    matchtime = PSEP_zeit();
+    matchval = CutControl.blossoms.cutcall();
+    if(matchval == 1) break;
+    if(matchval == 0) num_2match = 1;
+    matchtime = PSEP_zeit() - matchtime;
+    total_2mtime += matchtime; total_2mcalls++;
+
 
     if(rounds % 10 == 0){
       cout << "\n PIVOTING ROUND: " << rounds << " [ "

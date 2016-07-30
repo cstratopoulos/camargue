@@ -3,7 +3,8 @@
 
 #include "datagroups.h"
 #include "cuts.h"
-#include "segments2.h"
+#include "segments.h"
+#include "blossoms.h"
 
 namespace PSEP{
   class CutControl {
@@ -11,13 +12,16 @@ namespace PSEP{
   CutControl(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
 		  PSEP_LPGroup &LPGroup, PSEP_SupportGroup &SupportGroup):
     //separate cut classes
-    segments(GraphGroup.delta, GraphGroup.edge_marks,
-	     GraphGroup.m_graph.edges,
-	     BestGroup.best_tour_nodes,
-	     LPGroup.m_lp, SupportGroup.G_s){}
+    segments(GraphGroup.delta, GraphGroup.edge_marks, GraphGroup.m_graph.edges,
+	     BestGroup.best_tour_nodes, LPGroup.m_lp, SupportGroup.G_s),
+      blossoms(GraphGroup.delta, GraphGroup.edge_marks,
+	       GraphGroup.m_graph.edges, BestGroup.best_tour_edges,
+	       LPGroup.m_lp, LPGroup.m_lp_edges, SupportGroup.support_indices,
+	       SupportGroup.support_elist, SupportGroup.support_ecap){}
 	       
 
     PSEP::Cut<PSEP::seg> segments;
+    PSEP::Cut<PSEP::blossom> blossoms;
   };
 }
 
