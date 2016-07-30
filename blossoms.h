@@ -57,7 +57,7 @@ namespace PSEP{
 
     std::vector<double> cut_ecap;
 
-    G_Utils gu;
+    //    G_Utils gu;
 
     std::unique_ptr<blossom> best;
   };
