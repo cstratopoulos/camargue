@@ -55,6 +55,11 @@ int Cut<seg>::parse_coeffs(){
     segnodes.push_back(best_tour_nodes[i]);
 
   G_Utils::get_delta(segnodes, edges, &deltacount, delta, edge_marks);
+
+  if(deltacount == 0){
+    cerr << "Cuts<seg>::parse_coeffs returned no edges\n";
+    return 1;
+  }
   
   return 0;
 }
@@ -81,7 +86,7 @@ int Cut<seg>::cutcall(){
   if(rval) goto CLEANUP;
 
   rval = parse_coeffs();
-  if(rval || deltacount == 0) goto CLEANUP;
+  if(rval) goto CLEANUP;
 
   rval = add_cut();
   if(rval) goto CLEANUP;

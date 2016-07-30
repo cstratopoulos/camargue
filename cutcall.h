@@ -2,9 +2,9 @@
 #define PSEP_CUTCALL_H
 
 #include "datagroups.h"
-#include "cuts.h"
 #include "segments.h"
 #include "blossoms.h"
+#include "cuts.h"
 
 namespace PSEP{
   class CutControl {

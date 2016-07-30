@@ -82,6 +82,11 @@ int Cut<blossom>::parse_coeffs(){
 
   G_Utils::get_delta(best->handle, edges, &deltacount, delta, edge_marks);
 
+  if(deltacount == 0){
+    cerr << "Cuts<blossom>::parse_coeffs returned zero edges\n";
+    return 1;
+  }
+
   return 0;
 }
 
@@ -129,7 +134,7 @@ int Cut<blossom>::cutcall(){
   if(rval) goto CLEANUP;
 
   rval = parse_coeffs();
-  if(rval || deltacount == 0) goto CLEANUP;
+  if(rval) goto CLEANUP;
 
   rval = add_cut();
   if(rval) goto CLEANUP;
