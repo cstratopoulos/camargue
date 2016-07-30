@@ -55,7 +55,9 @@ int PSEP_PureCut::solve(const bool heur){
 
     if(stat == PIVOT::FATHOMED_TOUR){
       cout << "\n\n    ROUND " << rounds << " -- ";
-      print.pivot(stat);      
+      print.pivot(stat);
+      cout << "                Pivot objval: "
+	   << LPcore.get_obj_val() << "\n";      
       break;
     }
 
