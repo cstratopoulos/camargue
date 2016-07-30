@@ -42,8 +42,10 @@ int PSEPlp_getrows (PSEPlp *lp, int *nzcnt_p, int *rmatbeg, int *rmatind,
 		    double *rmatval, int rmatspace, int *surplus_p, int begin,
 		    int end);
 
-//returns the number of rows in lp problem object
+//returns the number of rows/cols in lp problem object
 int PSEPlp_numrows(PSEPlp *lp);
+int PSEPlp_numcols(PSEPlp *lp);
+
 
 //deletes specified range of rows
 int PSEPlp_delrows(PSEPlp *lp, int begin, int end);

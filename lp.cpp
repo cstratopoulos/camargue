@@ -116,6 +116,10 @@ int PSEPlp_numrows(PSEPlp *lp){
   return CPXgetnumrows (lp->cplex_env, lp->cplex_lp);
 }
 
+int PSEPlp_numcols(PSEPlp *lp){
+  return CPXgetnumcols (lp->cplex_env, lp->cplex_lp);
+}
+
 int PSEPlp_addcols (PSEPlp *lp, int newcols, int newnz, double *obj,
 		    int *cmatbeg, int *cmatind, double *cmatval,
 		    double *lb, double *ub){
