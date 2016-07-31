@@ -43,7 +43,7 @@ static int initial_parse(int ac, char **av, char **fname,
   int seed = 0;
   int pricing_choice = 0;
   int switching_choice = 0;
-  int dp_factor = 3;
+  int dp_factor = -1;
   bool jumpstart = false;
   bool redfix = true;
 
@@ -148,8 +148,9 @@ static int initial_parse(int ac, char **av, char **fname,
   }
 
   prefs.dp_threshold = 5 * dp_factor;
-  cout << "DP separation will be tried after "
-       << prefs.dp_threshold << " non-degenerate pivots w no augmentation\n";
+  if(dp_factor >= 0)
+    cout << "DP separation will be tried after "
+	 << prefs.dp_threshold << " non-degenerate pivots w no augmentation\n";
   
   UTIL::seed = seed;
 
@@ -164,8 +165,8 @@ static void usage(char *f){
   fprintf(stderr, "         a temporary switch to steepest edge.\n");
   fprintf(stderr, "-x       turn off reduced cost fixing (on by default).\n");
   fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ---------------\n");
-  fprintf(stderr, "-D    only call simpleDP sep after 5x rounds\n");
-  fprintf(stderr, "      of cuts with no augmentation.\n");
+  fprintf(stderr, "-D    only call simpleDP sep after 5x rounds of cuts \n");
+  fprintf(stderr, "      with no augmentation. (disabled by default)\n");
   fprintf(stderr, "-d    set dynamic switch of pricing protocol:\n");
   fprintf(stderr, "    0 (default) stay on reduced cost pricing\n");
   fprintf(stderr, "    1 switch after 3*ncount iterations needed\n");

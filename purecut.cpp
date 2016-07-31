@@ -105,8 +105,9 @@ int PureCut::solve(){
     total_2mtime += matchtime; total_2mcalls++;
 
     dpval = 2; num_dp = 0;
-    if(augrounds >= LPcore.prefs.dp_threshold){
-      if(num_seg == 0 && stat != PIVOT::SUBTOUR){
+    if(LPcore.prefs.dp_threshold >= 0 &&
+       augrounds >= LPcore.prefs.dp_threshold){
+      if(num_seg == 0 && num_2match == 0 && stat != PIVOT::SUBTOUR){
 	dptime = PSEP_zeit();
 	dpval = CutControl.dominos.cutcall();
 	if(dpval == 1){
@@ -116,7 +117,6 @@ int PureCut::solve(){
 	total_dptime += dptime;
       }	 
     }
-
 
     if(rounds % 10 == 0){
       cout << "\n PIVOTING ROUND: " << rounds << " [ "
