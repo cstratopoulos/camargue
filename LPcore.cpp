@@ -74,11 +74,13 @@ int PSEP_LP_Core::rebuild_basis(){
   int rval = 0, infeas = 0;
   int ecount = m_lp_edges.size();
   int ncount = best_tour_nodes.size();
+  int num_removed = 0;
   double objval;
   vector<double> tour_obj(ecount);
   vector<double> old_obj(ecount);
   vector<int> lp_indices(ecount);
   old_colstat.resize(ecount);
+  double prune;
 
   rval = PSEPlp_getobj(&m_lp, &old_obj[0], ecount);
   if(rval) return rval;
@@ -105,6 +107,14 @@ int PSEP_LP_Core::rebuild_basis(){
 
   rval = PSEPlp_getbase(&m_lp, &old_colstat[0], NULL);
   if(rval) return rval;
+
+  prune = PSEP_zeit();
+  rval = prune_cuts(&num_removed);
+  if(rval) return rval;
+  prune = PSEP_zeit() - prune;
+  cout << "Removed " << num_removed << " cuts from the LP in "
+       << prune << "s\n";
+
 
   rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &old_obj[0]);
   if(rval) return rval;
@@ -151,24 +161,7 @@ int PSEP_LP_Core::basis_init(){
   if(rval) goto CLEANUP;
     
   rval = set_edges();
-  if(rval) goto CLEANUP;
-
-  /*
-  if(fabs(get_obj_val() - m_min_tour_value) >= LP::EPSILON){
-    cerr << "BASIS INIT SWITCHED OBJ VAL!!!! TO: "
-	 << get_obj_val() << endl;
-    return 1;
-  }
-  
-  for(int i = 0; i < m_graph.edge_count; i++){
-    if(fabs(m_lp_edges[i] - best_tour_edges[i]) >= LP::EPSILON){
-      cerr << "Found disagreement!!!!!: " << m_lp_edges[i] << " vs "
-	   << best_tour_edges[i] << endl;
-      return 1;
-    }
-  }
-  */
-  
+  if(rval) goto CLEANUP;  
   
   CLEANUP:
   if(rval)
@@ -375,12 +368,6 @@ int PSEP_LP_Core::prune_cuts(int *num_removed){
   rval = PSEPlp_getslack(&m_lp, &slacks[0], ncount, rowcount - 1);
   if(rval)
     return 1;
-
-  // cout << "Called getslack after augmentation, here are the values: \n";
-  // for(int i = 0; i < slacks.size(); i++){
-  //   cout << "Row " << ncount + i << ": "
-  // 	 << slacks[i] << "\n";
-  // }
 
   for(int i = 0; i < slacks.size(); i++){
     if(fabs(slacks[i]) >= LP::EPSILON){
