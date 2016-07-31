@@ -3,8 +3,9 @@
 #include<iomanip>
 
 using namespace std;
+using namespace PSEP;
 
-int PSEP_PureCut::solve(){
+int PureCut::solve(){
   int rval = 0;
 
   int stat;

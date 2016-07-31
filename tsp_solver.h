@@ -20,8 +20,8 @@ class TSP_Solver {
   PSEP_SupportGroup SupportGroup;
   PSEP_LPGroup LPGroup;
   
-  std::unique_ptr<PSEP_PureCut> PureCut;
-  std::unique_ptr<PSEP_ABC> ABC;
+  std::unique_ptr<PSEP::PureCut> PureCut;
+  std::unique_ptr<PSEP::ABC> ABC;
 
   int call(){
     return PureCut->solve();

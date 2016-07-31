@@ -9,7 +9,8 @@ TSP_Solver::TSP_Solver(char *fname, PSEP_LP_Prefs _prefs,
   LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm)// ,
   // PureCut((PSEP_PureCut *) NULL), ABC((PSEP_ABC *) NULL)
 {
-  PureCut.reset(new PSEP_PureCut(GraphGroup, BestGroup, LPGroup, SupportGroup));
+  PureCut.reset(new PSEP::PureCut(GraphGroup, BestGroup, LPGroup,
+				  SupportGroup));
    //   ABC = new PSEP_ABC(GraphGroup, BestGroup, LPGroup, SupportGroup);
 }
   

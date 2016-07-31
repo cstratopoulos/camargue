@@ -13,9 +13,10 @@
 #include "LPfixing.h"
 #include "printer.h"
 
-class PSEP_PureCut {
- public:
-  PSEP_PureCut(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
+namespace PSEP {
+  class PureCut {
+  public:
+  PureCut(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
 	       PSEP_LPGroup &LPGroup, PSEP_SupportGroup &SupportGroup):
     print(BestGroup.best_tour_nodes, BestGroup.best_tour_edges,
 	  LPGroup.m_lp_edges, GraphGroup.m_graph.edges),
@@ -23,13 +24,14 @@ class PSEP_PureCut {
       LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup),
       LPfix(BestGroup, GraphGroup, LPGroup){}
 
-  int solve();
-  PSEP_Printer print;
+    int solve();
+    PSEP_Printer print;
   
- private:
-  PSEP::CutControl CutControl;
-  PSEP_LP_Core LPcore;
-  PSEP_LPfix LPfix;
-};
+  private:
+    PSEP::CutControl CutControl;
+    PSEP_LP_Core LPcore;
+    PSEP_LPfix LPfix;
+  };
+}
 
 #endif

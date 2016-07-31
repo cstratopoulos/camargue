@@ -7,6 +7,11 @@
 #include "Graph.h"
 #include "datagroups.h"
 
+namespace PSEP {
+  class PureCut;
+  class CutControl;
+}
+
 class PSEP_LP_Core {
  public:
   PSEP_LP_Core(PSEP_LPGroup &LPGroup, PSEP_GraphGroup &GraphGroup,
@@ -66,8 +71,8 @@ class PSEP_LP_Core {
   PSEP_LP_Prefs prefs;
 
   friend class TSP_Solver;
-  friend class PSEP_PureCut;
-  friend class PSEP_Cutcall;
+  friend class PSEP::PureCut;
+  friend class PSEP::CutControl;
   std::vector<int> &old_colstat;
   std::vector<int> &old_rowstat;
 
