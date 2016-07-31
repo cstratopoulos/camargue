@@ -19,6 +19,7 @@ int PSEP_PureCut::solve(){
   double total_pivtime = 0, max_pivtime = 0;
   double routine_start, fixing_start;
 
+  int num_pruned = 0;
   int roundlimit = 500;
 
   bool fixing = LPcore.prefs.redcost_fixing;
@@ -39,9 +40,12 @@ int PSEP_PureCut::solve(){
     augrounds++;
 
     if(rounds % 50 == 0){
-      cout << "Calling edge elimination again...\n";
-      LPfix.redcost_fixing();
-      LPcore.rebuild_basis();
+      cout << "Calling edge elimination again...\n\n  ";
+      rval = LPfix.redcost_fixing();
+      if(rval) goto CLEANUP;
+
+      rval = LPcore.rebuild_basis();
+      if(rval) goto CLEANUP;            
     }
 
     pivtime = PSEP_zeit();
