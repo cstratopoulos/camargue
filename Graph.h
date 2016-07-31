@@ -95,23 +95,39 @@ struct G_Utils {
 };
 
 struct CC {
-  struct GH {
-    class Comparator {
-    public:
-      bool operator() (const CC_GHnode *a, const CC_GHnode *b){
-	return a->cutval < b->cutval;
+  struct GH {    
+    static void grab_cut_dfs(CC_GHnode *n, std::vector<int> &cut_nlist){
+      for(int i = 0; i < n->listcount; i++)
+	cut_nlist.push_back(n->nlist[i]);
+
+      for(n = n->child; n; n = n->sibling)
+	grab_cut_dfs(n, cut_nlist);
+    }
+    
+    static void odd_cut_dfs(CC_GHnode *n, double *min_val_p,
+			    CC_GHnode **best_n){
+      if(n->parent){
+	if(n->cutval < *min_val_p && (n->ndescendants % 2) == 1){
+	  *best_n = n;
+	  *min_val_p = n->cutval;
+	}
       }
-    };
 
-    typedef std::priority_queue<CC_GHnode*, std::vector<CC_GHnode*>,
-      Comparator> cut_pq;
+      if(*min_val_p >= LP::EPSILON)
+	for(n = n->child; n; n = n->sibling)
+	  odd_cut_dfs(n, min_val_p, best_n);
+    }
 
-    static void grab_cut_dfs(CC_GHnode *n, std::vector<int> &cut_nlist);
-    static void pq_dfs(CC_GHnode *n, const int max_cutcount, cut_pq &pq);
-    static void get_all_toothlists(CC_GHtree *T, const int max_cutcount,
-				   cut_pq &pq,
-				   std::vector<std::vector<int> >
-				   &toothlists);
+    static void get_odd_cut(CC_GHtree *T, std::vector<int> &cut_nlist){
+      double min_val = 1 - LP::EPSILON;
+      CC_GHnode *best_node = (CC_GHnode *) NULL;
+
+      if(T && T->root)
+	odd_cut_dfs(T->root, &min_val, &best_node);
+
+      if((min_val < 1 - LP::EPSILON) && best_node)
+	grab_cut_dfs(best_node, cut_nlist);
+    }
   };
 };
 

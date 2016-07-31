@@ -24,9 +24,6 @@ class PSEP_CandTooth {
   void find_root_adjacent_teeth(const int root);
   void find_root_distant_teeth(const int root);
 
-
-
- private:
   class SimpleTooth{
   public:
   SimpleTooth() : root(-1), body_start(-1), body_end(-1), node_index(-1){}
@@ -86,6 +83,8 @@ class PSEP_CandTooth {
   };
 
   friend class PSEP_SimpleDP;
+
+ private:
   std::vector<std::list<std::shared_ptr<SimpleTooth> > > light_teeth;
   std::vector<std::list<std::shared_ptr<SimpleTooth> > > heavy_teeth;
 

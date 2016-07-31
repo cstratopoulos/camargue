@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "tooth.h"
 
 namespace PSEP {
   
@@ -20,7 +21,7 @@ namespace PSEP {
   };
 
   struct blossom {
-  blossom(std::vector<int> _handle, int _cut_edge, double _val) :
+  blossom(std::vector<int> &_handle, int _cut_edge, double _val) :
     handle(_handle), cut_edge(_cut_edge), cut_val(_val){}
 
     bool operator< (const blossom &val) const {
@@ -30,6 +31,16 @@ namespace PSEP {
     std::vector<int> handle;
     int cut_edge;
     double cut_val;
+  };
+
+  struct domino {
+    domino(){}
+    domino(std::vector<int> &_handle,
+	   std::vector<std::shared_ptr<PSEP_CandTooth::SimpleTooth> > _teeth) :
+    handle(_handle), used_teeth(_teeth) {}
+
+    std::vector<int> handle;
+    std::vector<std::shared_ptr<PSEP_CandTooth::SimpleTooth> > used_teeth;
   };
 
   

@@ -7,6 +7,7 @@ extern "C" {
 
 #include "tooth.h"
 #include "lp.h"
+#include "cuts.h"
 
 class PSEP_SimpleDP {
  public:
@@ -19,17 +20,18 @@ class PSEP_SimpleDP {
     support_elist(_elist), support_ecap(_ecap), edge_lookup(_edge_lookup),
     m_lp(_lp), candidates(_tour_nodes, _G, _edge_marks) {}
 		
-  int separate(const int max_cutcount);
-  void build_light_cuttree();
-  void add_web_edges();
-  int call_CC_gomoryhu(const int max_cutcount);
+  int separate();
   void parse_domino(const int deltacount, const std::vector<int> &dom_delta,
 		    std::vector<double> &agg_coeffs, double *rhs_p);
-  int add_cut(const std::vector<double> &agg_coeffs, const double RHS);
   void print_cutgraph(const int ncount, const int webcount);
 
  private:
-  friend class PSEP_Cutcall;
+  void build_light_cuttree();
+  void add_web_edges();
+  int call_CC_gomoryhu();
+  int in_subtour_poly(bool *result_p);
+  
+  friend class PSEP::Cut<PSEP::domino>;
   SupportGraph &G_s;
 
   std::vector<int> &best_tour_nodes;
@@ -48,7 +50,7 @@ class PSEP_SimpleDP {
   std::vector<int> cut_marks;
   std::vector<bool> node_marks;
 
-  std::vector<std::vector<int> > toothlists;
+  std::vector<int> cut_nodes;
   
   PSEP_CandTooth candidates;
 };

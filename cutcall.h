@@ -4,6 +4,7 @@
 #include "datagroups.h"
 #include "segments.h"
 #include "blossoms.h"
+#include "dominos.h"
 #include "cuts.h"
 
 namespace PSEP{
@@ -17,11 +18,17 @@ namespace PSEP{
       blossoms(GraphGroup.delta, GraphGroup.edge_marks,
 	       GraphGroup.m_graph.edges, BestGroup.best_tour_edges,
 	       LPGroup.m_lp, LPGroup.m_lp_edges, SupportGroup.support_indices,
-	       SupportGroup.support_elist, SupportGroup.support_ecap){}
+	       SupportGroup.support_elist, SupportGroup.support_ecap),
+      dominos(GraphGroup.edge_marks,
+	      GraphGroup.m_graph.edge_lookup,
+	      BestGroup.best_tour_nodes, BestGroup.perm, LPGroup.m_lp,
+	      LPGroup.m_lp_edges, SupportGroup.G_s, SupportGroup.support_elist,
+	      SupportGroup.support_ecap) {}
 	       
 
     PSEP::Cut<PSEP::seg> segments;
     PSEP::Cut<PSEP::blossom> blossoms;
+    PSEP::Cut<PSEP::domino> dominos;
   };
 }
 

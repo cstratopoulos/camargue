@@ -1,56 +1,25 @@
 #include "simpleDP.h"
 using namespace std;
 
-int PSEP_SimpleDP::separate(const int max_cutcount){
+int PSEP_SimpleDP::separate(){
   int rval = 0;
-  //  int ncount = G_s.node_count;
-  //  int light_total = 0, heavy_total = 0;
+  bool in_subtour = false;
 
-
-  toothlists.clear();
-  
-
-  candidates.build_collection();
-
-  // for(int i = 0; i < ncount; i++){
-  //   light_total += candidates.light_teeth[i].size();
-  //   heavy_total += candidates.heavy_teeth[i].size();
-  // }
-
-  // cout << light_total << " light teeth, " << heavy_total << " heavy teeth\n";
-  // cout << "Light teeth / n^2 = "
-  //      << ((double) light_total / (ncount * ncount)) << "\n";
-  // cout << "Total num teeth / n^3 = "
-  //      << ((double) (light_total + heavy_total) / (ncount * ncount * ncount))
-  //      << "\n";
-
-  // cout << G_s.edge_count << " edges in support graph\n";
-
-  //cout << "Building light cuttree....";
-  build_light_cuttree();
-  //  cout << "Done (" << cut_ecap.size() << " cut edges)\n";
-  //  int webcount = cut_ecap.size();
-  
-
-  //cout << "Adding web edges....";
-  add_web_edges();
-  //  cout << "Done (Now " << cut_ecap.size() << " cut edges)\n";
-
-  //cout << "Printing cutgraph........\n";
-  //print_cutgraph(G_s.node_count, webcount);
-
-  
-  //  cout << "Calling concorde and building toothlists...";
-  rval = call_CC_gomoryhu(max_cutcount);
-  if(rval)
+  rval = in_subtour_poly(&in_subtour);
+  if(!in_subtour){
+    rval = 2;
     goto CLEANUP;
-  //  cout << "Done\n";
+  }
+  
+  cut_nodes.clear();
+  candidates.build_collection();
+  build_light_cuttree();
+  add_web_edges();
 
-  // cout << "Number of inequalities for consideration: "
-  //      << toothlists.size() << "\n";
-
+  rval = call_CC_gomoryhu();
+  
  CLEANUP:
-  if(rval)
+  if(rval == 1)
     cerr << "Error entry point: SimpleDP::separate\n";
   return rval;
 }
@@ -197,7 +166,7 @@ void PSEP_SimpleDP::add_web_edges(){
   }
 }
 
-int PSEP_SimpleDP::call_CC_gomoryhu(const int max_cutcount){
+int PSEP_SimpleDP::call_CC_gomoryhu(){
   int rval = 0;
   int ncount = light_nodes.size();
   int ecount = cut_ecap.size();
@@ -213,9 +182,7 @@ int PSEP_SimpleDP::call_CC_gomoryhu(const int max_cutcount){
   CCutil_sprand(seed, &rstate);
   CCcut_GHtreeinit(&T);
 
-  CC::GH::cut_pq node_pq;
-
-  toothlists.clear();
+  cut_nodes.clear();
 
   if(cut_elist.empty() || cut_ecap.empty() || cut_marks.empty()){
     cerr << "Passed empty vector to gomoryhu\n";
@@ -232,11 +199,13 @@ int PSEP_SimpleDP::call_CC_gomoryhu(const int max_cutcount){
 
   //  CCcut_GHtreeprint(&T);
 
-  CC::GH::get_all_toothlists(&T, max_cutcount, node_pq, toothlists);
+  CC::GH::get_odd_cut(&T, cut_nodes);
+  if(cut_nodes.empty())
+    rval = 2;
 
  CLEANUP:
   CCcut_GHtreefree(&T);
-  if(rval)
+  if(rval == 1)
     cerr << "Error entry point: SimpleDP::call_CC_gomoryhu\n";
   return rval;
 }
@@ -263,8 +232,6 @@ void PSEP_SimpleDP::parse_domino(const int deltacount,
 	int graph_end2 = fmax(best_tour_nodes[T1->root],
 			      best_tour_nodes[T2->root]);
 	rmatval[edge_lookup[IntPair(graph_end1, graph_end2)]] -= 1.0;
-	// cout << "Added nonnegativity inequality for edge "
-	//      << graph_end1 << ", " << graph_end2 << "\n";
 	continue;
       }
 
@@ -290,8 +257,6 @@ void PSEP_SimpleDP::parse_domino(const int deltacount,
       //else both are indices of actual nodes in graph
       rmatval[edge_lookup[IntPair(fmin(end0, end1),
 				  fmax(end0, end1))]] -= 1.0;
-      // cout << "Added nonnegativity inequality for " << end0 << ", "
-      // 	   << end1 << "\n";
       continue;
     }
 
@@ -306,49 +271,32 @@ void PSEP_SimpleDP::parse_domino(const int deltacount,
     }
   }
 
-  // cout << "Parsing handle nodes:\n";
-  // cout << "Rhs before handle parse: " << *rhs_p << "\n";
-  // cout << handle_nodes.size() << " nodes in handle:\n";
-  // for(int i = 0; i < handle_nodes.size(); i++)
-  //   cout << handle_nodes[i] << "\n";
-
   PSEP_CandTooth::SimpleTooth::parse_handle(handle_nodes, rmatval, rhs_p);
 
-  //  cout << "Parsing the used teeth, " << used_teeth.size() << " total\n";
   for(int i = 0; i < used_teeth.size(); i++){
-    // cout << "The " << i << "th used tooth is \n";
-    // used_teeth[i]->print();
     used_teeth[i]->parse(rmatval, rhs_p);
   }
 }
 
-int PSEP_SimpleDP::add_cut(const vector<double> &agg_coeffs,
-			   const double RHS){
-  int rval = 0, newrows = 1, newnz;
-  vector<int> rmatind;
-  vector<double> rmatval;
-  char sense[1];
-  double rhs[1];
-  int rmatbeg[1];
-
-  rmatbeg[0] = 0;
-  rhs[0] = RHS;
-  sense[0] = 'L';
-
-  for(int i = 0; i < agg_coeffs.size(); i++){
-    if(agg_coeffs[i] != 0.0){
-      rmatind.push_back(i);
-      rmatval.push_back(agg_coeffs[i]);
+int PSEP_SimpleDP::in_subtour_poly(bool *result_p){
+  int ecount = support_ecap.size(), ncount = best_tour_nodes.size();  
+  int end0 = 0;
+  double cutval = 2;
+  *result_p = false;
+  
+  for(int end1 = 1; end1 < ncount; end1++){
+    if(CCcut_mincut_st(ncount, ecount, &support_elist[0], &support_ecap[0],
+		       end0, end1, &cutval, (int **) NULL, (int *) NULL)){
+      cerr << "Problem in SimpleDP::in_subtour_poly w Concorde st-cut" << endl;
+      return 1;
     }
+
+    if(cutval < 2)
+      return 0;
   }
-  newnz = rmatind.size();
 
-  rval = PSEPlp_addrows(&m_lp, newrows, newnz, rhs, sense, rmatbeg,
-			&rmatind[0], &rmatval[0]);
-
-  if(rval)
-    cerr << "Problem in PSEP_SimpleDP::add_cut\n";
-  return rval;
+  *result_p = true;
+  return 0;
 }
 
 void PSEP_SimpleDP::print_cutgraph(const int ncount, const int webcount){

@@ -8,12 +8,11 @@ int PSEP_PureCut::solve(){
   int rval = 0;
 
   int stat;
-  int num_seg = 0, num_2match = 0, num_dp = 0, /*num_bad,*/ total_cuts = 0;
-  int segval = 2, matchval = 2;//dpval = 2
-  double segtime, matchtime, /*dptime,*/ pivtime;
+  int num_seg = 0, num_2match = 0, num_dp = 0, total_cuts = 0;
+  int segval = 2, matchval = 2, dpval = 2;
+  double segtime, matchtime, dptime, pivtime;
   double piv_val;
   int rounds = 0, augrounds = 0;
-  bool in_subtour;
 
   double total_segtime = 0, total_2mtime = 0, total_dptime = 0;
   int total_segcalls = 0, total_2mcalls = 0;
@@ -36,10 +35,8 @@ int PSEP_PureCut::solve(){
   
   cout << "Pivoting until optimality or no more cuts" << endl;
   routine_start = PSEP_zeit();
-  while(/*true*/++rounds < roundlimit){
-    //    rounds++;
+  while(++rounds < roundlimit){
     augrounds++;
-    in_subtour = false;
 
     if(rounds % 50 == 0){
       cout << "Calling edge elimination again...\n";
@@ -67,10 +64,10 @@ int PSEP_PureCut::solve(){
     }
 
     if(stat == PIVOT::TOUR){
-      cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
-      cout << "!!!AUGMENTED TOUR!!!!" << endl;
-      cout << "!!!!!!!!!!!!!!!!!!!!!" << endl;
-      cout << "~Call to delete slack cuts should go here~" << endl;
+      cout << "\n\n    !!!AUGMENTED TOUR!!!!" << endl;
+      print.pivot(stat);
+      cout << "                Pivot objval: "
+	   << LPcore.get_obj_val() << "\n"; 
       if(LPcore.update_best_tour())
 	goto CLEANUP;
       augrounds = 0;
@@ -102,6 +99,19 @@ int PSEP_PureCut::solve(){
     if(matchval == 0) num_2match = 1;
     matchtime = PSEP_zeit() - matchtime;
     total_2mtime += matchtime; total_2mcalls++;
+
+    dpval = 2; num_dp = 0;
+    if(augrounds >= LPcore.prefs.dp_threshold){
+      if(num_seg == 0 && stat != PIVOT::SUBTOUR){
+	dptime = PSEP_zeit();
+	dpval = CutControl.dominos.cutcall();
+	if(dpval == 1){
+	  rval = 1; goto CLEANUP;
+	}
+	dptime = PSEP_zeit() - dptime;
+	total_dptime += dptime;
+      }	 
+    }
 
 
     if(rounds % 10 == 0){
