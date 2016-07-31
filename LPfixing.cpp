@@ -60,7 +60,8 @@ int PSEP_LPfix::price(int *clamptotal, int *deltotal){
   if(*deltotal != 0)
     cout << *deltotal << " edges shall be deleted, "
 	 << "computed in " << setprecision(0)
-	 << (PSEP_zeit() - total_time) << "s\n";
+	 << (PSEP_zeit() - total_time) << "s";
+  cout << "\n";
   
 
  CLEANUP:
