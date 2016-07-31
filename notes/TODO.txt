@@ -5,12 +5,8 @@ functions
 or maybe re-explore timer class and name class for protection now that
 i know how static member vars work.............
 
-make it so only one of PureCut or ABC is initialized, perhaps by
-making the member objects be pointers and only one is made non-null
-user gets to enter solution paradigm maybe
-
-possibly switch to unique_ptr vectors for segments and blossoms as
-well, could be faster for priority queue sorting/inseration
+make it so that either ABC can take PureCut as a constructor argument,
+or ABC has access to purecut.solve() from its interface?
 
 idea: .....maybe just a CCutils.h file for things we need from
 concorde along with wrappers? eg.,
@@ -27,11 +23,6 @@ to be aggregated. With some checking: can call increment/decrement
 even if the entries have not yet been initialized; they should
 default to zero.
 
- -given that at most two cuts are added per round.....maybe make it so
- that branching would take place after number of rounds leading to the
- addition of atmost K cuts for some K?
-
-
 LP PREFS AND ENUM PARAMETERS:
 Consider making it so that, e.g., the switching prefs member of the LPprefs
 class is implemented as
@@ -43,38 +34,16 @@ enum SWITCHING{
 
 and it has a member called switching....
 
+NAMESPACE IDEAS:
 
-CLASSES/GENERIC PROGRAMMING
-Could have something like....generic functions for 
-template<cut_t cuttype>
-basically each cut must support the operations:
-	  separate
-	  add (to CPLEX)
-	  parse (get coeffs for CPLEX)
-and could write a specialization of these for each class...
+PSEP 
+     LP
+	Prefs, Core, Fixing, Pruning
 
+     DATA
+	LP, Best, Graphs, Support
 
-New idea:
-previous approach may have been misguided? So we have three cut classes:
-	 segments
-	 blossoms
-	 simpleDP
-each of which will have (more or less)
-     definition of storage struct
-     unique_ptr to best cut found
-     functions:
-	separate/separate_pq(const int max cutcount)
-	parse/get coefficients (get delta)
-	add_cut
-	cut_call -- wraps all of the above
-
-Thus we just provide
-template<typename cut_type>
-	public:
-	 cut_call
-	private:
-	 separate/parse/add
-	 unique_ptr
-
-and in the header files for segments/blossoms/simpleDP, include a FULL class 
-specialization of each
+     PureCut
+	
+     ABC
+       BBNode, EdgeStats, Constraints	       	
