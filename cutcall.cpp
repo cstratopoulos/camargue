@@ -25,6 +25,9 @@ int CutControl::primal_sep(const int augrounds, const int stat){
     rval = 1;
     goto CLEANUP;
   }
+  matchtime = PSEP_zeit() - matchtime;
+  total_2mtime += matchtime;
+  total_2mcalls++;
 
   if(prefs.dp_threshold >= 0 && augrounds >= prefs.dp_threshold){
     if(segval == 2 && matchval == 2 && stat != PIVOT::SUBTOUR){

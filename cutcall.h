@@ -1,6 +1,9 @@
 #ifndef PSEP_CUTCALL_H
 #define PSEP_CUTCALL_H
 
+#include<iostream>
+#include<iomanip>
+
 #include "datagroups.h"
 #include "segments.h"
 #include "blossoms.h"
@@ -34,12 +37,13 @@ namespace PSEP{
     int primal_sep(const int augrounds, const int stat);
     
     void profile(){
-      std::cout << "   Total time during lightDP sep: "
+      std::cout << "   Total time during lightDP sep: " << std::setprecision(4)
 		<< total_dptime << "s\n";
       std::cout << "   Average time per segment call: "
 		<< ((double) (total_segtime / total_segcalls)) << "\n";
       std::cout << "                     2match call: "
-		<< ((double) (total_2mtime / total_2mcalls)) << "\n";
+		<< ((double) (total_2mtime / total_2mcalls)) << "\n"
+		<< std::setprecision(6);
     }
 
   private:
