@@ -20,7 +20,7 @@ int PureCut::solve(){
   double total_pivtime = 0, max_pivtime = 0;
   double routine_start, fixing_start;
 
-  int roundlimit = 500;
+  int roundlimit = 100;
 
   bool fixing = LPcore.prefs.redcost_fixing;
 
