@@ -129,6 +129,9 @@ int PSEPlp_getbase (PSEPlp *lp, int * colstat, int *rowstat);
 //access the slacks for a range of rows
 int PSEPlp_getslack (PSEPlp *lp, double *slack, int begin, int end);
 
+//access the lower bounds on a range of variables
+int PSEPlp_getlb (PSEPlp *lp, double *lb, int begin, int end);
+
 //access the basis header, stored in head, and basic variable values stored in
 //x; either may be NULL if not needed
 int PSEPlp_bhead (PSEPlp *lp, int *head, double *x);
