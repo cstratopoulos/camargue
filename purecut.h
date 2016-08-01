@@ -21,14 +21,17 @@ namespace PSEP {
     print(BestGroup.best_tour_nodes, BestGroup.best_tour_edges,
 	  LPGroup.m_lp_edges, GraphGroup.m_graph.edges),
       CutControl(GraphGroup, BestGroup, LPGroup, SupportGroup),
-      LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup),
+      LPPrune(GraphGroup, LPGroup),
+      LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup, LPPrune),
       LPfix(BestGroup, GraphGroup, LPGroup){}
+
 
     int solve();
     PSEP_Printer print;
   
   private:
     PSEP::CutControl CutControl;
+    PSEP::LPPrune LPPrune;
     PSEP_LP_Core LPcore;
     PSEP_LPfix LPfix;
   };

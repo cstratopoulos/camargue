@@ -18,6 +18,7 @@ int PureCut::solve(){
   double total_segtime = 0, total_2mtime = 0, total_dptime = 0;
   int total_segcalls = 0, total_2mcalls = 0;
   double total_pivtime = 0, max_pivtime = 0;
+  int num_removed = 0;
   double routine_start, fixing_start;
 
   int roundlimit = 100;
@@ -74,6 +75,10 @@ int PureCut::solve(){
 	   << LPcore.get_obj_val() << "\n"; 
       if(LPcore.update_best_tour())
 	goto CLEANUP;
+      if(LPPrune.prune_cuts(num_removed))
+	goto CLEANUP;
+      cout << "               Pruned " << num_removed << " non-tight cuts "
+	   << "from the LP\n";
       augrounds = 0;
       continue;
     }

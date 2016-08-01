@@ -15,7 +15,8 @@ namespace PSEP {
       PSEP_LPGroup &LPGroup, PSEP_SupportGroup &SupportGroup,
       std::vector<double> &lower_bounds):
     CutControl(GraphGroup, BestGroup, LPGroup, SupportGroup),
-      LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup),
+      LPPrune(GraphGroup, LPGroup),
+      LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup, LPPrune),
       EdgeStats(lower_bounds),
       ConstraintMgr(GraphGroup, BestGroup, LPGroup, SupportGroup,
 		    RightBranch, EdgeStats){}
@@ -27,6 +28,7 @@ namespace PSEP {
 
   private:
     PSEP::CutControl CutControl;
+    PSEP::LPPrune LPPrune;
     PSEP_LP_Core LPcore;
     std::stack<std::unique_ptr<PSEP::BB::TreeNode> > BBtree;
     PSEP::BB::EdgeStatuses EdgeStats;

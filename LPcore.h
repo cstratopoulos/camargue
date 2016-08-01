@@ -6,6 +6,7 @@
 #include "lp.h"
 #include "Graph.h"
 #include "datagroups.h"
+#include "LPPrune.h"
 
 namespace PSEP {
   class PureCut;
@@ -16,7 +17,9 @@ class PSEP_LP_Core {
  public:
   PSEP_LP_Core(PSEP_LPGroup &LPGroup, PSEP_GraphGroup &GraphGroup,
 	       PSEP_SupportGroup &SupportGroup,
-	       PSEP_BestGroup &BestGroup) :
+	       PSEP_BestGroup &BestGroup,
+	       PSEP::LPPrune &_LPPrune) :
+  LPPrune(_LPPrune),
   m_lp(LPGroup.m_lp), m_graph(GraphGroup.m_graph), prefs(LPGroup.prefs),
     old_colstat(LPGroup.old_colstat), old_rowstat(LPGroup.old_rowstat),
     m_lp_edges(LPGroup.m_lp_edges), G_s(SupportGroup.G_s),
@@ -54,7 +57,6 @@ class PSEP_LP_Core {
 
   int update_best_tour();
 
-  int prune_cuts(int *num_removed);
   int numrows(){
     return PSEPlp_numrows(&m_lp);
   }
@@ -65,6 +67,7 @@ class PSEP_LP_Core {
   void disable_jumpstart();
 
  private:
+  PSEP::LPPrune &LPPrune;
   PSEPlp &m_lp;
   Graph &m_graph;
 
