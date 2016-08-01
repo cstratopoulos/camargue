@@ -15,22 +15,21 @@ namespace PSEP {
 	   PSEP_LPGroup &LPGroup, PSEP_SupportGroup &SupportGroup):
     CutControl(GraphGroup, BestGroup, LPGroup, SupportGroup),
       LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup),
-      ConstraintMgr(BestGroup, LPGroup, RightBranch, EdgeStats){}
+      ConstraintMgr(GraphGroup, BestGroup, LPGroup, SupportGroup,
+		    RightBranch, EdgeStats){}
   
     int solve();
   
-    int previsit(std::unique_ptr<PSEP_BBNode> &v);
-    int postvisit(std::unique_ptr<PSEP_BBNode> &v);
-    int enforce(std::unique_ptr<PSEP_BBNode> &v);
-    int unenforce(std::unique_ptr<PSEP_BBNode> &v);
+    int previsit(std::unique_ptr<PSEP::BB::TreeNode> &v);
+    int postvisit(std::unique_ptr<PSEP::BB::TreeNode> &v);
 
   private:
     PSEP::CutControl CutControl;
     PSEP_LP_Core LPcore;
-    std::stack<std::unique_ptr<PSEP_BBNode> > BBtree;
-    PSEP_EdgeStatuses EdgeStats;
-    PSEP_RightBranch RightBranch;
-    PSEP_BBConstraints ConstraintMgr;
+    std::stack<std::unique_ptr<PSEP::BB::TreeNode> > BBtree;
+    PSEP::BB::EdgeStatuses EdgeStats;
+    PSEP::BB::RightBranch RightBranch;
+    PSEP::BB::Constraints ConstraintMgr;
   };
 }
 
