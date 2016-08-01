@@ -12,9 +12,11 @@ namespace PSEP {
   class ABC {
   public:
   ABC(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
-	   PSEP_LPGroup &LPGroup, PSEP_SupportGroup &SupportGroup):
+      PSEP_LPGroup &LPGroup, PSEP_SupportGroup &SupportGroup,
+      std::vector<double> &lower_bounds):
     CutControl(GraphGroup, BestGroup, LPGroup, SupportGroup),
       LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup),
+      EdgeStats(lower_bounds),
       ConstraintMgr(GraphGroup, BestGroup, LPGroup, SupportGroup,
 		    RightBranch, EdgeStats){}
   

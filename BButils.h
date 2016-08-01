@@ -50,22 +50,59 @@ namespace PSEP {
       int branch_edge;
     };
 
+    /***********************************************************************/
+
     class EdgeStatuses {
     public:
-      EdgeStatuses() {}
-  
-      void add_branch_var(const std::unique_ptr<PSEP::BB::TreeNode> &v){
+      EdgeStatuses(std::vector<double> &lower_bounds) {
+	for(int i = 0; i < lower_bounds.size(); i++)
+	  if(lower_bounds[i] == 1.0) FixedUp.insert(i);
+      }
+
+    private:  
+      int add_branch_var(const std::unique_ptr<PSEP::BB::TreeNode> &v){
+	if(v->type() == PSEP::BB::TreeNode::NType::ROOT){
+	  std::cerr << "EdgeStatuses::add_branch_var tried to add root\n";
+	  return 1;
+	}
+
+	if(v->status() != PSEP::BB::TreeNode::NStat::UNVISITED){
+	  std::cerr << "EdgeStatuses::add_branch_var tried to add visited "
+		    << "node\n"; return 1;
+	}
+	
 	if(v->type() == PSEP::BB::TreeNode::NType::LEFT)
 	  Left.insert(v->edge());
 	else
 	  Right.insert(v->edge());
+	
+	return 0;
       }
+
+      int remove_branch_var(const std::unique_ptr<PSEP::BB::TreeNode> &v){
+	if(v->type() == PSEP::BB::TreeNode::NType::ROOT){
+	  std::cerr << "EdgeStatuses::remove_branch_var tried to add root\n";
+	  return 1;
+	}
+
+	if(v->status() == PSEP::BB::TreeNode::NStat::UNVISITED){
+	  std::cerr << "EdgeStatuses::remove_branch_var tried to remove "
+	       << "unvisited node\n"; return 1;
+	}
+	
+	if(v->type() == PSEP::BB::TreeNode::NType::LEFT)
+	  Left.erase(v->edge());
+	else
+	  Right.erase(v->edge());
+
+	return 0;
+      }
+      
       void augmentation_merge(){
 	Left.insert(Right.begin(), Right.end());
 	Right.clear();
       }
-
-    private:
+      
       friend class PSEP::BB::RightBranch;
       friend class PSEP::BB::Constraints;
       std::unordered_set<int> Left;
@@ -73,6 +110,7 @@ namespace PSEP {
       std::unordered_set<int> FixedUp;
     };
     
+    /***********************************************************************/
 
     class RightBranch {
     public:
@@ -91,15 +129,18 @@ namespace PSEP {
       void get_range(int *first, int *last) const {
 	*first = constraint_range.first; *last = constraint_range.second;
       }
+      
       void update_range(const std::vector<int> &delset){
 	for(std::map<int, int>::iterator it = edge_row_lookup.begin();
 	    it != edge_row_lookup.end(); it++)
 	  it->second = delset[it->second];
       }
+      
       void add_edge_row(const int edge, const int rownum){
 	edge_row_lookup[edge] = rownum;
       }
-      int first_right_edge();
+      
+      int first_right_edge() const {return first_right;} 
 
     private:
       friend class PSEP::BB::Constraints;
@@ -108,7 +149,7 @@ namespace PSEP {
       int first_right;  
     };
 
-    
+    /***********************************************************************/
 
     class Constraints {
     public:

@@ -16,7 +16,7 @@ int Constraints::enforce(unique_ptr<TreeNode> &v){
     return 1;
   }
 
-  int clamp_edge = v->branch_edge;
+  int clamp_edge = v->edge();
   int rval = 0;
 
   if(v->type() == TreeNode::NType::LEFT){
@@ -29,7 +29,7 @@ int Constraints::enforce(unique_ptr<TreeNode> &v){
 
  CLEANUP:
   if(rval)
-    cerr << "Entry point: Constraints::enforce\n";
+    cerr << "Entry point: BB::Constraints::enforce\n";
   return rval;  
 }
 
@@ -119,7 +119,7 @@ int Constraints::explore_right(const int edge){
 
   char sense = 'E';
 
-  rval = PSEPlp_chgsense(&m_lp, 1, &edge, &sense);
+  rval = PSEPlp_chgsense(&m_lp, 1, &rownum, &sense);
   if(rval)
     cerr << "Problem in BB::Constraints::explore_right\n";
 
@@ -142,7 +142,7 @@ int Constraints::add_first_right_rows(const int edge){
 
   for(int partner = 0; partner < PSEPlp_numcols(&m_lp); partner++){
     if(EdgeStats.Left.count(partner) != 0 ||
-       EdgeStats.Right.count(partner) != 0 || partner == edge)
+       EdgeStats.FixedUp.count(partner) != 0 || partner == edge)
       continue;
 
     rmatind[1] = partner;
