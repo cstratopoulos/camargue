@@ -6,18 +6,13 @@ using namespace std;
 using namespace PSEP;
 
 int PureCut::solve(){
-  int rval = 0;
+  int rval = 0, cut_rval;
 
   int stat;
-  int num_seg = 0, num_2match = 0, num_dp = 0, total_cuts = 0;
-  int segval = 2, matchval = 2, dpval = 2;
-  double segtime, matchtime, dptime, pivtime;
   double piv_val;
   int rounds = 0, augrounds = 0;
 
-  double total_segtime = 0, total_2mtime = 0, total_dptime = 0;
-  int total_segcalls = 0, total_2mcalls = 0;
-  double total_pivtime = 0, max_pivtime = 0;
+  double pivtime, total_pivtime = 0, max_pivtime = 0;
   int num_removed = 0;
   double routine_start, fixing_start;
 
@@ -86,41 +81,10 @@ int PureCut::solve(){
     rval = LPcore.pivot_back();
     if(rval) goto CLEANUP;
 
-    num_seg = 0;
-    segtime = PSEP_zeit();
-    segval = CutControl.segments.cutcall();
-    if(segval == 1){
+    cut_rval = CutControl.primal_sep(augrounds, stat);
+    if(cut_rval){
       rval = 1;
       goto CLEANUP;
-    }
-    if(segval == 0)
-      num_seg = 1;
-    segtime = PSEP_zeit() - segtime;
-    total_segtime += segtime; total_segcalls++;
-
-    num_2match = 0;
-    matchtime = PSEP_zeit();
-    matchval = CutControl.blossoms.cutcall();
-    if(matchval == 1){
-      rval = 1;
-      goto CLEANUP;
-    }
-    if(matchval == 0) num_2match = 1;
-    matchtime = PSEP_zeit() - matchtime;
-    total_2mtime += matchtime; total_2mcalls++;
-
-    dpval = 2; num_dp = 0;
-    if(LPcore.prefs.dp_threshold >= 0 &&
-       augrounds >= LPcore.prefs.dp_threshold){
-      if(num_seg == 0 && num_2match == 0 && stat != PIVOT::SUBTOUR){
-	dptime = PSEP_zeit();
-	dpval = CutControl.dominos.cutcall();
-	if(dpval == 1){
-	  rval = 1; goto CLEANUP;
-	}
-	dptime = PSEP_zeit() - dptime;
-	total_dptime += dptime;
-      }	 
     }
 
     if(rounds % 10 == 0){
@@ -137,15 +101,13 @@ int PureCut::solve(){
 	   
     }
 
-    total_cuts += num_seg + num_2match + num_dp;
-
-    if(num_seg == 0 && num_2match == 0 && num_dp == 0)
+    if(cut_rval == 2)
       break;
   }
 
   if(stat != 3 || rounds == roundlimit){
     cout << "\n Terminated due to: ";
-    if(num_seg == 0 && num_2match == 0 && num_dp == 0){
+    if(cut_rval == 2){
       cout << "lack of cutting planes.\n      ";
       print.pivot(stat);
       cout << "\n";
@@ -154,17 +116,12 @@ int PureCut::solve(){
       cout << "artificial round limit\n";
   }
   
-  cout << "  " << total_cuts << " cutting planes added over "
+  cout << "  "
+       << (LPcore.numrows() - LPcore.best_tour_nodes.size())
+       << " cutting planes added over "
        << rounds << " rounds of separation" << endl;
-  // cout << "Average time per non-degenerate pivot: "
-  //      << ((double) (total_pivtime / rounds)) << "\n";
 
-  cout << "   Total time during lightDP sep: "
-       << total_dptime << "s\n";
-  cout << "   Average time per segment call: "
-       << ((double) (total_segtime / total_segcalls)) << "\n";
-  cout << "                     2match call: "
-       << ((double) (total_2mtime / total_2mcalls)) << "\n";
+  CutControl.profile();
 
     
   cout << "\n Total time for Purecut::solve: "
@@ -178,10 +135,6 @@ int PureCut::solve(){
 
 
  CLEANUP:
-  if(segval == 1)
-    cerr << "Problem in Cuts<seg>::cutcall()\n";
-  if(matchval == 1)
-    cerr << "Problem in Cuts<blossom>::cutcall()\n";
   if(rval)
     cerr << "Error entry point: PureCut::solve()\n";
   return rval;

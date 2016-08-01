@@ -1,166 +1,55 @@
 #include "cutcall.h"
 
 using namespace std;
+using namespace PSEP;
 
-// int PSEP_Cutcall::blossom(const int max_cutcount, int *num_added_p){
-//   int rval = 0;
-//   *num_added_p = 0;
-
-//   if(max_cutcount == 0)
-//     goto CLEANUP;
+int CutControl::primal_sep(const int augrounds, const int stat){
+  int rval = 0;
   
-//   rval = blossoms.separate(max_cutcount);
-//   if(rval) goto CLEANUP;
+  int segval = 2, matchval = 2, dpval = 2;
+  double segtime, matchtime, dptime;
 
-//   while(!blossoms.q_empty()){
-//     vector<int> hnodes;
-//     int cutedge;
-//     double cutval;
-//     blossoms.pop(hnodes, &cutedge, &cutval);
+  segtime = PSEP_zeit();
+  segval = segments.cutcall();
+  if(segval == 1){
+    rval = 1;
+    goto CLEANUP;
+  }
+  segtime = PSEP_zeit() - segtime;
+  total_segtime += segtime;
+  total_segcalls++;
 
-//     int deltacount;
-//     G_Utils::get_delta(hnodes, edges, &deltacount, delta, edge_marks);
+  matchtime = PSEP_zeit();
+  matchval = blossoms.cutcall();
+  if(matchval == 1){
+    rval = 1;
+    goto CLEANUP;
+  }
 
-//     rval = blossoms.add_cut(deltacount, delta, cutedge);
-//     if(rval) goto CLEANUP;
-//     (*num_added_p)++;
-//   }
+  if(prefs.dp_threshold >= 0 && augrounds >= prefs.dp_threshold){
+    if(segval == 2 && matchval == 2 && stat != PIVOT::SUBTOUR){
+      dptime = PSEP_zeit();
+      dpval = dominos.cutcall();
+      if(dpval == 1){
+	rval = 1;
+	goto CLEANUP;
+      }
+      dptime = PSEP_zeit() - dptime;
+      total_dptime += dptime;	
+    }
+  }
 
-//   if(*num_added_p == 0)
-//     rval = 2;
+  if(segval == 2 && matchval == 2 && dpval == 2)
+    rval = 2;
 
-
-//  CLEANUP:
-//   if(rval == 1)
-//     cerr << "Error entry point: PSEP_cutcall::blossom" << endl;
-//   return rval;
-// }
-
-// int PSEP_Cutcall::simpleDP(const int max_cutcount, int *num_added_p,
-// 			   int *num_bad_p){
-//   int rval = 0;
-//   *num_added_p = 0; *num_bad_p = 0;
-//   vector<double> agg_coeffs(m_lp_edges.size(), 0);
-//   // double rhs, lhs;
-//   // int RHS;
-//   int ncount, ecount;
-//   vector<int> cut_node_marks;
-//   vector<int> domino_delta;
-//   int deltacount = 0;
-
-//   if(max_cutcount == 0){
-//     rval = 2;
-//     goto CLEANUP;
-//   }
-
-//   rval = dominos.separate(max_cutcount);
-//   if(rval) goto CLEANUP;
-
-//   if(dominos.toothlists.empty()){
-//     rval = 2; goto CLEANUP;
-//   }
-
-//   ncount = dominos.light_nodes.size();
-//   ecount = dominos.cut_ecap.size();
-//   domino_delta.resize(ecount);
-//   cut_node_marks.resize(ncount);
-
-//   for(int i = 0; i < dominos.toothlists.size(); i++){
-//     double rhs = 0.0;
-//     double lhs = 0.0;
-//     int RHS = 0;
-//     bool found_odd = false;
-//     vector<int> &current_toothlist = dominos.toothlists[i];
-//     for(int j = 0; j < agg_coeffs.size(); j++)
-//       agg_coeffs[j] = 0;
-    
-//     G_Utils::get_delta(current_toothlist.size(),
-// 		       &current_toothlist[0], ecount,
-// 		       &(dominos.cut_elist)[0], &deltacount,
-// 		       &domino_delta[0],
-// 		       &cut_node_marks[0]);
-
-//     // cout << "============================\n";
-//     // cout << "NOW PARSING TOOTHLIST " << i << "\n";
-//     // cout << "Deltacount: " << deltacount << "\n";
-//     // cout << "Contains " << current_toothlist.size() << " nodes: \n";
-//     // for(int j = 0; j < current_toothlist.size(); j++)
-//     //   cout << current_toothlist[j] << "\n";
-
-//     dominos.parse_domino(deltacount, domino_delta, agg_coeffs, &rhs);
-
-//     //    cout << "rhs: " << rhs;
-//     rhs /= 2;
-//     RHS = (int) rhs;
-//     rhs = RHS;
-//     //    cout << " rounded to " << rhs << "\n";
-
-//     //    cout << "rounding down coeffs....\n";     
-//     for(int j = 0; j < agg_coeffs.size(); j++){
-//       if(((int) agg_coeffs[j]) % 2 == 1){
-// 	// cout << "Bad inequality, edge " << j
-// 	//      << " has coefficient: " << agg_coeffs[j] << "\n";
-// 	found_odd = true;
-	
-//       }
-//       agg_coeffs[j] /= 2;
-//     }
-
-//     if(found_odd){
-//       (*num_bad_p)++;
-//       continue;
-//     }
-
-//     for(int j = 0; j < m_lp_edges.size(); j++){
-//       lhs += m_lp_edges[j] * agg_coeffs[j];
-//     }
-
-//     if(lhs <= rhs){
-//       (*num_bad_p)++;
-//       // cout << "Bad inequality won't be added, lhs: " << lhs << ", rhs: "
-//       // 	   << rhs << "\n";
-//       continue;
-//     }//  else {
-//     //   cout << "Found simple DP with lhs: "
-//     // 	   << lhs << ", rhs: " << rhs << "......";
-//     // }
-    
-
-//     rval = dominos.add_cut(agg_coeffs, rhs);
-//     if(rval)
-//       goto CLEANUP;
-//     //    cout << "Added inequality.\n";
-
-//     (*num_added_p)++;
-//   }
-
-//   if(*num_added_p == 0)
-//     rval = 2;
-
-
-//  CLEANUP:
-//   if(rval == 1)
-//     cerr << "Error entry point: PSEP_cutcall::simpleDP" << endl;
-//   return 0;
-// }
-
-// int PSEP::CutControl::in_subtour_poly(bool *result_p){
-//   int ecount = support_ecap.size(), ncount = best_tour_nodes.size();  
-//   int end0 = 0;
-//   double cutval = 2;
-//   *result_p = false;
-  
-//   for(int end1 = 1; end1 < ncount; end1++){
-//     if(CCcut_mincut_st(ncount, ecount, &support_elist[0], &support_ecap[0],
-// 		       end0, end1, &cutval, (int **) NULL, (int *) NULL)){
-//       cerr << "Problem in Cutcall::in_subtour_poly w Concorde st-cut" << endl;
-//       return 1;
-//     }
-
-//     if(cutval < 2)
-//       return 0;
-//   }
-
-//   *result_p = true;
-//   return 0;
-// }
+ CLEANUP:
+  if(rval == 1)
+    cerr << "Problem in CutControl::primal_sep: ";
+  if(segval == 1)
+    cerr << "Cuts<seg>::cutcall\n";
+  if(matchval == 1)
+    cerr << "Cuts<blossom>::cutcall\n";
+  if(dpval == 1)
+    cerr << "Cuts<domino>::cutcall\n";
+  return rval;
+}
