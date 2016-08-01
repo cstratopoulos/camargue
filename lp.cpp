@@ -444,6 +444,15 @@ int PSEPlp_chgobj (PSEPlp *lp, int count, int const * indices,
     return rval;
 }
 
+int PSEPlp_chgsense (PSEPlp *lp, const int count, int const * indices,
+		     char const * sense){
+  int rval = CPXchgsense(lp->cplex_env, lp->cplex_lp, count, indices, sense);
+  if(rval)
+    fprintf(stderr, "PSEPlp_chgsense failed, rval %d\n", rval);
+  
+  return rval;
+}
+
 int PSEPlp_copybase (PSEPlp *lp, int *colstat, int *rowstat){
   int rval = 0;
   rval = CPXcopybase(lp->cplex_env, lp->cplex_lp, colstat, rowstat);
