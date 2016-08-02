@@ -76,18 +76,18 @@ SupportGraph() :
 };
 
 
-struct G_Utils {
-  static int connected (SupportGraph *G, int *icount,
+namespace G_Utils {
+  int connected (SupportGraph *G, int *icount,
 			std::vector<int> &island, int starting_node);
-  static void dfs (int n, SupportGraph *G, int *icount,
+  void dfs (int n, SupportGraph *G, int *icount,
 		   std::vector<int> &island);  
-  static void get_delta (std::vector<int> &nodelist, std::vector<Edge> &elist,
+  void get_delta (std::vector<int> &nodelist, std::vector<Edge> &elist,
 		  int *deltacount_p, std::vector<int> &delta,
 		  std::vector<int> &marks);
-  static void get_delta (int nsize, int *nlist, int ecount, int *elist,
+  void get_delta (int nsize, int *nlist, int ecount, int *elist,
 			 int *deltacount, int *delta, int *edge_marks);
 
-  static int build_s_graph (int node_count, int edge_count,
+  int build_s_graph (int node_count, int edge_count,
 			    std::vector<Edge> &edges,
 			    std::vector<int> &support_indices,
 			    std::vector<double> &m_lp_edges,
