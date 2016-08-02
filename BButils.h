@@ -50,6 +50,9 @@ namespace PSEP {
       int branch_edge;
     };
 
+    typedef TreeNode::NType NodeType;
+    typedef TreeNode::NStat NodeStat;
+
     /***********************************************************************/
 
     class EdgeStatuses {
@@ -60,42 +63,18 @@ namespace PSEP {
       }
 
     private:  
-      int add_branch_var(const std::unique_ptr<PSEP::BB::TreeNode> &v){
-	if(v->type() == PSEP::BB::TreeNode::NType::ROOT){
-	  std::cerr << "EdgeStatuses::add_branch_var tried to add root\n";
-	  return 1;
-	}
-
-	if(v->status() != PSEP::BB::TreeNode::NStat::UNVISITED){
-	  std::cerr << "EdgeStatuses::add_branch_var tried to add visited "
-		    << "node\n"; return 1;
-	}
-	
-	if(v->type() == PSEP::BB::TreeNode::NType::LEFT)
+      void add_branch_var(const std::unique_ptr<PSEP::BB::TreeNode> &v){
+	if(v->type() == BB::NodeType::LEFT)
 	  Left.insert(v->edge());
 	else
 	  Right.insert(v->edge());
-	
-	return 0;
       }
 
-      int remove_branch_var(const std::unique_ptr<PSEP::BB::TreeNode> &v){
-	if(v->type() == PSEP::BB::TreeNode::NType::ROOT){
-	  std::cerr << "EdgeStatuses::remove_branch_var tried to add root\n";
-	  return 1;
-	}
-
-	if(v->status() == PSEP::BB::TreeNode::NStat::UNVISITED){
-	  std::cerr << "EdgeStatuses::remove_branch_var tried to remove "
-	       << "unvisited node\n"; return 1;
-	}
-	
-	if(v->type() == PSEP::BB::TreeNode::NType::LEFT)
+      void remove_branch_var(const std::unique_ptr<PSEP::BB::TreeNode> &v){
+	if(v->type() == BB::NodeType::LEFT)
 	  Left.erase(v->edge());
 	else
 	  Right.erase(v->edge());
-
-	return 0;
       }
       
       void augmentation_merge(){
@@ -147,56 +126,6 @@ namespace PSEP {
       std::map<int, int> edge_row_lookup;
       IntPair constraint_range;
       int first_right;  
-    };
-
-    /***********************************************************************/
-
-    class Constraints {
-    public:
-    Constraints(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
-		PSEP_LPGroup &LPGroup,
-		PSEP_SupportGroup &SupportGroup,
-		PSEP::BB::RightBranch &_RB, PSEP::BB::EdgeStatuses &_ES):
-      edges(GraphGroup.m_graph.edges),
-	best_tour_edges(BestGroup.best_tour_edges),
-	m_lp_edges(LPGroup.m_lp_edges), m_lp(LPGroup.m_lp),
-	support_indices(SupportGroup.support_indices), RBranch(_RB),
-	EdgeStats(_ES) {}
-
-    public:
-      int compute_branch_edge();
-      int enforce(std::unique_ptr<PSEP::BB::TreeNode> &v);
-      int unenforce(std::unique_ptr<PSEP::BB::TreeNode> &v);
-
-    private:  
-      int add_left_clamp(const int edge);
-      int remove_left_clamp(const int edge);
-
-      void compute_right_row(const int clamp, const int partner,
-			     std::array<double, 2> &rmatval, double &RHS){
-	double clamp_best = best_tour_edges[clamp],
-	       partner_best = best_tour_edges[partner];
-	RHS = clamp_best - partner_best;
-	rmatval = {2 * clamp_best - 1, 1 - 2 * partner_best};
-      }
-
-      int add_right_branch(const int edge);
-      int add_first_right_rows(const int edge);
-      int explore_right(const int edge);
-      int update_right(const int edge);
-      int remove_right(const int edge);
-  
-      std::vector<Edge> &edges;
-  
-      std::vector<int> &best_tour_edges;
-  
-      std::vector<double> &m_lp_edges;
-      PSEPlp &m_lp;
-
-      std::vector<int> &support_indices;
-
-      PSEP::BB::RightBranch &RBranch;
-      PSEP::BB::EdgeStatuses &EdgeStats;
     };
   }
 }
