@@ -8,7 +8,7 @@ using namespace PSEP;
 int PureCut::solve(){
   int rval = 0, cut_rval;
 
-  int stat;
+  PivType piv_stat;
   double piv_val;
   int rounds = 0, augrounds = 0;
 
@@ -45,7 +45,7 @@ int PureCut::solve(){
     }
 
     pivtime = PSEP_zeit();
-    rval = LPcore.pivot_until_change(&stat);
+    rval = LPcore.pivot_until_change(piv_stat);
     if(rval) goto CLEANUP;
     pivtime = PSEP_zeit() - pivtime;
     total_pivtime += pivtime;
@@ -55,17 +55,17 @@ int PureCut::solve(){
       piv_val = LPcore.get_obj_val();
     //print.pivot(stat);
 
-    if(stat == PIVOT::FATHOMED_TOUR){
+    if(piv_stat == PivType::FATHOMED_TOUR){
       cout << "\n\n    ROUND " << rounds << " -- ";
-      print.pivot(stat);
+      print.pivot(piv_stat);
       cout << "                Pivot objval: "
 	   << LPcore.get_obj_val() << "\n";      
       break;
     }
 
-    if(stat == PIVOT::TOUR){
+    if(piv_stat == PivType::TOUR){
       cout << "\n\n    !!!AUGMENTED TOUR!!!!" << endl;
-      print.pivot(stat);
+      print.pivot(piv_stat);
       cout << "                Pivot objval: "
 	   << LPcore.get_obj_val() << "\n"; 
       if(LPcore.update_best_tour())
@@ -81,7 +81,7 @@ int PureCut::solve(){
     rval = LPcore.pivot_back();
     if(rval) goto CLEANUP;
 
-    cut_rval = CutControl.primal_sep(augrounds, stat);
+    cut_rval = CutControl.primal_sep(augrounds, piv_stat);
     if(cut_rval){
       rval = 1;
       goto CLEANUP;
@@ -92,7 +92,7 @@ int PureCut::solve(){
 	   << (LPcore.numrows() - LPcore.best_tour_nodes.size())
 	   << " cuts in the LP ]\n";
       cout << "   ";
-      print.pivot(stat);
+      print.pivot(piv_stat);
       cout << "   Pivot objval: " << piv_val << "\n";
       cout << "   Avg piv time: " << setprecision(2)
 	   << ((double) (total_pivtime / rounds)) <<"s, (longest "
@@ -105,11 +105,11 @@ int PureCut::solve(){
       break;
   }
 
-  if(stat != 3 || rounds == roundlimit){
+  if(piv_stat != PivType::FATHOMED_TOUR || rounds == roundlimit){
     cout << "\n Terminated due to: ";
     if(cut_rval == 2){
       cout << "lack of cutting planes.\n      ";
-      print.pivot(stat);
+      print.pivot(piv_stat);
       cout << "\n";
     }
     else if(rounds == roundlimit)
@@ -130,7 +130,7 @@ int PureCut::solve(){
     cout <<"         LPfix::redcost_fixing: "
 	 << fixing_start << "s\n";
 
-  if(stat != PIVOT::FATHOMED_TOUR)
+  if(piv_stat != PivType::FATHOMED_TOUR)
     LPfix.redcost_fixing();
 
 
