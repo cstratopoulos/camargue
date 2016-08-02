@@ -39,23 +39,21 @@ class PSEP_Printer {
       }
   };
 
-  void pivot(const int piv_stat){
+  void pivot(const PivType piv_stat){
     std::cout << "Pivot status: ";
     switch(piv_stat){
-    case(PIVOT::FRAC):
+    case(PivType::FRAC):
       std::cout << "Fractional\n";
       break;
-    case(PIVOT::SUBTOUR):
+    case(PivType::SUBTOUR):
       std::cout << "Integral subtour\n";
       break;
-    case(PIVOT::TOUR):
+    case(PivType::TOUR):
       std::cout << "New tour\n";
       break;
-    case(PIVOT::FATHOMED_TOUR):
+    case(PivType::FATHOMED_TOUR):
       std::cout << "Tour fathomed optimal\n";
       break;
-    default:
-      std::cerr << "Invalid value " << piv_stat << "passed to print pivot\n";
     }
   };
 
