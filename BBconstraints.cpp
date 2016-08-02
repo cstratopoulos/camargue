@@ -1,17 +1,17 @@
 #include<cmath>
 
-#include "BButils.h"
+#include "BBconstraints.h"
 
 using namespace std;
 using namespace PSEP::BB;
 
 int Constraints::enforce(unique_ptr<TreeNode> &v){
-  if(v->type() == TreeNode::NType::ROOT){
-    cerr << "BB::Constraints::enforce tried to enforce ROOT\n";
-    return 1;
+  if(v->type() == NodeType::ROOT){
+    cout << "BB::Constraints::enforce is considering ROOT\n";
+    return 0;
   }
 
-  if(v->status() != TreeNode::NStat::UNVISITED){
+  if(v->status() != NodeStat::UNVISITED){
     cerr << "BB::Constraints::enforce tried to enforce visited node\n";
     return 1;
   }
@@ -19,7 +19,7 @@ int Constraints::enforce(unique_ptr<TreeNode> &v){
   int clamp_edge = v->edge();
   int rval = 0;
 
-  if(v->type() == TreeNode::NType::LEFT){
+  if(v->type() == NodeType::LEFT){
     rval = add_left_clamp(clamp_edge);
     if(rval) goto CLEANUP;
   } else {
@@ -27,10 +27,42 @@ int Constraints::enforce(unique_ptr<TreeNode> &v){
     if(rval) goto CLEANUP;
   }
 
+  EdgeStats.add_branch_var(v);
+
  CLEANUP:
   if(rval)
     cerr << "Entry point: BB::Constraints::enforce\n";
   return rval;  
+}
+
+int Constraints::unenforce(unique_ptr<TreeNode> &v){
+  if(v->type() == NodeType::ROOT){
+    cout << "BB::Constraints::unenforce is consideering ROOT\n";
+    return 0;
+  }
+
+  if(v->status() == NodeStat::UNVISITED){
+    cerr << "BB::Constraints::unenforce called on an univisited node\n";
+    return 1;
+  }
+
+  int clamp_edge = v->edge();
+  int rval = 0;
+
+  if(v->type() == NodeType::LEFT){
+    rval = remove_left_clamp(clamp_edge);
+    if(rval) goto CLEANUP;
+  } else {
+    rval = add_right_branch(clamp_edge);
+    if(rval) goto CLEANUP;
+  }
+
+  EdgeStats.remove_branch_var(v);
+
+ CLEANUP:
+  if(rval)
+    cerr << "Problem in BB::Constraints::unenforce\n";
+  return rval;
 }
 
 int Constraints::compute_branch_edge(){
@@ -101,6 +133,33 @@ int Constraints::remove_left_clamp(const int edge){
   return rval;
 }
 
+int Constraints::compute_right_update(const int clamp, const int partner,
+				      array<double, 2> &rmatval, double &RHS,
+				      const vector<double> &new_tour){
+  double clamp_best, partner_best;
+
+  if(fabs(new_tour[clamp]) < LP::EPSILON)
+    clamp_best = 0;
+  else if (fabs(new_tour[clamp]) > 1 - LP::EPSILON)
+    clamp_best = 1;
+  else {
+    cerr << "New tour is not integral\n"; return 1;
+  }
+
+  if(fabs(new_tour[partner]) < LP::EPSILON)
+    partner_best = 0;
+  else if (fabs(new_tour[partner]) > 1 - LP::EPSILON)
+    partner_best = 1;
+  else {
+    cerr << "New tour is not integral\n"; return 1;
+  }
+
+  RHS = clamp_best - partner_best;
+  rmatval = {2 * clamp_best - 1, 1 - 2 * partner_best};
+
+  return 0;
+}
+
 inline int Constraints::add_right_branch(const int edge){
   return RBranch.active() ? explore_right(edge) :
     add_first_right_rows(edge);
@@ -128,7 +187,8 @@ int Constraints::explore_right(const int edge){
 
 int Constraints::add_first_right_rows(const int edge){
   if(RBranch.active()){
-    cerr << "Tried to add new right rows but right branch was already active\n";
+    cerr << "Tried to add new right rows but right branch "
+	 << "was already active\n";
     return 1;
   }
 
@@ -160,6 +220,76 @@ int Constraints::add_first_right_rows(const int edge){
   RBranch.first_right = edge;
   range_end = PSEPlp_numrows(&m_lp) - 1;
   RBranch.constraint_range = IntPair(range_start, range_end);
+  
+  return 0;
+}
+
+int Constraints::update_right_rows(){
+  if(!RBranch.active())
+    return 0;
+  int rval = 0;
+  int rownum, clamp = RBranch.first_right_edge(), partner;
+  array<double, 2> rmatval;
+  double RHS;
+  vector<double> newtour(best_tour_edges.size());
+  bool clamp_dif;
+
+  rval = PSEPlp_x(&m_lp, &newtour[0]);
+  if(rval) goto CLEANUP;
+
+  clamp_dif = (fabs(best_tour_edges[clamp] - newtour[clamp]) >= LP::EPSILON);
+
+  for(map<int, int>::const_iterator it = RBranch.edge_row_lookup.begin();
+      it != RBranch.edge_row_lookup.end(); it++){
+    partner = it->first;
+    if(clamp_dif ||
+       (fabs(best_tour_edges[partner] - newtour[partner]) >= LP::EPSILON)){
+      rownum = it->second;
+      rval = compute_right_update(clamp, partner, rmatval, RHS, newtour);
+      if(rval) goto CLEANUP;
+
+      rval = (PSEPlp_chgcoef(&m_lp, rownum, clamp, rmatval[0]) ||
+	      PSEPlp_chgcoef(&m_lp, rownum, partner, rmatval[1]) ||
+	      PSEPlp_chgcoef(&m_lp, rownum, -1, RHS));
+      if(rval) goto CLEANUP;
+    }
+  }
+
+ CLEANUP:
+  if(rval)
+    cerr << "Problem in Constraints::update_right_rows\n";
+  return rval;
+}
+
+int Constraints::remove_right(const int edge){
+  if(!RBranch.active()){
+    cerr << "Called Constraints::remove_right when none were active\n";
+    return 1;
+  }
+
+  if(edge != RBranch.first_right_edge()){
+    map<int, int>::const_iterator it = RBranch.edge_row_lookup.find(edge);
+    if(it == RBranch.edge_row_lookup.end()){
+      cerr << "Constraints::remove_right tried to undo nonexistant row\n";
+      return 1;
+    }
+
+    int rownum = it->second;
+    char sense = 'L';
+    if(PSEPlp_chgsense(&m_lp, 1, &rownum, &sense)){
+      cerr << "Constraints::remove_right couldn't switch sense\n";
+      return 1;
+    }
+
+    return 0;
+  }
+
+  if(PSEPlp_delrows(&m_lp, RBranch.constraint_range.first,
+		    RBranch.constraint_range.second)){
+    cerr << "Constraints::remove_right failed to delete bunch of rows\n";
+    return 1;
+    RBranch.first_right = -1;
+  }
 
   return 0;
 }
