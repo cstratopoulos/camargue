@@ -5,6 +5,10 @@ functions
 or maybe re-explore timer class and name class for protection now that
 i know how static member vars work.............
 
+maybe come up with a generic profiler function that operates on a list of
+pairs corresponding to variables and a string for their name, and also somehow
+stores an indicator for if we should report percentage/ratio/average
+
 make it so that either ABC can take PureCut as a constructor argument,
 or ABC has access to purecut.solve() from its interface?
 
@@ -47,3 +51,16 @@ PSEP
 	
      ABC
        BBNode, EdgeStats, Constraints	       	
+
+
+create a plan structure that can be passed as an argument to PureCut.solve
+(and BBVisitor.solve)
+
+The while(true) loop can be changed to while(Plan.termination_cond()) or 
+something like that. Possible Plans:
+	  - roundlimit(numrounds), cut until numrounds rounds with no
+	    augmentation
+	  - time(timelimit) cut until a certain time threshold is reached
+	  - edge_elim(ratio) cut until edge elimination reduces the ratio of
+	    edges / ncount to <= some tolerance
+	  - no_surrender() only stopped by lack of cutting planes. 
