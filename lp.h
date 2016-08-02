@@ -120,6 +120,10 @@ int PSEPlp_chgobj (PSEPlp *lp, int count, int const * indices,
 int PSEPlp_chgsense (PSEPlp *lp, const int count, int const * indices,
 		     char const * sense);
 
+//change an individual coefficient, col = -1 for RHS
+int PSEPlp_chgcoef (PSEPlp *lp, const int row, const int col,
+		    const double newvalue);
+
 //copies basis statuses into the LP
 int PSEPlp_copybase ( PSEPlp *lp, int *colstat, int *rowstat);
 

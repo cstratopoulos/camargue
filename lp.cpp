@@ -453,6 +453,14 @@ int PSEPlp_chgsense (PSEPlp *lp, const int count, int const * indices,
   return rval;
 }
 
+int PSEPlp_chgcoef (PSEPlp *lp, const int row, const int col,
+		     const double newvalue){
+  int rval = CPXchgcoef(lp->cplex_env, lp->cplex_lp, row, col, newvalue);
+  if(rval)
+    fprintf(stderr, "chgcoeff failed, rval %d\n", rval);
+  return rval;
+}
+
 int PSEPlp_copybase (PSEPlp *lp, int *colstat, int *rowstat){
   int rval = 0;
   rval = CPXcopybase(lp->cplex_env, lp->cplex_lp, colstat, rowstat);
