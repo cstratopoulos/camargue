@@ -6,7 +6,7 @@
 
 namespace LP {
   constexpr double EPSILON = 0.000001;
-  constexpr long DEFAULT_ITLIM = 9223372036800000000;
+  constexpr long long DEFAULT_ITLIM = 9223372036800000000;
 
   namespace PRICING {
     constexpr int DEVEX = 0;
@@ -40,17 +40,11 @@ namespace UTIL {
   static int seed = 0;
 }
 
-namespace PIVOT {
-  constexpr int FRAC = 0;
-  constexpr int SUBTOUR = 1;
-  constexpr int TOUR = 2;
-  constexpr int FATHOMED_TOUR = 3;
-}
+typedef enum class PivType {
+  FRAC, SUBTOUR, TOUR, FATHOMED_TOUR
+    } PivType;
 
 //hash function taken from boost hash_combine
-
-
-
 typedef std::pair<int, int> IntPair;
 typedef std::unordered_map<IntPair, int> IntPairMap;
 

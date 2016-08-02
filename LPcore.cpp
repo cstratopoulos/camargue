@@ -221,12 +221,11 @@ int PSEP_LP_Core::update_best_tour(){
   return 0;
 };
 
-int PSEP_LP_Core::pivot_until_change(int *pivot_status_p){
+int PSEP_LP_Core::pivot_until_change(PivType &pivot_status){
 int rval = 0;
   int itcount = 0, icount = 0;
   int rowcount = PSEPlp_numrows(&m_lp), ncount = m_graph.node_count;  
   bool integral = false, conn = false, dual_feas = false;
-  *pivot_status_p = -1;
 
   double round_start = PSEP_zeit();
 
@@ -280,17 +279,13 @@ int rval = 0;
     conn = G_Utils::connected(&G_s, &icount, island, 0);
     if(integral && conn){
       if(dual_feas)
-	*pivot_status_p = PIVOT::FATHOMED_TOUR;
+	pivot_status = PivType::FATHOMED_TOUR;
       else
-	*pivot_status_p = PIVOT::TOUR;
+	pivot_status = PivType::TOUR;
     } else
-      *pivot_status_p = PIVOT::SUBTOUR;
+      pivot_status = PivType::SUBTOUR;
   } else
-      *pivot_status_p = PIVOT::FRAC;
-
-    // cout << "Did " << itcount << " pivots in "
-    // 	 << setprecision(2) << round_start << "s, "
-    // 	 << "obj val: " << setprecision(6) << get_obj_val() << "\n";
+      pivot_status = PivType::FRAC;
 
  CLEANUP:
     if(rval)

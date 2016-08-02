@@ -28,6 +28,7 @@ int main(int argc, char* argv[]){
     exit(1);
   }
 
+
   TSP_Solver solver(fname, prefs, dat);
 
   delete dat;
