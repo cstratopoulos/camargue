@@ -27,7 +27,8 @@ class TSP_Solver {
   int call(){
     PSEP::PivotPlan plan(GraphGroup.m_graph.node_count,
 			 PSEP::PivPresets::ROOT);
-    return PureCut->solve(plan);
+    PSEP::PivType pivot_status;
+    return PureCut->solve(plan, pivot_status);
   }
 };
 

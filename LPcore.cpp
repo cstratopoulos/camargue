@@ -4,6 +4,7 @@
 #include <iomanip>
 
 using namespace std;
+using namespace PSEP;
 
 inline bool PSEP_LP_Core::is_dual_feas(){
   return PSEPlp_dualfeas(&m_lp);

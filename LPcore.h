@@ -48,7 +48,7 @@ class PSEP_LP_Core {
   int rebuild_basis();
   int basis_init();
   
-  int pivot_until_change(PivType &pivot_status);
+  int pivot_until_change(PSEP::PivType &pivot_status);
 
 
   double get_obj_val();

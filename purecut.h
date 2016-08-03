@@ -27,7 +27,7 @@ namespace PSEP {
       LPfix(BestGroup, GraphGroup, LPGroup){}
 
 
-    int solve(PSEP::PivotPlan &plan);
+    int solve(PSEP::PivotPlan &plan, PSEP::PivType &piv_stat);
     PSEP_Printer print;
   
   private:

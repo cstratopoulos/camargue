@@ -5,10 +5,9 @@
 using namespace std;
 using namespace PSEP;
 
-int PureCut::solve(PivotPlan &plan){
+int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
   int rval = 0, cut_rval;
 
-  PivType piv_stat;
   double piv_val;
   int rounds = 0, augrounds = 0;
 

@@ -40,9 +40,11 @@ namespace UTIL {
   static int seed = 0;
 }
 
+namespace PSEP{
 typedef enum class PivType {
   FRAC, SUBTOUR, TOUR, FATHOMED_TOUR
     } PivType;
+}
 
 //hash function taken from boost hash_combine
 typedef std::pair<int, int> IntPair;
