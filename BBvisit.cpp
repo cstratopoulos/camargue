@@ -9,8 +9,6 @@ int Visitor::previsit(unique_ptr<TreeNode> &v){
   int rval = ConstraintMgr.enforce(v);
   if(rval) goto CLEANUP;
 
-  rval = pcut_solve(v);
-
  CLEANUP:
   if(rval)
     cerr << "Problem in Visitor::previsit\n";

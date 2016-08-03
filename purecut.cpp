@@ -5,7 +5,7 @@
 using namespace std;
 using namespace PSEP;
 
-int PureCut::solve(){
+int PureCut::solve(PivotPlan &plan){
   int rval = 0, cut_rval;
 
   PivType piv_stat;
@@ -16,11 +16,7 @@ int PureCut::solve(){
   int num_removed = 0;
   double routine_start, fixing_start;
 
-  int roundlimit = 100;
-
-  bool fixing = LPcore.prefs.redcost_fixing;
-
-  if(fixing){
+  if(plan.PerformElim()){
     fixing_start = PSEP_zeit();
     rval = LPfix.redcost_fixing();
     if(rval) goto CLEANUP;
@@ -32,16 +28,23 @@ int PureCut::solve(){
   
   cout << "Pivoting until optimality or no more cuts" << endl;
   routine_start = PSEP_zeit();
-  while(++rounds < roundlimit){
+  plan.start_timer();
+  
+  while(plan.Condition(augrounds)){
+    rounds++;
     augrounds++;
 
     if(rounds % 50 == 0){
-      cout << "Calling edge elimination again...\n\n  ";
-      rval = LPfix.redcost_fixing();
-      if(rval) goto CLEANUP;
+      if(plan.PerformElim()){
+	cout << "Calling edge elimination again...\n\n  ";
+	rval = LPfix.redcost_fixing();
+	if(rval) goto CLEANUP;
 
-      rval = LPcore.rebuild_basis();
-      if(rval) goto CLEANUP;            
+	plan.current_edge_ratio = LPcore.numcols() / plan.ncount;
+	
+	rval = LPcore.rebuild_basis();
+	if(rval) goto CLEANUP;
+      }
     }
 
     pivtime = PSEP_zeit();
@@ -51,9 +54,8 @@ int PureCut::solve(){
     total_pivtime += pivtime;
     if(pivtime > max_pivtime) max_pivtime = pivtime;
 
-    if(rounds % 10 == 0)
+    if(rounds % 25 == 0)
       piv_val = LPcore.get_obj_val();
-    //print.pivot(stat);
 
     if(piv_stat == PivType::FATHOMED_TOUR){
       cout << "\n\n    ROUND " << rounds << " -- ";
@@ -67,11 +69,15 @@ int PureCut::solve(){
       cout << "\n\n    !!!AUGMENTED TOUR!!!!" << endl;
       print.pivot(piv_stat);
       cout << "                Pivot objval: "
-	   << LPcore.get_obj_val() << "\n"; 
-      if(LPcore.update_best_tour())
-	goto CLEANUP;
-      if(LPPrune.prune_cuts(num_removed))
-	goto CLEANUP;
+	   << LPcore.get_obj_val() << "\n";
+      if(plan.is_branch())
+	break;
+      
+      rval = LPcore.update_best_tour();
+      if(rval) goto CLEANUP;
+      
+      rval = LPPrune.prune_cuts(num_removed);
+      if(rval) goto CLEANUP;
       cout << "               Pruned " << num_removed << " non-tight cuts "
 	   << "from the LP\n";
       augrounds = 0;
@@ -82,12 +88,12 @@ int PureCut::solve(){
     if(rval) goto CLEANUP;
 
     cut_rval = CutControl.primal_sep(augrounds, piv_stat);
-    if(cut_rval){
+    if(cut_rval == 1){
       rval = 1;
       goto CLEANUP;
     }
 
-    if(rounds % 10 == 0){
+    if(rounds % 25 == 0){
       cout << "\n PIVOTING ROUND: " << rounds << " [ "
 	   << (LPcore.numrows() - LPcore.best_tour_nodes.size())
 	   << " cuts in the LP ]\n";
@@ -105,16 +111,22 @@ int PureCut::solve(){
       break;
   }
 
-  if(piv_stat != PivType::FATHOMED_TOUR || rounds == roundlimit){
+  if(plan.is_branch() && piv_stat == PivType::TOUR){
+    cout << "Terminated due to augmented tour in branch solve\n";
+    cout << "!!!MUST UPDATE BEST TOUR AND PRUNE SLACK CUTS!!!!\n";
+  } else if(piv_stat != PivType::FATHOMED_TOUR){
     cout << "\n Terminated due to: ";
-    if(cut_rval == 2){
-      cout << "lack of cutting planes.\n      ";
+    if(!plan.Condition(augrounds)){
+      plan.Profile(augrounds);
+    } else if (cut_rval == 2){
+      cout << "lack of cutting planes.\n    ";
       print.pivot(piv_stat);
       cout << "\n";
+    } else {
+      cout << "For uncaught reason?\n";
     }
-    else if(rounds == roundlimit)
-      cout << "artificial round limit\n";
   }
+  
   
   cout << "  "
        << (LPcore.numrows() - LPcore.best_tour_nodes.size())
@@ -126,11 +138,11 @@ int PureCut::solve(){
     
   cout << "\n Total time for Purecut::solve: "
        << (PSEP_zeit() - routine_start) << "s\n";
-  if(fixing)
+  if(plan.PerformElim())
     cout <<"         LPfix::redcost_fixing: "
 	 << fixing_start << "s\n";
 
-  if(piv_stat != PivType::FATHOMED_TOUR)
+  if(piv_stat != PivType::FATHOMED_TOUR && plan.PerformElim())
     LPfix.redcost_fixing();
 
 

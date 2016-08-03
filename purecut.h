@@ -9,6 +9,7 @@
 #include "lp.h"
 #include "PSEP_util.h"
 #include "cutcall.h"
+#include "pivplan.h"
 #include "LPcore.h"
 #include "LPfixing.h"
 #include "printer.h"
@@ -26,7 +27,7 @@ namespace PSEP {
       LPfix(BestGroup, GraphGroup, LPGroup){}
 
 
-    int solve();
+    int solve(PSEP::PivotPlan &plan);
     PSEP_Printer print;
   
   private:

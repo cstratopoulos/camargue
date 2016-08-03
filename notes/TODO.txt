@@ -53,14 +53,7 @@ PSEP
        BBNode, EdgeStats, Constraints	       	
 
 
-create a plan structure that can be passed as an argument to PureCut.solve
-(and BBVisitor.solve)
-
-The while(true) loop can be changed to while(Plan.termination_cond()) or 
-something like that. Possible Plans:
-	  - roundlimit(numrounds), cut until numrounds rounds with no
-	    augmentation
-	  - time(timelimit) cut until a certain time threshold is reached
-	  - edge_elim(ratio) cut until edge elimination reduces the ratio of
-	    edges / ncount to <= some tolerance
-	  - no_surrender() only stopped by lack of cutting planes. 
+should store reduced costs obtained from the root node. in branch &
+cut, if an augmentation takes place, we can fix edges using reduced
+costs from the root and the new best tour opt value as the integrality
+gap. 

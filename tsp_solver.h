@@ -7,6 +7,7 @@
 #include "datagroups.h"
 #include "purecut.h"
 #include "ABC.h"
+#include "pivplan.h"
 #include "PSEP_util.h"
 
 
@@ -24,7 +25,9 @@ class TSP_Solver {
   std::unique_ptr<PSEP::ABC> ABC;
 
   int call(){
-    return PureCut->solve();
+    PSEP::PivotPlan plan(GraphGroup.m_graph.node_count,
+			 PSEP::PivPresets::ROOT);
+    return PureCut->solve(plan);
   }
 };
 

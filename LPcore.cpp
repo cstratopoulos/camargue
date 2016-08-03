@@ -60,7 +60,7 @@ double PSEP_LP_Core::get_obj_val(){
 double PSEP_LP_Core::set_edges(){
   int rval = 0;
 
-  if (m_lp_edges.size() < m_graph.edge_count)
+  if (m_lp_edges.size() != m_graph.edge_count)
     m_lp_edges.resize(m_graph.edge_count);
 
   rval = PSEPlp_x (&m_lp, &m_lp_edges[0]);
@@ -83,7 +83,7 @@ int PSEP_LP_Core::rebuild_basis(){
   double prune;
 
   rval = PSEPlp_getobj(&m_lp, &old_obj[0], ecount);
-  if(rval) return rval;
+  if(rval) goto CLEANUP;
 
   for(int i = 0; i < ecount; i++){
     tour_obj[i] = 1 - (2 * best_tour_edges[i]);
@@ -91,34 +91,38 @@ int PSEP_LP_Core::rebuild_basis(){
   }
 
   rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &tour_obj[0]);
-  if(rval) return rval;
+  if(rval) goto CLEANUP;
 
   rval = PSEPlp_primal_opt(&m_lp, &infeas);
-  if(rval) return rval;
+  if(rval) goto CLEANUP;
 
   rval = PSEPlp_objval(&m_lp, &objval);
   if(objval != -ncount){
     cerr << "Basis rebuild gave wrong solution\n";
-    return rval;
+    rval = 1;
+    goto CLEANUP;
   }
 
   rval = set_edges();
-  if(rval) return rval;
+  if(rval) goto CLEANUP;
 
   rval = PSEPlp_getbase(&m_lp, &old_colstat[0], NULL);
-  if(rval) return rval;
+  if(rval) goto CLEANUP;
 
   prune = PSEP_zeit();
   rval = LPPrune.prune_cuts(num_removed);
-  if(rval) return rval;
+  if(rval) goto CLEANUP;
   prune = PSEP_zeit() - prune;
   cout << "Removed " << num_removed << " cuts from the LP in "
        << prune << "s\n";
 
 
   rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &old_obj[0]);
-  if(rval) return rval;
+  if(rval) goto CLEANUP;
     
+ CLEANUP:
+  if(rval)
+    cerr << "Error entry point: LPCore::rebuild_basis\n";
   return rval;
 }
 
@@ -190,7 +194,7 @@ double PSEP_LP_Core::set_support_graph(){
 				&G_s);
   
   if(rval)
-    cerr << "Problem setting support graph" << endl;
+    cerr << "Problem in LPCore::set_support_graph" << endl;
   return rval;
 }
 

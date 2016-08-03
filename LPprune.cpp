@@ -1,3 +1,5 @@
+#include<iostream>
+
 #include "LPprune.h"
 
 using namespace std;
@@ -11,8 +13,10 @@ int LPPrune::prune_cuts(int &num_removed){
   vector<double> slacks(rowcount - node_count, 0);
 
   rval = PSEPlp_getslack(&m_lp, &slacks[0], node_count, rowcount - 1);
-  if(rval)
+  if(rval){
+    cerr << "Problem in LPPrune::prune_cuts with getslack\n";
     return 1;
+  }
 
   for(int i = 0; i < slacks.size(); i++){
     if(fabs(slacks[i]) >= LP::EPSILON){
@@ -22,8 +26,10 @@ int LPPrune::prune_cuts(int &num_removed){
   }
 
   rval = PSEPlp_delsetrows(&m_lp, &delset[0]);
-  if(rval)
+  if(rval){
+    cerr << "Problem in LPPrune::prune_cuts with delsetrows\n";
     return 1;
+  }
 
   return 0;
 }
@@ -40,8 +46,10 @@ int LPPrune::prune_with_skip(int &num_removed, IntPair skiprange,
   vector<double> slacks(rowcount - node_count, 0);
 
   rval = PSEPlp_getslack(&m_lp, &slacks[0], node_count, rowcount - 1);
-  if(rval)
+  if(rval){
+    cerr << "Problem in LPPrune::prune_with_skip with getslack\n";
     return 1;
+  }
 
   for(int i = 0; i < slacks.size(); i++){
     if(skip_start <= node_count + i && node_count + i <= skip_end)
@@ -53,8 +61,10 @@ int LPPrune::prune_with_skip(int &num_removed, IntPair skiprange,
   }
 
   rval = PSEPlp_delsetrows(&m_lp, &delset[0]);
-  if(rval)
+  if(rval){
+    cerr << "Problem in LPPrune::prune_with_skip with delsetrows\n";
     return 1;
+  }
 
   return 0;
 }

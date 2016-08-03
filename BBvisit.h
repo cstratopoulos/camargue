@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "BButils.h"
-#include "cutcall."
+#include "cutcall.h"
 #include "LPprune.h"
 #include "LPcore.h"
 #include "BBconstraints.h"
@@ -22,8 +22,6 @@ namespace PSEP {
       int postvisit(std::unique_ptr<TreeNode> &v);
 
     private:
-      int pcut_solve(std::unique_ptr<TreeNode> &v);
-
       PSEP::CutControl &CutControl;
       PSEP::LPPrune &LPPrune;
       PSEP_LP_Core &LPCore;

@@ -57,9 +57,8 @@ class PSEP_LP_Core {
 
   int update_best_tour();
 
-  int numrows(){
-    return PSEPlp_numrows(&m_lp);
-  }
+  int numrows(){ return PSEPlp_numrows(&m_lp); }
+  int numcols(){ return PSEPlp_numcols(&m_lp); }
 
   void change_pricing();
 
