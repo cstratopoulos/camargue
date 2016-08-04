@@ -99,7 +99,8 @@ int PSEP_LP_Core::rebuild_basis(){
 
   rval = PSEPlp_objval(&m_lp, &objval);
   if(objval != -ncount){
-    cerr << "Basis rebuild gave wrong solution\n";
+    cerr << "Basis rebuild gave wrong solution, objval: "
+	 << objval << "\n";
     rval = 1;
     goto CLEANUP;
   }

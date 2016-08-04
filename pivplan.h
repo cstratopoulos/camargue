@@ -18,7 +18,7 @@ namespace PSEP {
 
 
   PivotPlan() : current_edge_ratio(INFINITY),
-      ncount(0), bash_on_regardless(true), branch(false) {}
+      ncount(1), bash_on_regardless(true), branch(false) {}
     PivotPlan(int _ncount, Presets Preset);
     PivotPlan(int _ncount, bool _branch, std::vector<ParamPair> ParamList);
 
@@ -32,7 +32,7 @@ namespace PSEP {
     }
 
     bool PerformElim(){
-      return goal_ratio > 1;
+      return goal_ratio > 1 || bash_on_regardless;
     }
 
     void Profile(const int augrounds) {

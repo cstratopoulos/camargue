@@ -30,7 +30,7 @@ class PSEP_LP_Core {
     best_tour_nodes(BestGroup.best_tour_nodes), perm(BestGroup.perm),
     m_min_tour_value(BestGroup.min_tour_value),
     island(GraphGroup.island), delta(GraphGroup.delta),
-    edge_marks(GraphGroup.edge_marks) {
+    edge_marks(GraphGroup.edge_marks){
     basis_init();
     if(prefs.switching_choice == LP::PRICING::SWITCHING::START){
       std::cout << "Immediate: ";
@@ -86,6 +86,7 @@ class PSEP_LP_Core {
   std::vector<int> &support_elist;
   std::vector<double> &support_ecap;
 
+
   std::vector<int> &best_tour_edges;
   std::vector<int> &best_tour_nodes;
   std::vector<int> &perm;
@@ -95,7 +96,6 @@ class PSEP_LP_Core {
   std::vector<int> &island;
   std::vector<int> &delta;
   std::vector<int> &edge_marks;
-  
 };
 
 

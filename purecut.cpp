@@ -40,7 +40,7 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
 	if(rval) goto CLEANUP;
 
 	plan.current_edge_ratio = LPcore.numcols() / plan.ncount;
-	
+
 	rval = LPcore.rebuild_basis();
 	if(rval) goto CLEANUP;
       }

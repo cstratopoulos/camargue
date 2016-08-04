@@ -5,3 +5,5 @@ brazil58 (max cuts 2 per round)
 eil76 
 gr24 
 eil51, mc 2
+swiss42
+st70 (several tries)
