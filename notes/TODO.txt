@@ -4,10 +4,14 @@ just make timer a namespace and profiler have the void print profile
 functions
 or maybe re-explore timer class and name class for protection now that
 i know how static member vars work.............
-
 maybe come up with a generic profiler function that operates on a list of
 pairs corresponding to variables and a string for their name, and also somehow
 stores an indicator for if we should report percentage/ratio/average
+IDEA: have a few vectors, e.g. representing times, cuts, num pivots, something
+like that. BUT instead take an initializer list of strings which will
+be the lookup key for a map to int or double...or map to int/double
+and string where string can be the lookup key for total or average,
+etc. 
 
 make it so that either ABC can take PureCut as a constructor argument,
 or ABC has access to purecut.solve() from its interface?
@@ -56,4 +60,13 @@ PSEP
 should store reduced costs obtained from the root node. in branch &
 cut, if an augmentation takes place, we can fix edges using reduced
 costs from the root and the new best tour opt value as the integrality
-gap. 
+gap.
+
+previsit should call PureCut.solve(ncount, Plan(Branch), pivstat) in a while
+loop, terminating when stat is NOT an augmented tour. If stat is a
+fathomed tour and plan is branch, update best tour will NOT be
+called. We must
+-make calls to prunecuts WITH skiprange, get delset
+-pass delset to updater functions
+-pass new tour via PSEPlp_x (for comparison with old tour) to updaters
+and only then call update best tour. Then re-enter the loop!
