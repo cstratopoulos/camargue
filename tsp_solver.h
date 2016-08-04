@@ -25,6 +25,7 @@ class TSP_Solver {
   std::unique_ptr<PSEP::ABC> ABC;
 
   int call(){
+    //PSEP::PivotPlan plan;
     PSEP::PivotPlan plan(GraphGroup.m_graph.node_count,
 			 PSEP::PivPresets::ROOT);
     PSEP::PivType pivot_status;
