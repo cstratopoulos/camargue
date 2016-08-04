@@ -43,7 +43,7 @@ int PSEP_LPfix::price(int *clamptotal, int *deltotal){
       continue;
     }
 
-    if(cur_red > 0){
+    if(cur_red > 0 && best_tour_edges[i] != 1){
       edge_delset[i] = FixStats::DELETE;
       (*deltotal)++;
       continue;
