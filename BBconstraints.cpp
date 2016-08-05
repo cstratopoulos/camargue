@@ -22,9 +22,11 @@ int Constraints::enforce(unique_ptr<TreeNode> &v){
   if(v->type() == NodeType::LEFT){
     rval = add_left_clamp(clamp_edge);
     if(rval) goto CLEANUP;
+    cout << "\n  Added left clamp on edge " << clamp_edge << "\n";
   } else {
     rval = add_right_branch(clamp_edge);
     if(rval) goto CLEANUP;
+    cout << "\n  Added right branch on edge " << clamp_edge << "\n";
   }
 
   EdgeStats.add_branch_var(v);
@@ -52,9 +54,12 @@ int Constraints::unenforce(unique_ptr<TreeNode> &v){
   if(v->type() == NodeType::LEFT){
     rval = remove_left_clamp(clamp_edge);
     if(rval) goto CLEANUP;
+    cout << "Removed left clamp on edge " << clamp_edge << "\n";
   } else {
     rval = remove_right(clamp_edge);
     if(rval) goto CLEANUP;
+    cout << "Removed right branch constraint(s) on edge "
+	 << clamp_edge << "\n";    
   }
 
   EdgeStats.remove_branch_var(v);
@@ -193,6 +198,7 @@ int Constraints::add_first_right_rows(const int edge){
   }
 
   int range_start = PSEPlp_numrows(&m_lp), range_end;
+  int numrows = range_start; 
   int current_rownum = range_start;
   int newnz = 2, newrows = 1, rmatbeg = 0;
   std::array<int, 2> rmatind = {edge, -1};
@@ -220,7 +226,9 @@ int Constraints::add_first_right_rows(const int edge){
   RBranch.first_right = edge;
   range_end = PSEPlp_numrows(&m_lp) - 1;
   RBranch.constraint_range = IntPair(range_start, range_end);
-  
+
+  cout << "  Added " << (PSEPlp_numrows(&m_lp) - numrows) << " rows for "
+       << " the right branch";
   return 0;
 }
 

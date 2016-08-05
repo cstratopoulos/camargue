@@ -11,6 +11,8 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
   double piv_val;
   int rounds = 0, augrounds = 0;
 
+  bool prune = !plan.is_branch();
+
   double pivtime, total_pivtime = 0, max_pivtime = 0;
   int num_removed = 0;
   double routine_start, fixing_start;
@@ -24,8 +26,10 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
   
   rval = LPcore.basis_init();
   if(rval) goto CLEANUP;
-  
-  cout << "Pivoting until optimality or no more cuts" << endl;
+
+  if(!plan.is_branch())
+    cout << "Pivoting until optimality or no more cuts" << endl;
+
   routine_start = PSEP_zeit();
   plan.start_timer();
   
@@ -41,7 +45,7 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
 
 	plan.current_edge_ratio = LPcore.numcols() / plan.ncount;
 
-	rval = LPcore.rebuild_basis();
+	rval = LPcore.rebuild_basis(prune);
 	if(rval) goto CLEANUP;
       }
     }
@@ -92,7 +96,7 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
       goto CLEANUP;
     }
 
-    if(rounds % 25 == 0){
+    if(rounds % 25 == 0 && !plan.is_branch()){
       cout << "\n PIVOTING ROUND: " << rounds << " [ "
 	   << (LPcore.numrows() - LPcore.best_tour_nodes.size())
 	   << " cuts in the LP ]\n";
@@ -126,13 +130,15 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
     }
   }
   
-  
-  cout << "  "
-       << (LPcore.numrows() - LPcore.best_tour_nodes.size())
-       << " cutting planes added over "
-       << rounds << " rounds of separation" << endl;
 
-  CutControl.profile();
+  if(!plan.is_branch())
+    cout << "  "
+	 << (LPcore.numrows() - LPcore.best_tour_nodes.size())
+	 << " cutting planes added over "
+	 << rounds << " rounds of separation" << endl;
+
+  if(!plan.is_branch())
+    CutControl.profile();
 
     
   cout << "\n Total time for Purecut::solve: "

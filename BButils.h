@@ -34,7 +34,8 @@ namespace PSEP {
     TreeNode(NType _type, int _edge) :
       node_type(_type), node_stat(NStat::UNVISITED), branch_edge(_edge) {}
 
-    TreeNode() : node_type(NType::ROOT), branch_edge(-1) {}
+    TreeNode() : node_type(NType::ROOT), node_stat(NStat::UNVISITED),
+	branch_edge(-1) {}
 
       NType type() const { return node_type; }
       NStat status() const { return node_stat; }

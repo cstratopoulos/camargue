@@ -71,7 +71,7 @@ double PSEP_LP_Core::set_edges(){
   return rval;
 }
 
-int PSEP_LP_Core::rebuild_basis(){
+int PSEP_LP_Core::rebuild_basis(bool prune){
   int rval = 0, infeas = 0;
   int ecount = m_lp_edges.size();
   int ncount = best_tour_nodes.size();
@@ -81,7 +81,6 @@ int PSEP_LP_Core::rebuild_basis(){
   vector<double> old_obj(ecount);
   vector<int> lp_indices(ecount);
   old_colstat.resize(ecount);
-  double prune;
 
   rval = PSEPlp_getobj(&m_lp, &old_obj[0], ecount);
   if(rval) goto CLEANUP;
@@ -111,12 +110,14 @@ int PSEP_LP_Core::rebuild_basis(){
   rval = PSEPlp_getbase(&m_lp, &old_colstat[0], NULL);
   if(rval) goto CLEANUP;
 
-  prune = PSEP_zeit();
-  rval = LPPrune.prune_cuts(num_removed);
-  if(rval) goto CLEANUP;
-  prune = PSEP_zeit() - prune;
-  cout << "Removed " << num_removed << " cuts from the LP in "
-       << prune << "s\n";
+  if(prune){
+    prune = PSEP_zeit();
+    rval = LPPrune.prune_cuts(num_removed);
+    if(rval) goto CLEANUP;
+    prune = PSEP_zeit() - prune;
+    cout << "Removed " << num_removed << " cuts from the LP in "
+	 << prune << "s\n";
+  }
 
 
   rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &old_obj[0]);
@@ -215,7 +216,7 @@ int PSEP_LP_Core::update_best_tour(){
     }
 
   if(objval > m_min_tour_value){
-    cerr << "New best tour is worse!\n";
+    cerr << "New best tour is worse! objval " << objval << "\n";
     return 1;
   }
 

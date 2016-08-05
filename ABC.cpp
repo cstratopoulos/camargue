@@ -24,6 +24,7 @@ int ABC::solve(){
 							   newedge)));
 	BBTree.push(unique_ptr<TreeNode>(new TreeNode(NodeType::LEFT,
 							   newedge)));
+	cout << "Pushed right/left node on edge " << newedge << "\n";
 	continue;
       }
     }
