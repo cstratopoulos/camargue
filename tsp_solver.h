@@ -16,6 +16,8 @@ class TSP_Solver {
  public:
   TSP_Solver(char *fname, PSEP_LP_Prefs _prefs, CCdatagroup *dat);
 
+  int call(PSEP::SolutionProtocol solmeth);
+ private:
   PSEP_GraphGroup GraphGroup;
   PSEP_BestGroup BestGroup;
   PSEP_SupportGroup SupportGroup;
@@ -23,14 +25,6 @@ class TSP_Solver {
   
   std::unique_ptr<PSEP::PureCut> PureCut;
   std::unique_ptr<PSEP::ABC> ABC;
-
-  int call(){
-    //PSEP::PivotPlan plan;
-    PSEP::PivotPlan plan(GraphGroup.m_graph.node_count,
-			 PSEP::PivPresets::ROOT);
-    PSEP::PivType pivot_status;
-    return PureCut->solve(plan, pivot_status);
-  }
 };
 
 #endif

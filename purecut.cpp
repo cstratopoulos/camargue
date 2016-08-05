@@ -15,7 +15,7 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
   int num_removed = 0;
   double routine_start, fixing_start;
 
-  if(plan.PerformElim()){
+  if(plan.perform_elim()){
     fixing_start = PSEP_zeit();
     rval = LPfix.redcost_fixing();
     if(rval) goto CLEANUP;
@@ -29,12 +29,12 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
   routine_start = PSEP_zeit();
   plan.start_timer();
   
-  while(plan.Condition(augrounds)){
+  while(plan.condition(augrounds)){
     rounds++;
     augrounds++;
 
     if(rounds % 50 == 0){
-      if(plan.PerformElim()){
+      if(plan.perform_elim()){
 	cout << "Calling edge elimination again...\n\n  ";
 	rval = LPfix.redcost_fixing();
 	if(rval) goto CLEANUP;
@@ -115,8 +115,8 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
     cout << "!!!MUST UPDATE BEST TOUR AND PRUNE SLACK CUTS!!!!\n";
   } else if(piv_stat != PivType::FATHOMED_TOUR){
     cout << "\n Terminated due to: ";
-    if(!plan.Condition(augrounds)){
-      plan.Profile(augrounds);
+    if(!plan.condition(augrounds)){
+      plan.profile(augrounds);
     } else if (cut_rval == 2){
       cout << "lack of cutting planes.\n    ";
       print.pivot(piv_stat);
@@ -137,11 +137,11 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
     
   cout << "\n Total time for Purecut::solve: "
        << (PSEP_zeit() - routine_start) << "s\n";
-  if(plan.PerformElim())
+  if(plan.perform_elim())
     cout <<"         LPfix::redcost_fixing: "
 	 << fixing_start << "s\n";
 
-  if(piv_stat != PivType::FATHOMED_TOUR && plan.PerformElim())
+  if(piv_stat != PivType::FATHOMED_TOUR && plan.perform_elim())
     LPfix.redcost_fixing();
 
 

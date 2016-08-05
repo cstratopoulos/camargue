@@ -11,13 +11,14 @@
 
 namespace PSEP {
   namespace BB {
+    
     class Constraints {
     public:
     Constraints(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
 		PSEP_LPGroup &LPGroup,
 		PSEP_SupportGroup &SupportGroup,
 		PSEP::BB::RightBranch &_RB, PSEP::BB::EdgeStatuses &_ES):
-      edges(GraphGroup.m_graph.edges),
+      ncount(GraphGroup.m_graph.node_count), edges(GraphGroup.m_graph.edges),
 	best_tour_edges(BestGroup.best_tour_edges),
 	m_lp_edges(LPGroup.m_lp_edges), m_lp(LPGroup.m_lp),
 	support_indices(SupportGroup.support_indices), RBranch(_RB),
@@ -27,8 +28,11 @@ namespace PSEP {
       int compute_branch_edge();
       int enforce(std::unique_ptr<PSEP::BB::TreeNode> &v);
       int unenforce(std::unique_ptr<PSEP::BB::TreeNode> &v);
+      const int ncount;
 
-    private:  
+    private:
+      friend class PSEP::BB::Visitor;
+      
       int add_left_clamp(const int edge);
       int remove_left_clamp(const int edge);
 

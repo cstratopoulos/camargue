@@ -41,9 +41,13 @@ namespace UTIL {
 }
 
 namespace PSEP{
-typedef enum class PivType {
+  enum class PivType {
   FRAC, SUBTOUR, TOUR, FATHOMED_TOUR
-    } PivType;
+    };
+
+ enum class SolutionProtocol {
+   PURECUT, ABC
+     };
 }
 
 //hash function taken from boost hash_combine

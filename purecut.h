@@ -15,6 +15,10 @@
 #include "printer.h"
 
 namespace PSEP {
+  namespace BB {
+    class Visitor;
+  }
+  
   class PureCut {
   public:
   PureCut(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
@@ -31,6 +35,8 @@ namespace PSEP {
     PSEP_Printer print;
   
   private:
+    friend class PSEP::BB::Visitor;
+    
     PSEP::CutControl CutControl;
     PSEP::LPPrune LPPrune;
     PSEP_LP_Core LPcore;

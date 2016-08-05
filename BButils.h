@@ -2,6 +2,7 @@
 #define PSEP_BBUTILS_H
 
 #include<array>
+#include<iostream>
 #include<memory>
 #include<vector>
 #include<unordered_set>
@@ -18,6 +19,7 @@ namespace PSEP {
     class EdgeStatuses;
     class RightBranch;
     class Constraints;
+    class Visitor;
     
     class TreeNode {
     public:
@@ -45,6 +47,8 @@ namespace PSEP {
       }
 
     private:
+      friend class PSEP::BB::Visitor;
+      
       NType node_type;
       NStat node_stat;
       int branch_edge;
@@ -93,7 +97,7 @@ namespace PSEP {
 
     class RightBranch {
     public:
-    RightBranch() : constraint_range(IntPair(0,0)),
+    RightBranch() : constraint_range(IntPair(-1,-1)),
 	first_right(-1) {}  
       bool active() const { return first_right != -1; }
       int row_lookup(const int edge) const {
@@ -104,15 +108,28 @@ namespace PSEP {
 	else
 	  return -1;
       }
+
+      const IntPair &skiprange = constraint_range;
   
-      void get_range(int *first, int *last) const {
-	*first = constraint_range.first; *last = constraint_range.second;
-      }
       
-      void update_range(const std::vector<int> &delset){
+      int update_range(const std::vector<int> &delset){
 	for(std::map<int, int>::iterator it = edge_row_lookup.begin();
-	    it != edge_row_lookup.end(); it++)
+	    it != edge_row_lookup.end(); it++){
+	  if(delset[it->second] == -1){
+	    std::cerr << "DELETED A RIGHT BRANCH ROW!\n"; return 1;
+	  }
 	  it->second = delset[it->second];
+
+	}
+
+	constraint_range.first = delset[constraint_range.first];
+	constraint_range.second = delset[constraint_range.second];
+	if(constraint_range.first == -1 || constraint_range.second == -1){
+	  std::cerr << "BEGIN OR END OF RIGHT CONSTRAINT RANGE WAS DELETED!!\n";
+	  return 1;
+	}
+
+	return 0;
       }
       
       void add_edge_row(const int edge, const int rownum){

@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
   CCdatagroup *dat = new CCdatagroup;
   char *fname;
 
-  cout << "BRANCH VERSION: EDGE FIXING\n";
+  cout << "BRANCH VERSION: MASTER (ABC in progress)\n";
 
   if(initial_parse(argc, argv, &fname, prefs)){
     cerr << "Problem parsing arguments" << endl;
@@ -33,9 +33,7 @@ int main(int argc, char* argv[]){
 
   delete dat;
 
-  solver.call();
-  
-  return 0;
+  return solver.call(PSEP::SolutionProtocol::ABC);
 }
 
 static int initial_parse(int ac, char **av, char **fname,

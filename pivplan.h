@@ -25,17 +25,17 @@ namespace PSEP {
     
     void start_timer() {start_time = PSEP_zeit();}
     
-    bool Condition(const int augrounds) {
+    bool condition(const int augrounds) {
       if(bash_on_regardless) return true;
 
       return(UnderTimeLimit() && UnderAugLimit(augrounds) && AboveGoalRatio());
     }
 
-    bool PerformElim(){
+    bool perform_elim(){
       return goal_ratio > 1 || bash_on_regardless;
     }
 
-    void Profile(const int augrounds) {
+    void profile(const int augrounds) {
       if(!UnderTimeLimit()){
 	std::cout << "artificial time limit of "
 		  << max_time <<"s (runtime: "

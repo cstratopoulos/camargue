@@ -7,26 +7,30 @@
 #include "cutcall.h"
 #include "LPprune.h"
 #include "LPcore.h"
+#include "purecut.h"
 #include "BBconstraints.h"
 
 namespace PSEP {
   namespace BB {
     class Visitor {
     public:
-      Visitor(PSEP::CutControl &_CutControl, PSEP::LPPrune &_LPPrune,
-	      PSEP_LP_Core &_LPCore, PSEP::BB::Constraints &_CMgr) :
-      CutControl(_CutControl), LPPrune(_LPPrune), LPCore(_LPCore),
-	ConstraintMgr(_CMgr) {}
+      Visitor(PSEP::PureCut & _PureCut, PSEP::BB::Constraints &_ConsMgr) :
+      PureCut(_PureCut), LPPrune(_PureCut.LPPrune), LPCore(_PureCut.LPcore),
+	ConstraintMgr(_ConsMgr), RightBranch(ConstraintMgr.RBranch) {}
 
       int previsit(std::unique_ptr<TreeNode> &v);
       int postvisit(std::unique_ptr<TreeNode> &v);
 
     private:
-      PSEP::CutControl &CutControl;
+      int handle_augmentation();
+
+      PSEP::PureCut &PureCut;
+      
       PSEP::LPPrune &LPPrune;
       PSEP_LP_Core &LPCore;
 
       PSEP::BB::Constraints &ConstraintMgr;
+      PSEP::BB::RightBranch &RightBranch;
     };
   }
 }
