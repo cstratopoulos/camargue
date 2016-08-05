@@ -53,7 +53,7 @@ int Constraints::unenforce(unique_ptr<TreeNode> &v){
     rval = remove_left_clamp(clamp_edge);
     if(rval) goto CLEANUP;
   } else {
-    rval = add_right_branch(clamp_edge);
+    rval = remove_right(clamp_edge);
     if(rval) goto CLEANUP;
   }
 
@@ -123,7 +123,7 @@ int Constraints::add_left_clamp(const int edge){
 }
 
 int Constraints::remove_left_clamp(const int edge){
-  double bound = !best_tour_edges[edge];
+  double bound = 1 - best_tour_edges[edge];
   char lower_or_upper = (bound == 0.0) ? 'L' : 'U';
 
   int rval = PSEPlp_clampbnd(&m_lp, edge, lower_or_upper, bound);

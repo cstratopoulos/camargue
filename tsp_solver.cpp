@@ -36,6 +36,10 @@ int TSP_Solver::call(PSEP::SolutionProtocol solmeth){
     }
 
     if(piv_status == PSEP::PivType::FATHOMED_TOUR) return 0;
+    if(piv_status == PSEP::PivType::SUBTOUR){
+      cerr << "Terminated with inseparable subtour inequality\n";
+      return 1;
+    }
 
     int ecount = GraphGroup.m_graph.edge_count;
     std::vector<double> lower_bounds(ecount);
@@ -48,8 +52,7 @@ int TSP_Solver::call(PSEP::SolutionProtocol solmeth){
     ABC.reset(new PSEP::ABC(GraphGroup, BestGroup, LPGroup, SupportGroup,
 			    lower_bounds, *PureCut));
 
-    cout << "Call to ABC->solve goes here\n";
-    return 0;
+    return ABC->solve();
   }
 }
   

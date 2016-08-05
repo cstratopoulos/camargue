@@ -9,6 +9,11 @@ using namespace std;
 using namespace PSEP::BB;
 
 int Visitor::previsit(unique_ptr<TreeNode> &v){
+  if(v->type() == NodeType::ROOT){
+    v->node_stat = NodeStat::VISITED;
+    return 0;
+  }
+  
   int rval = 0;
   PivType piv_status;
   PivotPlan plan(ConstraintMgr.ncount, PivPresets::BRANCH);

@@ -23,12 +23,9 @@ namespace PSEP {
       Visitor(_PureCut, ConstraintMgr){}
   
     int solve();
-  
-    int previsit(std::unique_ptr<PSEP::BB::TreeNode> &v);
-    int postvisit(std::unique_ptr<PSEP::BB::TreeNode> &v);
-
+    
   private:
-    std::stack<std::unique_ptr<PSEP::BB::TreeNode> > BBtree;
+    std::stack<std::unique_ptr<PSEP::BB::TreeNode> > BBTree;
     PSEP::BB::EdgeStatuses EdgeStats;
     PSEP::BB::RightBranch RightBranch;
     PSEP::BB::Constraints ConstraintMgr;
