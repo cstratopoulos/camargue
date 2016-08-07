@@ -21,7 +21,7 @@ namespace PSEP {
       int previsit(std::unique_ptr<TreeNode> &v);
       int postvisit(std::unique_ptr<TreeNode> &v);
 
-    private:
+      //private:
       int handle_augmentation();
 
       PSEP::PureCut &PureCut;

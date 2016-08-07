@@ -19,7 +19,8 @@ namespace PSEP {
       PSEP::PureCut &_PureCut):
     EdgeStats(lower_bounds),
       ConstraintMgr(GraphGroup, BestGroup, LPGroup, SupportGroup,
-		    RightBranch, EdgeStats),
+		    RightBranch, EdgeStats, _PureCut.LPPrune,
+		    _PureCut.LPcore),
       Visitor(_PureCut, ConstraintMgr){}
   
     int solve();

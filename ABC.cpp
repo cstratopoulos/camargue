@@ -17,7 +17,9 @@ int ABC::solve(){
 	int newedge = ConstraintMgr.compute_branch_edge();
 	rval = (newedge == -1);
 	if(rval){
-	  cerr << "No new branch edge found\n"; goto CLEANUP;
+	  cerr << "No new branch edge found\n";
+	  Visitor.PureCut.print.lp_edges();
+	  goto CLEANUP;
 	}
 
 	BBTree.push(unique_ptr<TreeNode>(new TreeNode(NodeType::RIGHT,

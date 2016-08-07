@@ -37,10 +37,10 @@ int Visitor::previsit(unique_ptr<TreeNode> &v){
   case PivType::FATHOMED_TOUR:
     v->node_stat = NodeStat::FATHOMED;
     break;
-  case PivType::SUBTOUR:
-    cerr << "Pivoted to subtour with no segment cut found!\n";
-    rval = 1;
-    goto CLEANUP;
+  // case PivType::SUBTOUR:
+  //   cerr << "Pivoted to subtour with no segment cut found!\n";
+  //   rval = 1;
+  //   goto CLEANUP;
   default:
     v->node_stat = NodeStat::VISITED;
     break;
@@ -62,21 +62,20 @@ int Visitor::postvisit(unique_ptr<TreeNode> &v){
 
 int Visitor::handle_augmentation(){
   int rval = 0;
-  vector<int> delset(LPCore.numcols(), 0);
-  IntPair skiprange = RightBranch.skiprange;
   int num_removed = 0;
 
-  rval = ConstraintMgr.update_right_rows();
-  if(rval) goto CLEANUP;
+  if(LPCore.test_new_tour()){
+    if(RightBranch.active()){
+      rval = ConstraintMgr.update_right_rows();
+      if(rval) goto CLEANUP;
+    }
 
-  rval = LPCore.update_best_tour();
-  if(rval) goto CLEANUP;
+    rval = LPCore.update_best_tour();
+    if(rval) goto CLEANUP;
 
-  rval = LPPrune.prune_with_skip(num_removed, skiprange, delset);
-  if(rval) goto CLEANUP;
-
-  rval = RightBranch.update_range(delset);
-  if(rval) goto CLEANUP;
+    rval = ConstraintMgr.prune(num_removed);
+    if(rval) goto CLEANUP;
+  }
 
  CLEANUP:
   if(rval)

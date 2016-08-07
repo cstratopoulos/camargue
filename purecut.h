@@ -15,6 +15,7 @@
 #include "printer.h"
 
 namespace PSEP {
+  class ABC;
   namespace BB {
     class Visitor;
   }
@@ -36,6 +37,7 @@ namespace PSEP {
   
   private:
     friend class PSEP::BB::Visitor;
+    friend class PSEP::ABC;
     
     PSEP::CutControl CutControl;
     PSEP::LPPrune LPPrune;

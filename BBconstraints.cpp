@@ -81,7 +81,7 @@ int Constraints::compute_branch_edge(){
 
   for(int i = 0; i < support_indices.size(); i++){
     index = support_indices[i];
-    if(EdgeStats.Right.count(index)) continue;
+    if(EdgeStats.Right.count(index) || EdgeStats.Left.count(index)) continue;
     lp_weight = m_lp_edges[index];
     if(fabs(lp_weight - 0.5) < LP::EPSILON){
       max_under_half = 0.5; min_over_half = 0.5;
@@ -107,7 +107,8 @@ int Constraints::compute_branch_edge(){
   for(int i = 0; i < support_indices.size(); i++){
     index = support_indices[i];
     lp_weight = m_lp_edges[index];
-    if(lp_weight < LB || lp_weight > UB || EdgeStats.Right.count(index))
+    if(lp_weight < LB || lp_weight > UB || EdgeStats.Right.count(index)
+       || EdgeStats.Left.count(index))
       continue;
     
     if(edges[index].len > max_len){
@@ -168,9 +169,20 @@ int Constraints::compute_right_update(const int clamp, const int partner,
   return 0;
 }
 
-inline int Constraints::add_right_branch(const int edge){
-  return RBranch.active() ? explore_right(edge) :
+int Constraints::add_right_branch(const int edge){
+  int rval = 0, num_removed = 0;
+  cout << " Trying to prune cuts for for right branch, ";
+  rval = prune(num_removed);
+  if(rval) goto CLEANUP;
+  cout << num_removed << " pruned from LP\n";
+  
+  rval = RBranch.active() ? explore_right(edge) :
     add_first_right_rows(edge);
+
+ CLEANUP:
+  if(rval)
+    cerr << "Problem in Constraints::add_right_branch\n";
+  return rval;
 };
 
 int Constraints::explore_right(const int edge){
@@ -307,6 +319,30 @@ int Constraints::remove_right(const int edge){
   RBranch.constraint_range = IntPair(0,0);
 
   return 0;
+}
+
+int Constraints::prune(int &num_removed){
+  int rval = 0;
+  vector<int> delset;
+  IntPair skiprange = RBranch.skiprange;
+
+  if(RBranch.active()){
+    rval = LPPrune.prune_with_skip(num_removed, skiprange, delset);
+    if(rval) goto CLEANUP;
+
+    if(num_removed > 0){
+      rval = RBranch.update_range(delset);
+      if(rval) goto CLEANUP;
+    }
+  } else {
+    rval = LPPrune.prune_cuts(num_removed);
+    if(rval) goto CLEANUP;
+  }
+
+ CLEANUP:
+  if(rval)
+    cerr << "Problem in Constraints::prune\n";
+  return rval;
 }
 
 

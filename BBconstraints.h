@@ -8,6 +8,8 @@
 #include "lp.h"
 #include "Graph.h"
 #include "BButils.h"
+#include "LPprune.h"
+#include "LPcore.h"
 
 namespace PSEP {
   namespace BB {
@@ -17,12 +19,13 @@ namespace PSEP {
     Constraints(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
 		PSEP_LPGroup &LPGroup,
 		PSEP_SupportGroup &SupportGroup,
-		PSEP::BB::RightBranch &_RB, PSEP::BB::EdgeStatuses &_ES):
+		PSEP::BB::RightBranch &_RB, PSEP::BB::EdgeStatuses &_ES,
+		PSEP::LPPrune &_LPPrune, PSEP_LP_Core &_LPCore):
       ncount(GraphGroup.m_graph.node_count), edges(GraphGroup.m_graph.edges),
 	best_tour_edges(BestGroup.best_tour_edges),
 	m_lp_edges(LPGroup.m_lp_edges), m_lp(LPGroup.m_lp),
 	support_indices(SupportGroup.support_indices), RBranch(_RB),
-	EdgeStats(_ES) {}
+	EdgeStats(_ES), LPPrune(_LPPrune), LPCore(_LPCore) {}
 
     public:
       int compute_branch_edge();
@@ -53,6 +56,8 @@ namespace PSEP {
       int explore_right(const int edge);
       int update_right_rows();
       int remove_right(const int edge);
+
+      int prune(int &num_removed);
   
       std::vector<Edge> &edges;
   
@@ -65,6 +70,9 @@ namespace PSEP {
 
       PSEP::BB::RightBranch &RBranch;
       PSEP::BB::EdgeStatuses &EdgeStats;
+
+      PSEP::LPPrune &LPPrune;
+      PSEP_LP_Core &LPCore;
     };
   }
 }

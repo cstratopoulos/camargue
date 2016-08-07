@@ -51,7 +51,7 @@ PivotPlan::PivotPlan(int _ncount, Presets preset) :
   case Presets::BRANCH:
     std::cout << "PRESET: BRANCH\n";
     branch = true;
-    max_augrounds = 100;
+    max_augrounds = 150;
     break;
   }
 }
