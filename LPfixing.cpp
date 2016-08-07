@@ -105,11 +105,13 @@ void PSEP_LPfix::delete_edges(){
 
   vector<Edge> new_graph_edges;
   vector<int> new_best_edges;
+  vector<double> new_lp_edges;
 
   for(int i = 0; i < edge_delset.size(); i++){
     if(edge_delset[i] != -1){
       new_best_edges.push_back(best_tour_edges[i]);
       new_graph_edges.emplace_back(edges[i]);
+      new_lp_edges.push_back(m_lp_edges[i]);
     }
   }
 
@@ -120,7 +122,7 @@ void PSEP_LPfix::delete_edges(){
   
   m_graph.edge_count = edges.size();
   delta.resize(m_graph.edge_count);
-  m_lp_edges.resize(m_graph.edge_count);
+  m_lp_edges = new_lp_edges;
 
   total_time = PSEP_zeit() - total_time;
 

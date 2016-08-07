@@ -33,7 +33,7 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
   routine_start = PSEP_zeit();
   plan.start_timer();
   
-  while(plan.condition(augrounds)){
+  while(plan.condition(augrounds) /*|| piv_stat == PivType::SUBTOUR*/){
     rounds++;
     augrounds++;
 
@@ -147,8 +147,10 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
     cout <<"         LPfix::redcost_fixing: "
 	 << fixing_start << "s\n";
 
-  if(piv_stat != PivType::FATHOMED_TOUR && plan.perform_elim())
+  if(piv_stat != PivType::FATHOMED_TOUR && plan.perform_elim()){
     LPfix.redcost_fixing();
+    LPcore.set_support_graph();
+  }
 
 
  CLEANUP:

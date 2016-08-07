@@ -45,13 +45,13 @@ PivotPlan::PivotPlan(int _ncount, Presets preset) :
     bash_on_regardless = true;
     break;
   case Presets::ROOT:
-    goal_ratio = 7;
+    goal_ratio = 2;
     max_augrounds = 300;
     break;
   case Presets::BRANCH:
     std::cout << "PRESET: BRANCH\n";
     branch = true;
-    max_augrounds = 50;
+    max_augrounds = 100;
     break;
   }
 }

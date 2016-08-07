@@ -59,7 +59,9 @@ int Constraints::unenforce(unique_ptr<TreeNode> &v){
     rval = remove_right(clamp_edge);
     if(rval) goto CLEANUP;
     cout << "Removed right branch constraint(s) on edge "
-	 << clamp_edge << "\n";    
+	 << clamp_edge;
+    cout << ". first right: " << RBranch.first_right_edge() << ", "
+	 << "now active: " << RBranch.active() << "\n";
   }
 
   EdgeStats.remove_branch_var(v);
@@ -79,6 +81,7 @@ int Constraints::compute_branch_edge(){
 
   for(int i = 0; i < support_indices.size(); i++){
     index = support_indices[i];
+    if(EdgeStats.Right.count(index)) continue;
     lp_weight = m_lp_edges[index];
     if(fabs(lp_weight - 0.5) < LP::EPSILON){
       max_under_half = 0.5; min_over_half = 0.5;
@@ -104,7 +107,7 @@ int Constraints::compute_branch_edge(){
   for(int i = 0; i < support_indices.size(); i++){
     index = support_indices[i];
     lp_weight = m_lp_edges[index];
-    if(lp_weight < LB || lp_weight > UB)
+    if(lp_weight < LB || lp_weight > UB || EdgeStats.Right.count(index))
       continue;
     
     if(edges[index].len > max_len){
@@ -176,7 +179,9 @@ int Constraints::explore_right(const int edge){
     RBranch.edge_row_lookup.find(edge);
 
   if(row_it == RBranch.edge_row_lookup.end()){
-    cerr << "Tried to explore right branch for invalid constraint\n"; return 1;
+    cerr << "Tried to explore right branch for invalid constraint "
+	 << "on edge " << edge << "\n";
+    return 1;
   }
 
   rownum = row_it->second;
@@ -296,8 +301,10 @@ int Constraints::remove_right(const int edge){
 		    RBranch.constraint_range.second)){
     cerr << "Constraints::remove_right failed to delete bunch of rows\n";
     return 1;
-    RBranch.first_right = -1;
   }
+
+  RBranch.first_right = -1;
+  RBranch.constraint_range = IntPair(0,0);
 
   return 0;
 }

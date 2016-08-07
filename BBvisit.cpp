@@ -21,18 +21,12 @@ int Visitor::previsit(unique_ptr<TreeNode> &v){
   rval = ConstraintMgr.enforce(v);
   if(rval) goto CLEANUP;
 
-  if(v->type() == NodeType::RIGHT){
-    cout << "Rebuilding basis for right node...may not be necessary always\n";
-    rval = LPCore.rebuild_basis(false);
-    if(rval) goto CLEANUP;
-  }
-
   while(true){
     rval = PureCut.solve(plan, piv_status);
 
     if(piv_status == PivType::TOUR){
-      rval = handle_augmentation();
-      if(rval) goto CLEANUP;
+      // rval = handle_augmentation();
+      // if(rval) goto CLEANUP;
       continue;
     }
 
