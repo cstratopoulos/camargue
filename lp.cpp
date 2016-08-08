@@ -244,9 +244,7 @@ int PSEPlp_no_opt (PSEPlp *lp){
     fprintf(stderr, "Failed to perform zero iterations\n");
     rval = 1;
     goto CLEANUP;
-  } /*else {
-    printf("Successfully performed zero iterations\n");
-    }*/
+  }
   
   rval = CPXsetlongparam(lp->cplex_env, CPXPARAM_Simplex_Limits_Iterations,
 			 LP::DEFAULT_ITLIM);
