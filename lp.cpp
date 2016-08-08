@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include<stdlib.h>
 #include<string.h>
-#include<getopt.h>
 #include<cplex.h>
 #include "lp.h"
 
@@ -17,6 +16,28 @@ int PSEPlp_init (PSEPlp *lp){
   }
 
  CLEANUP:
+  return rval;
+}
+
+int PSEPlp_make_mip (PSEPlp *lp){
+  int rval = CPXchgprobtype(lp->cplex_env, lp->cplex_lp, CPXPROB_MILP);
+  if(rval)
+    fprintf(stderr, "PSEPlp_make_mip failed, rval %d\n", rval);
+  return rval;
+}
+
+int PSEPlp_change_vartype (PSEPlp *lp, int count, int const *indices,
+			char const *vartype){
+  int rval = CPXchgctype(lp->cplex_env, lp->cplex_lp, count, indices, vartype);
+  if(rval)
+    fprintf(stderr, "PSEPlp_change_vartype failed, rval %d\n", rval);
+  return rval;
+}
+
+int PSEPlp_make_lp (PSEPlp *lp){
+    int rval = CPXchgprobtype(lp->cplex_env, lp->cplex_lp, CPXPROB_LP);
+  if(rval)
+    fprintf(stderr, "PSEPlp_make_lp failed, rval %d\n", rval);
   return rval;
 }
 
@@ -58,6 +79,9 @@ int PSEPlp_mip_param (PSEPlp *lp){
   //CUTS
   rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Limits_EachCutLimit, 0);
   if(rval){ fprintf(stderr, "Each cut limit"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_Gomory, 1);
+  if(rval){ fprintf(stderr, "Gomory cut switch"); goto CLEANUP; }
 
   
 
@@ -400,15 +424,39 @@ int PSEPlp_dual_pivot (PSEPlp *lp, int *infeasible){
   return rval;
 }
 
-int PSEPlp_pivot (PSEPlp *lp, const int entering_var, const int leaving_var,
-		  const int nb_status){
-  int rval = CPXpivot (lp->cplex_env, lp->cplex_lp, entering_var, leaving_var,
-		       nb_status);
-  if(rval)
-    fprintf (stderr, "CPXpivot failed, rval %d\n", rval);
-
+int PSEPlp_mip_opt (PSEPlp *lp){
+  int rval = CPXmipopt(lp->cplex_env, lp->cplex_lp);
+  if(rval) fprintf(stderr, "PSEPlp_mip_opt failed, rval %d\n", rval);
   return rval;
 }
+
+int PSEPlp_mip_pivot (PSEPlp *lp){
+   int rval = CPXsetlongparam(lp->cplex_env,
+			      CPXPARAM_Simplex_Limits_Iterations, 1);
+  if (rval){
+    fprintf (stderr, "Failed to set limit to 1 in mip_pivot\n");
+    goto CLEANUP;
+  }
+  
+  rval = CPXmipopt(lp->cplex_env, lp->cplex_lp);
+  if(rval){
+    fprintf(stderr, "CPXmipopt failed, rval %d\n", rval);
+    goto CLEANUP;
+  }
+
+  rval = CPXsetlongparam(lp->cplex_env, CPXPARAM_Simplex_Limits_Iterations,
+			 LP::DEFAULT_ITLIM);
+  if (rval){
+    fprintf (stderr, "Failed to revert itlimit in mip_pivot\n");
+    goto CLEANUP;
+  }
+
+ CLEANUP:
+  if(rval)
+    fprintf(stderr, "Problem in PSEPlp_mip_pivot\n");
+  return rval;
+}
+
 
 int PSEPlp_getobj (PSEPlp *lp, double *obj, int numcols){
   int rval = CPXgetobj(lp->cplex_env, lp->cplex_lp, obj, 0, numcols - 1);
@@ -426,6 +474,13 @@ int PSEPlp_objval (PSEPlp *lp, double *obj){
   }
 
  CLEANUP:
+  return rval;
+}
+
+int PSEPlp_num_frac (PSEPlp *lp, int *num_p){
+  int rval = CPXgetnumcuts(lp->cplex_env, lp->cplex_lp, CPX_CUT_FRAC, num_p);
+  if(rval)
+    fprintf(stderr, "PSEPlp_num_frac failed, rval %d\n", rval);
   return rval;
 }
 
