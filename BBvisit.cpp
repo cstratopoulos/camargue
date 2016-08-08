@@ -64,20 +64,17 @@ int Visitor::handle_augmentation(){
   int rval = 0;
   int num_removed = 0;
 
-  if(LPCore.test_new_tour()){
-    if(RightBranch.active()){
-      rval = ConstraintMgr.update_right_rows();
-      if(rval) goto CLEANUP;
-    }
-
-    rval = LPCore.update_best_tour();
+  if(RightBranch.active()){
+    rval = ConstraintMgr.update_right_rows();
     if(rval) goto CLEANUP;
-
-    rval = ConstraintMgr.prune(num_removed);
-    if(rval) goto CLEANUP;
-  } else {
-    cout << "   Supposed augmented tour was not an improvement\n";
   }
+
+  rval = LPCore.update_best_tour();
+  if(rval) goto CLEANUP;
+
+  rval = ConstraintMgr.prune(num_removed);
+  if(rval) goto CLEANUP;
+
 
  CLEANUP:
   if(rval)

@@ -69,6 +69,9 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
     }
 
     if(piv_stat == PivType::TOUR){
+      if(!LPcore.test_new_tour() || plan.is_branch())
+	continue;
+      
       if(plan.is_branch())
 	break;
 

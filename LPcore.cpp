@@ -203,13 +203,16 @@ double PSEP_LP_Core::set_support_graph(){
 
 bool PSEP_LP_Core::test_new_tour(){
   double objval = 0;
+  bool result = false;
 
   for(int i = 0; i < m_graph.edge_count; i++)
     if(m_lp_edges[i] >= LP::EPSILON)
       objval += m_graph.edges[i].len;
 
-  cout << "   objval " << objval << ", min tour: " << m_min_tour_value << "\n";
-  return objval < m_min_tour_value && is_integral();
+  result = objval < m_min_tour_value && is_integral();
+  if(result)
+    cout << "Supposed improvement?? objval: " << objval << "\n";
+  return result;
 }
 
 int PSEP_LP_Core::update_best_tour(){
