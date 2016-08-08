@@ -17,6 +17,10 @@ struct PSEPlp {
 //interface function to open cplex and create lp environment
 int PSEPlp_init (PSEPlp *lp);
 
+//disables all of the CPLEX heuristics, all cuts except disjunctive/frac/GMI,
+//sets node limit to zero
+int PSEPlp_mip_param (PSEPlp *lp);
+
 //interface to CPXcreateprob--creates an empty LP problem in the environment
 int PSEPlp_create (PSEPlp *lp, const char *name);
 

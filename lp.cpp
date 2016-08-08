@@ -20,6 +20,56 @@ int PSEPlp_init (PSEPlp *lp){
   return rval;
 }
 
+int PSEPlp_mip_param (PSEPlp *lp){
+  int rval = 0;
+
+  //MIP PARAMS
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Limits_Nodes, 0);
+  if(rval){ fprintf(stderr, "MIP nodelimit"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Strategy_Search, 1);
+  if(rval){ fprintf(stderr, "MIPSEARCH"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Strategy_StartAlgorithm,
+			CPX_ALG_PRIMAL);
+  if(rval){ fprintf(stderr, "MIP root algorithm"); goto CLEANUP; }
+
+  rval = CPXsetlongparam(lp->cplex_env, CPXPARAM_MIP_Strategy_RINSHeur, -1);
+  if(rval){ fprintf(stderr, "RINSEHEUR"); goto CLEANUP; }
+  
+  rval = CPXsetlongparam(lp->cplex_env, CPXPARAM_MIP_Strategy_HeuristicFreq,
+			 -1);
+  if(rval){ fprintf(stderr, "HEURFREQ"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Strategy_FPHeur, -1);
+  if(rval){ fprintf(stderr, "FPHEUR"); goto CLEANUP; }
+  
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Strategy_Probe, -1);
+  if(rval){ fprintf(stderr, "PROBE"); goto CLEANUP; }
+
+
+  //PREPROCESSING/PRESOLVE
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_Preprocessing_Presolve, 0);
+  if(rval){ fprintf(stderr, "Presolve"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_Preprocessing_Relax, 0);
+  if(rval){ fprintf(stderr, "Presolve LP relaxation"); goto CLEANUP; }
+
+  //CUTS
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Limits_EachCutLimit, 0);
+  if(rval){ fprintf(stderr, "Each cut limit"); goto CLEANUP; }
+
+  
+
+ CLEANUP:
+  if(rval)
+    fprintf(stderr, " failed in PSEPlp_mip_param, rval %d\n", rval);
+  else
+    printf("Set MIP params???\n");
+
+  return rval;
+}
+
 void PSEPlp_free (PSEPlp *lp){
   if (lp) {
     if (lp->cplex_env){
