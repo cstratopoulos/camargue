@@ -62,11 +62,51 @@ cut, if an augmentation takes place, we can fix edges using reduced
 costs from the root and the new best tour opt value as the integrality
 gap.
 
-previsit should call PureCut.solve(ncount, Plan(Branch), pivstat) in a while
-loop, terminating when stat is NOT an augmented tour. If stat is a
-fathomed tour and plan is branch, update best tour will NOT be
-called. We must
--make calls to prunecuts WITH skiprange, get delset
--pass delset to updater functions
--pass new tour via PSEPlp_x (for comparison with old tour) to updaters
-and only then call update best tour. Then re-enter the loop!
+
+DCMST GOMORY CUTS
+generate only those with integer coefficients...could be more
+numerically stable and easier to implement?
+
+CPLEX GOMORY CUTS
+Ideas/functions that could be useful for generating gomory cuts using
+CPLEX:
+
+Main idea might be to use CPXchgprobtype to temporarily switch to a
+MIP object and then switch back.
+    TODO: Do the variables need to be changed to 0-1 as well?
+
+CPXgetnumcuts how many cuts have been added
+
+CPXPARAM_MIP_Limits_GomoryCand - number of candidate variables for
+generating cuts....maybe set to one?
+
+CPXmipopt -- apparently the only optimizer that can be called after
+changing to MIP problem type
+
+CPX_PARAM_NODELIMIT -- set the maximum number of nodes to zero, at
+which point "CPLEX creates cuts and applies heuristics at the root"
+
+CPX_PARAM_CUTSFACTOR -- number of cuts that can be added to the
+problem as a ratio to row number of current rows. Could compute the
+number precisely that allows one and only one cut to be generated? In
+abc.pdf, they say at most 25 cuts are generated
+
+CPX_PARAM_ (parameters affecting cuts) to turn all other cuts off
+
+CPX_PARAM_PREIND (int) to zero to disable presolve entirely
+
+CPX_PARAM_ADVIND (int) 1 default, accepts copybase (which is currently
+used). Set to 2, "crushes" an advanced basis supplied by user....maybe
+this is what we want??
+
+CPX_PARAM_MIPSEARCH = 1, off so we only use (0 node) branch and cut
+
+CPX_PARAM_STARTALG (int) to CPX_ALG_PRIMAL to set optimization
+strategy at root node (the only node)....maybe set primal itlim to
+zero?
+
+Turning off heuristics:
+CPX_PARAM_RINSHEUR (long) -1
+CPX_PARAM_HEURFREQ (long) -1
+CPX_PARAM_FPHEUR (int) -1
+CPX_PARAM_PROBE (int) -1
