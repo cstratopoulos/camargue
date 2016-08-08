@@ -21,6 +21,11 @@ int Visitor::previsit(unique_ptr<TreeNode> &v){
   rval = ConstraintMgr.enforce(v);
   if(rval) goto CLEANUP;
 
+  if(v->type() == NodeType::RIGHT){
+    rval = ConstraintMgr.prune();
+    if(rval) goto CLEANUP;
+  }
+
   while(true){
     rval = PureCut.solve(plan, piv_status);
 
@@ -62,7 +67,6 @@ int Visitor::postvisit(unique_ptr<TreeNode> &v){
 
 int Visitor::handle_augmentation(){
   int rval = 0;
-  int num_removed = 0;
 
   if(RightBranch.active()){
     rval = ConstraintMgr.update_right_rows();
@@ -72,7 +76,7 @@ int Visitor::handle_augmentation(){
   rval = LPCore.update_best_tour();
   if(rval) goto CLEANUP;
 
-  rval = ConstraintMgr.prune(num_removed);
+  rval = ConstraintMgr.prune();
   if(rval) goto CLEANUP;
 
 

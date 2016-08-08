@@ -46,6 +46,8 @@ class PSEP_LP_Core {
   int primal_opt();
 
   int rebuild_basis(bool prune);
+  int rebuild_basis(int &numremoved, IntPair skiprange,
+		    std::vector<int> &delset);
   int basis_init();
   
   int pivot_until_change(PSEP::PivType &pivot_status);

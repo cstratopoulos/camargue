@@ -111,13 +111,65 @@ int PSEP_LP_Core::rebuild_basis(bool prune){
   if(rval) goto CLEANUP;
 
   if(prune){
-    prune = PSEP_zeit();
     rval = LPPrune.prune_cuts(num_removed);
     if(rval) goto CLEANUP;
-    prune = PSEP_zeit() - prune;
-    cout << "Removed " << num_removed << " cuts from the LP in "
-	 << prune << "s\n";
+    cout << "Removed " << num_removed << " cuts from the LP\n";
   }
+
+
+  rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &old_obj[0]);
+  if(rval) goto CLEANUP;
+    
+ CLEANUP:
+  if(rval)
+    cerr << "Error entry point: LPCore::rebuild_basis\n";
+  return rval;
+}
+
+int PSEP_LP_Core::rebuild_basis(int &numremoved, IntPair skiprange,
+				std::vector<int> &delset){
+  int rval = 0, infeas = 0;
+  int ecount = m_lp_edges.size();
+  int ncount = best_tour_nodes.size();
+  int num_removed = 0;
+  double objval;
+  vector<double> tour_obj(ecount);
+  vector<double> old_obj(ecount);
+  vector<int> lp_indices(ecount);
+  old_colstat.resize(ecount);
+
+  rval = PSEPlp_getobj(&m_lp, &old_obj[0], ecount);
+  if(rval) goto CLEANUP;
+
+  for(int i = 0; i < ecount; i++){
+    tour_obj[i] = 1 - (2 * best_tour_edges[i]);
+    lp_indices[i] = i;
+  }
+
+  rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &tour_obj[0]);
+  if(rval) goto CLEANUP;
+
+  rval = PSEPlp_primal_opt(&m_lp, &infeas);
+  if(rval) goto CLEANUP;
+
+  rval = PSEPlp_objval(&m_lp, &objval);
+  if(objval != -ncount){
+    cerr << "Basis rebuild gave wrong solution, objval: "
+	 << objval << "\n";
+    rval = 1;
+    goto CLEANUP;
+  }
+
+  rval = set_edges();
+  if(rval) goto CLEANUP;
+
+  rval = PSEPlp_getbase(&m_lp, &old_colstat[0], NULL);
+  if(rval) goto CLEANUP;
+
+
+  rval = LPPrune.prune_with_skip(num_removed, skiprange, delset);
+  if(rval) goto CLEANUP;
+
 
 
   rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &old_obj[0]);

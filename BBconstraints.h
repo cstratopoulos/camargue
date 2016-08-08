@@ -57,7 +57,7 @@ namespace PSEP {
       int update_right_rows();
       int remove_right(const int edge);
 
-      int prune(int &num_removed);
+      int prune();
   
       std::vector<Edge> &edges;
   

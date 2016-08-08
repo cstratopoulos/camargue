@@ -321,13 +321,14 @@ int Constraints::remove_right(const int edge){
   return 0;
 }
 
-int Constraints::prune(int &num_removed){
+int Constraints::prune(){
   int rval = 0;
   vector<int> delset;
   IntPair skiprange = RBranch.skiprange;
+  int num_removed;
 
   if(RBranch.active()){
-    rval = LPPrune.prune_with_skip(num_removed, skiprange, delset);
+    rval = LPCore.rebuild_basis(num_removed, skiprange, delset);
     if(rval) goto CLEANUP;
 
     if(num_removed > 0){
@@ -335,7 +336,7 @@ int Constraints::prune(int &num_removed){
       if(rval) goto CLEANUP;
     }
   } else {
-    rval = LPPrune.prune_cuts(num_removed);
+    rval = LPCore.rebuild_basis(true);
     if(rval) goto CLEANUP;
   }
 

@@ -110,3 +110,7 @@ CPX_PARAM_RINSHEUR (long) -1
 CPX_PARAM_HEURFREQ (long) -1
 CPX_PARAM_FPHEUR (int) -1
 CPX_PARAM_PROBE (int) -1
+
+make it so prune cuts calls the more general version but with
+intpair(0,0) for skiprange or something like that, to save on
+unnecessary copy and pasting
