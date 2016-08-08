@@ -69,12 +69,13 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
     }
 
     if(piv_stat == PivType::TOUR){
+      if(plan.is_branch())
+	break;
+
       cout << "\n\n    !!!AUGMENTED TOUR!!!!" << endl;
       print.pivot(piv_stat);
       cout << "                Pivot objval: "
 	   << LPcore.get_obj_val() << "\n";
-      if(plan.is_branch())
-	break;
       
       rval = LPcore.update_best_tour();
       if(rval) goto CLEANUP;
@@ -115,10 +116,10 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
   }
 
   if(plan.is_branch() && piv_stat == PivType::TOUR){
-    cout << "Terminated due to augmented tour in branch solve\n";
-    cout << "!!!MUST UPDATE BEST TOUR AND PRUNE SLACK CUTS!!!!\n";
+    cout << "   Terminated due to augmented tour in branch solve ("
+	 << rounds << " rounds)\n";
   } else if(piv_stat != PivType::FATHOMED_TOUR){
-    cout << "\n Terminated due to: ";
+    cout << "\n Terminated in " << rounds << " rounds due to: ";
     if(!plan.condition(augrounds)){
       plan.profile(augrounds);
     } else if (cut_rval == 2){

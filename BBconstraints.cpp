@@ -170,11 +170,7 @@ int Constraints::compute_right_update(const int clamp, const int partner,
 }
 
 int Constraints::add_right_branch(const int edge){
-  int rval = 0, num_removed = 0;
-  cout << " Trying to prune cuts for for right branch, ";
-  rval = prune(num_removed);
-  if(rval) goto CLEANUP;
-  cout << num_removed << " pruned from LP\n";
+  int rval = 0;
   
   rval = RBranch.active() ? explore_right(edge) :
     add_first_right_rows(edge);
@@ -209,9 +205,13 @@ int Constraints::explore_right(const int edge){
 
 int Constraints::add_first_right_rows(const int edge){
   if(RBranch.active()){
-    cerr << "Tried to add new right rows but right branch "
+    cerr << "Problem in Constraints::add_first_right_rows: right branch "
 	 << "was already active\n";
     return 1;
+  }
+
+  if(LPCore.rebuild_basis(true)){
+    cerr << "Problem in Constraints::add_first_right_rows\n";
   }
 
   int range_start = PSEPlp_numrows(&m_lp), range_end;

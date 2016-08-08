@@ -209,7 +209,7 @@ bool PSEP_LP_Core::test_new_tour(){
       objval += m_graph.edges[i].len;
 
   cout << "   objval " << objval << ", min tour: " << m_min_tour_value << "\n";
-  return objval < m_min_tour_value;
+  return objval < m_min_tour_value && is_integral();
 }
 
 int PSEP_LP_Core::update_best_tour(){

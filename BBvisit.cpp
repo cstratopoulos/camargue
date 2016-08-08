@@ -25,8 +25,8 @@ int Visitor::previsit(unique_ptr<TreeNode> &v){
     rval = PureCut.solve(plan, piv_status);
 
     if(piv_status == PivType::TOUR){
-      // rval = handle_augmentation();
-      // if(rval) goto CLEANUP;
+      rval = handle_augmentation();
+      if(rval) goto CLEANUP;
       continue;
     }
 
@@ -75,6 +75,8 @@ int Visitor::handle_augmentation(){
 
     rval = ConstraintMgr.prune(num_removed);
     if(rval) goto CLEANUP;
+  } else {
+    cout << "   Supposed augmented tour was not an improvement\n";
   }
 
  CLEANUP:
