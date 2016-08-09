@@ -77,12 +77,44 @@ int PSEPlp_mip_param (PSEPlp *lp){
   if(rval){ fprintf(stderr, "Presolve LP relaxation"); goto CLEANUP; }
 
   //CUTS
-  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Limits_EachCutLimit, 0);
-  if(rval){ fprintf(stderr, "Each cut limit"); goto CLEANUP; }
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_Cliques, -1);
+  if(rval){ fprintf(stderr, "Clique cuts"); goto CLEANUP; }
 
-  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_Gomory, 1);
-  if(rval){ fprintf(stderr, "Gomory cut switch"); goto CLEANUP; }
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_Covers, -1);
+  if(rval){ fprintf(stderr, "Cover cuts"); goto CLEANUP; }
 
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_Disjunctive, -1);
+  if(rval){ fprintf(stderr, "Disjunctive cuts"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_FlowCovers, -1);
+  if(rval){ fprintf(stderr, "Flow cover cuts"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_PathCut, -1);
+  if(rval){ fprintf(stderr, "Flow path cuts"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_Gomory, -1);
+  if(rval){ fprintf(stderr, "Gomory frac cuts"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_GUBCovers, -1);
+  if(rval){ fprintf(stderr, "GUB cover cuts"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_Implied, -1);
+  if(rval){ fprintf(stderr, "Implied cuts"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_LocalImplied, -1);
+  if(rval){ fprintf(stderr, "Local Implied cuts"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_LiftProj, -1);
+  if(rval){ fprintf(stderr, "Lift and Project cuts"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_MCFCut, -1);
+  if(rval){ fprintf(stderr, "MCF cuts"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_MIRCut, -1);
+  if(rval){ fprintf(stderr, "MIR cuts"); goto CLEANUP; }
+
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Cuts_ZeroHalfCut, -1);
+  if(rval){ fprintf(stderr, "0-1/2 cuts"); goto CLEANUP; }
   
 
  CLEANUP:
