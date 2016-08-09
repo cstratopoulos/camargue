@@ -33,7 +33,7 @@ int main(int argc, char* argv[]){
 
   delete dat;
 
-  return solver.call(PSEP::SolutionProtocol::ABC);
+  return solver.call(PSEP::SolutionProtocol::PURECUT);
 }
 
 static int initial_parse(int ac, char **av, char **fname,

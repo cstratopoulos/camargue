@@ -117,8 +117,11 @@ int PSEPlp_getobj (PSEPlp *lp, double *obj, int numcols);
 //pointer to obj, where the result is to be stored
 int PSEPlp_objval (PSEPlp *lp, double *obj);
 
+//get best objval of a mip object
+int PSEPlp_getbestobjval (PSEPlp *lp, double *obj);
+
 //calls CPXgetnumcuts to get the number of gomory fractional cuts
-int PSEPlp_num_frac (PSEPlp *lp, int *num_p);
+int PSEPlp_getnumcuts (PSEPlp *lp, int cuttype, int *num_p);
 
 //argmin of objval, if successful stores the optimal solution in an array
 //x of type double

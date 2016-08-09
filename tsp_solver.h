@@ -17,6 +17,7 @@ class TSP_Solver {
   TSP_Solver(char *fname, PSEP_LP_Prefs _prefs, CCdatagroup *dat);
 
   int call(PSEP::SolutionProtocol solmeth);
+  
  private:
   PSEP_GraphGroup GraphGroup;
   PSEP_BestGroup BestGroup;

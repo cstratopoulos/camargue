@@ -114,8 +114,19 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
 	   
     }
 
-    if(cut_rval == 2)
+    if(cut_rval == 2){
       break;
+      // cout << "\n  Round " << rounds
+      // 	   << ", no primal cuts found, trying to call general sep\n";
+      // print.pivot(piv_stat);
+      // cut_rval = CutControl.general_sep();
+      // if(cut_rval == 1) goto CLEANUP;
+      // if(cut_rval == 2) break;
+
+      // rval = LPcore.rebuild_basis(true);
+      // if (rval) goto CLEANUP;
+      // cut_rval = 0;
+    }
   }
 
   if(plan.is_branch() && piv_stat == PivType::TOUR){
@@ -134,7 +145,6 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
     }
   }
   
-
   if(!plan.is_branch())
     cout << "  "
 	 << (LPcore.numrows() - LPcore.best_tour_nodes.size())

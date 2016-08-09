@@ -45,7 +45,7 @@ namespace PSEP {
 
   struct general {
   general(bool _gomory, bool _disj, bool _mir) :
-    added_range(IntPair(0,0)), branch_var(-1), gomory_frac(_gomory),
+    added_range(IntPair(0,0)), gomory_frac(_gomory),
       disjunctive(_disj), rounding(_mir) {}
     
     IntPair added_range;
@@ -58,15 +58,15 @@ namespace PSEP {
   
   template<typename cut_t>
     class Cut {
-  /* public: */
-  /*   int cut_call(){ return 1;} */
+  public:
+    int cut_call(){ return 1;}
 
-  /* private: */
-  /*   int separate(){ return 1;} */
-  /*   int parse_coeffs(){ return 1;} */
-  /*   int add_cut(){return 1;} */
+  private:
+    int separate(){ return 1;}
+    int parse_coeffs(){ return 1;}
+    int add_cut(){return 1;}
 
-  /*   std::unique_ptr<cut_t> best; */
+    std::unique_ptr<cut_t> best;
   };
 }
 

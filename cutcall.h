@@ -8,6 +8,7 @@
 #include "segments.h"
 #include "blossoms.h"
 #include "dominos.h"
+#include "gencuts.h"
 #include "cuts.h"
 #include "PSEP_util.h"
 
@@ -28,6 +29,8 @@ namespace PSEP{
 	      BestGroup.best_tour_nodes, BestGroup.perm, LPGroup.m_lp,
 	      LPGroup.m_lp_edges, SupportGroup.G_s, SupportGroup.support_elist,
 	      SupportGroup.support_ecap),
+      general_cuts(true, true, true, BestGroup.best_tour_edges, LPGroup.m_lp,
+		   LPGroup.m_lp_edges, SupportGroup.support_indices),
       prefs(LPGroup.prefs),
       total_segtime(0), total_2mtime(0), total_dptime(0),
       total_segcalls(0), total_2mcalls(0){}
@@ -35,7 +38,7 @@ namespace PSEP{
     
   public:
     int primal_sep(const int augrounds, const PivType stat);
-    int standard_sep(const PivType stat);
+    int standard_subtour_sep(const PivType stat);
     int general_sep();
     int general_sep(const int edge);
     int special_sep();
@@ -54,6 +57,8 @@ namespace PSEP{
     PSEP::Cut<PSEP::seg> segments;
     PSEP::Cut<PSEP::blossom> blossoms;
     PSEP::Cut<PSEP::domino> dominos;
+
+    PSEP::Cut<PSEP::general> general_cuts;
 
     PSEP_LP_Prefs &prefs;
 

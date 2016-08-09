@@ -464,14 +464,14 @@ int PSEPlp_mip_opt (PSEPlp *lp){
 
 int PSEPlp_mip_pivot (PSEPlp *lp){
    int rval = CPXsetlongparam(lp->cplex_env,
-			      CPXPARAM_Simplex_Limits_Iterations, 1);
+			      CPXPARAM_Simplex_Limits_Iterations, 210);
   if (rval){
     fprintf (stderr, "Failed to set limit to 1 in mip_pivot\n");
     goto CLEANUP;
   }
   
   rval = CPXmipopt(lp->cplex_env, lp->cplex_lp);
-  if(rval){
+  if(rval && rval != 3019){
     fprintf(stderr, "CPXmipopt failed, rval %d\n", rval);
     goto CLEANUP;
   }
@@ -509,10 +509,17 @@ int PSEPlp_objval (PSEPlp *lp, double *obj){
   return rval;
 }
 
-int PSEPlp_num_frac (PSEPlp *lp, int *num_p){
-  int rval = CPXgetnumcuts(lp->cplex_env, lp->cplex_lp, CPX_CUT_FRAC, num_p);
+int PSEPlp_getbestobjval (PSEPlp *lp, double *obj){
+  int rval = CPXgetbestobjval(lp->cplex_env, lp->cplex_lp, obj);
   if(rval)
-    fprintf(stderr, "PSEPlp_num_frac failed, rval %d\n", rval);
+    fprintf(stderr, "PSEPlp_getbestobjval failed\n");
+  return rval;
+}
+
+int PSEPlp_getnumcuts (PSEPlp *lp, int cuttype, int *num_p){
+  int rval = CPXgetnumcuts(lp->cplex_env, lp->cplex_lp, cuttype, num_p);
+  if(rval)
+    fprintf(stderr, "PSEPlp_getnumcuts failed, rval %d\n", rval);
   return rval;
 }
 

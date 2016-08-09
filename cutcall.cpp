@@ -56,3 +56,10 @@ int CutControl::primal_sep(const int augrounds, const PivType stat){
     cerr << "Cuts<domino>::cutcall\n";
   return rval;
 }
+
+int CutControl::general_sep(){
+  int rval = general_cuts.separate();
+  if(rval == 1)
+    cerr << "Problem in CutControl::general_sep\n";
+  return rval;
+}
