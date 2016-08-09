@@ -47,12 +47,8 @@ namespace PSEP {
   general(bool _gomory, bool _disj, bool _mir) :
     added_range(IntPair(0,0)), branch_var(-1), gomory_frac(_gomory),
       disjunctive(_disj), rounding(_mir) {}
-  general(const int _var) :
-    added_range(IntPair(0,0)), branch_var(_var), gomory_frac(false),
-      disjunctive(true), rounding(false) {}
     
     IntPair added_range;
-    const int branch_var;
 
     bool gomory_frac;
     bool disjunctive;
