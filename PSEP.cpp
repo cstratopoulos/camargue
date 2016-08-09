@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
   CCdatagroup *dat = new CCdatagroup;
   char *fname;
 
-  cout << "BRANCH VERSION: MASTER (ABC in progress)\n";
+  cout << "BRANCH VERSION: MASTER (ABC/GMI in progress)\n";
 
   if(initial_parse(argc, argv, &fname, prefs)){
     cerr << "Problem parsing arguments" << endl;
