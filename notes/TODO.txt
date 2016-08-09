@@ -100,3 +100,32 @@ what about CPX_ALG_PIVOT????? what is that?????
 make it so prune cuts calls the more general version but with
 intpair(0,0) for skiprange or something like that, to save on
 unnecessary copy and pasting
+
+NAIVE BRANCHING
+Problem with main branching is it doesn't seem to cut off the fractional 
+solution? Notice how naive branching imposes a condition on the partner 
+variable which guarantees that the fractional point is cut off. 
+
+L&L say that naive branching allows too many feasible solutions on either side
+of the branch (vs main where the current tour is the ONLY feasible solution
+on both), but this isn't really a concern when we have an optimal starting
+tour, which is often the case
+
+BRANCHING TEMPLATIZATION
+Ideal situation: have template classes
+      visitor
+      constraintmgr
+      rightbranch
+      edgestats
+with function implementations specialized based on an enum class BranchPlan,
+which is either main or naive. 
+
+CUT PRUNING
+the pruning mechanism of 'tight at current tour' is clearly FAR too lenient,
+too many cuts accumulate and augmentation happens rarely (or never), and even
+if it does we only prune 10-15 despite having hundreds possibly added
+
+similar to the way concorde tests the age of edges/cuts, maybe record whether
+cuts have been tight at a current LP solve, i.e., if we are pivoting to 
+a solution where the cuts are tight. maybe test slack at current LP solution
+as well, and prune cuts which have not been active for some number of rounds
