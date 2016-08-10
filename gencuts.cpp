@@ -3,6 +3,7 @@
 #include<cmath>
 
 #include "gencuts.h"
+#include "mip.h"
 
 using namespace std;
 using namespace PSEP;
@@ -18,10 +19,10 @@ int Cut<general>::separate(const double piv_val){
   rval = make_all_binary();
   if(rval) goto CLEANUP;
 
-  rval = PSEPlp_mip_opt(&m_lp);
+  rval = PSEPmip_opt(&m_lp);
   if(rval) goto CLEANUP;
 
-  rval = PSEPlp_getbestobjval(&m_lp, &objval);
+  rval = PSEPmip_getbestobjval(&m_lp, &objval);
   if(rval) goto CLEANUP;
 
   cout << "    Mip opt has objval: " << objval << "\n";
@@ -155,7 +156,7 @@ int Cut<general>::make_all_binary(){
   for(int i = 0; i < numcols; i++)
     indices[i] = i;
 
-  int rval = PSEPlp_change_vartype(&m_lp, numcols, &indices[0], &vartype[0]);
+  int rval = PSEPmip_change_vartype(&m_lp, numcols, &indices[0], &vartype[0]);
   if(rval)
     cerr << "Problem in Cut<general>::make_all_binary\n";
   return rval;
@@ -164,20 +165,20 @@ int Cut<general>::make_all_binary(){
 int Cut<general>::make_binary(const int edge){
   char vartype = CPX_BINARY;
 
-  int rval = PSEPlp_change_vartype(&m_lp, 1, &edge, &vartype);
+  int rval = PSEPmip_change_vartype(&m_lp, 1, &edge, &vartype);
   if(rval)
     cerr << "Problem in Cut<general>::make_binary\n";
   return rval;
 }
 
 int Cut<general>::num_added(int &frac, int &disj, int &mir){
-  int rval = PSEPlp_getnumcuts(&m_lp, CPX_CUT_FRAC, &frac);
+  int rval = PSEPmip_getnumcuts(&m_lp, CPX_CUT_FRAC, &frac);
   if(rval) goto CLEANUP;
 
-  rval = PSEPlp_getnumcuts(&m_lp, CPX_CUT_DISJ, &disj);
+  rval = PSEPmip_getnumcuts(&m_lp, CPX_CUT_DISJ, &disj);
   if(rval) goto CLEANUP;
   
-  rval = PSEPlp_getnumcuts(&m_lp, CPX_CUT_MIR, &mir);
+  rval = PSEPmip_getnumcuts(&m_lp, CPX_CUT_MIR, &mir);
   if(rval) goto CLEANUP;
 
  CLEANUP:

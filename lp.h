@@ -1,5 +1,5 @@
-#ifndef LP_H
-#define LP_H
+#ifndef PSEP_LP_H
+#define PSEP_LP_H
 
 #include <cplex.h>
 #include "PSEP_util.h"
@@ -16,20 +16,6 @@ struct PSEPlp {
 
 //interface function to open cplex and create lp environment
 int PSEPlp_init (PSEPlp *lp);
-
-//change to MILP problem type
-int PSEPlp_make_mip (PSEPlp *lp);
-
-//makes all the variables binary in a MIP
-int PSEPlp_change_vartype (PSEPlp *lp, int count, int const *indices,
-			char const *vartype);
-
-//change back to LP problem type
-int PSEPlp_make_lp (PSEPlp *lp);
-
-//disables all of the CPLEX heuristics, all cuts except disjunctive/frac/GMI,
-//sets node limit to zero
-int PSEPlp_mip_param (PSEPlp *lp);
 
 //interface to CPXcreateprob--creates an empty LP problem in the environment
 int PSEPlp_create (PSEPlp *lp, const char *name);
@@ -105,23 +91,12 @@ int PSEPlp_primal_pivot (PSEPlp *lp, int *infeasible);
 //perform a single dual pivot of the simplex algorithm
 int PSEPlp_dual_pivot (PSEPlp *lp, int *infeasible);
 
-//calls CPXmipopt on a MIP problem
-int PSEPlp_mip_opt (PSEPlp *lp);
-
-//calls CPXmipopt with iteration limit set to 1
-int PSEPlp_mip_pivot (PSEPlp *lp);
-
+//gets the objective function
 int PSEPlp_getobj (PSEPlp *lp, double *obj, int numcols);
 
 //calls CPXgetobjval to obtain the optimal objective value of lp, with a
 //pointer to obj, where the result is to be stored
 int PSEPlp_objval (PSEPlp *lp, double *obj);
-
-//get best objval of a mip object
-int PSEPlp_getbestobjval (PSEPlp *lp, double *obj);
-
-//calls CPXgetnumcuts to get the number of gomory fractional cuts
-int PSEPlp_getnumcuts (PSEPlp *lp, int cuttype, int *num_p);
 
 //argmin of objval, if successful stores the optimal solution in an array
 //x of type double
