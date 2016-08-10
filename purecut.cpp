@@ -114,15 +114,15 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
     }
 
     if(cut_rval == 2){
-      //      break;
-      cout << "\n  Round " << rounds
-      	   << ", calling general sep,"
-	   << " piv val: " << piv_val << "\n";
-      print.pivot(piv_stat);
-      cut_rval = CutControl.general_sep(piv_val);
-      if(cut_rval == 1) goto CLEANUP;
-      if(cut_rval == 2) break;
-      cut_rval = 0;
+      break;
+      // cout << "\n  Round " << rounds
+      // 	   << ", calling general sep,"
+      // 	   << " piv val: " << piv_val << "\n";
+      // print.pivot(piv_stat);
+      // cut_rval = CutControl.general_sep(piv_val);
+      // if(cut_rval == 1) goto CLEANUP;
+      // if(cut_rval == 2) break;
+      // cut_rval = 0;
     }
   }
 
