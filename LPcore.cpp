@@ -327,8 +327,23 @@ int rval = 0;
     rval = PSEPlp_getbase(&m_lp, &old_colstat[0], &old_rowstat[0]);
     if(rval) goto CLEANUP;
 
-    rval = pivot();
-    if(rval) goto CLEANUP;
+    rval = CPXsetdblparam(m_lp.cplex_env, CPXPARAM_Simplex_Limits_LowerObj,
+			  m_min_tour_value - 1);
+    if(rval){
+      cerr << "Couldn't set low limit, "; goto CLEANUP;
+    }
+
+    rval = CPXprimopt(m_lp.cplex_env, m_lp.cplex_lp);
+    if(rval) {
+      cerr << "Primopt failed with rval " << rval << "\n";
+      goto CLEANUP;
+    }
+
+    rval = CPXsetdblparam(m_lp.cplex_env, CPXPARAM_Simplex_Limits_LowerObj,
+			  -1E75);
+    if(rval){
+      cerr << "Couldn't revert low limit, "; goto CLEANUP;
+    }
 
     rval = set_edges();
     if(rval) goto CLEANUP;
@@ -336,6 +351,7 @@ int rval = 0;
     if(fabs(get_obj_val() - m_min_tour_value) >= LP::EPSILON)
       break;    
   }
+  
 
   if(did_jumpstart){
     cout << "Now reverting to original pricing\n";
