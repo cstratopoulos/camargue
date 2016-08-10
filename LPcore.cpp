@@ -18,12 +18,24 @@ inline bool PSEP_LP_Core::is_integral(){
   return true;
 }
 
-int PSEP_LP_Core::pivot(){
+int PSEP_LP_Core::single_pivot(){
   int infeasible = 0;
   int rval = PSEPlp_primal_pivot(&m_lp, &infeasible);
 
-  if(rval)
-    cerr << "Entry point LP_Core::pivot(), infeasible " << infeasible << "\n";
+  if(rval || infeasible)
+    cerr << "Problem in LP_Core::single_pivot(), infeasible "
+	 << infeasible << "\n";
+  return rval;
+}
+
+int PSEP_LP_Core::nondegenerate_pivot(){
+  int infeasible = 0, rval = 0;
+  double lowlimit = m_min_tour_value - 1;
+
+  rval = PSEPlp_primal_nd_pivot(&m_lp, &infeasible, lowlimit);
+  if(rval || infeasible)
+    cerr << "Problem in LPCore::nondegenerate_pivot, infeasible: "
+	 << infeasible << "\n";
   return rval;
 }
 
@@ -216,7 +228,7 @@ int PSEP_LP_Core::basis_init(){
   int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
   if(rval) goto CLEANUP;
 
-  rval = pivot();
+  rval = single_pivot();
   if(rval) goto CLEANUP;
     
   rval = set_edges();
@@ -296,30 +308,19 @@ int PSEP_LP_Core::update_best_tour(){
 
 int PSEP_LP_Core::pivot_until_change(PivType &pivot_status){
 int rval = 0;
-  int itcount = 0, icount = 0;
+  int icount = 0;
   int rowcount = PSEPlp_numrows(&m_lp), ncount = m_graph.node_count;  
   bool integral = false, conn = false, dual_feas = false;
 
   double round_start = PSEP_zeit();
 
-  bool did_jumpstart = false;
 
   old_rowstat.resize(rowcount);
 
   while(true){
-    if(++itcount == 3 * ncount)
+    if(PSEPlp_itcount(&m_lp) >= 3 * ncount)
       if(prefs.switching_choice == LP::PRICING::SWITCHING::DYNAMIC)
 	change_pricing();
-
-    if(itcount > 3 * ncount){
-      if(!did_jumpstart &&
-	 prefs.switching_choice == LP::PRICING::SWITCHING::OFF)
-	if(prefs.jumpstart){
-	  cout << "Temporarily engaging steepest edge...";
-	  enable_jumpstart();
-	  did_jumpstart = true;
-	}
-    }
 
     if((dual_feas = is_dual_feas()))
       break;
@@ -327,23 +328,8 @@ int rval = 0;
     rval = PSEPlp_getbase(&m_lp, &old_colstat[0], &old_rowstat[0]);
     if(rval) goto CLEANUP;
 
-    rval = CPXsetdblparam(m_lp.cplex_env, CPXPARAM_Simplex_Limits_LowerObj,
-			  m_min_tour_value - 1);
-    if(rval){
-      cerr << "Couldn't set low limit, "; goto CLEANUP;
-    }
-
-    rval = CPXprimopt(m_lp.cplex_env, m_lp.cplex_lp);
-    if(rval) {
-      cerr << "Primopt failed with rval " << rval << "\n";
-      goto CLEANUP;
-    }
-
-    rval = CPXsetdblparam(m_lp.cplex_env, CPXPARAM_Simplex_Limits_LowerObj,
-			  -1E75);
-    if(rval){
-      cerr << "Couldn't revert low limit, "; goto CLEANUP;
-    }
+    rval = nondegenerate_pivot();
+    if(rval) goto CLEANUP;
 
     rval = set_edges();
     if(rval) goto CLEANUP;
@@ -352,12 +338,6 @@ int rval = 0;
       break;    
   }
   
-
-  if(did_jumpstart){
-    cout << "Now reverting to original pricing\n";
-    disable_jumpstart();
-  }
-
   round_start = PSEP_zeit() - round_start;
 
   rval = set_support_graph();
@@ -404,33 +384,5 @@ void PSEP_LP_Core::change_pricing(){
   if(CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient, newprice))
     cerr << "ERROR: PRICING SWITCH DID NOT TAKE PLACE\n";
   prefs.switching_choice = LP::PRICING::SWITCHING::OFF;
-}
-
-void PSEP_LP_Core::enable_jumpstart(){
-  if(CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient,
-		    CPX_PPRIIND_STEEP))
-    cerr << "ERROR: JUMPSTART PRICING DID NOT TAKE PLACE\n";
-}
-
-void PSEP_LP_Core::disable_jumpstart(){
-  int oldprice;
-  switch(prefs.switching_choice){
-  case LP::PRICING::SWITCHING::OFF:
-    oldprice = CPX_PPRIIND_PARTIAL;
-    break;
-  default:
-    switch(prefs.pricing_choice){
-    case LP::PRICING::DEVEX:
-      oldprice = CPX_PPRIIND_DEVEX;
-      break;
-    case LP::PRICING::STEEPEST:
-      oldprice = CPX_PPRIIND_STEEPQSTART;
-      break;
-    }
-  }
-
-  if(CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient,
-		    oldprice))
-    cerr << "ERROR: JUMPSTART UNDO DID NOT TAKE PLACE\n";
 }
 

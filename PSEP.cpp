@@ -43,7 +43,6 @@ static int initial_parse(int ac, char **av, char **fname,
   int pricing_choice = 0;
   int switching_choice = 0;
   int dp_factor = -1;
-  bool jumpstart = false;
   bool redfix = true;
 
   int c;
@@ -66,9 +65,6 @@ static int initial_parse(int ac, char **av, char **fname,
       break;
     case 'd':
       switching_choice = atoi(optarg);
-      break;
-    case 'j':
-      jumpstart = true;
       break;
     case 'p':
       pricing_choice = atoi(optarg);
@@ -114,11 +110,6 @@ static int initial_parse(int ac, char **av, char **fname,
     return 1;
   }
 
-  if(jumpstart){
-    prefs.jumpstart = true;
-    cout << "Slow pivots will be jumpstarted, ";
-  }
-
   if(!redfix){
     prefs.redcost_fixing = false;
     cout << "Edges will not be fixed via reduced cost, ";
@@ -160,7 +151,6 @@ static void usage(char *f){
   fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", f);
   fprintf(stderr, "------ FLAG OPTIONS (no argument)--------------------\n");
   fprintf(stderr, "-T       enable simpleDP/simple tooth testing.\n");
-  fprintf(stderr, "-j       jumpstart slow sequences of pivots with\n");
   fprintf(stderr, "         a temporary switch to steepest edge.\n");
   fprintf(stderr, "-x       turn off reduced cost fixing (on by default).\n");
   fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ---------------\n");

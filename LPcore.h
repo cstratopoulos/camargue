@@ -41,7 +41,8 @@ class PSEP_LP_Core {
   bool is_dual_feas();
   bool is_integral();
 
-  int pivot();
+  int single_pivot();
+  int nondegenerate_pivot();
   int pivot_back();
   int primal_opt();
 
@@ -64,9 +65,6 @@ class PSEP_LP_Core {
   int numcols(){ return PSEPlp_numcols(&m_lp); }
 
   void change_pricing();
-
-  void enable_jumpstart();
-  void disable_jumpstart();
 
  private:
   PSEP::LPPrune &LPPrune;

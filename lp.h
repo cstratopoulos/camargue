@@ -77,7 +77,7 @@ int PSEPlp_relaxbds (PSEPlp *lp, int count, int const *indices,
 		     char const *lower_or_upper, double const * bd);
 
 
-//performs zero simplex iterations
+//performs zero primal simplex pivots but factors the basis
 int PSEPlp_no_opt (PSEPlp *lp);
 
 //finds a solution to lp by calling cplex dual simplex algorithm
@@ -85,14 +85,20 @@ int PSEPlp_no_opt (PSEPlp *lp);
 int PSEPlp_dual_opt (PSEPlp *lp, int *infeasible);
 int PSEPlp_primal_opt (PSEPlp *lp, int *infeasible);
 
-//perform a single primal pivot of the simplex algorithm
+//perform a single primal simplex pivot
 int PSEPlp_primal_pivot (PSEPlp *lp, int *infeasible);
+
+//performs non-degenerate primal simplex pivot
+int PSEPlp_primal_nd_pivot (PSEPlp *lp, int *infeasible, const double lowlimit);
 
 //perform a single dual pivot of the simplex algorithm
 int PSEPlp_dual_pivot (PSEPlp *lp, int *infeasible);
 
 //gets the objective function
 int PSEPlp_getobj (PSEPlp *lp, double *obj, int numcols);
+
+//gets number of simplex iterations
+int PSEPlp_itcount (PSEPlp *lp);
 
 //calls CPXgetobjval to obtain the optimal objective value of lp, with a
 //pointer to obj, where the result is to be stored

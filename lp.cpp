@@ -182,7 +182,7 @@ int PSEPlp_no_opt (PSEPlp *lp){
     goto CLEANUP;
   }
 
-  rval = CPXdualopt (lp->cplex_env, lp->cplex_lp);
+  rval = CPXprimopt (lp->cplex_env, lp->cplex_lp);
   if (rval){
     fprintf(stderr, "CPXdualopt zero iteration failed\n");
     goto CLEANUP;
@@ -303,6 +303,43 @@ int PSEPlp_primal_pivot (PSEPlp *lp, int *infeasible){
   return rval;
 }
 
+int PSEPlp_primal_nd_pivot (PSEPlp *lp, int *infeasible, const double lowlimit){
+  int rval = 0, solstat;
+
+  rval = CPXsetdblparam(lp->cplex_env, CPXPARAM_Simplex_Limits_LowerObj,
+			lowlimit);
+  if(rval){
+    fprintf(stderr, "Couldn't set low limit,"); goto CLEANUP;
+  }
+
+  rval = CPXprimopt(lp->cplex_env, lp->cplex_lp);
+  if(rval){
+    fprintf(stderr, "Couldn't optimize LP,"); goto CLEANUP;
+  }
+
+  solstat = CPXgetstat(lp->cplex_env, lp->cplex_lp);
+  if(solstat == CPX_STAT_INFEASIBLE){
+    if (infeasible)
+      *infeasible = 1;
+  } else if (solstat != CPX_STAT_OPTIMAL &&
+	     solstat != CPX_STAT_OPTIMAL_INFEAS &&
+	     solstat != CPX_STAT_ABORT_OBJ_LIM){
+    fprintf(stderr, "Solution status %d\n", solstat);
+    rval = 1; goto CLEANUP;
+  }
+
+  rval = CPXsetdblparam(lp->cplex_env, CPXPARAM_Simplex_Limits_LowerObj,
+			-1E75);
+  if(rval){
+    fprintf(stderr, "Couldn't revert low limit,"); goto CLEANUP;
+  }
+    
+ CLEANUP:
+  if(rval)
+    fprintf(stderr, " problem in PSEPlp_primal_nd_pivot\n");
+  return rval;
+}
+
 int PSEPlp_dual_pivot (PSEPlp *lp, int *infeasible){
   int rval = 0, solstat;
 
@@ -353,6 +390,10 @@ int PSEPlp_getobj (PSEPlp *lp, double *obj, int numcols){
   if(rval)
     fprintf(stderr, "CPXgetobj failed, rval %d\n", rval);
   return rval;
+}
+
+int PSEPlp_itcount (PSEPlp *lp){
+  return CPXgetitcnt(lp->cplex_env, lp->cplex_lp);
 }
 
 int PSEPlp_objval (PSEPlp *lp, double *obj){
