@@ -220,9 +220,7 @@ int PSEPlp_primal_opt (PSEPlp *lp, int *infeasible){
   solstat = CPXgetstat (lp->cplex_env, lp->cplex_lp);
   if (solstat == CPX_STAT_INFEASIBLE) {
     if (infeasible) *infeasible = 1;
-  }/* else if (solstat == CPX_STAT_ABORT_IT_LIM){
-    printf("Successfully performed one iteration of simplex\n");
-    }*/ else if (solstat != CPX_STAT_OPTIMAL &&
+  } else if (solstat != CPX_STAT_OPTIMAL &&
 	     solstat != CPX_STAT_OPTIMAL_INFEAS) {
     fprintf (stderr, "Cplex opt status %d\n", solstat);
     rval = 1; goto CLEANUP;
