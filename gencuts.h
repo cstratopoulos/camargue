@@ -16,11 +16,11 @@ namespace PSEP{
     gencuts(_gomory, _disj, _mir), best_tour_edges(_best_tour_edges),
       m_lp(_m_lp), m_lp_edges(_m_lp_edges), support_indices(_support_indices){}
 
-    int separate();
-    int separate(const int edge);
+    int separate(const double piv_val);
+    int separate(const int edge, const double piv_val);
 
   private:
-    int init_mip();
+    int init_mip(const double piv_val);
     int revert_lp();
 
     int make_all_binary();
@@ -28,6 +28,8 @@ namespace PSEP{
 
     int check_cuts();
     int num_added(int &frac, int &disj, int &mir);
+
+    int deletion_row;
     
     PSEP::general gencuts;
     std::vector<int> &best_tour_edges;

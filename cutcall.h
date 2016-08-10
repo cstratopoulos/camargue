@@ -29,7 +29,7 @@ namespace PSEP{
 	      BestGroup.best_tour_nodes, BestGroup.perm, LPGroup.m_lp,
 	      LPGroup.m_lp_edges, SupportGroup.G_s, SupportGroup.support_elist,
 	      SupportGroup.support_ecap),
-      general_cuts(true, true, true, BestGroup.best_tour_edges, LPGroup.m_lp,
+      general_cuts(true, true, false, BestGroup.best_tour_edges, LPGroup.m_lp,
 		   LPGroup.m_lp_edges, SupportGroup.support_indices),
       prefs(LPGroup.prefs),
       total_segtime(0), total_2mtime(0), total_dptime(0),
@@ -39,8 +39,8 @@ namespace PSEP{
   public:
     int primal_sep(const int augrounds, const PivType stat);
     int standard_subtour_sep(const PivType stat);
-    int general_sep();
-    int general_sep(const int edge);
+    int general_sep(const double piv_val);
+    int general_sep(const double piv_val, const int edge);
     int special_sep();
     
     void profile(){

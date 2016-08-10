@@ -7,12 +7,12 @@
 using namespace std;
 using namespace PSEP;
 
-int Cut<general>::separate(){
+int Cut<general>::separate(const double piv_val){
   int rval = 0;
   int num_frac, num_mir, num_disj, num_total = 0;
   double objval;
 
-  rval = init_mip();
+  rval = init_mip(piv_val);
   if(rval) goto CLEANUP;
 
   rval = make_all_binary();
@@ -46,14 +46,36 @@ int Cut<general>::separate(){
   return rval;
 }
 
-int Cut<general>::init_mip(){
+int Cut<general>::init_mip(const double piv_val){
   int numrows = PSEPlp_numrows(&m_lp);
   double cutfactor = (numrows + 10.0) / numrows;
-  int rval = PSEPlp_make_mip(&m_lp);
+
+  deletion_row = numrows;
+  int numcols = PSEPlp_numcols(&m_lp);
+  int rmatbeg = 0;
+  char sense = 'G';
+  double rhs = piv_val;
+  
+  int rval = 0;
+
+  vector<int> lp_indices(numcols);
+  vector<double> obj_fun(numcols);
+  for(int i = 0; i < numcols; i++) lp_indices[i] = i;
+
+  rval = PSEPlp_make_mip(&m_lp);
   if(rval) goto CLEANUP;
 
+  rval = PSEPlp_getobj(&m_lp, &obj_fun[0], numcols);
+  if(rval) goto CLEANUP;
+
+  cout << "Making objective function >= " << rhs << "....";
+  rval = PSEPlp_addrows(&m_lp, 1, numcols, &rhs, &sense, &rmatbeg,
+			&lp_indices[0], &obj_fun[0]);
+  if(rval) goto CLEANUP;
+  cout << "Done\n";
+
   if(gencuts.gomory_frac){
-    rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_MIP_Cuts_Gomory, 1);
+    rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_MIP_Cuts_Gomory, 2);
     if(rval){
       cerr << "Couldn't enable Gomory cuts, ";
       goto CLEANUP;
@@ -78,8 +100,10 @@ int Cut<general>::init_mip(){
 
   rval = CPXsetdblparam(m_lp.cplex_env, CPXPARAM_MIP_Limits_CutsFactor,
   			cutfactor);
-  if(rval)
+  if(rval){
     cerr << "Couldn't set cut row factor, ";
+    goto CLEANUP;
+  }
 
  CLEANUP:
   if(rval)
@@ -93,6 +117,11 @@ int Cut<general>::revert_lp(){
     cerr << "Couldn't change back to LP, ";
     goto CLEANUP;
   }
+
+  cout << "Removing objective function bound....";
+  rval = PSEPlp_delrows(&m_lp, deletion_row, deletion_row);
+  if(rval) goto CLEANUP;
+  cout << "Done.\n";
 
   rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_MIP_Cuts_Gomory, -1);
   if(rval){

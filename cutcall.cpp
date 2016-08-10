@@ -57,8 +57,8 @@ int CutControl::primal_sep(const int augrounds, const PivType stat){
   return rval;
 }
 
-int CutControl::general_sep(){
-  int rval = general_cuts.separate();
+int CutControl::general_sep(const double piv_val){
+  int rval = general_cuts.separate(piv_val);
   if(rval == 1)
     cerr << "Problem in CutControl::general_sep\n";
   return rval;

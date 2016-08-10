@@ -33,7 +33,7 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
   routine_start = PSEP_zeit();
   plan.start_timer();
   
-  while(plan.condition(augrounds) /*|| piv_stat == PivType::SUBTOUR*/){
+  while(plan.condition(augrounds)){
     rounds++;
     augrounds++;
 
@@ -57,8 +57,7 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
     total_pivtime += pivtime;
     if(pivtime > max_pivtime) max_pivtime = pivtime;
 
-    if(rounds % 25 == 0)
-      piv_val = LPcore.get_obj_val();
+    piv_val = LPcore.get_obj_val();
 
     if(piv_stat == PivType::FATHOMED_TOUR){
       cout << "\n\n    ROUND " << rounds << " -- ";
@@ -115,17 +114,15 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
     }
 
     if(cut_rval == 2){
-      break;
-      // cout << "\n  Round " << rounds
-      // 	   << ", no primal cuts found, trying to call general sep\n";
-      // print.pivot(piv_stat);
-      // cut_rval = CutControl.general_sep();
-      // if(cut_rval == 1) goto CLEANUP;
-      // if(cut_rval == 2) break;
-
-      // rval = LPcore.rebuild_basis(true);
-      // if (rval) goto CLEANUP;
-      // cut_rval = 0;
+      //      break;
+      cout << "\n  Round " << rounds
+      	   << ", calling general sep,"
+	   << " piv val: " << piv_val << "\n";
+      print.pivot(piv_stat);
+      cut_rval = CutControl.general_sep(piv_val);
+      if(cut_rval == 1) goto CLEANUP;
+      if(cut_rval == 2) break;
+      cut_rval = 0;
     }
   }
 
