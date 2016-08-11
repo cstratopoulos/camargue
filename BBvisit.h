@@ -27,7 +27,7 @@ namespace PSEP {
       PSEP::PureCut &PureCut;
       
       PSEP::LPPrune &LPPrune;
-      PSEP_LP_Core &LPCore;
+      PSEP::LP::Core &LPCore;
 
       PSEP::BB::Constraints &ConstraintMgr;
       PSEP::BB::RightBranch &RightBranch;

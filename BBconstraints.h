@@ -20,7 +20,7 @@ namespace PSEP {
 		Data::LPGroup &LPGroup,
 		Data::SupportGroup &SupportGroup,
 		PSEP::BB::RightBranch &_RB, PSEP::BB::EdgeStatuses &_ES,
-		PSEP::LPPrune &_LPPrune, PSEP_LP_Core &_LPCore):
+		PSEP::LPPrune &_LPPrune, PSEP::LP::Core &_LPCore):
       ncount(GraphGroup.m_graph.node_count), edges(GraphGroup.m_graph.edges),
 	best_tour_edges(BestGroup.best_tour_edges),
 	m_lp_edges(LPGroup.m_lp_edges), m_lp(LPGroup.m_lp),
@@ -72,7 +72,7 @@ namespace PSEP {
       PSEP::BB::EdgeStatuses &EdgeStats;
 
       PSEP::LPPrune &LPPrune;
-      PSEP_LP_Core &LPCore;
+      PSEP::LP::Core &LPCore;
     };
   }
 }

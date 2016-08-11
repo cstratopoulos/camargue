@@ -4,28 +4,28 @@
 #include <iomanip>
 
 using namespace std;
-using namespace PSEP;
+using namespace PSEP::LP;
 
-bool PSEP_LP_Core::is_dual_feas(){
+bool Core::is_dual_feas(){
   return PSEPlp_dualfeas(&m_lp);
 }
 
-inline bool PSEP_LP_Core::is_integral(){
+inline bool Core::is_integral(){
   for(int i = 0; i < m_lp_edges.size(); i++)
-    if((m_lp_edges[i] >= LP::EPSILON) && (m_lp_edges[i] <= (1 - LP::EPSILON)))
+    if((m_lp_edges[i] >= EPSILON) && (m_lp_edges[i] <= (1 - EPSILON)))
       return false;
 
   return true;
 }
 
-int PSEP_LP_Core::factor_basis(){
+int Core::factor_basis(){
   int rval = PSEPlp_no_opt(&m_lp);
   if(rval)
     cerr << "Problem in LPCore::factor_basis\n";
   return rval;
 }
 
-int PSEP_LP_Core::single_pivot(){
+int Core::single_pivot(){
   int infeasible = 0;
   int rval = PSEPlp_primal_pivot(&m_lp, &infeasible);
 
@@ -35,7 +35,7 @@ int PSEP_LP_Core::single_pivot(){
   return rval;
 }
 
-int PSEP_LP_Core::nondegenerate_pivot(){
+int Core::nondegenerate_pivot(){
   int infeasible = 0, rval = 0;
   double lowlimit = m_min_tour_value - 1;
 
@@ -46,7 +46,7 @@ int PSEP_LP_Core::nondegenerate_pivot(){
   return rval;
 }
 
-int PSEP_LP_Core::primal_opt(){
+int Core::primal_opt(){
   int infeasible = 0;
   double start = PSEP_zeit();
   int rval = PSEPlp_primal_opt(&m_lp, &infeasible);
@@ -63,7 +63,7 @@ int PSEP_LP_Core::primal_opt(){
 }
 
 
-int PSEP_LP_Core::pivot_back(){
+int Core::pivot_back(){
   int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
 
   if(rval)
@@ -71,13 +71,13 @@ int PSEP_LP_Core::pivot_back(){
   return rval;
 }
 
-double PSEP_LP_Core::get_obj_val(){
+double Core::get_obj_val(){
   double objval;
   PSEPlp_objval(&m_lp, &objval);
   return objval;
 }
 
-double PSEP_LP_Core::set_edges(){
+double Core::set_edges(){
   int rval = 0;
 
   if (m_lp_edges.size() != m_graph.edge_count)
@@ -90,7 +90,7 @@ double PSEP_LP_Core::set_edges(){
   return rval;
 }
 
-int PSEP_LP_Core::rebuild_basis(bool prune){
+int Core::rebuild_basis(bool prune){
   int rval = 0, infeas = 0;
   int ecount = m_lp_edges.size();
   int ncount = best_tour_nodes.size();
@@ -145,7 +145,7 @@ int PSEP_LP_Core::rebuild_basis(bool prune){
   return rval;
 }
 
-int PSEP_LP_Core::rebuild_basis(int &numremoved, IntPair skiprange,
+int Core::rebuild_basis(int &numremoved, IntPair skiprange,
 				std::vector<int> &delset){
   int rval = 0, infeas = 0;
   int ecount = m_lp_edges.size();
@@ -200,7 +200,7 @@ int PSEP_LP_Core::rebuild_basis(int &numremoved, IntPair skiprange,
   return rval;
 }
 
-int PSEP_LP_Core::basis_init(){
+int Core::basis_init(){
   old_colstat.resize(m_graph.edge_count);
   for(int i = 0; i < old_colstat.size(); i++)
     old_colstat[i] = CPX_AT_LOWER;
@@ -247,7 +247,7 @@ int PSEP_LP_Core::basis_init(){
   return rval;
 }
 
-double PSEP_LP_Core::set_support_graph(){
+double Core::set_support_graph(){
   int rval = 0;
   
   support_indices.clear();
@@ -255,7 +255,7 @@ double PSEP_LP_Core::set_support_graph(){
   support_ecap.clear();
 
   for(int i = 0; i < m_graph.edge_count; i++){
-    if(m_lp_edges[i] >= LP::EPSILON){
+    if(m_lp_edges[i] >= EPSILON){
       support_indices.push_back(i);
       support_ecap.push_back(m_lp_edges[i]);
       support_elist.push_back(m_graph.edges[i].end[0]);
@@ -272,12 +272,12 @@ double PSEP_LP_Core::set_support_graph(){
   return rval;
 }
 
-bool PSEP_LP_Core::test_new_tour(){
+bool Core::test_new_tour(){
   double objval = 0;
   bool result = false;
 
   for(int i = 0; i < m_graph.edge_count; i++)
-    if(m_lp_edges[i] >= LP::EPSILON)
+    if(m_lp_edges[i] >= EPSILON)
       objval += m_graph.edges[i].len;
 
   result = objval < m_min_tour_value && is_integral();
@@ -286,14 +286,14 @@ bool PSEP_LP_Core::test_new_tour(){
   return result;
 }
 
-int PSEP_LP_Core::update_best_tour(){
+int Core::update_best_tour(){
   double objval = 0;
   
   for(int i = 0; i < m_graph.node_count; i++)
     best_tour_nodes[i] = island[i];
 
   for(int i = 0; i < m_graph.edge_count; i++)
-    if(m_lp_edges[i] < LP::EPSILON)
+    if(m_lp_edges[i] < EPSILON)
       best_tour_edges[i] = 0;
     else {
       best_tour_edges[i] = 1;
@@ -313,7 +313,7 @@ int PSEP_LP_Core::update_best_tour(){
   return 0;
 };
 
-int PSEP_LP_Core::pivot_until_change(LP::PivType &pivot_status){
+int Core::pivot_until_change(PivType &pivot_status){
   int rval = 0;
   int icount = 0;
   int rowcount = PSEPlp_numrows(&m_lp);
@@ -337,7 +337,7 @@ int PSEP_LP_Core::pivot_until_change(LP::PivType &pivot_status){
     rval = set_edges();
     if(rval) goto CLEANUP;
 
-    if(fabs(get_obj_val() - m_min_tour_value) >= LP::EPSILON)
+    if(fabs(get_obj_val() - m_min_tour_value) >= EPSILON)
       break;    
   }
   
@@ -351,13 +351,13 @@ int PSEP_LP_Core::pivot_until_change(LP::PivType &pivot_status){
     conn = G_Utils::connected(&G_s, &icount, island, 0);
     if(integral && conn){
       if(dual_feas)
-	pivot_status = LP::PivType::FathomedTour;
+	pivot_status = PivType::FathomedTour;
       else
-	pivot_status = LP::PivType::Tour;
+	pivot_status = PivType::Tour;
     } else
-      pivot_status = LP::PivType::Subtour;
+      pivot_status = PivType::Subtour;
   } else
-      pivot_status = LP::PivType::Frac;
+      pivot_status = PivType::Frac;
 
  CLEANUP:
     if(rval)
@@ -365,17 +365,17 @@ int PSEP_LP_Core::pivot_until_change(LP::PivType &pivot_status){
     return rval;
 }
 
-void PSEP_LP_Core::change_pricing(){
+void Core::change_pricing(){
   int newprice;
 
   switch(prefs.price_method){
-  case LP::Pricing::Devex:
+  case Pricing::Devex:
     newprice = CPX_PPRIIND_DEVEX;
     break;
-  case LP::Pricing::SlackSteepest:
+  case Pricing::SlackSteepest:
     newprice = CPX_PPRIIND_STEEPQSTART;
     break;
-  case LP::Pricing::Steepest:
+  case Pricing::Steepest:
     newprice = CPX_PPRIIND_STEEP;
     break;
   }

@@ -41,7 +41,7 @@ namespace PSEP {
     
     PSEP::CutControl CutControl;
     PSEP::LPPrune LPPrune;
-    PSEP_LP_Core LPCore;
+    PSEP::LP::Core LPCore;
     PSEP_LPfix LPfix;
   };
 }
