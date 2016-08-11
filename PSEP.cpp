@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
   CCdatagroup *dat = new CCdatagroup;
   char *fname;
 
-  cout << "BRANCH VERSION: NEW PIVOT\n";
+  cout << "BRANCH VERSION: MASTER\n";
 
   if(initial_parse(argc, argv, &fname, prefs)){
     cerr << "Problem parsing arguments" << endl;
