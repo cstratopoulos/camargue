@@ -12,12 +12,12 @@
 
 using namespace std;
 
-static int tooth = 0;
-static int initial_parse(int ac, char **av,char **fname, PSEP_LP_Prefs &prefs);
+static int initial_parse(int ac, char **av,char **fname,
+			 PSEP::LP::Prefs &prefs);
 static void usage(char *f);
 
 int main(int argc, char* argv[]){
-  PSEP_LP_Prefs prefs;
+  PSEP::LP::Prefs prefs;
   CCdatagroup *dat = new CCdatagroup;
   char *fname;
 
@@ -37,13 +37,10 @@ int main(int argc, char* argv[]){
 }
 
 static int initial_parse(int ac, char **av, char **fname,
-			 PSEP_LP_Prefs & prefs){
+			 PSEP::LP::Prefs &prefs){
   *fname = (char *) NULL;
-  int seed = 0;
   int pricing_choice = 0;
-  int switching_choice = 0;
   int dp_factor = -1;
-  bool redfix = true;
 
   int c;
 
@@ -52,25 +49,13 @@ static int initial_parse(int ac, char **av, char **fname,
     return 1;
   }
 
-  while((c = getopt(ac, av, "ThxaD:d:jp:s:")) != EOF) {
+  while((c = getopt(ac, av, "aD:p:")) != EOF) {
     switch(c) {
-    case 'T':
-      tooth = 1;
-      break;
-    case 'x':
-      redfix = false;
-      break;
     case 'D':
       dp_factor = atoi(optarg);
       break;
-    case 'd':
-      switching_choice = atoi(optarg);
-      break;
     case 'p':
       pricing_choice = atoi(optarg);
-      break;
-    case 's':
-      seed = atoi(optarg);
       break;
     case '?':
     default:
@@ -91,45 +76,18 @@ static int initial_parse(int ac, char **av, char **fname,
     return 1;
   }
 
-  switch(switching_choice){
-  case 0:
-    prefs.switching_choice = LP::PRICING::SWITCHING::OFF;
-    cout << "No primal pricing switching\n";
-    break;
-  case 1:
-    prefs.switching_choice = LP::PRICING::SWITCHING::DYNAMIC;
-    cout << "Dynamic switching, ";
-    break;
-  case 2:
-    prefs.switching_choice = LP::PRICING::SWITCHING::START;
-    cout << "Switch from the start, ";
-    break;
-  default:
-    cout << "Switching method " << switching_choice << " out of range\n";
-    usage(av[0]);
-    return 1;
-  }
-
-  if(!redfix){
-    prefs.redcost_fixing = false;
-    cout << "Edges will not be fixed via reduced cost, ";
-  }
-
   switch(pricing_choice){
   case 0:
-    prefs.pricing_choice = LP::PRICING::DEVEX;
-    if(switching_choice)
-      cout << "Devex pricing\n";
+    prefs.price_method = PSEP::LP::Pricing::Devex;
+    cout << "Devex pricing\n";
     break;
   case 1:
-    prefs.pricing_choice = LP::PRICING::STEEPEST;
-    if(switching_choice)
-      cout << "Steepest edge w slack initial norms\n";
+    prefs.price_method = PSEP::LP::Pricing::SlackSteepest;
+    cout << "Steepest edge w slack initial norms\n";
     break;
   case 2:
-    prefs.pricing_choice = LP::PRICING::STEEPEST_REAL;
-    if(switching_choice)
-      cout << "True steepest edge\n";
+    prefs.price_method = PSEP::LP::Pricing::Steepest;
+    cout << "True steepest edge\n";
     break;
   default:
     cout << "Pricing method " << pricing_choice << " out of range\n";
@@ -141,29 +99,17 @@ static int initial_parse(int ac, char **av, char **fname,
   if(dp_factor >= 0)
     cout << "DP separation will be tried after "
 	 << prefs.dp_threshold << " non-degenerate pivots w no augmentation\n";
-  
-  UTIL::seed = seed;
 
   return 0;
 }
 
 static void usage(char *f){
   fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", f);
-  fprintf(stderr, "------ FLAG OPTIONS (no argument)--------------------\n");
-  fprintf(stderr, "-T       enable simpleDP/simple tooth testing.\n");
-  fprintf(stderr, "         a temporary switch to steepest edge.\n");
-  fprintf(stderr, "-x       turn off reduced cost fixing (on by default).\n");
   fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ---------------\n");
   fprintf(stderr, "-D    only call simpleDP sep after 5x rounds of cuts \n");
   fprintf(stderr, "      with no augmentation. (disabled by default)\n");
-  fprintf(stderr, "-d    set dynamic switch of pricing protocol:\n");
-  fprintf(stderr, "    0 (default) stay on reduced cost pricing\n");
-  fprintf(stderr, "    1 switch after 3*ncount iterations needed\n");
-  fprintf(stderr, "      for a non-degenerate pivot\n");
-  fprintf(stderr, "    2 switch immediately\n");
   fprintf(stderr, "-p     set primal pricing protocol to:\n");
   fprintf(stderr, "    0 (default) devex\n");
   fprintf(stderr, "    1 steepest edge with slack initial norms\n");
   fprintf(stderr, "    2 true steepest edge.\n");
-  fprintf(stderr, "-s    set LK random seed to x.\n");
 }

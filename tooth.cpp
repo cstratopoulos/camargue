@@ -4,6 +4,7 @@
 #include "PSEP_util.h"
 
 using namespace std;
+using namespace PSEP;
 
 int PSEP_CandTooth::SimpleTooth::ncount;
 SupportGraph * PSEP_CandTooth::SimpleTooth::G_s;

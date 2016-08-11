@@ -113,19 +113,19 @@ struct CC {
 	}
       }
 
-      if(*min_val_p >= LP::EPSILON)
+      if(*min_val_p >= PSEP::LP::EPSILON)
 	for(n = n->child; n; n = n->sibling)
 	  odd_cut_dfs(n, min_val_p, best_n);
     }
 
     static void get_odd_cut(CC_GHtree *T, std::vector<int> &cut_nlist){
-      double min_val = 1 - LP::EPSILON;
+      double min_val = 1 - PSEP::LP::EPSILON;
       CC_GHnode *best_node = (CC_GHnode *) NULL;
 
       if(T && T->root)
 	odd_cut_dfs(T->root, &min_val, &best_node);
 
-      if((min_val < 1 - LP::EPSILON) && best_node)
+      if((min_val < 1 - PSEP::LP::EPSILON) && best_node)
 	grab_cut_dfs(best_node, cut_nlist);
     }
   };

@@ -33,25 +33,25 @@ class PSEP_Printer {
   
   void lp_edges(){
     for(int i = 0; i < m_lp_edges.size(); i++)
-      if(m_lp_edges[i] > LP::EPSILON){
+      if(m_lp_edges[i] > PSEP::LP::EPSILON){
 	print_edge(i);
 	std::cout << " LP val: " << m_lp_edges[i] << std::endl;
       }
   };
 
-  void pivot(const PSEP::PivType piv_stat){
+  void pivot(const PSEP::LP::PivType piv_stat){
     std::cout << "Pivot status: ";
     switch(piv_stat){
-    case(PSEP::PivType::FRAC):
+    case(PSEP::LP::PivType::Frac):
       std::cout << "Fractional\n";
       break;
-    case(PSEP::PivType::SUBTOUR):
+    case(PSEP::LP::PivType::Subtour):
       std::cout << "Integral subtour\n";
       break;
-    case(PSEP::PivType::TOUR):
+    case(PSEP::LP::PivType::Tour):
       std::cout << "New tour\n";
       break;
-    case(PSEP::PivType::FATHOMED_TOUR):
+    case(PSEP::LP::PivType::FathomedTour):
       std::cout << "Tour fathomed optimal\n";
       break;
     }

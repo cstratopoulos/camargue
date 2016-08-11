@@ -6,6 +6,7 @@
 #include "pivplan.h"
 
 using namespace std;
+using namespace PSEP;
 using namespace PSEP::BB;
 
 int Visitor::previsit(unique_ptr<TreeNode> &v){
@@ -15,7 +16,7 @@ int Visitor::previsit(unique_ptr<TreeNode> &v){
   }
   
   int rval = 0;
-  PivType piv_status;
+  LP::PivType piv_status;
   PivotPlan plan(ConstraintMgr.ncount, PivPresets::BRANCH);
 
   rval = ConstraintMgr.enforce(v);
@@ -29,7 +30,7 @@ int Visitor::previsit(unique_ptr<TreeNode> &v){
   while(true){
     rval = PureCut.solve(plan, piv_status);
 
-    if(piv_status == PivType::TOUR){
+    if(piv_status == LP::PivType::Tour){
       rval = handle_augmentation();
       if(rval) goto CLEANUP;
       continue;
@@ -39,7 +40,7 @@ int Visitor::previsit(unique_ptr<TreeNode> &v){
   }
 
   switch(piv_status){
-  case PivType::FATHOMED_TOUR:
+  case LP::PivType::FathomedTour:
     v->node_stat = NodeStat::FATHOMED;
     break;
   // case PivType::SUBTOUR:

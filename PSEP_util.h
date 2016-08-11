@@ -4,47 +4,32 @@
 #include<utility>
 #include<unordered_map>
 
-namespace LP {
-  constexpr double EPSILON = 0.000001;
-  constexpr long long DEFAULT_ITLIM = 9223372036800000000;
+namespace PSEP {
+  enum class SolutionProtocol {
+    PURECUT, ABC
+      };
+  
+  namespace LP {
+    constexpr double EPSILON = 0.000001;
+    constexpr long long DEFAULT_ITLIM = 9223372036800000000;
 
-  namespace PRICING {
-    constexpr int DEVEX = 0;
-    constexpr int STEEPEST = 1;
-    constexpr int STEEPEST_REAL = 2;
-
-    namespace SWITCHING{
-      constexpr int OFF = 0;
-      constexpr int DYNAMIC = 1;
-      constexpr int START = 2;
-    }
-  }
-}
-
-struct PSEP_LP_Prefs {
-PSEP_LP_Prefs() : pricing_choice(0), switching_choice(0),
-    dp_threshold(15), redcost_fixing(true){}
-PSEP_LP_Prefs(int _price, int _switch, int _dp,
-	      bool _redfix, int _max) : pricing_choice(_price),
-    switching_choice(_switch), dp_threshold(_dp), redcost_fixing(_redfix){}
-  int pricing_choice;
-  int switching_choice;
-  int dp_threshold;
-  bool redcost_fixing;
-};
-
-namespace UTIL {
-  static int seed = 0;
-}
-
-namespace PSEP{
-  enum class PivType {
-  FRAC, SUBTOUR, TOUR, FATHOMED_TOUR
+    enum class Pricing {
+      Devex, SlackSteepest, Steepest
     };
 
- enum class SolutionProtocol {
-   PURECUT, ABC
-     };
+    enum class PivType {
+      Frac, Subtour, Tour, FathomedTour
+    };
+
+    struct Prefs {
+    Prefs() : price_method(Pricing::Devex), dp_threshold(-1) {}
+    Prefs(Pricing _price, int _dp_threshold) :
+      price_method(_price), dp_threshold(_dp_threshold) {}
+      
+      Pricing price_method;
+      int dp_threshold;
+    };
+  }
 }
 
 //hash function taken from boost hash_combine

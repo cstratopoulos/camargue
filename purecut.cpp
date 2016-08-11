@@ -5,7 +5,7 @@
 using namespace std;
 using namespace PSEP;
 
-int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
+int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
   int rval = 0, cut_rval;
 
   double piv_val;
@@ -59,7 +59,7 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
 
     piv_val = LPcore.get_obj_val();
 
-    if(piv_stat == PivType::FATHOMED_TOUR){
+    if(piv_stat == LP::PivType::FathomedTour){
       cout << "\n\n    ROUND " << rounds << " -- ";
       print.pivot(piv_stat);
       cout << "                Pivot objval: "
@@ -67,7 +67,7 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
       break;
     }
 
-    if(piv_stat == PivType::TOUR){
+    if(piv_stat == LP::PivType::Tour){
       if(!LPcore.test_new_tour() || plan.is_branch())
 	continue;
       
@@ -126,10 +126,10 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
     }
   }
 
-  if(plan.is_branch() && piv_stat == PivType::TOUR){
+  if(plan.is_branch() && piv_stat == LP::PivType::Tour){
     cout << "   Terminated due to augmented tour in branch solve ("
 	 << rounds << " rounds)\n";
-  } else if(piv_stat != PivType::FATHOMED_TOUR){
+  } else if(piv_stat != LP::PivType::FathomedTour){
     cout << "\n Terminated in " << rounds << " rounds due to: ";
     if(!plan.condition(augrounds)){
       plan.profile(augrounds);
@@ -158,7 +158,7 @@ int PureCut::solve(PivotPlan &plan, PivType &piv_stat){
     cout <<"         LPfix::redcost_fixing: "
 	 << fixing_start << "s\n";
 
-  if(piv_stat != PivType::FATHOMED_TOUR && plan.perform_elim()){
+  if(piv_stat != LP::PivType::FathomedTour && plan.perform_elim()){
     LPfix.redcost_fixing();
     LPcore.set_support_graph();
   }

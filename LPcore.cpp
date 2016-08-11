@@ -306,10 +306,10 @@ int PSEP_LP_Core::update_best_tour(){
   return 0;
 };
 
-int PSEP_LP_Core::pivot_until_change(PivType &pivot_status){
-int rval = 0;
+int PSEP_LP_Core::pivot_until_change(LP::PivType &pivot_status){
+  int rval = 0;
   int icount = 0;
-  int rowcount = PSEPlp_numrows(&m_lp), ncount = m_graph.node_count;  
+  int rowcount = PSEPlp_numrows(&m_lp);
   bool integral = false, conn = false, dual_feas = false;
 
   double round_start = PSEP_zeit();
@@ -318,10 +318,6 @@ int rval = 0;
   old_rowstat.resize(rowcount);
 
   while(true){
-    if(PSEPlp_itcount(&m_lp) >= 3 * ncount)
-      if(prefs.switching_choice == LP::PRICING::SWITCHING::DYNAMIC)
-	change_pricing();
-
     if((dual_feas = is_dual_feas()))
       break;
 
@@ -348,13 +344,13 @@ int rval = 0;
     conn = G_Utils::connected(&G_s, &icount, island, 0);
     if(integral && conn){
       if(dual_feas)
-	pivot_status = PivType::FATHOMED_TOUR;
+	pivot_status = LP::PivType::FathomedTour;
       else
-	pivot_status = PivType::TOUR;
+	pivot_status = LP::PivType::Tour;
     } else
-      pivot_status = PivType::SUBTOUR;
+      pivot_status = LP::PivType::Subtour;
   } else
-      pivot_status = PivType::FRAC;
+      pivot_status = LP::PivType::Frac;
 
  CLEANUP:
     if(rval)
@@ -366,16 +362,16 @@ void PSEP_LP_Core::change_pricing(){
   int newprice;
 
   cout << "//////SWITCHED PRICING TO ";
-  switch(prefs.pricing_choice){
-  case LP::PRICING::DEVEX:
+  switch(prefs.price_method){
+  case LP::Pricing::Devex:
     newprice = CPX_PPRIIND_DEVEX;
     cout << "DEVEX/////\n";
     break;
-  case LP::PRICING::STEEPEST:
+  case LP::Pricing::SlackSteepest:
     newprice = CPX_PPRIIND_STEEPQSTART;
     cout << "STEEPEST EDGE W SLACK INITIAL NORMS\n";
     break;
-  case LP::PRICING::STEEPEST_REAL:
+  case LP::Pricing::Steepest:
     newprice = CPX_PPRIIND_STEEP;
     cout << "GENUINE STEEPEST EDGE////\n";
     break;
@@ -383,6 +379,5 @@ void PSEP_LP_Core::change_pricing(){
 
   if(CPXsetintparam(m_lp.cplex_env, CPXPARAM_Simplex_PGradient, newprice))
     cerr << "ERROR: PRICING SWITCH DID NOT TAKE PLACE\n";
-  prefs.switching_choice = LP::PRICING::SWITCHING::OFF;
 }
 

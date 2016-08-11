@@ -50,10 +50,7 @@ PSEP_BestGroup::PSEP_BestGroup(const Graph &m_graph, CCdatagroup *dat){
   int kicks = 5 * ncount;
   int istour;
   int seed;
-  if(UTIL::seed)
-    seed = UTIL::seed;
-  else
-    seed = (int) PSEP_real_zeit();
+  seed = (int) PSEP_real_zeit();
   
   cout << "LK seed: " << seed << ", " << trials << " trials\n";
 
@@ -166,7 +163,7 @@ PSEP_BestGroup::PSEP_BestGroup(const Graph &m_graph, CCdatagroup *dat){
     exit(1);
 }
 
-PSEP_LPGroup::PSEP_LPGroup(const Graph &m_graph, PSEP_LP_Prefs &_prefs,
+PSEP_LPGroup::PSEP_LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
 			   const vector<int> &perm){
   //Build the basic LP
   PSEPlp_init (&m_lp);

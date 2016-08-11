@@ -5,7 +5,7 @@
 
 using namespace std;
 
-TSP_Solver::TSP_Solver(char *fname, PSEP_LP_Prefs _prefs,
+TSP_Solver::TSP_Solver(char *fname, PSEP::LP::Prefs _prefs,
 		       CCdatagroup *dat) :
   GraphGroup(fname, dat),
   BestGroup(GraphGroup.m_graph, dat),
@@ -16,7 +16,7 @@ TSP_Solver::TSP_Solver(char *fname, PSEP_LP_Prefs _prefs,
 }
 
 int TSP_Solver::call(PSEP::SolutionProtocol solmeth){
-   PSEP::PivType piv_status;
+  PSEP::LP::PivType piv_status;
   
   if(solmeth == PSEP::SolutionProtocol::PURECUT){
     PSEP::PivotPlan plan;
@@ -35,8 +35,8 @@ int TSP_Solver::call(PSEP::SolutionProtocol solmeth){
       return 1;
     }
 
-    if(piv_status == PSEP::PivType::FATHOMED_TOUR) return 0;
-    if(piv_status == PSEP::PivType::SUBTOUR){
+    if(piv_status == PSEP::LP::PivType::FathomedTour) return 0;
+    if(piv_status == PSEP::LP::PivType::Subtour){
       cerr << "Terminated with inseparable subtour inequality\n";
       return 1;
     }

@@ -92,5 +92,5 @@ CLEANUP:
 }
 
 bool is_almost_integral(double x) {
-  return x < LP::EPSILON || (1.0 - x) < LP::EPSILON;
+  return x < PSEP::LP::EPSILON || (1.0 - x) < PSEP::LP::EPSILON;
 }

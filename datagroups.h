@@ -28,14 +28,14 @@ struct PSEP_BestGroup {
 };
 
 struct PSEP_LPGroup {
-  PSEP_LPGroup(const Graph &m_graph, PSEP_LP_Prefs &_prefs,
+  PSEP_LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
 	       const std::vector<int> &perm);
   ~PSEP_LPGroup(){PSEPlp_free(&m_lp);}
   PSEPlp m_lp;  
   std::vector<double> m_lp_edges;
   std::vector<int> old_colstat;
   std::vector<int> old_rowstat;
-  PSEP_LP_Prefs prefs;
+  PSEP::LP::Prefs prefs;
 };
 
 struct PSEP_SupportGroup {

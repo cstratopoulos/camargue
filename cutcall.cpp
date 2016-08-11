@@ -3,7 +3,7 @@
 using namespace std;
 using namespace PSEP;
 
-int CutControl::primal_sep(const int augrounds, const PivType stat){
+int CutControl::primal_sep(const int augrounds, const LP::PivType stat){
   int rval = 0;
   
   int segval = 2, matchval = 2, dpval = 2;
@@ -30,7 +30,7 @@ int CutControl::primal_sep(const int augrounds, const PivType stat){
   total_2mcalls++;
 
   if(prefs.dp_threshold >= 0 && augrounds >= prefs.dp_threshold){
-    if(segval == 2 && matchval == 2 && stat != PivType::SUBTOUR){
+    if(segval == 2 && matchval == 2 && stat != LP::PivType::Subtour){
       dptime = PSEP_zeit();
       dpval = dominos.cutcall();
       if(dpval == 1){

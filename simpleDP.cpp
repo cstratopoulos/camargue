@@ -175,10 +175,7 @@ int PSEP_SimpleDP::call_CC_gomoryhu(){
   CCrandstate rstate;
   CC_GHtree T;
   int seed;
-  if(UTIL::seed)
-    seed = UTIL::seed;
-  else
-    seed = (int) PSEP_real_zeit();
+  seed = (int) PSEP_real_zeit();
   CCutil_sprand(seed, &rstate);
   CCcut_GHtreeinit(&T);
 

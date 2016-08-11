@@ -32,10 +32,7 @@ class PSEP_LP_Core {
     island(GraphGroup.island), delta(GraphGroup.delta),
     edge_marks(GraphGroup.edge_marks){
     basis_init();
-    if(prefs.switching_choice == LP::PRICING::SWITCHING::START){
-      std::cout << "Immediate: ";
-      change_pricing();
-    }
+    change_pricing();
   }
     
   bool is_dual_feas();
@@ -51,7 +48,7 @@ class PSEP_LP_Core {
 		    std::vector<int> &delset);
   int basis_init();
   
-  int pivot_until_change(PSEP::PivType &pivot_status);
+  int pivot_until_change(PSEP::LP::PivType &pivot_status);
 
 
   double get_obj_val();
@@ -71,7 +68,7 @@ class PSEP_LP_Core {
   PSEPlp &m_lp;
   Graph &m_graph;
 
-  PSEP_LP_Prefs prefs;
+  PSEP::LP::Prefs prefs;
 
   friend class TSP_Solver;
   friend class PSEP::PureCut;

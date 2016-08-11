@@ -37,8 +37,8 @@ namespace PSEP{
 
     
   public:
-    int primal_sep(const int augrounds, const PivType stat);
-    int standard_subtour_sep(const PivType stat);
+    int primal_sep(const int augrounds, const LP::PivType stat);
+    int standard_subtour_sep(const LP::PivType stat);
     int general_sep(const double piv_val);
     int general_sep(const double piv_val, const int edge);
     int special_sep();
@@ -60,7 +60,7 @@ namespace PSEP{
 
     PSEP::Cut<PSEP::general> general_cuts;
 
-    PSEP_LP_Prefs &prefs;
+    PSEP::LP::Prefs &prefs;
 
     double total_segtime, total_2mtime, total_dptime;
     int total_segcalls, total_2mcalls;
