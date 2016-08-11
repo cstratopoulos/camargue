@@ -1,10 +1,10 @@
+gr120 (new approach)
 lin105
 rd100
-berlin52 
-brazil58 (max cuts 2 per round)
 eil76 
-gr24 
-eil51, mc 2
+st70 (new approach, -D 3)
+brazil58
+berlin52
+eil51
 swiss42
-st70 (several tries)
-gr120 (new approach)
+gr24 
