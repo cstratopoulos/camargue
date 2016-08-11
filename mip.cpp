@@ -95,8 +95,6 @@ int PSEPmip_param (PSEPlp *lp){
  CLEANUP:
   if(rval)
     fprintf(stderr, " failed in PSEPlp_mip_param, rval %d\n", rval);
-  else
-    printf("Set MIP params???\n");
 
   return rval;
 }
