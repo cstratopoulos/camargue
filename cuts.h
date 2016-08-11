@@ -36,11 +36,11 @@ namespace PSEP {
   struct domino {
     domino(){}
     domino(std::vector<int> &_handle,
-	   std::vector<std::shared_ptr<PSEP_CandTooth::SimpleTooth> > _teeth) :
+	   std::vector<std::shared_ptr<CandTooth::SimpleTooth>> _teeth) :
     handle(_handle), used_teeth(_teeth) {}
 
     std::vector<int> handle;
-    std::vector<std::shared_ptr<PSEP_CandTooth::SimpleTooth> > used_teeth;
+    std::vector<std::shared_ptr<CandTooth::SimpleTooth>> used_teeth;
   };
 
   struct general {

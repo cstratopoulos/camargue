@@ -30,7 +30,7 @@ namespace PSEP{
     PSEPlp &m_lp;
     std::vector<double> &m_lp_edges;
 
-    PSEP_SimpleDP SimpleDP;
+    PSEP::SimpleDP SimpleDP;
 
     double rhs;
     std::vector<double> agg_coeffs;

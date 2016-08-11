@@ -1,7 +1,9 @@
 #include "simpleDP.h"
-using namespace std;
 
-int PSEP_SimpleDP::separate(){
+using namespace std;
+using namespace PSEP;
+
+int SimpleDP::separate(){
   int rval = 0;
   bool in_subtour = false;
 
@@ -24,12 +26,12 @@ int PSEP_SimpleDP::separate(){
   return rval;
 }
 
-void PSEP_SimpleDP::build_light_cuttree(){
+void SimpleDP::build_light_cuttree(){
   int num_cutnodes = 0;
   int current_index, star_index;
   bool found_parent = false;
-  list<shared_ptr<PSEP_CandTooth::SimpleTooth> >::iterator parent;
-  list<shared_ptr<PSEP_CandTooth::SimpleTooth> >::iterator child;
+  list<shared_ptr<CandTooth::SimpleTooth> >::iterator parent;
+  list<shared_ptr<CandTooth::SimpleTooth> >::iterator child;
 
   cut_elist.clear();
   cut_ecap.clear();
@@ -39,13 +41,13 @@ void PSEP_SimpleDP::build_light_cuttree(){
 
   //NULL shared ptrs for the degree eqn on each root
   for(int i = 0; i < candidates.light_teeth.size(); i++)
-    light_nodes.emplace_back((PSEP_CandTooth::SimpleTooth *) NULL);
+    light_nodes.emplace_back((CandTooth::SimpleTooth *) NULL);
 
   current_index = light_nodes.size();
 
   //number a light node for each tooth ineq, add to vector
   for(int i = 0; i < candidates.light_teeth.size(); i++){
-    for(list<shared_ptr<PSEP_CandTooth::SimpleTooth> >::iterator
+    for(list<shared_ptr<CandTooth::SimpleTooth> >::iterator
 	  it = candidates.light_teeth[i].begin();
 	it != candidates.light_teeth[i].end(); it++){
       light_nodes.push_back(*it);
@@ -54,7 +56,7 @@ void PSEP_SimpleDP::build_light_cuttree(){
     }
   }
 
-  light_nodes.emplace_back((PSEP_CandTooth::SimpleTooth *) NULL);
+  light_nodes.emplace_back((CandTooth::SimpleTooth *) NULL);
   num_cutnodes = light_nodes.size();
   star_index = num_cutnodes - 1; // the special central node
 
@@ -88,7 +90,7 @@ void PSEP_SimpleDP::build_light_cuttree(){
 	parent --;
 
 	found_parent =
-	  PSEP_CandTooth::SimpleTooth::C_body_subset(**child, **parent);
+	  CandTooth::SimpleTooth::C_body_subset(**child, **parent);
 
 	if(found_parent){//edge between smallest parent
 	  cut_elist.push_back((*child)->node_index);
@@ -121,7 +123,7 @@ void PSEP_SimpleDP::build_light_cuttree(){
       cut_marks.push_back(i);
 }
 
-void PSEP_SimpleDP::add_web_edges(){
+void SimpleDP::add_web_edges(){
   double lp_weight;
   bool end1_in = false, end0_in = false;
 
@@ -133,7 +135,7 @@ void PSEP_SimpleDP::add_web_edges(){
       lp_weight = G_s.nodelist[end0].adj_objs[j].lp_weight;
       //search for smallest body with root end0 containing end1
       if(!candidates.light_teeth[end0].empty()){
-	for(list<shared_ptr<PSEP_CandTooth::SimpleTooth> >::reverse_iterator
+	for(list<shared_ptr<CandTooth::SimpleTooth> >::reverse_iterator
 	      root_end0 = candidates.light_teeth[end0].rbegin();
 	    root_end0 != candidates.light_teeth[end0].rend(); root_end0++){
 	  end1_in = (*root_end0)->body_contains(perm[end1]);
@@ -148,7 +150,7 @@ void PSEP_SimpleDP::add_web_edges(){
 
       //search for smallest body with root end1 containing end0
       if(!candidates.light_teeth[end1].empty()){
-	for(list<shared_ptr<PSEP_CandTooth::SimpleTooth> >::reverse_iterator
+	for(list<shared_ptr<CandTooth::SimpleTooth> >::reverse_iterator
 	      root_end1 = candidates.light_teeth[end1].rbegin();
 	    root_end1 != candidates.light_teeth[end1].rend(); root_end1++){
 	  end0_in = (*root_end1)->body_contains(perm[end0]);
@@ -166,7 +168,7 @@ void PSEP_SimpleDP::add_web_edges(){
   }
 }
 
-int PSEP_SimpleDP::call_CC_gomoryhu(){
+int SimpleDP::call_CC_gomoryhu(){
   int rval = 0;
   int ncount = light_nodes.size();
   int ecount = cut_ecap.size();
@@ -207,20 +209,20 @@ int PSEP_SimpleDP::call_CC_gomoryhu(){
   return rval;
 }
 
-void PSEP_SimpleDP::parse_domino(const int deltacount,
+void SimpleDP::parse_domino(const int deltacount,
 				 const vector<int> &dom_delta,
 				 vector<double> &rmatval, double *rhs_p){
   *rhs_p = 0.0;
   vector<int> handle_nodes;
-  vector<shared_ptr<PSEP_CandTooth::SimpleTooth> > used_teeth;
+  vector<shared_ptr<CandTooth::SimpleTooth> > used_teeth;
   int end0, end1, edge_ind, special_ind = light_nodes.size() - 1;
 
   for(int i = 0; i < deltacount; i++){
     edge_ind = dom_delta[i];
     end0 = cut_elist[2 * edge_ind];
     end1 = cut_elist[(2 * edge_ind) + 1];
-    shared_ptr<PSEP_CandTooth::SimpleTooth> T1 = light_nodes[end0];
-    shared_ptr<PSEP_CandTooth::SimpleTooth> T2 = light_nodes[end1];
+    shared_ptr<CandTooth::SimpleTooth> T1 = light_nodes[end0];
+    shared_ptr<CandTooth::SimpleTooth> T2 = light_nodes[end1];
 
     if(T1 && T2){
       if(T1->root != T2->root){
@@ -232,7 +234,7 @@ void PSEP_SimpleDP::parse_domino(const int deltacount,
 	continue;
       }
 
-      if(PSEP_CandTooth::SimpleTooth::C_body_subset(*T1, *T2))
+      if(CandTooth::SimpleTooth::C_body_subset(*T1, *T2))
 	used_teeth.push_back(std::move(T1));
       else
 	used_teeth.push_back(std::move(T2));
@@ -268,14 +270,14 @@ void PSEP_SimpleDP::parse_domino(const int deltacount,
     }
   }
 
-  PSEP_CandTooth::SimpleTooth::parse_handle(handle_nodes, rmatval, rhs_p);
+  CandTooth::SimpleTooth::parse_handle(handle_nodes, rmatval, rhs_p);
 
   for(int i = 0; i < used_teeth.size(); i++){
     used_teeth[i]->parse(rmatval, rhs_p);
   }
 }
 
-int PSEP_SimpleDP::in_subtour_poly(bool *result_p){
+int SimpleDP::in_subtour_poly(bool *result_p){
   int ecount = support_ecap.size(), ncount = best_tour_nodes.size();  
   int end0 = 0;
   double cutval = 2;
@@ -296,8 +298,8 @@ int PSEP_SimpleDP::in_subtour_poly(bool *result_p){
   return 0;
 }
 
-void PSEP_SimpleDP::print_cutgraph(const int ncount, const int webcount){
-  PSEP_CandTooth::SimpleTooth *end0, *end1;
+void SimpleDP::print_cutgraph(const int ncount, const int webcount){
+  CandTooth::SimpleTooth *end0, *end1;
 
   for(int i = 0; i < cut_ecap.size(); i++){
     if(i == 0)

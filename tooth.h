@@ -7,9 +7,12 @@
 
 #include "Graph.h"
 
-class PSEP_CandTooth {
+namespace PSEP {
+  class SimpleDP;
+  
+class CandTooth {
  public:
- PSEP_CandTooth(std::vector<int> & _tour_nodes, SupportGraph & _G,
+ CandTooth(std::vector<int> & _tour_nodes, SupportGraph & _G,
 		std::vector<int> & _marks) :
   best_tour_nodes(_tour_nodes), edge_marks(_marks) {
     SimpleTooth::ncount = _tour_nodes.size();
@@ -72,8 +75,8 @@ class PSEP_CandTooth {
 
     int node_index;
 
-    friend class PSEP_CandTooth;
-    friend class PSEP_SimpleDP;
+    friend class PSEP::CandTooth;
+    friend class PSEP::SimpleDP;
 
     //int node_index;
     static int ncount;
@@ -82,7 +85,7 @@ class PSEP_CandTooth {
     static int *best_tour_nodes;
   };
 
-  friend class PSEP_SimpleDP;
+  friend class PSEP::SimpleDP;
 
  private:
   std::vector<std::list<std::shared_ptr<SimpleTooth> > > light_teeth;
@@ -92,5 +95,6 @@ class PSEP_CandTooth {
   std::vector<int> &edge_marks;
 
 };
+}
 
 #endif

@@ -6,12 +6,12 @@
 using namespace std;
 using namespace PSEP;
 
-int PSEP_CandTooth::SimpleTooth::ncount;
-SupportGraph * PSEP_CandTooth::SimpleTooth::G_s;
-int * PSEP_CandTooth::SimpleTooth::edge_marks;
-int * PSEP_CandTooth::SimpleTooth::best_tour_nodes;
+int CandTooth::SimpleTooth::ncount;
+SupportGraph * CandTooth::SimpleTooth::G_s;
+int * CandTooth::SimpleTooth::edge_marks;
+int * CandTooth::SimpleTooth::best_tour_nodes;
 
-void PSEP_CandTooth::build_collection(){
+void CandTooth::build_collection(){
   SimpleTooth::edge_marks = &edge_marks[0];
 
   for(int i = 0; i < SimpleTooth::ncount; i++){
@@ -34,7 +34,7 @@ void PSEP_CandTooth::build_collection(){
   }
 }
 
-void PSEP_CandTooth::find_root_adjacent_teeth(const int root){
+void CandTooth::find_root_adjacent_teeth(const int root){
   int ncount = SimpleTooth::ncount;
   int body_start = (root + 1) % ncount, body_end;
   double lhs = 0.0;
@@ -94,7 +94,7 @@ void PSEP_CandTooth::find_root_adjacent_teeth(const int root){
 }
 
 
-void PSEP_CandTooth::find_root_distant_teeth(const int root){
+void CandTooth::find_root_distant_teeth(const int root){
   int ncount = SimpleTooth::ncount;
   int body_start, body_end;
   double lhs;
@@ -172,7 +172,7 @@ void PSEP_CandTooth::find_root_distant_teeth(const int root){
 //edge marks are again used to get E(H)/delta(H). Each edge in E(H) is naturally
 //visited twice, hence we add one each time.
 //edges in delta(H) are only visited once
-void PSEP_CandTooth::SimpleTooth::parse_handle(const vector<int>&handle_nodes,
+void CandTooth::SimpleTooth::parse_handle(const vector<int>&handle_nodes,
 				  vector<double> &rmatval, double *rhs_p){
   int current_node, other_end;
 
@@ -223,7 +223,7 @@ void PSEP_CandTooth::SimpleTooth::parse_handle(const vector<int>&handle_nodes,
 //visited twice, hence we add one each time it is seen
 //To get E(i:S), we traverse the adjspace of node i, thus each edge is visited
 //precisely once
-void PSEP_CandTooth::SimpleTooth::parse(vector<double> &rmatval,
+void CandTooth::SimpleTooth::parse(vector<double> &rmatval,
 					double *rhs_p){
   int upper_limit = body_size + ((int) sandwich);
   SNode *rootnode = &G_s->nodelist[best_tour_nodes[root]];
@@ -272,7 +272,7 @@ void PSEP_CandTooth::SimpleTooth::parse(vector<double> &rmatval,
 }
 
 
-bool PSEP_CandTooth::SimpleTooth::body_contains(const int perm_node){
+bool CandTooth::SimpleTooth::body_contains(const int perm_node){
   if(perm_node == root)
     return false;
 
@@ -282,7 +282,7 @@ bool PSEP_CandTooth::SimpleTooth::body_contains(const int perm_node){
 }
 
 //returns whether bodies T C R
-bool PSEP_CandTooth::SimpleTooth::C_body_subset(const SimpleTooth &T,
+bool CandTooth::SimpleTooth::C_body_subset(const SimpleTooth &T,
 						const SimpleTooth &R){
   if(T.root == R.root){
     if(R.body_start <= R.body_end){ //if R is contiguous
@@ -302,7 +302,7 @@ bool PSEP_CandTooth::SimpleTooth::C_body_subset(const SimpleTooth &T,
   }
 }
 
-void PSEP_CandTooth::SimpleTooth::complement(){
+void CandTooth::SimpleTooth::complement(){
   int c_start, c_end, c_body_size = ncount - body_size - 1;
   bool c_sandwich;
 
@@ -329,7 +329,7 @@ void PSEP_CandTooth::SimpleTooth::complement(){
 }
 
 //new vx is some actual best_tour_nodes[k], not k
-void PSEP_CandTooth::SimpleTooth::increment_slack(const int new_vx,
+void CandTooth::SimpleTooth::increment_slack(const int new_vx,
 						  double *lhs_p, int *rhs_p){
   SNode *current_node = &(G_s->nodelist[new_vx]);
   int other_end;
@@ -354,7 +354,7 @@ void PSEP_CandTooth::SimpleTooth::increment_slack(const int new_vx,
   slack = *rhs_p - *lhs_p;
 }
 
-void PSEP_CandTooth::SimpleTooth::print(){
+void CandTooth::SimpleTooth::print(){
   int ncount = SimpleTooth::ncount;
   int current_node = body_start;
   int upper_limit = body_size + ((int) sandwich);
