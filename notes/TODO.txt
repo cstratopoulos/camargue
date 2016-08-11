@@ -1,9 +1,3 @@
-change options to getopt_long
-
-just make timer a namespace and profiler have the void print profile
-functions
-or maybe re-explore timer class and name class for protection now that
-i know how static member vars work.............
 maybe come up with a generic profiler function that operates on a list of
 pairs corresponding to variables and a string for their name, and also somehow
 stores an indicator for if we should report percentage/ratio/average
@@ -28,31 +22,10 @@ to be aggregated. With some checking: can call increment/decrement
 even if the entries have not yet been initialized; they should
 default to zero.
 
-LP PREFS AND ENUM PARAMETERS:
-Consider making it so that, e.g., the switching prefs member of the LPprefs
-class is implemented as
-enum SWITCHING{
-     LP::PREFS::SWITCHING::DYNAMIC,
-     etc,
-     etc
-};
-
-and it has a member called switching....
-
-NAMESPACE IDEAS:
-
-PSEP 
-     LP
-	Prefs, Core, Fixing, Pruning
-
-     DATA
-	LP, Best, Graphs, Support
-
-     PureCut
-	
-     ABC
-       BBNode, EdgeStats, Constraints	       	
-
+Light SimpleDP sep is a huge bottleneck at the moment, will probably
+have to implement light tooth reduction for it to be viable,
+especially since there are some examples where it allows cut
+generation to proceed for longer
 
 should store reduced costs obtained from the root node. in branch &
 cut, if an augmentation takes place, we can fix edges using reduced
@@ -65,10 +38,6 @@ generate only those with integer coefficients...could be more
 numerically stable and easier to implement?
 
 --
-
-make it so prune cuts calls the more general version but with
-intpair(0,0) for skiprange or something like that, to save on
-unnecessary copy and pasting
 
 NAIVE BRANCHING
 Problem with main branching is it doesn't seem to cut off the fractional 
@@ -97,7 +66,16 @@ if it does we only prune 10-15 despite having hundreds possibly added
 similar to the way concorde tests the age of edges/cuts, maybe record whether
 cuts have been tight at a current LP solve, i.e., if we are pivoting to 
 a solution where the cuts are tight. maybe test slack at current LP solution
-as well, and prune cuts which have not been active for some number of rounds
+as well, and prune cuts which have not been active for some number of
+rounds
+
+current approach is sloppy, could use a big overhaul. Ideas:
+-now that no_opt/basis refactor works, could be possible to skip
+re-optimizing LP
+
+in theory, there should be no prunable slack cuts without tour
+augmentation. there may be a bug either in segcuts or blossoms, should
+check on this. 
 
 
 CALLBACKS
@@ -106,6 +84,4 @@ added to the LP after optimization. need a callback to extract the
 cuts and add them as constraints, after testing that they are tight at
 current node?
 
--pivot callback: it may be possible to implement simplex pivoting via
- an optimization callback that terminates the simplex optimizer once
- the objective value changes.
+
