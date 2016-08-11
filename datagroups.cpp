@@ -2,8 +2,9 @@
 #include "mip.h"
 
 using namespace std;
+using namespace PSEP::Data;
 
-PSEP_GraphGroup::PSEP_GraphGroup(char *fname, CCdatagroup *dat){
+GraphGroup::GraphGroup(char *fname, CCdatagroup *dat){
   int rval = 0;
 
   CCutil_init_datagroup(dat);
@@ -34,7 +35,7 @@ PSEP_GraphGroup::PSEP_GraphGroup(char *fname, CCdatagroup *dat){
   edge_marks.resize(m_graph.node_count, 0);
 }
 
-PSEP_BestGroup::PSEP_BestGroup(const Graph &m_graph, CCdatagroup *dat){
+BestGroup::BestGroup(const Graph &m_graph, CCdatagroup *dat){
   int rval = 0;
   CCrandstate rand_state;
   CCedgegengroup plan;
@@ -163,7 +164,7 @@ PSEP_BestGroup::PSEP_BestGroup(const Graph &m_graph, CCdatagroup *dat){
     exit(1);
 }
 
-PSEP_LPGroup::PSEP_LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
+LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
 			   const vector<int> &perm){
   //Build the basic LP
   PSEPlp_init (&m_lp);

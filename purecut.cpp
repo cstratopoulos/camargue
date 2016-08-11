@@ -24,7 +24,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     fixing_start = PSEP_zeit() - fixing_start; 
   }
   
-  rval = LPcore.basis_init();
+  rval = LPCore.basis_init();
   if(rval) goto CLEANUP;
 
   if(!plan.is_branch())
@@ -43,32 +43,32 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 	rval = LPfix.redcost_fixing();
 	if(rval) goto CLEANUP;
 
-	plan.current_edge_ratio = LPcore.numcols() / plan.ncount;
+	plan.current_edge_ratio = LPCore.numcols() / plan.ncount;
 
-	rval = LPcore.rebuild_basis(prune);
+	rval = LPCore.rebuild_basis(prune);
 	if(rval) goto CLEANUP;
       }
     }
 
     pivtime = PSEP_zeit();
-    rval = LPcore.pivot_until_change(piv_stat);
+    rval = LPCore.pivot_until_change(piv_stat);
     if(rval) goto CLEANUP;
     pivtime = PSEP_zeit() - pivtime;
     total_pivtime += pivtime;
     if(pivtime > max_pivtime) max_pivtime = pivtime;
 
-    piv_val = LPcore.get_obj_val();
+    piv_val = LPCore.get_obj_val();
 
     if(piv_stat == LP::PivType::FathomedTour){
       cout << "\n\n    ROUND " << rounds << " -- ";
       print.pivot(piv_stat);
       cout << "                Pivot objval: "
-	   << LPcore.get_obj_val() << "\n";      
+	   << LPCore.get_obj_val() << "\n";      
       break;
     }
 
     if(piv_stat == LP::PivType::Tour){
-      if(!LPcore.test_new_tour() || plan.is_branch())
+      if(!LPCore.test_new_tour() || plan.is_branch())
 	continue;
       
       if(plan.is_branch())
@@ -77,9 +77,9 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       cout << "\n\n    !!!AUGMENTED TOUR!!!!" << endl;
       print.pivot(piv_stat);
       cout << "                Pivot objval: "
-	   << LPcore.get_obj_val() << "\n";
+	   << LPCore.get_obj_val() << "\n";
       
-      rval = LPcore.update_best_tour();
+      rval = LPCore.update_best_tour();
       if(rval) goto CLEANUP;
       
       rval = LPPrune.prune_cuts(num_removed);
@@ -90,7 +90,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       continue;
     }
 
-    rval = LPcore.pivot_back();
+    rval = LPCore.pivot_back();
     if(rval) goto CLEANUP;
 
     cut_rval = CutControl.primal_sep(augrounds, piv_stat);
@@ -101,7 +101,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 
     if(rounds % 25 == 0 && !plan.is_branch()){
       cout << "\n PIVOTING ROUND: " << rounds << " [ "
-	   << (LPcore.numrows() - LPcore.best_tour_nodes.size())
+	   << (LPCore.numrows() - LPCore.best_tour_nodes.size())
 	   << " cuts in the LP ]\n";
       cout << "   ";
       print.pivot(piv_stat);
@@ -144,7 +144,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
   
   if(!plan.is_branch())
     cout << "  "
-	 << (LPcore.numrows() - LPcore.best_tour_nodes.size())
+	 << (LPCore.numrows() - LPCore.best_tour_nodes.size())
 	 << " cutting planes added over "
 	 << rounds << " rounds of separation" << endl;
 
@@ -160,7 +160,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 
   if(piv_stat != LP::PivType::FathomedTour && plan.perform_elim()){
     LPfix.redcost_fixing();
-    LPcore.set_support_graph();
+    LPCore.set_support_graph();
   }
 
 

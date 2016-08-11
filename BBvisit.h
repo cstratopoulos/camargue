@@ -15,7 +15,7 @@ namespace PSEP {
     class Visitor {
     public:
       Visitor(PSEP::PureCut & _PureCut, PSEP::BB::Constraints &_ConsMgr) :
-      PureCut(_PureCut), LPPrune(_PureCut.LPPrune), LPCore(_PureCut.LPcore),
+      PureCut(_PureCut), LPPrune(_PureCut.LPPrune), LPCore(_PureCut.LPCore),
 	ConstraintMgr(_ConsMgr), RightBranch(ConstraintMgr.RBranch) {}
 
       int previsit(std::unique_ptr<TreeNode> &v);

@@ -15,9 +15,10 @@ namespace PSEP {
 
 class PSEP_LP_Core {
  public:
-  PSEP_LP_Core(PSEP_LPGroup &LPGroup, PSEP_GraphGroup &GraphGroup,
-	       PSEP_SupportGroup &SupportGroup,
-	       PSEP_BestGroup &BestGroup,
+  PSEP_LP_Core(PSEP::Data::LPGroup &LPGroup,
+	       PSEP::Data::GraphGroup &GraphGroup,
+	       PSEP::Data::SupportGroup &SupportGroup,
+	       PSEP::Data::BestGroup &BestGroup,
 	       PSEP::LPPrune &_LPPrune) :
   LPPrune(_LPPrune),
   m_lp(LPGroup.m_lp), m_graph(GraphGroup.m_graph), prefs(LPGroup.prefs),

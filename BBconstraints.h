@@ -16,9 +16,9 @@ namespace PSEP {
     
     class Constraints {
     public:
-    Constraints(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
-		PSEP_LPGroup &LPGroup,
-		PSEP_SupportGroup &SupportGroup,
+    Constraints(Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
+		Data::LPGroup &LPGroup,
+		Data::SupportGroup &SupportGroup,
 		PSEP::BB::RightBranch &_RB, PSEP::BB::EdgeStatuses &_ES,
 		PSEP::LPPrune &_LPPrune, PSEP_LP_Core &_LPCore):
       ncount(GraphGroup.m_graph.node_count), edges(GraphGroup.m_graph.edges),

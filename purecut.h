@@ -22,13 +22,13 @@ namespace PSEP {
   
   class PureCut {
   public:
-  PureCut(PSEP_GraphGroup &GraphGroup, PSEP_BestGroup &BestGroup,
-	       PSEP_LPGroup &LPGroup, PSEP_SupportGroup &SupportGroup):
+  PureCut(Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
+	  Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup):
     print(BestGroup.best_tour_nodes, BestGroup.best_tour_edges,
 	  LPGroup.m_lp_edges, GraphGroup.m_graph.edges),
       CutControl(GraphGroup, BestGroup, LPGroup, SupportGroup),
       LPPrune(GraphGroup, LPGroup),
-      LPcore(LPGroup, GraphGroup, SupportGroup, BestGroup, LPPrune),
+      LPCore(LPGroup, GraphGroup, SupportGroup, BestGroup, LPPrune),
       LPfix(BestGroup, GraphGroup, LPGroup){}
 
 
@@ -41,7 +41,7 @@ namespace PSEP {
     
     PSEP::CutControl CutControl;
     PSEP::LPPrune LPPrune;
-    PSEP_LP_Core LPcore;
+    PSEP_LP_Core LPCore;
     PSEP_LPfix LPfix;
   };
 }

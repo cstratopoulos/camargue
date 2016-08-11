@@ -10,7 +10,7 @@
 namespace PSEP {
   class LPPrune {
   public:
-  LPPrune(PSEP_GraphGroup &GraphGroup, PSEP_LPGroup &LPGroup) :
+  LPPrune(Data::GraphGroup &GraphGroup, Data::LPGroup &LPGroup) :
     m_lp(LPGroup.m_lp), node_count(GraphGroup.m_graph.node_count) {}
 
     int prune_cuts(int &num_removed);

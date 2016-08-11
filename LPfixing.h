@@ -10,8 +10,9 @@
 
 class PSEP_LPfix {
  public:
- PSEP_LPfix(PSEP_BestGroup &BestGroup, PSEP_GraphGroup &GraphGroup,
-	    PSEP_LPGroup &LPGroup) :
+ PSEP_LPfix(PSEP::Data::BestGroup &BestGroup,
+	    PSEP::Data::GraphGroup &GraphGroup,
+	    PSEP::Data::LPGroup &LPGroup) :
   m_min_tour_value(BestGroup.min_tour_value),
     best_tour_edges(BestGroup.best_tour_edges),
     m_graph(GraphGroup.m_graph), edges(GraphGroup.m_graph.edges),

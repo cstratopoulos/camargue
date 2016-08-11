@@ -19,10 +19,10 @@ namespace PSEP{
     int call(PSEP::SolutionProtocol solmeth);
   
   private:
-    PSEP_GraphGroup GraphGroup;
-    PSEP_BestGroup BestGroup;
-    PSEP_SupportGroup SupportGroup;
-    PSEP_LPGroup LPGroup;
+    Data::GraphGroup GraphGroup;
+    Data::BestGroup BestGroup;
+    Data::SupportGroup SupportGroup;
+    Data::LPGroup LPGroup;
   
     std::unique_ptr<PSEP::PureCut> PureCut;
     std::unique_ptr<PSEP::ABC> ABC;
