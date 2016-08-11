@@ -29,7 +29,7 @@ int main(int argc, char* argv[]){
   }
 
 
-  TSP_Solver solver(fname, prefs, dat);
+  PSEP::TSPSolver solver(fname, prefs, dat);
 
   delete dat;
 

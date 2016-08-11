@@ -4,8 +4,9 @@
 #include "lp.h"
 
 using namespace std;
+using namespace PSEP;
 
-TSP_Solver::TSP_Solver(char *fname, PSEP::LP::Prefs _prefs,
+TSPSolver::TSPSolver(char *fname, LP::Prefs _prefs,
 		       CCdatagroup *dat) :
   GraphGroup(fname, dat),
   BestGroup(GraphGroup.m_graph, dat),
@@ -15,28 +16,28 @@ TSP_Solver::TSP_Solver(char *fname, PSEP::LP::Prefs _prefs,
 				  SupportGroup));
 }
 
-int TSP_Solver::call(PSEP::SolutionProtocol solmeth){
-  PSEP::LP::PivType piv_status;
+int TSPSolver::call(SolutionProtocol solmeth){
+  LP::PivType piv_status;
   
-  if(solmeth == PSEP::SolutionProtocol::PURECUT){
-    PSEP::PivotPlan plan;
+  if(solmeth == SolutionProtocol::PURECUT){
+    PivotPlan plan;
    
     if(PureCut->solve(plan, piv_status)){
-      cerr << "TSP_Solver.call(PURECUT) failed\n";
+      cerr << "TSPSolver.call(PURECUT) failed\n";
       return 1;
     }
     
     return 0;
     
   } else {
-    PSEP::PivotPlan plan(GraphGroup.m_graph.node_count, PSEP::PivPresets::ROOT);
+    PivotPlan plan(GraphGroup.m_graph.node_count, PivPresets::ROOT);
     if(PureCut->solve(plan, piv_status)){
-      cerr << "TSP_Solver.call(ABC) failed to call PureCut at root\n";
+      cerr << "TSPSolver.call(ABC) failed to call PureCut at root\n";
       return 1;
     }
 
-    if(piv_status == PSEP::LP::PivType::FathomedTour) return 0;
-    if(piv_status == PSEP::LP::PivType::Subtour){
+    if(piv_status == LP::PivType::FathomedTour) return 0;
+    if(piv_status == LP::PivType::Subtour){
       cerr << "Terminated with inseparable subtour inequality\n";
       return 1;
     }
@@ -45,7 +46,7 @@ int TSP_Solver::call(PSEP::SolutionProtocol solmeth){
     std::vector<double> lower_bounds(ecount);
 
     if(PSEPlp_getlb(&(LPGroup.m_lp), &lower_bounds[0], 0, ecount - 1)){
-      cerr << "TSP_Solver.call(ABC) failed to get lower bounds\n";
+      cerr << "TSPSolver.call(ABC) failed to get lower bounds\n";
       return 1;
     }
 

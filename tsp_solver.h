@@ -11,22 +11,23 @@
 #include "PSEP_util.h"
 
 
+namespace PSEP{
+  class TSPSolver {
+  public:
+    TSPSolver(char *fname, PSEP::LP::Prefs _prefs, CCdatagroup *dat);
 
-class TSP_Solver {
- public:
-  TSP_Solver(char *fname, PSEP::LP::Prefs _prefs, CCdatagroup *dat);
-
-  int call(PSEP::SolutionProtocol solmeth);
+    int call(PSEP::SolutionProtocol solmeth);
   
- private:
-  PSEP_GraphGroup GraphGroup;
-  PSEP_BestGroup BestGroup;
-  PSEP_SupportGroup SupportGroup;
-  PSEP_LPGroup LPGroup;
+  private:
+    PSEP_GraphGroup GraphGroup;
+    PSEP_BestGroup BestGroup;
+    PSEP_SupportGroup SupportGroup;
+    PSEP_LPGroup LPGroup;
   
-  std::unique_ptr<PSEP::PureCut> PureCut;
-  std::unique_ptr<PSEP::ABC> ABC;
-};
+    std::unique_ptr<PSEP::PureCut> PureCut;
+    std::unique_ptr<PSEP::ABC> ABC;
+  };
+}
 
 #endif
 
