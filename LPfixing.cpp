@@ -6,8 +6,9 @@
 #include "LPfixing.h"
 
 using namespace std;
+using namespace PSEP::LP;
 
-int PSEP_LPfix::price(int *clamptotal, int *deltotal){
+int EdgeFix::price(int *clamptotal, int *deltotal){
   int rval = 0;
   int ecount = m_graph.edge_count;
   vector<double> redcosts(ecount);
@@ -70,7 +71,7 @@ int PSEP_LPfix::price(int *clamptotal, int *deltotal){
   return rval;
 }
 
-int PSEP_LPfix::fixup(){
+int EdgeFix::fixup(){
   int rval = 0;
   int total_time = PSEP_zeit();
 
@@ -90,14 +91,14 @@ int PSEP_LPfix::fixup(){
   return rval;
 }
 
-int PSEP_LPfix::delete_cols(){
+int EdgeFix::delete_cols(){
   int rval = PSEPlp_delsetcols(&m_lp, &edge_delset[0]);
   if(rval)
     cerr << "Error entry point: LPfix::delete_cols \n";
   return rval;
 }
 
-void PSEP_LPfix::delete_edges(){
+void EdgeFix::delete_edges(){
   int orig_ecount = m_graph.edge_count;
   double total_time = PSEP_zeit();
   for(int i = 0; i < m_graph.edge_count; i++)
@@ -134,7 +135,7 @@ void PSEP_LPfix::delete_edges(){
 }
 
 
-int PSEP_LPfix::redcost_fixing(){
+int EdgeFix::redcost_fixing(){
   int rval = 0;
   int clamptotal = 0, deltotal = 0;
 

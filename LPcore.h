@@ -19,7 +19,7 @@ namespace PSEP {
     public:
     Core(Data::LPGroup &LPGroup, Data::GraphGroup &GraphGroup,
 	 Data::SupportGroup &SupportGroup, Data::BestGroup &BestGroup,
-	 PSEP::LPPrune &_LPPrune) :
+	 PSEP::LP::CutPrune &_LPPrune) :
       LPPrune(_LPPrune),
 	m_lp(LPGroup.m_lp), m_graph(GraphGroup.m_graph), prefs(LPGroup.prefs),
 	old_colstat(LPGroup.old_colstat), old_rowstat(LPGroup.old_rowstat),
@@ -66,7 +66,7 @@ namespace PSEP {
       void change_pricing();
 
     private:
-      PSEP::LPPrune &LPPrune;
+      PSEP::LP::CutPrune &LPPrune;
       PSEPlp &m_lp;
       Graph &m_graph;
 

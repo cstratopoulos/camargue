@@ -3,9 +3,9 @@
 #include "LPprune.h"
 
 using namespace std;
-using namespace PSEP;
+using namespace PSEP::LP;
 
-int LPPrune::prune_cuts(int &num_removed){
+int CutPrune::prune_cuts(int &num_removed){
   int rval = 0;
   num_removed = 0;
   int rowcount = PSEPlp_numrows(&m_lp);
@@ -14,7 +14,7 @@ int LPPrune::prune_cuts(int &num_removed){
 
   rval = PSEPlp_getslack(&m_lp, &slacks[0], node_count, rowcount - 1);
   if(rval){
-    cerr << "Problem in LPPrune::prune_cuts with getslack\n";
+    cerr << "Problem in CutPrune::prune_cuts with getslack\n";
     return 1;
   }
 
@@ -27,14 +27,14 @@ int LPPrune::prune_cuts(int &num_removed){
 
   rval = PSEPlp_delsetrows(&m_lp, &delset[0]);
   if(rval){
-    cerr << "Problem in LPPrune::prune_cuts with delsetrows\n";
+    cerr << "Problem in CutPrune::prune_cuts with delsetrows\n";
     return 1;
   }
 
   return 0;
 }
 
-int LPPrune::prune_with_skip(int &num_removed, IntPair skiprange,
+int CutPrune::prune_with_skip(int &num_removed, IntPair skiprange,
 			     vector<int> &delset){
   int rval = 0;
   num_removed = 0;
@@ -47,7 +47,7 @@ int LPPrune::prune_with_skip(int &num_removed, IntPair skiprange,
 
   rval = PSEPlp_getslack(&m_lp, &slacks[0], node_count, rowcount - 1);
   if(rval){
-    cerr << "Problem in LPPrune::prune_with_skip with getslack\n";
+    cerr << "Problem in CutPrune::prune_with_skip with getslack\n";
     return 1;
   }
 
@@ -62,7 +62,7 @@ int LPPrune::prune_with_skip(int &num_removed, IntPair skiprange,
 
   rval = PSEPlp_delsetrows(&m_lp, &delset[0]);
   if(rval){
-    cerr << "Problem in LPPrune::prune_with_skip with delsetrows\n";
+    cerr << "Problem in CutPrune::prune_with_skip with delsetrows\n";
     return 1;
   }
 

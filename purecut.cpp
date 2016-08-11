@@ -19,7 +19,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 
   if(plan.perform_elim()){
     fixing_start = PSEP_zeit();
-    rval = LPfix.redcost_fixing();
+    rval = LPFix.redcost_fixing();
     if(rval) goto CLEANUP;
     fixing_start = PSEP_zeit() - fixing_start; 
   }
@@ -40,7 +40,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     if(rounds % 50 == 0){
       if(plan.perform_elim()){
 	cout << "Calling edge elimination again...\n\n  ";
-	rval = LPfix.redcost_fixing();
+	rval = LPFix.redcost_fixing();
 	if(rval) goto CLEANUP;
 
 	plan.current_edge_ratio = LPCore.numcols() / plan.ncount;
@@ -155,11 +155,11 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
   cout << "\n Total time for Purecut::solve: "
        << (PSEP_zeit() - routine_start) << "s\n";
   if(plan.perform_elim())
-    cout <<"         LPfix::redcost_fixing: "
+    cout <<"         LPFix::redcost_fixing: "
 	 << fixing_start << "s\n";
 
   if(piv_stat != LP::PivType::FathomedTour && plan.perform_elim()){
-    LPfix.redcost_fixing();
+    LPFix.redcost_fixing();
     LPCore.set_support_graph();
   }
 

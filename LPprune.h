@@ -8,9 +8,10 @@
 #include "PSEP_util.h"
 
 namespace PSEP {
-  class LPPrune {
+  namespace LP {
+  class CutPrune {
   public:
-  LPPrune(Data::GraphGroup &GraphGroup, Data::LPGroup &LPGroup) :
+  CutPrune(Data::GraphGroup &GraphGroup, Data::LPGroup &LPGroup) :
     m_lp(LPGroup.m_lp), node_count(GraphGroup.m_graph.node_count) {}
 
     int prune_cuts(int &num_removed);
@@ -20,6 +21,7 @@ namespace PSEP {
     PSEPlp &m_lp;
     int node_count;    
   };
+  }
 }
 
 #endif

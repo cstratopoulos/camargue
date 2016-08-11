@@ -8,9 +8,11 @@
 #include "Graph.h"
 #include "PSEP_util.h"
 
-class PSEP_LPfix {
+namespace PSEP {
+  namespace LP {
+class EdgeFix {
  public:
- PSEP_LPfix(PSEP::Data::BestGroup &BestGroup,
+ EdgeFix(PSEP::Data::BestGroup &BestGroup,
 	    PSEP::Data::GraphGroup &GraphGroup,
 	    PSEP::Data::LPGroup &LPGroup) :
   m_min_tour_value(BestGroup.min_tour_value),
@@ -47,5 +49,7 @@ class PSEP_LPfix {
   std::vector<int> edge_delset;
 
 };
+  }
+}
 
 #endif

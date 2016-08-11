@@ -29,7 +29,7 @@ namespace PSEP {
       CutControl(GraphGroup, BestGroup, LPGroup, SupportGroup),
       LPPrune(GraphGroup, LPGroup),
       LPCore(LPGroup, GraphGroup, SupportGroup, BestGroup, LPPrune),
-      LPfix(BestGroup, GraphGroup, LPGroup){}
+      LPFix(BestGroup, GraphGroup, LPGroup){}
 
 
     int solve(PSEP::PivotPlan &plan, PSEP::LP::PivType &piv_stat);
@@ -40,9 +40,9 @@ namespace PSEP {
     friend class PSEP::ABC;
     
     PSEP::CutControl CutControl;
-    PSEP::LPPrune LPPrune;
+    PSEP::LP::CutPrune LPPrune;
     PSEP::LP::Core LPCore;
-    PSEP_LPfix LPfix;
+    PSEP::LP::EdgeFix LPFix;
   };
 }
 
