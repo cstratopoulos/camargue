@@ -14,7 +14,6 @@ int EdgeFix::price(int *clamptotal, int *deltotal){
   vector<double> redcosts(ecount);
   double GAP, lp_LB, cur_red, cur_abs;
   double opt_time;
-  double total_time = PSEP_zeit();
   *clamptotal = 0; *deltotal = 0;
 
   edge_delset.resize(ecount);
@@ -24,14 +23,14 @@ int EdgeFix::price(int *clamptotal, int *deltotal){
   rval = PSEPlp_primal_opt(&m_lp, &infeasible);
   if(rval) goto CLEANUP;
   opt_time = PSEP_zeit() - opt_time;
-  cout << "Optimized LP relaxation in "
+  cout << "Optimized LP in "
        << setprecision(0) << opt_time << "s, " << setprecision(6);
 
   rval = PSEPlp_objval(&m_lp, &lp_LB);
   if(rval) goto CLEANUP;
 
   GAP = m_min_tour_value - lp_LB;
-  cout << "Integrality gap: " << GAP << ".\n";
+  cout << "integrality gap: " << GAP << ".\n";
 
   rval = PSEPlp_get_redcosts(&m_lp, &redcosts[0]);
   if(rval) goto CLEANUP;
@@ -57,12 +56,9 @@ int EdgeFix::price(int *clamptotal, int *deltotal){
   }
 
   if(*clamptotal != 0)
-    cout << *clamptotal << " edges shall be fixed to 1, ";
+    cout << *clamptotal << " edges fixable, ";
   if(*deltotal != 0)
-    cout << *deltotal << " edges shall be deleted, "
-	 << "computed in " << setprecision(0)
-	 << (PSEP_zeit() - total_time) << "s";
-  cout << "\n";
+    cout << *deltotal << " edges removable. ";
   
 
  CLEANUP:
@@ -99,7 +95,6 @@ int EdgeFix::delete_cols(){
 }
 
 void EdgeFix::delete_edges(){
-  int orig_ecount = m_graph.edge_count;
   double total_time = PSEP_zeit();
   for(int i = 0; i < m_graph.edge_count; i++)
     edge_lookup[IntPair(edges[i].end[0], edges[i].end[1])] = edge_delset[i];
@@ -127,9 +122,8 @@ void EdgeFix::delete_edges(){
 
   total_time = PSEP_zeit() - total_time;
 
-  cout << "Number of edges is now " << edges.size() << ", deleted in "
-       << total_time << "s.\n (Down from " << orig_ecount << ", ";
-  cout << "ratio "
+  cout << edges.size() << " remain, "
+       << "ratio "
        << setprecision(3) << ((double) edges.size() / m_graph.node_count)
        << " * ncount)\n";
 }
