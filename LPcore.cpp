@@ -18,6 +18,13 @@ inline bool PSEP_LP_Core::is_integral(){
   return true;
 }
 
+int PSEP_LP_Core::factor_basis(){
+  int rval = PSEPlp_no_opt(&m_lp);
+  if(rval)
+    cerr << "Problem in LPCore::factor_basis\n";
+  return rval;
+}
+
 int PSEP_LP_Core::single_pivot(){
   int infeasible = 0;
   int rval = PSEPlp_primal_pivot(&m_lp, &infeasible);
@@ -228,11 +235,11 @@ int PSEP_LP_Core::basis_init(){
   int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
   if(rval) goto CLEANUP;
 
-  rval = single_pivot();
+  rval = factor_basis();
   if(rval) goto CLEANUP;
     
   rval = set_edges();
-  if(rval) goto CLEANUP;  
+  if(rval) goto CLEANUP;
   
   CLEANUP:
   if(rval)
@@ -361,19 +368,15 @@ int PSEP_LP_Core::pivot_until_change(LP::PivType &pivot_status){
 void PSEP_LP_Core::change_pricing(){
   int newprice;
 
-  cout << "//////SWITCHED PRICING TO ";
   switch(prefs.price_method){
   case LP::Pricing::Devex:
     newprice = CPX_PPRIIND_DEVEX;
-    cout << "DEVEX/////\n";
     break;
   case LP::Pricing::SlackSteepest:
     newprice = CPX_PPRIIND_STEEPQSTART;
-    cout << "STEEPEST EDGE W SLACK INITIAL NORMS\n";
     break;
   case LP::Pricing::Steepest:
     newprice = CPX_PPRIIND_STEEP;
-    cout << "GENUINE STEEPEST EDGE////\n";
     break;
   }
 

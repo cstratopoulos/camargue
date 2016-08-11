@@ -38,6 +38,7 @@ class PSEP_LP_Core {
   bool is_dual_feas();
   bool is_integral();
 
+  int factor_basis();
   int single_pivot();
   int nondegenerate_pivot();
   int pivot_back();
