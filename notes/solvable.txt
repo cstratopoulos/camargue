@@ -7,3 +7,4 @@ gr24
 eil51, mc 2
 swiss42
 st70 (several tries)
+gr120 (new approach)
