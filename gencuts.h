@@ -1,6 +1,7 @@
 #ifndef PSEP_GENCUTS_H
 #define PSEP_GENCUTS_H
 
+#include<array>
 #include<vector>
 
 #include "lp.h"
@@ -30,12 +31,31 @@ namespace PSEP{
     int num_added(int &frac, int &disj, int &mir);
 
     int deletion_row;
+    static constexpr int max_cuts = 10;
     
     PSEP::general gencuts;
     std::vector<int> &best_tour_edges;
     PSEPlp &m_lp;
     std::vector<double> &m_lp_edges;
     std::vector<int> &support_indices;
+
+    struct mip_cut_candidates {
+    mip_cut_candidates(const int numcols) :
+      coefficient_vectors(max_cuts, std::vector<double>(numcols)),
+      index_vectors(max_cuts, std::vector<int>(numcols)) {}
+           
+      std::vector<std::vector<double>> coefficient_vectors;
+      std::vector<std::vector<int>> index_vectors;
+      std::array<char, max_cuts> senses;
+      std::array<double, max_cuts> rhs_array;
+      int next_cut;
+    };
+
+    int branchcallback (CPXCENVptr xenv, void *cbdata, int wherefrom,
+			   void *cbhandle, int brtype, int brset, int nodecnt,
+			   int bdcnt, const double *nodeest, const int *nodebeg,
+			   const int *xindex, const char *lu, const int *bd,
+			       int *useraction_p);
   };
 }
 

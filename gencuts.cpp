@@ -49,7 +49,7 @@ int Cut<general>::separate(const double piv_val){
 
 int Cut<general>::init_mip(const double piv_val){
   int numrows = PSEPlp_numrows(&m_lp);
-  double cutfactor = (numrows + 10.0) / numrows;
+  double cutfactor = (numrows + (double) max_cuts) / numrows;
 
   deletion_row = numrows;
   int numcols = PSEPlp_numcols(&m_lp);
@@ -106,6 +106,9 @@ int Cut<general>::init_mip(const double piv_val){
     goto CLEANUP;
   }
 
+  rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_Threads, 1);
+  if(rval) { cerr << "Couldn't clamp threads, "; goto CLEANUP; }
+
  CLEANUP:
   if(rval)
     cerr << "Problem in Cut<general>::init_mip\n";
@@ -141,6 +144,9 @@ int Cut<general>::revert_lp(){
     cerr << "Couldn't disable MIR cuts, ";
     goto CLEANUP;
   }
+
+  rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_Threads, 0);
+  if(rval) { cerr << "Couldn't revert threads, "; goto CLEANUP; }
 
  CLEANUP:
   if(rval)
@@ -184,5 +190,56 @@ int Cut<general>::num_added(int &frac, int &disj, int &mir){
  CLEANUP:
   if(rval)
     cerr << "Problem in Cut<general>::num_added\n";
+  return rval;
+}
+
+//callback code adapted from
+// https://www.ibm.com/developerworks/community/forums/html/
+// topic?id=77777777-0000-0000-0000-000014468982
+
+int Cut<general>::branchcallback (CPXCENVptr xenv, void *cbdata, int wherefrom,
+			   void *cbhandle, int brtype, int brset, int nodecnt,
+			   int bdcnt, const double *nodeest, const int *nodebeg,
+			   const int *xindex, const char *lu, const int *bd,
+			   int *useraction_p){
+  (void) brtype; (void) brset; (void) nodecnt; (void) bdcnt; (void) nodebeg;
+  (void) xindex; (void) lu; (void) bd; (void) useraction_p;
+
+
+  mip_cut_candidates *const arg = (mip_cut_candidates *) cbhandle;
+  CPXLPptr nodelp;
+  int rval = 0, rows, cols;
+
+  rval = CPXgetcallbacknodelp(xenv, cbdata, wherefrom, &nodelp);
+  if(rval) { fprintf(stderr, "CPXgetcallbacknodelp failed, "); goto CLEANUP;}
+  rows = CPXgetnumrows(xenv, nodelp);
+  cols = CPXgetnumcols(xenv, nodelp);
+
+
+  { int j = 0;
+    for(int i = arg->next_cut; i < rows; i++, j++){
+      int rmatbeg, nzcnt, surplus;
+
+      rval = CPXgetrows(xenv, nodelp, &nzcnt, &rmatbeg,
+			&(arg->index_vectors[j])[0],
+			&(arg->coefficient_vectors[j])[0], cols,
+			&surplus, i, i);
+      if(rval) { fprintf(stderr, "CPXgetrows failed, "); goto CLEANUP; }
+
+      rval = CPXgetsense(xenv, nodelp, &(arg->senses)[j], i, i);
+      if(rval) { fprintf(stderr, "CPXgetsense failed, "); goto CLEANUP; }
+
+      rval = CPXgetrhs(xenv, nodelp, &(arg->rhs_array)[j], i, i);
+      if(rval) { fprintf(stderr, "CPXgetrhs failed, "); goto CLEANUP; }
+    }
+  }
+
+  if(rows > arg->next_cut)
+    arg->next_cut = rows;
+
+ CLEANUP:
+  if(rval)
+    fprintf(stderr, "problem in Cut<general>::branch_callback, rval %d\n",
+	    rval);
   return rval;
 }
