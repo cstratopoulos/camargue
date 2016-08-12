@@ -37,7 +37,7 @@ int Core::single_pivot(){
 
 int Core::nondegenerate_pivot(){
   int infeasible = 0, rval = 0;
-  double lowlimit = m_min_tour_value - 1;
+  double lowlimit = m_min_tour_value - 0.1;
 
   rval = PSEPlp_primal_nd_pivot(&m_lp, &infeasible, lowlimit);
   if(rval || infeasible)
