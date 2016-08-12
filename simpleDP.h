@@ -2,7 +2,7 @@
 #define PSEP_SIMPLEDP_H
 
 extern "C" {
-#include <concorde/concorde.h>
+#include <concorde/INCLUDE/cut.h>
 }
 
 #include "tooth.h"

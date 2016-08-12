@@ -1,3 +1,9 @@
+extern "C" {
+#include <concorde/INCLUDE/linkern.h>
+#include <concorde/INCLUDE/util.h>
+#include <concorde/INCLUDE/edgegen.h>
+}
+
 #include "datagroups.h"
 #include "mip.h"
 
@@ -56,7 +62,7 @@ BestGroup::BestGroup(const Graph &m_graph, CCdatagroup *dat){
   cout << "LK seed: " << seed << ", " << trials << " trials\n";
 
   szeit = CCutil_zeit ();
-  bestval = CCtsp_LP_MAXDOUBLE;
+  bestval = INFINITY;
 
   //code copies from static int find_tour from concorde
   CCutil_sprand(seed, &rand_state);

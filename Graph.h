@@ -7,7 +7,7 @@
 #include <iostream>
 
 extern "C" {
-#include <concorde/concorde.h>
+#include <concorde/INCLUDE/cut.h>
 }
 
 #include "PSEP_util.h"
