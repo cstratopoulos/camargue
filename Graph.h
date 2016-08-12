@@ -7,7 +7,7 @@
 #include <iostream>
 
 extern "C" {
-#include "../programs/concorde/concorde.h"
+#include <concorde/concorde.h>
 }
 
 #include "PSEP_util.h"

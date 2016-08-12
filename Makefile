@@ -1,5 +1,5 @@
 TARGET = PSEP
-INCLUDES = -I /Users/christos/Applications/IBM/ILOG/CPLEX_Studio1261/cplex/include/ilcplex/
+INCLUDES = -I /Users/christos/Applications/IBM/ILOG/CPLEX_Studio1261/cplex/include/ilcplex/ -I /Users/christos/Dropbox/school/research/programs/
 LIBS = /Users/christos/Applications/IBM/ILOG/CPLEX_Studio1261/cplex/lib/x86-64_osx/static_pic/libcplex.a
 CONCORDE_LIBS = /Users/christos/Dropbox/school/research/programs/concorde/concorde.a
 CC = g++
