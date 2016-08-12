@@ -20,6 +20,10 @@ namespace PSEP {
     class RightBranch;
     class Constraints;
     class Visitor;
+
+    enum class BranchPlan {
+      Main, Naive
+    };
     
     class TreeNode {
     public:

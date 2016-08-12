@@ -40,12 +40,7 @@ namespace PSEP {
       int remove_left_clamp(const int edge);
 
       void compute_right_row(const int clamp, const int partner,
-			     std::array<double, 2> &rmatval, double &RHS){
-	double clamp_best = best_tour_edges[clamp],
-	       partner_best = best_tour_edges[partner];
-	RHS = clamp_best - partner_best;
-	rmatval = {2 * clamp_best - 1, 1 - 2 * partner_best};
-      }
+			     std::array<double, 2> &rmatval, double &RHS);
 
       int compute_right_update(const int clamp, const int partner,
 			     std::array<double, 2> &rmatval, double &RHS,
