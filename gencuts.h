@@ -23,19 +23,24 @@ namespace PSEP{
   private:
     static constexpr int max_cuts = 10;
 
-    struct mip_cut_candidates {
-    mip_cut_candidates(const int numcols, const int numrows) :
-      coefficient_vectors(max_cuts, std::vector<double>(numcols)),
-	index_vectors(max_cuts, std::vector<int>(numcols)),
-	next_cut(numrows){}
-           
-      std::vector<std::vector<double>> coefficient_vectors;
-      std::vector<std::vector<int>> index_vectors;
-      std::array<char, max_cuts> senses;
-      std::array<double, max_cuts> rhs_array;
-      std::array<int, max_cuts> nzcount_array;
-      int next_cut;
-    };
+    struct generated_cut {
+      generated_cut(const int numcols, const int numrows,
+		    const std::vector<int> &_best_tour_edges,
+		    const std::vector<int> &_m_lp_edges):
+      best_tour_edges(_best_tour_edges), m_lp_edges(_m_lp_edges),
+	num_added(0), nextcut(numrows) {
+	coefficient_buffer.resize(numcols);
+	index_buffer.resize(numcols);
+      }
+
+      std::vector<double> coefficient_buffer;
+      std::vector<int> index_buffer;
+      const std::vector<int> &best_tour_edges;
+      const std::vector<double> &m_lp_edges;
+      
+      int num_added;
+      int nextcut;
+    }
     
     int init_mip(const double piv_val, mip_cut_candidates &callback_arg);
     int revert_lp();
@@ -43,7 +48,6 @@ namespace PSEP{
     int make_all_binary();
     int make_binary(const int edge);
 
-    int check_cuts(mip_cut_candidates &cand_cuts);
     int num_added(int &frac, int &disj, int &mir);
 
     int deletion_row;

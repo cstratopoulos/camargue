@@ -206,61 +206,6 @@ int Cut<general>::num_added(int &frac, int &disj, int &mir){
   return rval;
 }
 
-int Cut<general>::check_cuts(mip_cut_candidates &candidate_cuts){
-  cout << "Calling check cuts..." << endl;
-  double lhs_lp, lhs_best, rhs;
-  char sense = 'X';
-  int num_nz;
-  vector<int> &current_indices = candidate_cuts.index_vectors[0];
-  vector<double> &current_coeffs = candidate_cuts.coefficient_vectors[0];
-
-  cout << "Beginning of main loop..." << endl;
-  for(int i = 0; i < max_cuts; i++){
-    cout << "       i = " << i << endl;
-    lhs_lp  = 0; lhs_best = 0;
-    cout << "Setting current indices...";
-    current_indices = candidate_cuts.index_vectors[i];
-    cout << "Done" << endl;
-    for(int &ii : current_indices)
-      cout << current_indices[ii] << endl;
-    cout << "Setting current coeffs...";
-    current_coeffs = candidate_cuts.coefficient_vectors[i];
-    cout << "Done" << endl;
-    for(double &ii : current_coeffs)
-      cout << current_coeffs[ii] << endl;
-    cout << "Setting rhs...";
-    rhs = candidate_cuts.rhs_array[i];
-    cout << rhs << " (Done)" << endl;
-    cout << "Setting num nz...";
-    num_nz = candidate_cuts.nzcount_array[i];
-    cout << num_nz << " (Done)" << endl;
-
-    for(int j = 0; j < num_nz; j++){
-      int ind = current_indices[j];
-      lhs_lp += m_lp_edges[ind] * current_coeffs[j];
-      lhs_best += best_tour_edges[ind] * current_coeffs[j];
-    }
-
-    cout << "   --Testing cut number: " << i << "\n"
-	 << "     lp solution lhs: " << lhs_lp << ", "
-	 << "     best tour lhs: " << lhs_best << "\n";
-    switch(sense){
-    case 'L':
-      cout << "    <= ";
-      break;
-    case 'G':
-      cout << "   >= ";
-      break;
-    default:
-      cout << "Other sense? ? ? " << sense << "\n";      
-    }
-    cout << rhs << "\n";
-  }
-
-  cout << "Done checking cuts, returning failure\n";
-  return 1;
-}
-
 //callback code adapted from
 // https://www.ibm.com/developerworks/community/forums/html/
 // topic?id=77777777-0000-0000-0000-000014468982
@@ -275,7 +220,7 @@ int Cut<general>::branchcallback (CPXCENVptr xenv, void *cbdata, int wherefrom,
   (void) xindex; (void) lu; (void) bd; (void) useraction_p;
 
 
-  mip_cut_candidates *const arg = (mip_cut_candidates *) cbhandle;
+  generated_cut *const arg = (generated_cut *) cbhandle;
   CPXLPptr nodelp;
   int rval = 0, rows, cols;
 
@@ -285,13 +230,13 @@ int Cut<general>::branchcallback (CPXCENVptr xenv, void *cbdata, int wherefrom,
   cols = CPXgetnumcols(xenv, nodelp);
 
 
-  { int j = 0;
     for(int i = arg->next_cut; i < rows; i++, j++){
-      int rmatbeg, surplus;
+      int rmatbeg, surplus, nzcount;
+      char rhs;
 
-      rval = CPXgetrows(xenv, nodelp, &(arg->nzcount_array)[j], &rmatbeg,
-			&(arg->index_vectors[j])[0],
-			&(arg->coefficient_vectors[j])[0], cols,
+      rval = CPXgetrows(xenv, nodelp, &nzcount, &rmatbeg,
+			&(arg->index_buffer[0]),
+			&(arg->coefficient_buffer[0]), cols,
 			&surplus, i, i);
       if(rval) { fprintf(stderr, "CPXgetrows failed, "); goto CLEANUP; }
 
@@ -301,7 +246,7 @@ int Cut<general>::branchcallback (CPXCENVptr xenv, void *cbdata, int wherefrom,
       rval = CPXgetrhs(xenv, nodelp, &(arg->rhs_array)[j], i, i);
       if(rval) { fprintf(stderr, "CPXgetrhs failed, "); goto CLEANUP; }
     }
-  }
+    
 
   if(rows > arg->next_cut)
     arg->next_cut = rows;
