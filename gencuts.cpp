@@ -36,6 +36,9 @@ int Cut<general>::separate(const double piv_val){
        << num_disj << " disjunctive cuts, "
        << num_mir << " MIR cuts\n\n";
 
+  rval = check_cuts(generated_cuts);
+  if(rval) goto CLEANUP;
+
 
   rval = revert_lp();
   if(rval) goto CLEANUP;
@@ -203,6 +206,61 @@ int Cut<general>::num_added(int &frac, int &disj, int &mir){
   return rval;
 }
 
+int Cut<general>::check_cuts(mip_cut_candidates &candidate_cuts){
+  cout << "Calling check cuts..." << endl;
+  double lhs_lp, lhs_best, rhs;
+  char sense = 'X';
+  int num_nz;
+  vector<int> &current_indices = candidate_cuts.index_vectors[0];
+  vector<double> &current_coeffs = candidate_cuts.coefficient_vectors[0];
+
+  cout << "Beginning of main loop..." << endl;
+  for(int i = 0; i < max_cuts; i++){
+    cout << "       i = " << i << endl;
+    lhs_lp  = 0; lhs_best = 0;
+    cout << "Setting current indices...";
+    current_indices = candidate_cuts.index_vectors[i];
+    cout << "Done" << endl;
+    for(int &ii : current_indices)
+      cout << current_indices[ii] << endl;
+    cout << "Setting current coeffs...";
+    current_coeffs = candidate_cuts.coefficient_vectors[i];
+    cout << "Done" << endl;
+    for(double &ii : current_coeffs)
+      cout << current_coeffs[ii] << endl;
+    cout << "Setting rhs...";
+    rhs = candidate_cuts.rhs_array[i];
+    cout << rhs << " (Done)" << endl;
+    cout << "Setting num nz...";
+    num_nz = candidate_cuts.nzcount_array[i];
+    cout << num_nz << " (Done)" << endl;
+
+    for(int j = 0; j < num_nz; j++){
+      int ind = current_indices[j];
+      lhs_lp += m_lp_edges[ind] * current_coeffs[j];
+      lhs_best += best_tour_edges[ind] * current_coeffs[j];
+    }
+
+    cout << "   --Testing cut number: " << i << "\n"
+	 << "     lp solution lhs: " << lhs_lp << ", "
+	 << "     best tour lhs: " << lhs_best << "\n";
+    switch(sense){
+    case 'L':
+      cout << "    <= ";
+      break;
+    case 'G':
+      cout << "   >= ";
+      break;
+    default:
+      cout << "Other sense? ? ? " << sense << "\n";      
+    }
+    cout << rhs << "\n";
+  }
+
+  cout << "Done checking cuts, returning failure\n";
+  return 1;
+}
+
 //callback code adapted from
 // https://www.ibm.com/developerworks/community/forums/html/
 // topic?id=77777777-0000-0000-0000-000014468982
@@ -229,9 +287,9 @@ int Cut<general>::branchcallback (CPXCENVptr xenv, void *cbdata, int wherefrom,
 
   { int j = 0;
     for(int i = arg->next_cut; i < rows; i++, j++){
-      int rmatbeg, nzcnt, surplus;
+      int rmatbeg, surplus;
 
-      rval = CPXgetrows(xenv, nodelp, &nzcnt, &rmatbeg,
+      rval = CPXgetrows(xenv, nodelp, &(arg->nzcount_array)[j], &rmatbeg,
 			&(arg->index_vectors[j])[0],
 			&(arg->coefficient_vectors[j])[0], cols,
 			&surplus, i, i);

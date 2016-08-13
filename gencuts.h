@@ -33,6 +33,7 @@ namespace PSEP{
       std::vector<std::vector<int>> index_vectors;
       std::array<char, max_cuts> senses;
       std::array<double, max_cuts> rhs_array;
+      std::array<int, max_cuts> nzcount_array;
       int next_cut;
     };
     
