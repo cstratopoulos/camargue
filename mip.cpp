@@ -23,7 +23,8 @@ int PSEPmip_param (PSEPlp *lp){
   rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Limits_Nodes, 0);
   if(rval){ fprintf(stderr, "MIP nodelimit"); goto CLEANUP; }
 
-  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Strategy_Search, 1);
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Strategy_Search,
+			CPX_MIPSEARCH_TRADITIONAL);
   if(rval){ fprintf(stderr, "MIPSEARCH"); goto CLEANUP; }
 
   rval = CPXsetintparam(lp->cplex_env, CPXPARAM_MIP_Strategy_StartAlgorithm,
