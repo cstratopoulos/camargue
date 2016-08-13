@@ -10,45 +10,67 @@ using namespace PSEP;
 
 int Cut<general>::separate(const double piv_val){
   int rval = 0;
-  int num_frac, num_mir, num_disj, num_total = 0;
   int numcols = PSEPlp_numcols(&m_lp), numrows = PSEPlp_numrows(&m_lp);
+  int rmatbeg = 0, num_nonzeros = 0;
   double objval;
-  generated_cut candidate(numcols, numrows, best_tour_edges, m_lp_edges);
+  generated_cut candidate(numcols, numrows + 1, best_tour_edges, m_lp_edges);
+
+  double lhs_lp = 0, lhs_best = 0;
 
   rval = init_mip(piv_val, candidate);
   if(rval) goto CLEANUP;
 
   rval = make_all_binary();
   if(rval) goto CLEANUP;
-
-  rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_ScreenOutput, CPX_ON);
-  if(rval) goto CLEANUP;
-
-  cout << " ***SINGLE INVOCATION OF MIPOPT*****\n";
+  
   rval = PSEPmip_opt(&m_lp);
   if(rval) goto CLEANUP;
 
   rval = PSEPmip_getbestobjval(&m_lp, &objval);
   if(rval) goto CLEANUP;
 
-  cout << "    Mip opt has objval: " << objval << "\n";
-
-  rval = num_added(num_frac, num_disj, num_mir);
-  num_total = num_frac + num_disj + num_mir;
-  if(rval) goto CLEANUP;
-  cout << "\n    Added " << num_frac << " gomory fractional cuts, "
-       << num_disj << " disjunctive cuts, "
-       << num_mir << " MIR cuts\n\n";
-
-  cout << "Now returning 1\n";
-  return 1;
-
-
   rval = revert_lp();
   if(rval) goto CLEANUP;
 
-  if(num_total == 0)
-    rval = 2;
+  num_nonzeros = candidate.best_nonzeros;
+
+  if(num_nonzeros == 0){
+    rval = 2; goto CLEANUP;
+  }
+
+  cout << "Printing best stuff...is tight: "
+       << candidate.is_best_exact << "\n";
+  cout << "num nz: " << num_nonzeros << "\n";
+  // cout << "Indices (size " << candidate.best_indices.size() << ")\n";
+  // for(int i = 0; i < candidate.best_indices.size(); i++){
+  //   if(i == num_nonzeros) cout << "**cutoff**\n";
+  //   cout << candidate.best_indices[i] << endl;   
+  // }
+
+  // cout << "Coeffs:\n";
+  // for(int i = 0; i < candidate.best_coeffs.size(); i++){
+  //   if(i == num_nonzeros) cout << "**cutoff**\n";
+  //   cout << candidate.best_coeffs[i] << endl;
+  // }
+
+  cout << "rhs: " << candidate.best_rhs << "\n";
+  cout << "viol: " << candidate.best_viol << "\n";
+
+  cout << "Double checking by struct...";
+  for(int i = 0; i < num_nonzeros; i++){
+    int index = candidate.best_indices[i];
+    double coeff = candidate.best_coeffs[i];
+
+    lhs_best += best_tour_edges[index] * coeff;
+    lhs_lp += m_lp_edges[index] * coeff;
+  }
+
+  cout << "Is tight: " << (lhs_best  == candidate.best_rhs) << "\n";
+  cout << "lp lhs: " << lhs_lp << "\n";
+  cout << "viol: " << fabs(lhs_lp - candidate.best_rhs) << "\n";
+
+  return 1;
+    
 
  CLEANUP:
   if(rval == 1)
@@ -78,7 +100,7 @@ int Cut<general>::init_mip(const double piv_val,
 
   cout << "Setting branch callback func...";
   rval = CPXsetsolvecallbackfunc(m_lp.cplex_env, &solvecallback,
-				  NULL);
+				  &callback_arg);
   if(rval) { cerr << "Couldn't set callback func, "; goto CLEANUP; }
   cout << "Done\n";
 
@@ -87,10 +109,6 @@ int Cut<general>::init_mip(const double piv_val,
 
   rval = PSEPlp_addrows(&m_lp, 1, numcols, &rhs, &sense, &rmatbeg,
 			&lp_indices[0], &obj_fun[0]);
-  if(rval) goto CLEANUP;
-
-  rval = CPXsetdblparam(m_lp.cplex_env, CPXPARAM_Simplex_Limits_LowerObj,
-			piv_val);
   if(rval) goto CLEANUP;
 
   if(gencuts.gomory_frac){
@@ -145,10 +163,6 @@ int Cut<general>::revert_lp(){
   if(rval) goto CLEANUP;
   cout << "Done.\n";
 
-  rval = CPXsetdblparam(m_lp.cplex_env, CPXPARAM_Simplex_Limits_LowerObj,
-			-1E75);
-  if(rval) goto CLEANUP;
-
   rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_MIP_Cuts_Gomory, -1);
   if(rval){
     cerr << "Couldn't disable Gomory cuts, ";
@@ -202,55 +216,121 @@ int Cut<general>::make_binary(const int edge){
   return rval;
 }
 
-int Cut<general>::num_added(int &frac, int &disj, int &mir){
-  int rval = PSEPmip_getnumcuts(&m_lp, CPX_CUT_FRAC, &frac);
-  if(rval) goto CLEANUP;
-
-  rval = PSEPmip_getnumcuts(&m_lp, CPX_CUT_DISJ, &disj);
-  if(rval) goto CLEANUP;
-  
-  rval = PSEPmip_getnumcuts(&m_lp, CPX_CUT_MIR, &mir);
-  if(rval) goto CLEANUP;
-
- CLEANUP:
-  if(rval)
-    cerr << "Problem in Cut<general>::num_added\n";
-  return rval;
-}
-
-//callback code adapted from
-// https://www.ibm.com/developerworks/community/forums/html/
-// topic?id=77777777-0000-0000-0000-000014468982
-
 int CPXPUBLIC Cut<general>::solvecallback(CPXCENVptr env, void *cbdata,
 					  int wherefrom, void *cbhandle,
 					  int *useraction_p){
-  int rval = 0, numrows;
+  int rval = 0, numrows, numcols;
   CPXLPptr nodelp;
+  generated_cut *arg = (generated_cut *)cbhandle;
 
   *useraction_p = CPX_CALLBACK_DEFAULT;
   printf("   CALLBACK INVOCATION -- ");
 
   rval = CPXgetcallbacknodelp(env, cbdata, wherefrom, &nodelp);
-  if(rval) goto CLEANUP;
+  if(rval) { fprintf(stderr, "CPXgetcallbacknodelp"); goto CLEANUP; }
 
   numrows = CPXgetnumrows(env, nodelp);
-  printf(" %d rows in LP\n", numrows);
+  numcols = CPXgetnumcols(env, nodelp);
+  printf(" %d rows in LP, %d initial\n", numrows, arg->initial_numrows);
 
-  // printf("Callback is calling primopt....\n");
-  // rval = CPXprimopt(env, nodelp);
-  // if(!rval) *useraction_p = CPX_CALLBACK_SET;
+  if(numrows > arg->initial_numrows){
+    int rmatbeg, surplus, num_nonzero;
+    char sense;
+    double rhs;
+    for(int i = arg->initial_numrows; i < numrows; i++){
+      rval = CPXgetrows(env, nodelp, &num_nonzero, &rmatbeg,
+			&(arg->index_buffer[0]),
+			&(arg->coefficient_buffer[0]), numcols, &surplus, i, i);
+      if(rval) { fprintf(stderr, "CPXgetrows"); goto CLEANUP; }
 
-  // numrows = CPXgetnumrows(env, nodelp);
-  // printf("Callback says %d rows in LP after calling prim opt\n", numrows);
+      rval = CPXgetsense(env, nodelp, &sense, i, i);
+      if(rval) { fprintf(stderr, "CPXgetsense"); goto CLEANUP; }
 
-  // if(numrows > 48){
-  //   printf("Cuts  have been added...trying to force termination?\n");
+      rval = CPXgetrhs(env, nodelp, &rhs, i, i);
+      if(rval) { fprintf(stderr, "CPXgetrhs"); goto CLEANUP; }
+
+      int ind;
+      double coeff;
+      double lhs_lp = 0, lhs_best = 0;
+      printf("ANALYZING ROW NUMBER %d\n", i);
+      
+      for(int j = 0; j < num_nonzero; j++){		
+	ind = arg->index_buffer[j];
+	coeff = arg->coefficient_buffer[j];
+	lhs_lp += arg->m_lp_edges[ind] * coeff;
+	lhs_best += arg->best_tour_edges[ind] * coeff;
+      }
+      bool lp_violated;
+      bool feasible;
+      double viol;
+      bool exact_cut = lhs_best == rhs;
+      bool epsilon_feasible;
+
+      switch(sense){
+      case 'L':
+	lp_violated = lhs_lp > rhs;
+	viol = lhs_lp - rhs;
+	feasible = lhs_best <= rhs;
+	break;
+      case 'G':
+	lp_violated = lhs_lp < rhs;
+	viol = rhs - lhs_lp;
+	feasible = lhs_best >= rhs;
+      default:
+	fprintf(stderr, "Uncaught sense case %c\n", sense);
+	rval = 1;
+	goto CLEANUP;
+      }
+
+      epsilon_feasible = feasible && (fabs(lhs_best - rhs) < LP::EPSILON);
+      printf("    CUT LHS -- best: %.2f, lp %.2f, rhs %.2f, sense %c, ",
+	     lhs_best, lhs_lp, rhs, sense);
+      printf("viol %.2f, nz %d\n", viol, num_nonzero);
+      printf("    CUT IS... violated by LP solution:   %d\n", lp_violated);
+      printf("              tight at best tour:        %d\n", exact_cut);
+      printf("              feasible at best tour:     %d\n", feasible);
+      printf("              eps-feasible at best tour: %d\n", epsilon_feasible);
+
+      if(!feasible || !lp_violated){
+	printf("    discarding infeasible or unviolated cut\n");
+	continue;
+      }
+      
+      if(!epsilon_feasible){
+	printf("   discarding non-tight, non epsilon-feasible cut\n");
+	continue;
+      }
+
+      if(arg->is_best_exact && !exact_cut){
+	printf("   discarding bc exact cuts take precedence over inexact\n");
+	continue;
+      }
+
+      
+      if( (!(arg->is_best_exact) && exact_cut) ||
+	  (viol > arg->best_viol)){
+	arg->best_nonzeros = num_nonzero;
+	arg->best_sense = sense;
+	arg->best_viol = viol;
+	arg->best_rhs = rhs;
+	arg->is_best_exact = exact_cut;
+	for(int k = 0; k < num_nonzero; k++){
+	  arg->best_coeffs[k] = arg->coefficient_buffer[k];
+	  arg->best_indices[k] = arg->index_buffer[k];
+	}
+
+	printf("    ****NEW best cut exact: %d, viol: %.2f\n", exact_cut, viol);
+      }
+    }
+  }
+
+  // if(arg->is_best_exact){
+  //   printf("    found exact best cut...trying to prematurely terminate?\n");
   //   *useraction_p = CPX_CALLBACK_FAIL;
   // }
-
+  
  CLEANUP:
   if(rval)
-    fprintf(stderr, "problem in Cut<general>::solvecallback\n");
+    fprintf(stderr, " problem in Cut<general>::solvecallback\n");
   return rval;
 }

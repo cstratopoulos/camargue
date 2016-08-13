@@ -24,23 +24,35 @@ namespace PSEP{
     static constexpr int max_cuts = 10;
 
     struct generated_cut {
-      generated_cut(){}
+    generated_cut(): best_nonzeros(0), is_best_exact(false), best_viol(0){}
       generated_cut(const int numcols, const int numrows,
 		    const std::vector<int> &_best_tour_edges,
 		    const std::vector<double> &_m_lp_edges):
+      initial_numrows(numrows), best_nonzeros(0), is_best_exact(false),
       best_tour_edges(&_best_tour_edges[0]), m_lp_edges(&_m_lp_edges[0]),
-	num_added(0), nextcut(0) {
+	best_viol(0.0){
 	coefficient_buffer.resize(numcols);
 	index_buffer.resize(numcols);
+
+	best_coeffs.resize(numcols);
+	best_indices.resize(numcols);
       }
+
+      int initial_numrows;
 
       std::vector<double> coefficient_buffer;
       std::vector<int> index_buffer;
+
+      std::vector<double> best_coeffs;
+      std::vector<int> best_indices;
+      int best_nonzeros;
+      char best_sense;
+      double best_rhs;
+      bool is_best_exact;
+      
       int const *best_tour_edges;
       double const *m_lp_edges;
-      
-      int num_added;
-      int nextcut;
+      double best_viol;
     };
     
     int init_mip(const double piv_val, generated_cut &callback_arg);
@@ -48,8 +60,6 @@ namespace PSEP{
 
     int make_all_binary();
     int make_binary(const int edge);
-
-    int num_added(int &frac, int &disj, int &mir);
 
     int deletion_row;
     
