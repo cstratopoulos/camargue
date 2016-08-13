@@ -123,6 +123,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       cout << "\n  Round " << rounds
       	   << ", calling general sep,"
       	   << " piv val: " << piv_val << "\n";
+      cout << LPCore.numrows() << " rows in LP at time of gen cutcall\n";
       print.pivot(piv_stat);
       cut_rval = CutControl.general_sep(piv_val);
       if(cut_rval == 1) goto CLEANUP;

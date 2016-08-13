@@ -29,7 +29,7 @@ namespace PSEP{
 		    const std::vector<int> &_best_tour_edges,
 		    const std::vector<double> &_m_lp_edges):
       best_tour_edges(&_best_tour_edges[0]), m_lp_edges(&_m_lp_edges[0]),
-	num_added(0), nextcut(numrows) {
+	num_added(0), nextcut(0) {
 	coefficient_buffer.resize(numcols);
 	index_buffer.resize(numcols);
       }
@@ -59,12 +59,9 @@ namespace PSEP{
     std::vector<double> &m_lp_edges;
     std::vector<int> &support_indices;
 
-    static int branchcallback (CPXCENVptr xenv, void *cbdata, int wherefrom,
-			   void *cbhandle, int brtype, int brset, int nodecnt,
-			   int bdcnt, const int *nodebeg, const int *xindex,
-			       const char *lu, const double *bd,
-			       const double *nodeest, 
-			       int *useraction_p);
+    static int CPXPUBLIC solvecallback(CPXCENVptr env, void *cbdata,
+				       int wherefrom, void *cbhandle,
+				       int *useraction_p);
   };
 }
 
