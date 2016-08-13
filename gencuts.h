@@ -24,10 +24,11 @@ namespace PSEP{
     static constexpr int max_cuts = 10;
 
     struct generated_cut {
+      generated_cut(){}
       generated_cut(const int numcols, const int numrows,
 		    const std::vector<int> &_best_tour_edges,
-		    const std::vector<int> &_m_lp_edges):
-      best_tour_edges(_best_tour_edges), m_lp_edges(_m_lp_edges),
+		    const std::vector<double> &_m_lp_edges):
+      best_tour_edges(&_best_tour_edges[0]), m_lp_edges(&_m_lp_edges[0]),
 	num_added(0), nextcut(numrows) {
 	coefficient_buffer.resize(numcols);
 	index_buffer.resize(numcols);
@@ -35,14 +36,14 @@ namespace PSEP{
 
       std::vector<double> coefficient_buffer;
       std::vector<int> index_buffer;
-      const std::vector<int> &best_tour_edges;
-      const std::vector<double> &m_lp_edges;
+      int const *best_tour_edges;
+      double const *m_lp_edges;
       
       int num_added;
       int nextcut;
-    }
+    };
     
-    int init_mip(const double piv_val, mip_cut_candidates &callback_arg);
+    int init_mip(const double piv_val, generated_cut &callback_arg);
     int revert_lp();
 
     int make_all_binary();

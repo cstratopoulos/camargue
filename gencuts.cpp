@@ -13,9 +13,9 @@ int Cut<general>::separate(const double piv_val){
   int num_frac, num_mir, num_disj, num_total = 0;
   int numcols = PSEPlp_numcols(&m_lp), numrows = PSEPlp_numrows(&m_lp);
   double objval;
-  mip_cut_candidates generated_cuts(numcols, numrows);
+  generated_cut candidate(numcols, numrows, best_tour_edges, m_lp_edges);
 
-  rval = init_mip(piv_val, generated_cuts);
+  rval = init_mip(piv_val, candidate);
   if(rval) goto CLEANUP;
 
   rval = make_all_binary();
@@ -36,8 +36,7 @@ int Cut<general>::separate(const double piv_val){
        << num_disj << " disjunctive cuts, "
        << num_mir << " MIR cuts\n\n";
 
-  rval = check_cuts(generated_cuts);
-  if(rval) goto CLEANUP;
+  return 1;
 
 
   rval = revert_lp();
@@ -53,7 +52,7 @@ int Cut<general>::separate(const double piv_val){
 }
 
 int Cut<general>::init_mip(const double piv_val,
-			   mip_cut_candidates &callback_args){
+			   generated_cut &callback_arg){
   int numrows = PSEPlp_numrows(&m_lp);
   double cutfactor = (numrows + (double) max_cuts) / numrows;
 
@@ -73,7 +72,7 @@ int Cut<general>::init_mip(const double piv_val,
   if(rval) goto CLEANUP;
 
   rval = CPXsetbranchcallbackfunc(m_lp.cplex_env, &branchcallback,
-				  &callback_args);
+				  &callback_arg);
   if(rval) { cerr << "Couldn't set callback func, "; goto CLEANUP; }
 
   rval = PSEPlp_getobj(&m_lp, &obj_fun[0], numcols);
@@ -219,6 +218,9 @@ int Cut<general>::branchcallback (CPXCENVptr xenv, void *cbdata, int wherefrom,
   (void) brtype; (void) brset; (void) nodecnt; (void) bdcnt; (void) nodebeg;
   (void) xindex; (void) lu; (void) bd; (void) useraction_p;
 
+  printf("BRANCH CALLBACK BEING INVOKED\n");
+  fflush(stdout);
+
 
   generated_cut *const arg = (generated_cut *) cbhandle;
   CPXLPptr nodelp;
@@ -230,9 +232,11 @@ int Cut<general>::branchcallback (CPXCENVptr xenv, void *cbdata, int wherefrom,
   cols = CPXgetnumcols(xenv, nodelp);
 
 
-    for(int i = arg->next_cut; i < rows; i++, j++){
+    for(int i = arg->nextcut; i < rows; i++){
+      printf("   Doing callback on row number %d .....\n", i);
       int rmatbeg, surplus, nzcount;
-      char rhs;
+      char sense;
+      double rhs, lhs_lp = 0, lhs_best = 0;
 
       rval = CPXgetrows(xenv, nodelp, &nzcount, &rmatbeg,
 			&(arg->index_buffer[0]),
@@ -240,16 +244,37 @@ int Cut<general>::branchcallback (CPXCENVptr xenv, void *cbdata, int wherefrom,
 			&surplus, i, i);
       if(rval) { fprintf(stderr, "CPXgetrows failed, "); goto CLEANUP; }
 
-      rval = CPXgetsense(xenv, nodelp, &(arg->senses)[j], i, i);
+      rval = CPXgetsense(xenv, nodelp, &sense, i, i);
       if(rval) { fprintf(stderr, "CPXgetsense failed, "); goto CLEANUP; }
 
-      rval = CPXgetrhs(xenv, nodelp, &(arg->rhs_array)[j], i, i);
+      rval = CPXgetrhs(xenv, nodelp, &rhs, i, i);
       if(rval) { fprintf(stderr, "CPXgetrhs failed, "); goto CLEANUP; }
+
+      for(int j = 0; j < cols; j++){
+	int ind = arg->index_buffer[j];
+	double coeff = arg->coefficient_buffer[j];
+	lhs_lp += arg->m_lp_edges[ind] * coeff;
+	lhs_best += arg->best_tour_edges[ind] * coeff;
+      }
+
+      printf("   This cut LHS, best: %f, lp: %f, rhs: %f\n", lhs_lp,
+	     lhs_best, rhs);
+      printf("    sense:");
+      switch(sense){
+      case 'L':
+	printf("leq\n");
+	break;
+      case 'G':
+	printf("geq\n");
+	break;
+      default:
+	printf("Uncaught other type\n");
+      }
     }
     
 
-  if(rows > arg->next_cut)
-    arg->next_cut = rows;
+  if(rows > arg->nextcut)
+    arg->nextcut = rows;
 
  CLEANUP:
   if(rval)
