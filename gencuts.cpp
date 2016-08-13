@@ -24,6 +24,7 @@ int Cut<general>::separate(const double piv_val){
   rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_ScreenOutput, CPX_ON);
   if(rval) goto CLEANUP;
 
+  cout << " ***SINGLE INVOCATION OF MIPOPT*****\n";
   rval = PSEPmip_opt(&m_lp);
   if(rval) goto CLEANUP;
 
@@ -228,24 +229,25 @@ int CPXPUBLIC Cut<general>::solvecallback(CPXCENVptr env, void *cbdata,
   CPXLPptr nodelp;
 
   *useraction_p = CPX_CALLBACK_DEFAULT;
+  printf("   CALLBACK INVOCATION -- ");
 
   rval = CPXgetcallbacknodelp(env, cbdata, wherefrom, &nodelp);
   if(rval) goto CLEANUP;
 
   numrows = CPXgetnumrows(env, nodelp);
-  printf("Callback says %d rows in LP\n", numrows);
+  printf(" %d rows in LP\n", numrows);
 
-  printf("Callback is calling primopt....\n");
-  rval = CPXprimopt(env, nodelp);
-  if(!rval) *useraction_p = CPX_CALLBACK_SET;
+  // printf("Callback is calling primopt....\n");
+  // rval = CPXprimopt(env, nodelp);
+  // if(!rval) *useraction_p = CPX_CALLBACK_SET;
 
-  numrows = CPXgetnumrows(env, nodelp);
-  printf("Callback says %d rows in LP after calling prim opt\n", numrows);
+  // numrows = CPXgetnumrows(env, nodelp);
+  // printf("Callback says %d rows in LP after calling prim opt\n", numrows);
 
-  if(numrows > 48){
-    printf("Cuts  have been added...trying to force termination?\n");
-    *useraction_p = CPX_CALLBACK_FAIL;
-  }
+  // if(numrows > 48){
+  //   printf("Cuts  have been added...trying to force termination?\n");
+  //   *useraction_p = CPX_CALLBACK_FAIL;
+  // }
 
  CLEANUP:
   if(rval)
