@@ -21,28 +21,13 @@ namespace PSEP{
     int separate(const int edge, const double piv_val);
 
   private:
-    int init_mip(const double piv_val);
-    int revert_lp();
-
-    int make_all_binary();
-    int make_binary(const int edge);
-
-    int check_cuts();
-    int num_added(int &frac, int &disj, int &mir);
-
-    int deletion_row;
     static constexpr int max_cuts = 10;
-    
-    PSEP::general gencuts;
-    std::vector<int> &best_tour_edges;
-    PSEPlp &m_lp;
-    std::vector<double> &m_lp_edges;
-    std::vector<int> &support_indices;
 
     struct mip_cut_candidates {
-    mip_cut_candidates(const int numcols) :
+    mip_cut_candidates(const int numcols, const int numrows) :
       coefficient_vectors(max_cuts, std::vector<double>(numcols)),
-      index_vectors(max_cuts, std::vector<int>(numcols)) {}
+	index_vectors(max_cuts, std::vector<int>(numcols)),
+	next_cut(numrows){}
            
       std::vector<std::vector<double>> coefficient_vectors;
       std::vector<std::vector<int>> index_vectors;
@@ -50,11 +35,29 @@ namespace PSEP{
       std::array<double, max_cuts> rhs_array;
       int next_cut;
     };
+    
+    int init_mip(const double piv_val, mip_cut_candidates &callback_arg);
+    int revert_lp();
 
-    int branchcallback (CPXCENVptr xenv, void *cbdata, int wherefrom,
+    int make_all_binary();
+    int make_binary(const int edge);
+
+    int check_cuts(mip_cut_candidates &cand_cuts);
+    int num_added(int &frac, int &disj, int &mir);
+
+    int deletion_row;
+    
+    PSEP::general gencuts;
+    std::vector<int> &best_tour_edges;
+    PSEPlp &m_lp;
+    std::vector<double> &m_lp_edges;
+    std::vector<int> &support_indices;
+
+    static int branchcallback (CPXCENVptr xenv, void *cbdata, int wherefrom,
 			   void *cbhandle, int brtype, int brset, int nodecnt,
-			   int bdcnt, const double *nodeest, const int *nodebeg,
-			   const int *xindex, const char *lu, const int *bd,
+			   int bdcnt, const int *nodebeg, const int *xindex,
+			       const char *lu, const double *bd,
+			       const double *nodeest, 
 			       int *useraction_p);
   };
 }

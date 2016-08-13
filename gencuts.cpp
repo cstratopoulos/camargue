@@ -11,9 +11,11 @@ using namespace PSEP;
 int Cut<general>::separate(const double piv_val){
   int rval = 0;
   int num_frac, num_mir, num_disj, num_total = 0;
+  int numcols = PSEPlp_numcols(&m_lp), numrows = PSEPlp_numrows(&m_lp);
   double objval;
+  mip_cut_candidates generated_cuts(numcols, numrows);
 
-  rval = init_mip(piv_val);
+  rval = init_mip(piv_val, generated_cuts);
   if(rval) goto CLEANUP;
 
   rval = make_all_binary();
@@ -47,7 +49,8 @@ int Cut<general>::separate(const double piv_val){
   return rval;
 }
 
-int Cut<general>::init_mip(const double piv_val){
+int Cut<general>::init_mip(const double piv_val,
+			   mip_cut_candidates &callback_args){
   int numrows = PSEPlp_numrows(&m_lp);
   double cutfactor = (numrows + (double) max_cuts) / numrows;
 
@@ -65,6 +68,10 @@ int Cut<general>::init_mip(const double piv_val){
 
   rval = PSEPlp_make_mip(&m_lp);
   if(rval) goto CLEANUP;
+
+  rval = CPXsetbranchcallbackfunc(m_lp.cplex_env, &branchcallback,
+				  &callback_args);
+  if(rval) { cerr << "Couldn't set callback func, "; goto CLEANUP; }
 
   rval = PSEPlp_getobj(&m_lp, &obj_fun[0], numcols);
   if(rval) goto CLEANUP;
@@ -148,6 +155,9 @@ int Cut<general>::revert_lp(){
   rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_Threads, 0);
   if(rval) { cerr << "Couldn't revert threads, "; goto CLEANUP; }
 
+  rval = CPXsetbranchcallbackfunc(m_lp.cplex_env, NULL, NULL);
+  if(rval) { cerr << "Couldn't get rid of branch callback, "; goto CLEANUP; }
+
  CLEANUP:
   if(rval)
     cerr << "Problem in Cut<general>::revert_lp\n";
@@ -199,9 +209,10 @@ int Cut<general>::num_added(int &frac, int &disj, int &mir){
 
 int Cut<general>::branchcallback (CPXCENVptr xenv, void *cbdata, int wherefrom,
 			   void *cbhandle, int brtype, int brset, int nodecnt,
-			   int bdcnt, const double *nodeest, const int *nodebeg,
-			   const int *xindex, const char *lu, const int *bd,
-			   int *useraction_p){
+			   int bdcnt, const int *nodebeg, const int *xindex,
+			       const char *lu, const double *bd,
+			       const double *nodeest, 
+			       int *useraction_p){
   (void) brtype; (void) brset; (void) nodecnt; (void) bdcnt; (void) nodebeg;
   (void) xindex; (void) lu; (void) bd; (void) useraction_p;
 
