@@ -98,12 +98,11 @@ double Core::set_edges(){
 int Core::rebuild_basis(bool prune){
   int rval = 0, infeas = 0;
   int ecount = m_lp_edges.size();
-  int ncount = best_tour_nodes.size();
-  double rebuild_time;
   int num_removed = 0;
   double objval;
   old_colstat.resize(ecount);
 
+  double rebuild_time = PSEP_zeit();
   for(int i = 0; i < m_lp_edges.size(); i++)
     m_lp_edges[i] = best_tour_edges[i];
 
@@ -119,20 +118,18 @@ int Core::rebuild_basis(bool prune){
   rval = set_edges();
   if(rval) goto CLEANUP;
 
+  cout << "Basis rebuild took " << (PSEP_zeit() - rebuild_time) << "s\n";
+
   objval = get_obj_val();
-
-  for(int i = 0; i < m_lp_edges.size(); i++){
-    if(fabs(m_lp_edges[i] - best_tour_edges[i]) >= EPSILON){
-      cerr << "Basis rebuild gave wrong vector\n";
-      rval = 1; goto CLEANUP;
-    }
-  }
-  
-  cout << "Basis rebuild gave right vector\n";
-
-  cout << "After copy start, objval: " << objval << "\n";
   if(fabs(objval - m_min_tour_value) >= EPSILON){
     cerr << "Basis rebuild switched objval\n";
+    for(int i = 0; i < m_lp_edges.size(); i++){
+      if(fabs(m_lp_edges[i] - best_tour_edges[i]) >= EPSILON){
+	cerr << "Basis rebuild gave wrong vector\n";
+	rval = 1; goto CLEANUP;
+      }
+    }  
+    cout << "Basis rebuild gave right vector\n";
     rval = 1; goto CLEANUP;
   }
 
