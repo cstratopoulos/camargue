@@ -38,10 +38,7 @@ namespace PSEP{
     
   public:
     int primal_sep(const int augrounds, const LP::PivType stat);
-    int standard_subtour_sep(const LP::PivType stat);
     int general_sep(const double piv_val);
-    int general_sep(const double piv_val, const int edge);
-    int special_sep();
     
     void profile(){
       std::cout << "   Total time during lightDP sep: " << std::setprecision(4)

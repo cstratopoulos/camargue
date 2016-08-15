@@ -175,15 +175,6 @@ int Cut<general>::make_all_binary(){
   return rval;
 }
 
-int Cut<general>::make_binary(const int edge){
-  char vartype = CPX_BINARY;
-
-  int rval = PSEPmip_change_vartype(&m_lp, 1, &edge, &vartype);
-  if(rval)
-    cerr << "Problem in Cut<general>::make_binary\n";
-  return rval;
-}
-
 int CPXPUBLIC Cut<general>::solvecallback(CPXCENVptr env, void *cbdata,
 					  int wherefrom, void *cbhandle,
 					  int *useraction_p){

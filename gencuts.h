@@ -18,7 +18,6 @@ namespace PSEP{
       m_lp(_m_lp), m_lp_edges(_m_lp_edges), support_indices(_support_indices){}
 
     int separate(const double piv_val);
-    int separate(const int edge, const double piv_val);
 
   private:
     struct generated_cut {
@@ -61,7 +60,6 @@ namespace PSEP{
     int revert_lp();
 
     int make_all_binary();
-    int make_binary(const int edge);
 
     int deletion_row;
     
