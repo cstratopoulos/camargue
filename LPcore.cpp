@@ -99,6 +99,7 @@ int Core::rebuild_basis(bool prune){
   int rval = 0, infeas = 0;
   int ecount = m_lp_edges.size();
   int ncount = best_tour_nodes.size();
+  double rebuild_time;
   int num_removed = 0;
   double objval;
   old_colstat.resize(ecount);
@@ -113,23 +114,26 @@ int Core::rebuild_basis(bool prune){
   if(rval) goto CLEANUP;
 
   rval = factor_basis();
-
+  if(rval) goto CLEANUP;
+  
   rval = set_edges();
   if(rval) goto CLEANUP;
 
   objval = get_obj_val();
-
-  cout << "After copy start, objval: " << objval << "\n";
-  if(fabs(objval - m_min_tour_value) >= EPSILON){
-    cerr << "Basis rebuild switched objval\n";
-    rval = 1; goto CLEANUP;
-  }
 
   for(int i = 0; i < m_lp_edges.size(); i++){
     if(fabs(m_lp_edges[i] - best_tour_edges[i]) >= EPSILON){
       cerr << "Basis rebuild gave wrong vector\n";
       rval = 1; goto CLEANUP;
     }
+  }
+  
+  cout << "Basis rebuild gave right vector\n";
+
+  cout << "After copy start, objval: " << objval << "\n";
+  if(fabs(objval - m_min_tour_value) >= EPSILON){
+    cerr << "Basis rebuild switched objval\n";
+    rval = 1; goto CLEANUP;
   }
 
   rval = PSEPlp_getbase(&m_lp, &old_colstat[0], NULL);
