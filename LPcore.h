@@ -23,6 +23,7 @@ namespace PSEP {
       LPPrune(_LPPrune),
 	m_lp(LPGroup.m_lp), m_graph(GraphGroup.m_graph), prefs(LPGroup.prefs),
 	old_colstat(LPGroup.old_colstat), old_rowstat(LPGroup.old_rowstat),
+	frac_colstat(LPGroup.frac_colstat), frac_rowstat(LPGroup.frac_rowstat),
 	m_lp_edges(LPGroup.m_lp_edges), G_s(SupportGroup.G_s),
 	support_indices(SupportGroup.support_indices),
 	support_elist(SupportGroup.support_elist),
@@ -77,6 +78,8 @@ namespace PSEP {
       friend class PSEP::CutControl;
       std::vector<int> &old_colstat;
       std::vector<int> &old_rowstat;
+      std::vector<int> &frac_colstat;
+      std::vector<int> &frac_rowstat;
 
       std::vector<double> &m_lp_edges;
 

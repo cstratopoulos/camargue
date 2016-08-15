@@ -13,7 +13,8 @@ int Cut<general>::separate(const double piv_val){
   int rval = 0;
   int numcols = PSEPlp_numcols(&m_lp), numrows = PSEPlp_numrows(&m_lp);
   int rmatbeg = 0, num_nonzeros = 0;
-  generated_cut candidate(numcols, numrows + 1, best_tour_edges, m_lp_edges);
+  generated_cut candidate(numcols, numrows + 1, best_tour_edges, m_lp_edges,
+			  frac_colstat, frac_rowstat);
 
   rval = init_mip(piv_val, candidate);
   if(rval) goto CLEANUP;
@@ -31,7 +32,7 @@ int Cut<general>::separate(const double piv_val){
     num_nonzeros = candidate.best_nonzeros;
     cout << "    Found mip cut -- is tight: "
 	 << candidate.is_best_exact << ", ";
-    cout << "num nz: " << num_nonzeros << ",";
+    cout << "num nz: " << num_nonzeros << ", ";
     cout << "rhs: " << setprecision(2) << candidate.best_rhs << ", ";
     cout << "viol: " << candidate.best_viol << setprecision(6) << ". ";
 
@@ -189,24 +190,20 @@ int CPXPUBLIC Cut<general>::solvecallback(CPXCENVptr env, void *cbdata,
   if(rval) { fprintf(stderr, "CPXgetcallbacknodelp"); goto CLEANUP; }
 
   rval = CPXcopystart(env, nodelp,
-		      NULL, NULL,
-		      &arg->m_lp_edges[0], NULL,
+		      arg->frac_colstat, arg->frac_rowstat,
+		      arg->m_lp_edges, NULL,
 		      NULL, NULL);
   if(rval) { fprintf(stderr, "CPXcopystart"); goto CLEANUP; }
 
-  // rval = CPXprimopt(env, nodelp);
-  // if(rval) { fprintf(stderr, "CPXprimopt"); goto CLEANUP; }
+  rval = CPXprimopt(env, nodelp);
+  if(rval) { fprintf(stderr, "CPXprimopt"); goto CLEANUP; }
 
-  // solstat = CPXgetstat(env, nodelp);
-  // if( solstat == CPX_STAT_OPTIMAL ||
-  //     solstat == CPX_STAT_ABORT_IT_LIM ||
-  //     solstat == CPX_STAT_OPTIMAL_INFEAS ) {
-  //   *useraction_p = CPX_CALLBACK_SET;
-  // } else {
-  //   fprintf(stderr, "Solution status %d\n", solstat);
-  //   *useraction_p = CPX_CALLBACK_FAIL;
-  //   rval = 1; goto CLEANUP;
-  // }
+  solstat = CPXgetstat(env, nodelp);
+  if( solstat == CPX_STAT_OPTIMAL ||
+      solstat == CPX_STAT_OPTIMAL_INFEAS ||
+      solstat == CPX_STAT_INFEASIBLE) {
+    *useraction_p = CPX_CALLBACK_SET;
+  }
   
   
   numrows = CPXgetnumrows(env, nodelp);

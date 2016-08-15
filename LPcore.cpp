@@ -361,8 +361,12 @@ int Core::pivot_until_change(PivType &pivot_status){
 	pivot_status = PivType::Tour;
     } else
       pivot_status = PivType::Subtour;
-  } else
+    } else{
       pivot_status = PivType::Frac;
+      frac_colstat.resize(PSEPlp_numcols(&m_lp));
+      frac_rowstat.resize(rowcount);
+      rval = PSEPlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
+    }
 
  CLEANUP:
     if(rval)

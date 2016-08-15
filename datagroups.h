@@ -38,6 +38,8 @@ namespace PSEP {
       std::vector<double> m_lp_edges;
       std::vector<int> old_colstat;
       std::vector<int> old_rowstat;
+      std::vector<int> frac_colstat;
+      std::vector<int> frac_rowstat;
       PSEP::LP::Prefs prefs;
     };
 

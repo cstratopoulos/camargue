@@ -58,7 +58,11 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat){
 }
 
 int CutControl::general_sep(const double piv_val){
+  double gentime = PSEP_zeit();
   int rval = general_cuts.separate(piv_val);
+  gentime = PSEP_zeit() - gentime;
+  total_gentime += gentime;
+  total_gencalls++;
   if(rval == 1)
     cerr << "Problem in CutControl::general_sep\n";
   return rval;

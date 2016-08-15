@@ -29,12 +29,14 @@ int main(int argc, char* argv[]){
     exit(1);
   }
 
-
+  double overall = PSEP_zeit();
   PSEP::TSPSolver solver(probfile, prefs, dat);
-
   dat.reset();
-
-  return solver.call(PSEP::SolutionProtocol::PURECUT);
+  
+  if(solver.call(PSEP::SolutionProtocol::PURECUT))
+    exit(1);
+  cout << "                    everything: "
+       << PSEP_zeit() - overall << "\n";
 }
 
 static int initial_parse(int ac, char **av, string &fname,

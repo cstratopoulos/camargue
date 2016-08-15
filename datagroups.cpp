@@ -205,4 +205,6 @@ LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
 
   old_colstat.resize(m_graph.edge_count, CPX_AT_LOWER);
   old_rowstat.resize(m_graph.node_count, CPX_AT_LOWER);
+  frac_colstat.resize(m_graph.edge_count);
+  frac_rowstat.resize(m_graph.edge_count);
 }

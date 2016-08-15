@@ -105,7 +105,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       goto CLEANUP;
     }
 
-    if(rounds % 25 == 0 && !plan.is_branch()){
+    if(rounds % 50 == 0 && !plan.is_branch()){
       cout << "\n PIVOTING ROUND: " << rounds << " [ "
 	   << (LPCore.numrows() - LPCore.best_tour_nodes.size())
 	   << " cuts in the LP ]\n";
@@ -120,7 +120,6 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     }
 
     if(cut_rval == 2){
-      //      break;
       if(piv_stat == LP::PivType::Subtour){
 	cout << "    ended with inseparable integral subtour\n";
 	break;

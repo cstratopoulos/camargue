@@ -30,10 +30,11 @@ namespace PSEP{
 	      LPGroup.m_lp_edges, SupportGroup.G_s, SupportGroup.support_elist,
 	      SupportGroup.support_ecap),
       general_cuts(true, true, true, BestGroup.best_tour_edges, LPGroup.m_lp,
-		   LPGroup.m_lp_edges, SupportGroup.support_indices),
+		   LPGroup.m_lp_edges, LPGroup.frac_colstat,
+		   LPGroup.frac_rowstat),
       prefs(LPGroup.prefs),
-      total_segtime(0), total_2mtime(0), total_dptime(0),
-      total_segcalls(0), total_2mcalls(0){}
+      total_segtime(0), total_2mtime(0), total_dptime(0), total_gentime(0),
+      total_segcalls(0), total_2mcalls(0), total_gencalls(0){}
 
     
   public:
@@ -46,7 +47,10 @@ namespace PSEP{
       std::cout << "   Average time per segment call: "
 		<< ((double) (total_segtime / total_segcalls)) << "\n";
       std::cout << "                     2match call: "
-		<< ((double) (total_2mtime / total_2mcalls)) << "\n"
+		<< ((double) (total_2mtime / total_2mcalls)) << "\n";
+      std::cout << "                    MIP cut call: "
+		<< (total_gencalls > 0 ?
+		    ((double) (total_gentime / total_gencalls)) : 0) << "\n"
 		<< std::setprecision(6);
     }
 
@@ -59,8 +63,8 @@ namespace PSEP{
 
     PSEP::LP::Prefs &prefs;
 
-    double total_segtime, total_2mtime, total_dptime;
-    int total_segcalls, total_2mcalls;
+    double total_segtime, total_2mtime, total_dptime, total_gentime;
+    int total_segcalls, total_2mcalls, total_gencalls;
   };
 }
 
