@@ -1,4 +1,5 @@
 #include<iostream>
+#include<iomanip>
 
 #include<cmath>
 
@@ -31,8 +32,8 @@ int Cut<general>::separate(const double piv_val){
     cout << "    Found mip cut -- is tight: "
 	 << candidate.is_best_exact << ", ";
     cout << "num nz: " << num_nonzeros << ",";
-    cout << "rhs: " << candidate.best_rhs << ", ";
-    cout << "viol: " << candidate.best_viol << ". ";
+    cout << "rhs: " << setprecision(2) << candidate.best_rhs << ", ";
+    cout << "viol: " << candidate.best_viol << setprecision(6) << ". ";
 
     candidate.best_coeffs.resize(num_nonzeros);
     candidate.best_indices.resize(num_nonzeros);
@@ -129,7 +130,6 @@ int Cut<general>::revert_lp(){
 
   rval = PSEPlp_delrows(&m_lp, deletion_row, deletion_row);
   if(rval) goto CLEANUP;
-  cout << "Done.\n";
 
   rval = CPXsetintparam(m_lp.cplex_env, CPXPARAM_MIP_Cuts_Gomory, -1);
   if(rval){
