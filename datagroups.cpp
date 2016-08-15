@@ -10,11 +10,12 @@ extern "C" {
 using namespace std;
 using namespace PSEP::Data;
 
-GraphGroup::GraphGroup(char *fname, CCdatagroup *dat){
+GraphGroup::GraphGroup(char *fname, unique_ptr<CCdatagroup> &dat){
   int rval = 0;
+  CCdatagroup *rawdat = dat.get();
 
-  CCutil_init_datagroup(dat);
-  rval = CCutil_gettsplib(fname, &(m_graph.node_count), dat);
+  CCutil_init_datagroup(rawdat);
+  rval = CCutil_gettsplib(fname, &(m_graph.node_count), rawdat);
   if (rval){
     fprintf(stderr, "get tsplib failed\n");
     exit(1);
@@ -30,7 +31,7 @@ GraphGroup::GraphGroup(char *fname, CCdatagroup *dat){
     for (int j = i+1; j < ncount; j++){
       m_graph.edges[e_index].end[0] = i;
       m_graph.edges[e_index].end[1] = j;
-      m_graph.edges[e_index].len = CCutil_dat_edgelen(i, j, dat);
+      m_graph.edges[e_index].len = CCutil_dat_edgelen(i, j, rawdat);
       m_graph.edge_lookup.emplace(IntPair(i,j), e_index);
       e_index++;
     }
@@ -41,10 +42,11 @@ GraphGroup::GraphGroup(char *fname, CCdatagroup *dat){
   edge_marks.resize(m_graph.node_count, 0);
 }
 
-BestGroup::BestGroup(const Graph &m_graph, CCdatagroup *dat){
+BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
   int rval = 0;
   CCrandstate rand_state;
   CCedgegengroup plan;
+  CCdatagroup *rawdat = dat.get();
   int ncount = m_graph.node_count;
   int ecount = 0;
   int *elist = (int *) NULL;
@@ -79,13 +81,13 @@ BestGroup::BestGroup(const Graph &m_graph, CCdatagroup *dat){
 
   CCedgegen_init_edgegengroup (&plan);
   plan.quadnearest = 2;
-  rval = CCedgegen_edges (&plan, ncount, dat, (double *) NULL, &ecount,
+  rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &ecount,
 			  &elist, silent, rstate);
   CCcheck_rval (rval, "CCedgegen_edges failed");
   plan.quadnearest = 0;
 
   plan.tour.greedy = 1;
-  rval = CCedgegen_edges (&plan, ncount, dat, (double *) NULL, &tcount,
+  rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &tcount,
 			  &tlist, silent, rstate);
   CCcheck_rval (rval, "CCedgegen_edges failed");
 
@@ -102,7 +104,7 @@ BestGroup::BestGroup(const Graph &m_graph, CCdatagroup *dat){
   }
   CC_FREE (tlist, int);
 
-  rval = CClinkern_tour (ncount, dat, ecount, elist, ncount, kicks,
+  rval = CClinkern_tour (ncount, rawdat, ecount, elist, ncount, kicks,
 			 cyc, &best_tour_nodes[0], &bestval, silent, 0.0, 0.0,
 			 (char *) NULL,
 			 CC_LK_GEOMETRIC_KICK, rstate);
@@ -115,7 +117,7 @@ BestGroup::BestGroup(const Graph &m_graph, CCdatagroup *dat){
   //must be commented out for dummy tour
   
   for(int i = 0; i < trials; i++){
-    rval = CClinkern_tour(ncount, dat, ecount, elist, ncount, kicks,
+    rval = CClinkern_tour(ncount, rawdat, ecount, elist, ncount, kicks,
 			  (int *) NULL, cyc, &val, 1, 0.0, 0.0,
 			  (char *) NULL, CC_LK_GEOMETRIC_KICK, rstate);
     if(rval)
@@ -129,7 +131,7 @@ BestGroup::BestGroup(const Graph &m_graph, CCdatagroup *dat){
   }
 
   if (trials > 0){
-    rval = CClinkern_tour(ncount, dat, ecount, elist, ncount, 2 * kicks,
+    rval = CClinkern_tour(ncount, rawdat, ecount, elist, ncount, 2 * kicks,
 			  &best_tour_nodes[0], cyc, &bestval, 1, 0.0, 0.0,
 			  (char *) NULL,
 			  CC_LK_GEOMETRIC_KICK, rstate);

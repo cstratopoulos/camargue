@@ -2,6 +2,7 @@
 #define PSEP_DATAGROUP_H
 
 #include<vector>
+#include<memory>
 
 #include<math.h>
 
@@ -12,7 +13,7 @@
 namespace PSEP {
   namespace Data {
     struct GraphGroup {
-      GraphGroup(char *fname, CCdatagroup *dat);
+      GraphGroup(char *fname, std::unique_ptr<CCdatagroup> &dat);
   
       Graph m_graph;
       std::vector<int> island;
@@ -21,7 +22,7 @@ namespace PSEP {
     };
 
     struct BestGroup {
-      BestGroup(const Graph &graph, CCdatagroup *dat);
+      BestGroup(const Graph &graph, std::unique_ptr<CCdatagroup> &dat);
       std::vector<int> best_tour_edges;
       std::vector<int> best_tour_nodes;
       std::vector<int> perm;

@@ -7,7 +7,7 @@ using namespace std;
 using namespace PSEP;
 
 TSPSolver::TSPSolver(char *fname, LP::Prefs _prefs,
-		       CCdatagroup *dat) :
+		     unique_ptr<CCdatagroup> &dat) :
   GraphGroup(fname, dat),
   BestGroup(GraphGroup.m_graph, dat),
   LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm){

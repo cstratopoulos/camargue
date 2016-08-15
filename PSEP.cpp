@@ -1,6 +1,7 @@
 #include<iostream>
 #include<string>
 #include<iomanip>
+#include<memory>
 #include<vector>
 
 #include <stdio.h>
@@ -18,7 +19,7 @@ static void usage(char *f);
 
 int main(int argc, char* argv[]){
   PSEP::LP::Prefs prefs;
-  CCdatagroup *dat = new CCdatagroup;
+  unique_ptr<CCdatagroup> dat(new CCdatagroup);
   char *fname;
 
   cout << "BRANCH VERSION: MASTER\n";
@@ -31,7 +32,7 @@ int main(int argc, char* argv[]){
 
   PSEP::TSPSolver solver(fname, prefs, dat);
 
-  delete dat;
+  dat.reset();
 
   return solver.call(PSEP::SolutionProtocol::PURECUT);
 }
