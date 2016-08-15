@@ -65,7 +65,12 @@ int Core::primal_opt(){
 
 int Core::pivot_back(){
   int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
+  if(rval) goto CLEANUP;
 
+  rval = factor_basis();
+  if(rval) goto CLEANUP;
+
+ CLEANUP:
   if(rval)
     cerr << "Error entry point: pivot_back()" << endl;
   return rval;

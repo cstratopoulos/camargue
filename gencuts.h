@@ -21,14 +21,14 @@ namespace PSEP{
     int separate(const int edge, const double piv_val);
 
   private:
-    static constexpr int max_cuts = 10;
-
     struct generated_cut {
-    generated_cut(): best_nonzeros(0), is_best_exact(false), best_viol(0){}
+    generated_cut(): found_cut(false), best_nonzeros(100000),
+	is_best_exact(false), best_viol(0){}
       generated_cut(const int numcols, const int numrows,
 		    const std::vector<int> &_best_tour_edges,
 		    const std::vector<double> &_m_lp_edges):
-      initial_numrows(numrows), best_nonzeros(0), is_best_exact(false),
+      found_cut(false), initial_numrows(numrows), best_nonzeros(numcols),
+	is_best_exact(false),
       best_tour_edges(&_best_tour_edges[0]), m_lp_edges(&_m_lp_edges[0]),
 	best_viol(0.0){
 	coefficient_buffer.resize(numcols);
@@ -37,6 +37,8 @@ namespace PSEP{
 	best_coeffs.resize(numcols);
 	best_indices.resize(numcols);
       }
+
+      bool found_cut;
 
       int initial_numrows;
 

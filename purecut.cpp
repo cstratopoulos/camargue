@@ -68,7 +68,8 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       cout << "\n\n    ROUND " << rounds << " -- ";
       print.pivot(piv_stat);
       cout << "                Pivot objval: "
-	   << LPCore.get_obj_val() << "\n";      
+	   << LPCore.get_obj_val() << "\n";
+      cout << "                * * * * * * * * * *\n";
       break;
     }
 
@@ -123,12 +124,14 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       cout << "\n  Round " << rounds
       	   << ", calling general sep,"
       	   << " piv val: " << piv_val << "\n";
-      cout << LPCore.numrows() << " rows in LP at time of gen cutcall\n";
       print.pivot(piv_stat);
       cut_rval = CutControl.general_sep(piv_val);
       if(cut_rval == 1) goto CLEANUP;
       if(cut_rval == 2) break;
       cut_rval = 0;
+
+      rval = LPCore.pivot_back();
+      if(rval) goto CLEANUP;
     }
   }
 
