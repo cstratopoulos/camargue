@@ -184,7 +184,7 @@ int PSEPlp_no_opt (PSEPlp *lp){
 
   rval = CPXprimopt (lp->cplex_env, lp->cplex_lp);
   if (rval){
-    fprintf(stderr, "CPXdualopt zero iteration failed\n");
+    fprintf(stderr, "CPXprimopt zero iteration failed\n");
     goto CLEANUP;
   }
 

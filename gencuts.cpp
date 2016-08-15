@@ -178,7 +178,7 @@ int Cut<general>::make_all_binary(){
 int CPXPUBLIC Cut<general>::solvecallback(CPXCENVptr env, void *cbdata,
 					  int wherefrom, void *cbhandle,
 					  int *useraction_p){
-  int rval = 0, numrows, numcols;
+  int rval = 0, solstat = 0, numrows, numcols;
   CPXLPptr nodelp;
   generated_cut *arg = (generated_cut *)cbhandle;
 
@@ -188,6 +188,27 @@ int CPXPUBLIC Cut<general>::solvecallback(CPXCENVptr env, void *cbdata,
   rval = CPXgetcallbacknodelp(env, cbdata, wherefrom, &nodelp);
   if(rval) { fprintf(stderr, "CPXgetcallbacknodelp"); goto CLEANUP; }
 
+  rval = CPXcopystart(env, nodelp,
+		      NULL, NULL,
+		      &arg->m_lp_edges[0], NULL,
+		      NULL, NULL);
+  if(rval) { fprintf(stderr, "CPXcopystart"); goto CLEANUP; }
+
+  // rval = CPXprimopt(env, nodelp);
+  // if(rval) { fprintf(stderr, "CPXprimopt"); goto CLEANUP; }
+
+  // solstat = CPXgetstat(env, nodelp);
+  // if( solstat == CPX_STAT_OPTIMAL ||
+  //     solstat == CPX_STAT_ABORT_IT_LIM ||
+  //     solstat == CPX_STAT_OPTIMAL_INFEAS ) {
+  //   *useraction_p = CPX_CALLBACK_SET;
+  // } else {
+  //   fprintf(stderr, "Solution status %d\n", solstat);
+  //   *useraction_p = CPX_CALLBACK_FAIL;
+  //   rval = 1; goto CLEANUP;
+  // }
+  
+  
   numrows = CPXgetnumrows(env, nodelp);
   numcols = CPXgetnumcols(env, nodelp);
   // printf(" %d rows in LP, %d initial\n", numrows, arg->initial_numrows);
