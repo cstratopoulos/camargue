@@ -488,6 +488,18 @@ int PSEPlp_chgcoef (PSEPlp *lp, const int row, const int col,
   return rval;
 }
 
+int PSEPlp_copystart (PSEPlp *lp, int const * cstat, int const * rstat,
+		      double const * cprim, double const * rprim,
+		      double const * cdual, double const * rdual){
+  int rval = CPXcopystart(lp->cplex_env, lp->cplex_lp,
+			  cstat, rstat,
+			  cprim, rprim,
+			  cdual, rdual);
+  if(rval)
+    fprintf(stderr, "PSEPlp_copystart failed, rval %d\n", rval);
+  return rval;
+}
+
 int PSEPlp_copybase (PSEPlp *lp, int *colstat, int *rowstat){
   int rval = 0;
   rval = CPXcopybase(lp->cplex_env, lp->cplex_lp, colstat, rowstat);

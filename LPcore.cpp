@@ -101,35 +101,36 @@ int Core::rebuild_basis(bool prune){
   int ncount = best_tour_nodes.size();
   int num_removed = 0;
   double objval;
-  vector<double> tour_obj(ecount);
-  vector<double> old_obj(ecount);
-  vector<int> lp_indices(ecount);
   old_colstat.resize(ecount);
 
-  rval = PSEPlp_getobj(&m_lp, &old_obj[0], ecount);
+  for(int i = 0; i < m_lp_edges.size(); i++)
+    m_lp_edges[i] = best_tour_edges[i];
+
+  rval = PSEPlp_copystart(&m_lp,
+			  NULL, NULL,
+			  &m_lp_edges[0], NULL,
+			  NULL, NULL);
   if(rval) goto CLEANUP;
 
-  for(int i = 0; i < ecount; i++){
-    tour_obj[i] = 1 - (2 * best_tour_edges[i]);
-    lp_indices[i] = i;
-  }
-
-  rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &tour_obj[0]);
-  if(rval) goto CLEANUP;
-
-  rval = PSEPlp_primal_opt(&m_lp, &infeas);
-  if(rval) goto CLEANUP;
-
-  rval = PSEPlp_objval(&m_lp, &objval);
-  if(objval != -ncount){
-    cerr << "Basis rebuild gave wrong solution, objval: "
-	 << objval << "\n";
-    rval = 1;
-    goto CLEANUP;
-  }
+  rval = factor_basis();
 
   rval = set_edges();
   if(rval) goto CLEANUP;
+
+  objval = get_obj_val();
+
+  cout << "After copy start, objval: " << objval << "\n";
+  if(fabs(objval - m_min_tour_value) >= EPSILON){
+    cerr << "Basis rebuild switched objval\n";
+    rval = 1; goto CLEANUP;
+  }
+
+  for(int i = 0; i < m_lp_edges.size(); i++){
+    if(fabs(m_lp_edges[i] - best_tour_edges[i]) >= EPSILON){
+      cerr << "Basis rebuild gave wrong vector\n";
+      rval = 1; goto CLEANUP;
+    }
+  }
 
   rval = PSEPlp_getbase(&m_lp, &old_colstat[0], NULL);
   if(rval) goto CLEANUP;
@@ -139,10 +140,6 @@ int Core::rebuild_basis(bool prune){
     if(rval) goto CLEANUP;
     cout << "Removed " << num_removed << " cuts from the LP\n";
   }
-
-
-  rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &old_obj[0]);
-  if(rval) goto CLEANUP;
     
  CLEANUP:
   if(rval)

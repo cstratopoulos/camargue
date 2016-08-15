@@ -126,6 +126,11 @@ int PSEPlp_chgsense (PSEPlp *lp, const int count, int const * indices,
 int PSEPlp_chgcoef (PSEPlp *lp, const int row, const int col,
 		    const double newvalue);
 
+//copies a starting solution and/or basis for use by optimizers
+int PSEPlp_copystart (PSEPlp *lp, int const * cstat, int const * rstat,
+		      double const * cprim, double const * rprim,
+		      double const * cdual, double const * rdual);
+
 //copies basis statuses into the LP
 int PSEPlp_copybase ( PSEPlp *lp, int *colstat, int *rowstat);
 
