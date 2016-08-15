@@ -118,7 +118,7 @@ int Core::rebuild_basis(bool prune){
   rval = set_edges();
   if(rval) goto CLEANUP;
 
-  cout << "Basis rebuild took " << (PSEP_zeit() - rebuild_time) << "s\n";
+  cout << "    Basis rebuild took " << (PSEP_zeit() - rebuild_time) << "s\n";
 
   objval = get_obj_val();
   if(fabs(objval - m_min_tour_value) >= EPSILON){
