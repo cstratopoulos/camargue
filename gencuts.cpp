@@ -309,10 +309,10 @@ int CPXPUBLIC Cut<general>::solvecallback(CPXCENVptr env, void *cbdata,
     }
   }
 
-  // if(arg->is_best_exact){
-  //   printf("    found exact best cut...trying to prematurely terminate?\n");
-  //   *useraction_p = CPX_CALLBACK_FAIL;
-  // }
+  if(arg->is_best_exact){
+    //printf("    found exact best cut...trying to prematurely terminate?\n");
+    *useraction_p = CPX_CALLBACK_FAIL;
+  }
   
  CLEANUP:
   if(rval)
