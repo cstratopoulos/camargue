@@ -1,4 +1,4 @@
-BRANCH VERSION: MASTER
+
 Devex pricing
 Problem Name: a280
 drilling problem (Ludwig)
@@ -53,9 +53,160 @@ Removed 8 cuts from the LP
 
  Total time for Purecut::solve: 1.31125s
          LPFix::redcost_fixing: 0.053036s
-                    everything: 1.6074
+                    Total runtime: 1.6074
+
+
+Devex pricing
+Problem Name: att48
+48 capitals of the US (Padberg/Rinaldi)
+Problem Type: TSP
+Number of Nodes: 48
+ATT Norm (CC_ATT)
+LK seed: 1471297543, 0 trials
+LK initial run: 10628
+Optimized LP in 0.001s, integrality gap: 586.5.
+635 edges removable. 493 remain, ratio 10.3 * ncount)
+Pivoting until optimality or no more cuts
+
+  Round 30, calling general sep, piv val: 10622.7
+    Found mip cut -- is tight: 1, num nz: 2, rhs: 1, viol: 0.5. Added.
+
+
+    ROUND 35 -- Pivot status: Tour fathomed optimal
+                Pivot objval: 10628
+                * * * * * * * * * *
+  54 cutting planes added over 35 rounds of separation
+   Total time during lightDP sep: 0s
+   Average time per segment call: 2.274e-05
+                     2match call: 0.00022
+                    MIP cut call: 0.04678
+
+ Total time for Purecut::solve: 0.092518s
+         LPFix::redcost_fixing: 0.001291s
+                    Total runtime: 0.123331
+
+
+
+True steepest edge
+Problem Name: bier127
+127 Biergaerten in Augsburg (Juenger/Reinelt)
+Problem Type: TSP
+Number of Nodes: 127
+Rounded Euclidean Norm (CC_EUCLIDEAN)
+LK seed: 1471297590, 2 trials
+LK initial run: 118282
+LK run 0: 118282
+LK run 1: 118282
+LK run from best tour: 118282
+Optimized LP in 0.03s, integrality gap: 6006.
+1550 edges removable. 6451 remain, ratio 50.8 * ncount)
+Pivoting until optimality or no more cuts
+Calling edge elimination again...
+
+  Optimized LP in 0.06s, integrality gap: 286.375.
+13 edges fixable, 6028 edges removable. 423 remain, ratio 3.33 * ncount)
+    Basis rebuild took 0.000742s
+Removed 17 cuts from the LP
+
+ PIVOTING ROUND: 50 [ 66 cuts in the LP ]
+   Pivot status: Fractional
+   Pivot objval: 118057
+   Avg piv time: 0.029s, (longest 0.053s)
+
+  Round 51, calling general sep, piv val: 118038
+    Found mip cut -- is tight: 1, num nz: 32, rhs: 0, viol: 0.5. Added.
+
+  Round 57, calling general sep, piv val: 118059
+    Found mip cut -- is tight: 1, num nz: 19, rhs: 0, viol: 0.5. Added.
+
+  Round 71, calling general sep, piv val: 118168
+    Found mip cut -- is tight: 1, num nz: 10, rhs: 3, viol: 0.25. Added.
+
+  Round 77, calling general sep, piv val: 118253
+    Found mip cut -- is tight: 1, num nz: 52, rhs: 6, viol: 0.33. Added.
+
+  Round 87, calling general sep, piv val: 118271
+    Found mip cut -- is tight: 1, num nz: 11, rhs: 4, viol: 0.5. Added.
+
+
+    ROUND 88 -- Pivot status: Tour fathomed optimal
+                Pivot objval: 118282
+                * * * * * * * * * *
+  109 cutting planes added over 88 rounds of separation
+   Total time during lightDP sep: 0s
+   Average time per segment call: 0.0001457
+                     2match call: 0.001553
+                    MIP cut call: 0.2336
+
+ Total time for Purecut::solve: 3.72551s
+         LPFix::redcost_fixing: 0.094545s
+                    Total runtime: 4.2073
+
+
+
+Devex pricing
+Problem Name: berlin52
+Problem Type: TSP
+52 locations in Berlin (Groetschel)
+Number of Nodes: 52
+Rounded Euclidean Norm (CC_EUCLIDEAN)
+LK seed: 1471297465, 0 trials
+LK initial run: 7542
+Optimized LP in 0.001s, integrality gap: 379.
+667 edges removable. 659 remain, ratio 12.7 * ncount)
+Pivoting until optimality or no more cuts
+
+
+    ROUND 4 -- Pivot status: Tour fathomed optimal
+                Pivot objval: 7542
+                * * * * * * * * * *
+  5 cutting planes added over 4 rounds of separation
+   Total time during lightDP sep: 0s
+   Average time per segment call: 3.233e-05
+                     2match call: 0.0001167
+                    MIP cut call: 0
+
+ Total time for Purecut::solve: 0.002413s
+         LPFix::redcost_fixing: 0.001371s
+                    Total runtime: 0.026761
+
+
+Devex pricing
+Problem Name: brazil58
+Problem Type: TSP
+58 cities in Brazil (Ferreira)
+Number of Nodes: 58
+Explicit Lengths (CC_MATRIXNORM)
+LK seed: 1471297500, 0 trials
+LK initial run: 25395
+Optimized LP in 0.001s, integrality gap: 4499.
+21 edges removable. 1632 remain, ratio 28.1 * ncount)
+Pivoting until optimality or no more cuts
+
+  Round 12, calling general sep, piv val: 25354.5
+    Found mip cut -- is tight: 1, num nz: 213, rhs: 1, viol: 0.5. Added.
+
+  Round 14, calling general sep, piv val: 25368.5
+    Found mip cut -- is tight: 1, num nz: 108, rhs: 2, viol: 0.5. Added.
+
+
+    ROUND 16 -- Pivot status: Tour fathomed optimal
+                Pivot objval: 25395
+                * * * * * * * * * *
+  23 cutting planes added over 16 rounds of separation
+   Total time during lightDP sep: 0s
+   Average time per segment call: 3.88e-05
+                     2match call: 0.0001633
+                    MIP cut call: 0.02218
+
+ Total time for Purecut::solve: 0.075556s
+         LPFix::redcost_fixing: 0.001673s
+                    Total runtime: 0.126595
+localhost:PSEP_v4 christos$ 
+
+
 		    
-BRANCH VERSION: MASTER
+
 Devex pricing
 Problem Name: brg180
 Problem Type: TSP
@@ -86,10 +237,10 @@ Pivoting until optimality or no more cuts
 
  Total time for Purecut::solve: 0.616763s
          LPFix::redcost_fixing: 0.019115s
-                    everything: 0.774875
+                    Total runtime: 0.774875
 localhost:PSEP_v4 christos$ 
 
-BRANCH VERSION: MASTER
+
 Devex pricing
 Problem Name: ch130
 Problem Type: TSP
@@ -160,9 +311,9 @@ Removed 5 cuts from the LP
 
  Total time for Purecut::solve: 2.10312s
          LPFix::redcost_fixing: 0.044031s
-                    everything: 2.31326
+                    Total runtime: 2.31326
 
-BRANCH VERSION: MASTER
+
 Devex pricing
 Problem Name: ch150
 Problem Type: TSP
@@ -218,10 +369,10 @@ Removed 2 cuts from the LP
 
  Total time for Purecut::solve: 2.10027s
          LPFix::redcost_fixing: 0.049057s
-                    everything: 2.28706
+                    Total runtime: 2.28706
 
 
-BRANCH VERSION: MASTER
+
 Devex pricing
 Problem Name: dantzig42
 Problem Type: TSP
@@ -264,10 +415,10 @@ Pivoting until optimality or no more cuts
 
  Total time for Purecut::solve: 0.100068s
          LPFix::redcost_fixing: 0.000897s
-                    everything: 0.109656
+                    Total runtime: 0.109656
 
 
-BRANCH VERSION: MASTER
+
 Devex pricing
 Problem Name: eil101
 101-city problem (Christofides/Eilon)
@@ -298,10 +449,10 @@ Pivoting until optimality or no more cuts
 
  Total time for Purecut::solve: 0.0753s
          LPFix::redcost_fixing: 0.003783s
-                    everything: 0.185444
+                    Total runtime: 0.185444
 		    
 
-BRANCH VERSION: MASTER
+
 Devex pricing
 Problem Name: eil76
 76-city problem (Christofides/Eilon)
@@ -329,9 +480,9 @@ Pivoting until optimality or no more cuts
 
  Total time for Purecut::solve: 0.014925s
          LPFix::redcost_fixing: 0.002132s
-                    everything: 0.039825
+                    Total runtime: 0.039825
 
-BRANCH VERSION: MASTER
+
 Devex pricing
 Problem Name: eil51
 51-city problem (Christofides/Eilon)
@@ -356,10 +507,10 @@ Pivoting until optimality or no more cuts
 
  Total time for Purecut::solve: 0.033469s
          LPFix::redcost_fixing: 0.001043s
-                    everything: 0.048349
+                    Total runtime: 0.048349
 
 
-BRANCH VERSION: MASTER
+
 Devex pricing
 Problem Name: gr120
 Problem Type: TSP
@@ -426,10 +577,10 @@ Removed 1 cuts from the LP
 
  Total time for Purecut::solve: 1.73929s
          LPFix::redcost_fixing: 0.03421s
-                    everything: 1.96318
+                    Total runtime: 1.96318
 		    
 
-BRANCH VERSION: MASTER
+
 Devex pricing
 Problem Name: gr202
 Problem Type: TSP
@@ -571,9 +722,133 @@ Removed 2 cuts from the LP
 
  Total time for Purecut::solve: 24.6271s
          LPFix::redcost_fixing: 0.519355s
-                    everything: 26.3405
+                    Total runtime: 26.3405
 
-BRANCH VERSION: MASTER
+
+True steepest edge
+Problem Name: gr48
+Problem Type: TSP
+48-city problem (Groetschel)
+Number of Nodes: 48
+Explicit Lengths (CC_MATRIXNORM)
+LK seed: 1471297782, 0 trials
+LK initial run: 5055
+Optimized LP in 0.002s, integrality gap: 286.
+604 edges removable. 524 remain, ratio 10.9 * ncount)
+Pivoting until optimality or no more cuts
+
+  Round 11, calling general sep, piv val: 5010.5
+    Found mip cut -- is tight: 1, num nz: 2, rhs: 1, viol: 0.5. Added.
+
+  Round 16, calling general sep, piv val: 5043.5
+    Found mip cut -- is tight: 1, num nz: 99, rhs: 2, viol: 0.5. Added.
+
+  Round 17, calling general sep, piv val: 5041
+    Found mip cut -- is tight: 1, num nz: 2, rhs: 1, viol: 0.5. Added.
+Supposed improvement?? objval: 5046
+
+
+    !!!AUGMENTED TOUR!!!!
+Pivot status: New tour
+                Pivot objval: 5046
+               Pruned 10 non-tight cuts from the LP
+
+
+    ROUND 22 -- Pivot status: Tour fathomed optimal
+                Pivot objval: 5046
+                * * * * * * * * * *
+  21 cutting planes added over 22 rounds of separation
+   Total time during lightDP sep: 0s
+   Average time per segment call: 2.37e-05
+                     2match call: 0.0001514
+                    MIP cut call: 0.02395
+
+ Total time for Purecut::solve: 0.108328s
+         LPFix::redcost_fixing: 0.002153s
+                    Total runtime: 0.123898
+
+
+Devex pricing
+Problem Name: gr96
+Problem Type: TSP
+Africa-Subproblem of 666-city TSP (Groetschel)
+Number of Nodes: 96
+Geographical Norm (CC_GEOGRAPHIC)
+LK seed: 1471297862, 0 trials
+LK initial run: 55291
+Optimized LP in 0.003s, integrality gap: 2562.5.
+2711 edges removable. 1849 remain, ratio 19.3 * ncount)
+Pivoting until optimality or no more cuts
+
+  Round 11, calling general sep, piv val: 55115
+    Found mip cut -- is tight: 1, num nz: 2, rhs: 1, viol: 0.5. Added.
+
+  Round 40, calling general sep, piv val: 55061.5
+    Found mip cut -- is tight: 1, num nz: 26, rhs: 3, viol: 0.5. Added.
+
+  Round 47, calling general sep, piv val: 55162
+    Found mip cut -- is tight: 1, num nz: 2, rhs: 1, viol: 0.5. Added.
+Calling edge elimination again...
+
+  Optimized LP in 0.004s, integrality gap: 50.
+30 edges fixable, 1662 edges removable. 187 remain, ratio 1.95 * ncount)
+    Basis rebuild took 0.000219s
+Removed 15 cuts from the LP
+
+ PIVOTING ROUND: 50 [ 71 cuts in the LP ]
+   Pivot status: Fractional
+   Pivot objval: 55224.5
+   Avg piv time: 0.0028s, (longest 0.0059s)
+
+  Round 53, calling general sep, piv val: 55257.8
+    Found mip cut -- is tight: 1, num nz: 4, rhs: 0, viol: 1. Added.
+
+
+    ROUND 54 -- Pivot status: Tour fathomed optimal
+                Pivot objval: 55291
+                * * * * * * * * * *
+  74 cutting planes added over 54 rounds of separation
+   Total time during lightDP sep: 0s
+   Average time per segment call: 6.636e-05
+                     2match call: 0.000473
+                    MIP cut call: 0.08643
+
+ Total time for Purecut::solve: 0.537921s
+         LPFix::redcost_fixing: 0.008333s
+                    Total runtime: 0.649389
+
+
+Devex pricing
+Problem Name: hk48
+Problem Type: TSP
+48-city problem (Held/Karp)
+Number of Nodes: 48
+Explicit Lengths (CC_MATRIXNORM)
+LK seed: 1471297907, 0 trials
+LK initial run: 11461
+Optimized LP in 0.0009s, integrality gap: 264.
+1 edges fixable, 896 edges removable. 232 remain, ratio 4.83 * ncount)
+Pivoting until optimality or no more cuts
+
+  Round 22, calling general sep, piv val: 11450
+    Found mip cut -- is tight: 1, num nz: 2, rhs: 1, viol: 0.5. Added.
+
+
+    ROUND 23 -- Pivot status: Tour fathomed optimal
+                Pivot objval: 11461
+                * * * * * * * * * *
+  35 cutting planes added over 23 rounds of separation
+   Total time during lightDP sep: 0s
+   Average time per segment call: 2.359e-05
+                     2match call: 0.000172
+                    MIP cut call: 0.01426
+
+ Total time for Purecut::solve: 0.032184s
+         LPFix::redcost_fixing: 0.001065s
+                    Total runtime: 0.044243
+
+
+
 Devex pricing
 Problem Name: kroA150
 Problem Type: TSP
@@ -621,9 +896,9 @@ Removed 18 cuts from the LP
 
  Total time for Purecut::solve: 1.09879s
          LPFix::redcost_fixing: 0.030068s
-                    everything: 1.33617
+                    Total runtime: 1.33617
 
-BRANCH VERSION: MASTER
+
 True steepest edge
 Problem Name: kroC100
 Problem Type: TSP
@@ -677,10 +952,10 @@ Removed 14 cuts from the LP
 
  Total time for Purecut::solve: 0.847635s
          LPFix::redcost_fixing: 0.03137s
-                    everything: 0.968679
+                    Total runtime: 0.968679
 
 
-BRANCH VERSION: MASTER
+
 Devex pricing
 Problem Name: lin105
 Problem Type: TSP
@@ -708,4 +983,169 @@ Pivoting until optimality or no more cuts
 
  Total time for Purecut::solve: 0.189547s
          LPFix::redcost_fixing: 0.006203s
-                    everything: 0.322546
+                    Total runtime: 0.322546
+
+
+Devex pricing
+Problem Name: rat99
+Rattled grid (Pulleyblank)
+Problem Type: TSP
+Number of Nodes: 99
+Rounded Euclidean Norm (CC_EUCLIDEAN)
+LK seed: 1471296806, 0 trials
+LK initial run: 1211
+Optimized LP in 0.004s, integrality gap: 13.
+4481 edges removable. 370 remain, ratio 3.74 * ncount)
+Pivoting until optimality or no more cuts
+Calling edge elimination again...
+
+  Optimized LP in 0.006s, integrality gap: 3.64286.
+17 edges fixable, 174 edges removable. 196 remain, ratio 1.98 * ncount)
+    Basis rebuild took 0.000281s
+Removed 5 cuts from the LP
+
+ PIVOTING ROUND: 50 [ 74 cuts in the LP ]
+   Pivot status: Fractional
+   Pivot objval: 1207.94
+   Avg piv time: 0.0014s, (longest 0.0034s)
+
+  Round 73, calling general sep, piv val: 1210.5
+    Found mip cut -- is tight: 1, num nz: 196, rhs: -34, viol: 0.041. Added.
+
+  Round 84, calling general sep, piv val: 1210.37
+    Found mip cut -- is tight: 1, num nz: 70, rhs: 5, viol: 0.25. Added.
+Calling edge elimination again...
+
+  Optimized LP in 0.003s, integrality gap: 2.01791.
+25 edges fixable, 25 edges removable. 171 remain, ratio 1.73 * ncount)
+    Basis rebuild took 0.000257s
+Removed 9 cuts from the LP
+
+ PIVOTING ROUND: 100 [ 121 cuts in the LP ]
+   Pivot status: Fractional
+   Pivot objval: 1209.25
+   Avg piv time: 0.0018s, (longest 0.0047s)
+
+  Round 102, calling general sep, piv val: 1210.75
+    Found mip cut -- is tight: 1, num nz: 82, rhs: 3.1, viol: 0.13. Added.
+
+  Round 116, calling general sep, piv val: 1210.75
+    Found mip cut -- is tight: 1, num nz: 54, rhs: 2.4, viol: 0.14. Added.
+
+  Round 122, calling general sep, piv val: 1210.15
+    Found mip cut -- is tight: 1, num nz: 11, rhs: 3.5, viol: 0.25. Added.
+
+  Round 141, calling general sep, piv val: 1210.88
+    Found mip cut -- is tight: 1, num nz: 16, rhs: 11, viol: 0.5. Added.
+
+
+    ROUND 142 -- Pivot status: Tour fathomed optimal
+                Pivot objval: 1211
+                * * * * * * * * * *
+  163 cutting planes added over 142 rounds of separation
+   Total time during lightDP sep: 0s
+   Average time per segment call: 9.383e-05
+                     2match call: 0.001016
+                    MIP cut call: 0.1719
+
+ Total time for Purecut::solve: 1.526s
+         LPFix::redcost_fixing: 0.014046s
+                    Total runtime: 1.54783
+
+
+Devex pricing
+Problem Name: rd100
+100-city random TSP (Reinelt)
+Problem Type: TSP
+Number of Nodes: 100
+Rounded Euclidean Norm (CC_EUCLIDEAN)
+LK seed: 1471297261, 2 trials
+LK initial run: 7910
+LK run 0: 7910
+LK run 1: 7910
+LK run from best tour: 7910
+Optimized LP in 0.004s, integrality gap: 573.
+1826 edges removable. 3124 remain, ratio 31.2 * ncount)
+Pivoting until optimality or no more cuts
+
+
+    ROUND 39 -- Pivot status: Tour fathomed optimal
+                Pivot objval: 7910
+                * * * * * * * * * *
+  69 cutting planes added over 39 rounds of separation
+   Total time during lightDP sep: 0s
+   Average time per segment call: 8.034e-05
+                     2match call: 0.0004537
+                    MIP cut call: 0
+
+ Total time for Purecut::solve: 0.21649s
+         LPFix::redcost_fixing: 0.004832s
+                    Total runtime: 0.327529
+
+
+Devex pricing
+Problem Name: st70
+Problem Type: TSP
+70-city problem (Smith/Thompson)
+Number of Nodes: 70
+Rounded Euclidean Norm (CC_EUCLIDEAN)
+LK seed: 1471297437, 0 trials
+LK initial run: 675
+Optimized LP in 0.002s, integrality gap: 51.5.
+858 edges removable. 1557 remain, ratio 22.2 * ncount)
+Pivoting until optimality or no more cuts
+
+  Round 49, calling general sep, piv val: 673.5
+    Found mip cut -- is tight: 1, num nz: 2, rhs: 1, viol: 0.5. Added.
+Calling edge elimination again...
+
+  Optimized LP in 0.005s, integrality gap: 1.35714.
+23 edges fixable, 1429 edges removable. 128 remain, ratio 1.83 * ncount)
+    Basis rebuild took 0.000182s
+Removed 16 cuts from the LP
+
+ PIVOTING ROUND: 50 [ 63 cuts in the LP ]
+   Pivot status: Fractional
+   Pivot objval: 673.92
+   Avg piv time: 0.0027s, (longest 0.0056s)
+
+
+    ROUND 71 -- Pivot status: Tour fathomed optimal
+                Pivot objval: 675
+                * * * * * * * * * *
+  84 cutting planes added over 71 rounds of separation
+   Total time during lightDP sep: 0s
+   Average time per segment call: 5.326e-05
+                     2match call: 0.0003925
+                    MIP cut call: 0.1339
+
+ Total time for Purecut::solve: 0.344861s
+         LPFix::redcost_fixing: 0.008005s
+                    Total runtime: 0.385295
+
+
+Devex pricing
+Problem Name: swiss42
+Problem Type: TSP
+42 Staedte Schweiz (Fricker)
+Number of Nodes: 42
+Explicit Lengths (CC_MATRIXNORM)
+LK seed: 1471297966, 0 trials
+LK initial run: 1273
+Optimized LP in 0.0007s, integrality gap: 58.5.
+1 edges fixable, 542 edges removable. 319 remain, ratio 7.6 * ncount)
+Pivoting until optimality or no more cuts
+
+
+    ROUND 12 -- Pivot status: Tour fathomed optimal
+                Pivot objval: 1273
+                * * * * * * * * * *
+  19 cutting planes added over 12 rounds of separation
+   Total time during lightDP sep: 0s
+   Average time per segment call: 2.509e-05
+                     2match call: 0.0001165
+                    MIP cut call: 0
+
+ Total time for Purecut::solve: 0.007766s
+         LPFix::redcost_fixing: 0.000849s
+                    Total runtime: 0.017931

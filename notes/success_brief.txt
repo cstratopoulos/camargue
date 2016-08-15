@@ -1,0 +1,121 @@
+
+Problem Name: a280
+    ROUND 125 -- Pivot status: Tour fathomed optimal
+  161 cutting planes added over 125 rounds of separation
+                    Total runtime: 1.6074
+
+Problem Name: att48
+    ROUND 35 -- Pivot status: Tour fathomed optimal
+  54 cutting planes added over 35 rounds of separation
+                    Total runtime: 0.123331
+True steepest edge
+Problem Name: bier127
+    ROUND 88 -- Pivot status: Tour fathomed optimal
+  109 cutting planes added over 88 rounds of separation
+                    Total runtime: 4.2073
+
+Problem Name: berlin52
+    ROUND 4 -- Pivot status: Tour fathomed optimal
+  5 cutting planes added over 4 rounds of separation
+                    Total runtime: 0.026761
+
+Problem Name: brazil58
+    ROUND 16 -- Pivot status: Tour fathomed optimal
+  23 cutting planes added over 16 rounds of separation
+                    Total runtime: 0.126595
+
+Problem Name: brg180
+    ROUND 28 -- Pivot status: Tour fathomed optimal
+  50 cutting planes added over 28 rounds of separation
+                    Total runtime: 0.774875
+
+Problem Name: ch130
+    ROUND 112 -- Pivot status: Tour fathomed optimal
+  136 cutting planes added over 112 rounds of separation
+                    Total runtime: 2.31326
+
+Problem Name: ch150
+    ROUND 135 -- Pivot status: Tour fathomed optimal
+  192 cutting planes added over 135 rounds of separation
+                    Total runtime: 2.28706
+
+Problem Name: dantzig42
+    ROUND 24 -- Pivot status: Tour fathomed optimal
+  33 cutting planes added over 24 rounds of separation
+                    Total runtime: 0.109656
+
+Problem Name: eil101
+    ROUND 16 -- Pivot status: Tour fathomed optimal
+  26 cutting planes added over 16 rounds of separation
+                    Total runtime: 0.185444
+
+Problem Name: eil76
+    ROUND 7 -- Pivot status: Tour fathomed optimal
+  9 cutting planes added over 7 rounds of separation
+                    Total runtime: 0.039825
+
+Problem Name: eil51
+    ROUND 31 -- Pivot status: Tour fathomed optimal
+  45 cutting planes added over 31 rounds of separation
+                    Total runtime: 0.048349
+
+Problem Name: gr120
+    ROUND 184 -- Pivot status: Tour fathomed optimal
+  231 cutting planes added over 184 rounds of separation
+                    Total runtime: 1.96318
+
+Problem Name: gr202
+    ROUND 410 -- Pivot status: Tour fathomed optimal
+  536 cutting planes added over 410 rounds of separation
+                    Total runtime: 26.3405
+		    
+True steepest edge
+Problem Name: gr48
+    ROUND 22 -- Pivot status: Tour fathomed optimal
+  21 cutting planes added over 22 rounds of separation
+                    Total runtime: 0.123898
+
+Problem Name: gr96
+    ROUND 54 -- Pivot status: Tour fathomed optimal
+  74 cutting planes added over 54 rounds of separation
+                    Total runtime: 0.649389
+
+Problem Name: hk48
+    ROUND 23 -- Pivot status: Tour fathomed optimal
+  35 cutting planes added over 23 rounds of separation
+                    Total runtime: 0.044243
+
+Problem Name: kroA150
+    ROUND 92 -- Pivot status: Tour fathomed optimal
+  121 cutting planes added over 92 rounds of separation
+                    Total runtime: 1.33617
+True steepest edge
+Problem Name: kroC100
+    ROUND 79 -- Pivot status: Tour fathomed optimal
+  102 cutting planes added over 79 rounds of separation
+                    Total runtime: 0.968679
+
+Problem Name: lin105
+    ROUND 37 -- Pivot status: Tour fathomed optimal
+  59 cutting planes added over 37 rounds of separation
+                    Total runtime: 0.322546
+
+Problem Name: rat99
+    ROUND 142 -- Pivot status: Tour fathomed optimal
+  163 cutting planes added over 142 rounds of separation
+                    Total runtime: 1.54783
+
+Problem Name: rd100
+    ROUND 39 -- Pivot status: Tour fathomed optimal
+  69 cutting planes added over 39 rounds of separation
+                    Total runtime: 0.327529
+
+Problem Name: st70
+    ROUND 71 -- Pivot status: Tour fathomed optimal
+  84 cutting planes added over 71 rounds of separation
+                    Total runtime: 0.385295
+
+Problem Name: swiss42
+    ROUND 12 -- Pivot status: Tour fathomed optimal
+  19 cutting planes added over 12 rounds of separation
+                    Total runtime: 0.017931
