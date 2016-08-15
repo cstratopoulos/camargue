@@ -29,7 +29,7 @@ namespace PSEP{
 	      BestGroup.best_tour_nodes, BestGroup.perm, LPGroup.m_lp,
 	      LPGroup.m_lp_edges, SupportGroup.G_s, SupportGroup.support_elist,
 	      SupportGroup.support_ecap),
-      general_cuts(true, true, false, BestGroup.best_tour_edges, LPGroup.m_lp,
+      general_cuts(true, true, true, BestGroup.best_tour_edges, LPGroup.m_lp,
 		   LPGroup.m_lp_edges, SupportGroup.support_indices),
       prefs(LPGroup.prefs),
       total_segtime(0), total_2mtime(0), total_dptime(0),

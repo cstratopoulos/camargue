@@ -121,6 +121,10 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 
     if(cut_rval == 2){
       //      break;
+      if(piv_stat == LP::PivType::Subtour){
+	cout << "    ended with inseparable integral subtour\n";
+	break;
+      }
       cout << "\n  Round " << rounds
       	   << ", calling general sep,"
       	   << " piv val: " << piv_val << "\n";
