@@ -10,12 +10,13 @@ extern "C" {
 using namespace std;
 using namespace PSEP::Data;
 
-GraphGroup::GraphGroup(char *fname, unique_ptr<CCdatagroup> &dat){
+GraphGroup::GraphGroup(const string &fname, unique_ptr<CCdatagroup> &dat){
   int rval = 0;
   CCdatagroup *rawdat = dat.get();
+  char *filestring = const_cast<char *>(fname.data());
 
   CCutil_init_datagroup(rawdat);
-  rval = CCutil_gettsplib(fname, &(m_graph.node_count), rawdat);
+  rval = CCutil_gettsplib(filestring, &(m_graph.node_count), rawdat);
   if (rval){
     fprintf(stderr, "get tsplib failed\n");
     exit(1);

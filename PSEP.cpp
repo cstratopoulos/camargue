@@ -13,33 +13,32 @@
 
 using namespace std;
 
-static int initial_parse(int ac, char **av,char **fname,
+static int initial_parse(int ac, char **av, string &fname,
 			 PSEP::LP::Prefs &prefs);
-static void usage(char *f);
+static void usage(const string &fname);
 
 int main(int argc, char* argv[]){
   PSEP::LP::Prefs prefs;
   unique_ptr<CCdatagroup> dat(new CCdatagroup);
-  char *fname;
+  string probfile;
 
   cout << "BRANCH VERSION: MASTER\n";
 
-  if(initial_parse(argc, argv, &fname, prefs)){
+  if(initial_parse(argc, argv, probfile, prefs)){
     cerr << "Problem parsing arguments" << endl;
     exit(1);
   }
 
 
-  PSEP::TSPSolver solver(fname, prefs, dat);
+  PSEP::TSPSolver solver(probfile, prefs, dat);
 
   dat.reset();
 
   return solver.call(PSEP::SolutionProtocol::PURECUT);
 }
 
-static int initial_parse(int ac, char **av, char **fname,
+static int initial_parse(int ac, char **av, string &fname,
 			 PSEP::LP::Prefs &prefs){
-  *fname = (char *) NULL;
   int pricing_choice = 0;
   int dp_factor = -1;
 
@@ -66,13 +65,13 @@ static int initial_parse(int ac, char **av, char **fname,
   }
 
   if(optind < ac)
-    *fname = av[optind++];
+    fname = av[optind++];
   if(optind != ac){
     usage(av[0]);
     return 1;
   }
 
-  if(!(*fname)){
+  if(fname.empty()){
     printf("Must specify a problem file\n");
     return 1;
   }
@@ -104,8 +103,8 @@ static int initial_parse(int ac, char **av, char **fname,
   return 0;
 }
 
-static void usage(char *f){
-  fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", f);
+static void usage(const string &fname){
+  fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", fname.data());
   fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ---------------\n");
   fprintf(stderr, "-D    only call simpleDP sep after 5x rounds of cuts \n");
   fprintf(stderr, "      with no augmentation. (disabled by default)\n");
