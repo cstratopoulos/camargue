@@ -31,6 +31,7 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     int use_gridsize = randprob.gridsize;
     int allow_dups = 1;
     if(randprob.seed == 0) randprob.seed = (int) PSEP_real_zeit();
+    cout << "Random seed: " << randprob.seed << "\n";
     CCutil_sprand(randprob.seed, &rstate);
     rval = CCutil_getdata((char *) NULL, 1, CC_EUCLIDEAN, &(m_graph.node_count),
 			  rawdat, use_gridsize, allow_dups, &rstate);
