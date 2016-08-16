@@ -140,6 +140,9 @@ int PSEPlp_getbase (PSEPlp *lp, int * colstat, int *rowstat);
 //access the slacks for a range of rows
 int PSEPlp_getslack (PSEPlp *lp, double *slack, int begin, int end);
 
+//access the dual variables for a range of constraints
+int PSEPlp_getpi (PSEPlp *lp, double *pi, int begin, int end);
+
 //access the lower bounds on a range of variables
 int PSEPlp_getlb (PSEPlp *lp, double *lb, int begin, int end);
 
