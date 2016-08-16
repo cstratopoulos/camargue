@@ -73,17 +73,8 @@ current approach is sloppy, could use a big overhaul. Ideas:
 -now that no_opt/basis refactor works, could be possible to skip
 re-optimizing LP
 
-in theory, there should be no prunable slack cuts without tour
-augmentation. there may be a bug either in segcuts or blossoms, should
-check on this. 
-
-CUTCALL REWRITE/MIP SOLVE CALLBACK
-add separate functions to get cuts and add cuts. GET stores a best cut
-and returns a status code (success, fail, no cuts found), but the cut
-is not added until ADD.
-
-It is much quicker to pivot back BEFORE cuts are added, but there is a
-problem with CPLEX generating a lp solution with same objective value
-but no cuts violated by the LP solution we left off with. thus we
-could delay the call to pivot back and add a no_opt to the solve
-callback, then maybe mip opt would generate cuts at the current solution
+MIP CUT DENSITIES
+do some experiments reporting number of nonzeros in segment and
+blossom cuts, hence try to determine a reasonable number or ratio
+of nonzeros and only terminate CPLEX cutting with a tight,
+sufficiently sparse cut
