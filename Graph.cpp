@@ -100,6 +100,8 @@ int G_Utils::build_s_graph (int node_count, int edge_count,
   SNode *n;
   s_adjobj *p;
 
+  if(G_s->nodelist) free(G_s->nodelist);
+  if(G_s->adjspace) free(G_s->adjspace);
   G_s->nodelist = (SNode *) malloc(node_count * sizeof(SNode));
   G_s->adjspace = (s_adjobj *) malloc(2 * edge_count * sizeof(SNode));
   if(!G_s->nodelist || !G_s->adjspace){
