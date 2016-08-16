@@ -13,7 +13,8 @@
 namespace PSEP {
   namespace Data {
     struct GraphGroup {
-      GraphGroup(const std::string &fname, std::unique_ptr<CCdatagroup> &dat);
+      GraphGroup(const std::string &fname, PSEP::RandProb &randprob,
+		 std::unique_ptr<CCdatagroup> &dat);
   
       Graph m_graph;
       std::vector<int> island;

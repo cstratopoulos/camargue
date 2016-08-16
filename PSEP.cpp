@@ -14,23 +14,24 @@
 using namespace std;
 
 static int initial_parse(int ac, char **av, string &fname,
-			 PSEP::LP::Prefs &prefs);
+			 PSEP::RandProb &randprob, PSEP::LP::Prefs &prefs);
 static void usage(const string &fname);
 
 int main(int argc, char* argv[]){
   PSEP::LP::Prefs prefs;
+  PSEP::RandProb randprob;
   unique_ptr<CCdatagroup> dat(new CCdatagroup);
   string probfile;
 
   cout << "BRANCH VERSION: MASTER\n";
 
-  if(initial_parse(argc, argv, probfile, prefs)){
+  if(initial_parse(argc, argv, probfile, randprob, prefs)){
     cerr << "Problem parsing arguments" << endl;
     exit(1);
   }
 
   double overall = PSEP_zeit();
-  PSEP::TSPSolver solver(probfile, prefs, dat);
+  PSEP::TSPSolver solver(probfile, randprob, prefs, dat);
   dat.reset();
   
   if(solver.call(PSEP::SolutionProtocol::PURECUT))
@@ -40,9 +41,14 @@ int main(int argc, char* argv[]){
 }
 
 static int initial_parse(int ac, char **av, string &fname,
+			 PSEP::RandProb &randprob,
 			 PSEP::LP::Prefs &prefs){
+  bool rand = false;
   int pricing_choice = 0;
   int dp_factor = -1;
+  int seed = 0;
+  int ncount = 0;
+  int gridsize = 100;
 
   int c;
 
@@ -51,13 +57,25 @@ static int initial_parse(int ac, char **av, string &fname,
     return 1;
   }
 
-  while((c = getopt(ac, av, "aD:p:")) != EOF) {
+  while((c = getopt(ac, av, "aD:p:Rg:n:s:")) != EOF) {
     switch(c) {
     case 'D':
       dp_factor = atoi(optarg);
       break;
     case 'p':
       pricing_choice = atoi(optarg);
+      break;
+    case 'R':
+      rand = true;
+      break;
+    case 'g':
+      gridsize = atoi(optarg);
+      break;
+    case 'n':
+      ncount = atoi(optarg);
+      break;
+    case 's':
+      seed = atoi(optarg);
       break;
     case '?':
     default:
@@ -73,10 +91,19 @@ static int initial_parse(int ac, char **av, string &fname,
     return 1;
   }
 
-  if(fname.empty()){
-    printf("Must specify a problem file\n");
+  if(fname.empty() && ncount == 0){
+    printf("Must specify a problem file or nodecount for random prob\n");
     return 1;
   }
+
+  if(!fname.empty() && rand){
+    printf("Cannot specify both filename and random problem\n");
+    return 1;
+  }
+
+  randprob.nodecount = ncount;
+  randprob.gridsize = gridsize;
+  randprob.seed = seed;
 
   switch(pricing_choice){
   case 0:
@@ -107,6 +134,8 @@ static int initial_parse(int ac, char **av, string &fname,
 
 static void usage(const string &fname){
   fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", fname.data());
+  fprintf(stderr, "-------FLAG OPTIONS ---------------------------------\n");
+  fprintf(stderr, "-R    generate random problem\n");
   fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ---------------\n");
   fprintf(stderr, "-D    only call simpleDP sep after 5x rounds of cuts \n");
   fprintf(stderr, "      with no augmentation. (disabled by default)\n");
@@ -114,4 +143,8 @@ static void usage(const string &fname){
   fprintf(stderr, "    0 (default) devex\n");
   fprintf(stderr, "    1 steepest edge with slack initial norms\n");
   fprintf(stderr, "    2 true steepest edge.\n");
+  fprintf(stderr, "-g    gridsize for random problem (100 default)\n");
+  fprintf(stderr, "-n    nodecount for random problem (must be nonzero if\n");
+  fprintf(stderr, "      -R is used\n");
+  fprintf(stderr, "-s    random seed for random problem\n");
 }

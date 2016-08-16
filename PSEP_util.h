@@ -8,6 +8,13 @@ namespace PSEP {
   enum class SolutionProtocol {
     PURECUT, ABC
       };
+
+  struct RandProb {
+  RandProb() : nodecount(0), gridsize(100), seed(0) {}
+    int nodecount;
+    int gridsize;
+    int seed;
+  };
   
   namespace LP {
     constexpr double EPSILON = 0.000001;

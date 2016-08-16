@@ -10,17 +10,36 @@ extern "C" {
 using namespace std;
 using namespace PSEP::Data;
 
-GraphGroup::GraphGroup(const string &fname, unique_ptr<CCdatagroup> &dat){
+GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
+		       unique_ptr<CCdatagroup> &dat){
   int rval = 0;
   CCdatagroup *rawdat = dat.get();
   char *filestring = const_cast<char *>(fname.data());
 
   CCutil_init_datagroup(rawdat);
-  rval = CCutil_gettsplib(filestring, &(m_graph.node_count), rawdat);
-  if (rval){
-    fprintf(stderr, "get tsplib failed\n");
-    exit(1);
+
+  if(!fname.empty()){
+    rval = CCutil_gettsplib(filestring, &(m_graph.node_count), rawdat);
+    if (rval){
+      fprintf(stderr, "get tsplib failed\n");
+      exit(1);
+    }
   }
+  else {
+    m_graph.node_count = randprob.nodecount;
+    CCrandstate rstate;
+    int use_gridsize = randprob.gridsize;
+    int allow_dups = 0;
+    if(randprob.seed == 0) randprob.seed = (int) PSEP_real_zeit();
+    CCutil_sprand(randprob.seed, &rstate);
+    rval = CCutil_getdata((char *) NULL, 1, CC_EUCLIDEAN, &(m_graph.node_count),
+			  rawdat, use_gridsize, allow_dups, &rstate);
+    if(rval){
+      fprintf(stderr, "build randprob failed\n");
+      exit(1);
+    }
+  }
+
   
   int ncount = m_graph.node_count;
   int ecount = (ncount * (ncount -1 )) / 2;

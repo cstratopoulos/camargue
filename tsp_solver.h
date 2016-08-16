@@ -14,7 +14,8 @@
 namespace PSEP{
   class TSPSolver {
   public:
-    TSPSolver(const std::string &fname, PSEP::LP::Prefs _prefs,
+    TSPSolver(const std::string &fname, PSEP::RandProb &randprob,
+	      PSEP::LP::Prefs _prefs,
 	      std::unique_ptr<CCdatagroup> &dat);
 
     int call(PSEP::SolutionProtocol solmeth);

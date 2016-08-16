@@ -6,9 +6,9 @@
 using namespace std;
 using namespace PSEP;
 
-TSPSolver::TSPSolver(const string &fname, LP::Prefs _prefs,
+TSPSolver::TSPSolver(const string &fname, RandProb &randprob, LP::Prefs _prefs,
 		     unique_ptr<CCdatagroup> &dat) :
-  GraphGroup(fname, dat),
+  GraphGroup(fname, randprob, dat),
   BestGroup(GraphGroup.m_graph, dat),
   LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm){
   
