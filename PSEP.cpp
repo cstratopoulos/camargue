@@ -23,7 +23,7 @@ int main(int argc, char* argv[]){
   unique_ptr<CCdatagroup> dat(new CCdatagroup);
   string probfile;
 
-  cout << "BRANCH VERSION: AGGRESSIVE PRUNING\n";
+  cout << "BRANCH VERSION: MASTER\n";
 
   if(initial_parse(argc, argv, probfile, randprob, prefs)){
     cerr << "Problem parsing arguments" << endl;
