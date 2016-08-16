@@ -3,8 +3,10 @@
 
 #include <vector>
 #include<queue>
-#include<math.h>
 #include <iostream>
+#include<memory>
+
+#include<math.h>
 
 extern "C" {
 #include <concorde/INCLUDE/cut.h>
