@@ -169,6 +169,7 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
   CC_IFFREE (cyc, int);
   CC_IFFREE (elist, int);
   CC_IFFREE (tlist, int);
+  CCutil_freedatagroup(dat.get());
   if(rval)
     exit(1);
 }
