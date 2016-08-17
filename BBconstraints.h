@@ -16,12 +16,14 @@ namespace PSEP {
     
     class Constraints {
     public:
-    Constraints(Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
+    Constraints(PSEP::BB::BranchPlan _Strategy,
+		Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
 		Data::LPGroup &LPGroup,
 		Data::SupportGroup &SupportGroup,
 		PSEP::BB::RightBranch &_RB, PSEP::BB::EdgeStatuses &_ES,
 		PSEP::LP::CutPrune &_LPPrune, PSEP::LP::Core &_LPCore):
-      ncount(GraphGroup.m_graph.node_count), edges(GraphGroup.m_graph.edges),
+      ncount(GraphGroup.m_graph.node_count), Strategy(_Strategy),
+	edges(GraphGroup.m_graph.edges),
 	best_tour_edges(BestGroup.best_tour_edges),
 	m_lp_edges(LPGroup.m_lp_edges), m_lp(LPGroup.m_lp),
 	support_indices(SupportGroup.support_indices), RBranch(_RB),
@@ -35,10 +37,13 @@ namespace PSEP {
 
     private:
       friend class PSEP::BB::Visitor;
+
+      PSEP::BB::BranchPlan Strategy;
       
       int add_left_clamp(const int edge);
       int remove_left_clamp(const int edge);
 
+      int compute_partner_edge(const int clamp);
       void compute_right_row(const int clamp, const int partner,
 			     std::array<double, 2> &rmatval, double &RHS);
 
@@ -47,8 +52,12 @@ namespace PSEP {
 			     const std::vector<double> &new_tour);
 
       int add_right_branch(const int edge);
-      int add_first_right_rows(const int edge);
+      
+      int add_main_right_rows(const int edge);
+      int add_naive_right_row(const int edge);
+      
       int explore_right(const int edge);
+      
       int update_right_rows();
       int remove_right(const int edge);
 

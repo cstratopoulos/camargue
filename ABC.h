@@ -13,12 +13,13 @@
 namespace PSEP {
   class ABC {
   public:
-  ABC(Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
+  ABC(PSEP::BB::BranchPlan Strategy,
+      Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
       Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup,
       std::vector<double> &lower_bounds,
       PSEP::PureCut &_PureCut):
     EdgeStats(lower_bounds),
-      ConstraintMgr(GraphGroup, BestGroup, LPGroup, SupportGroup,
+      ConstraintMgr(Strategy, GraphGroup, BestGroup, LPGroup, SupportGroup,
 		    RightBranch, EdgeStats, _PureCut.LPPrune,
 		    _PureCut.LPCore),
       Visitor(_PureCut, ConstraintMgr){}

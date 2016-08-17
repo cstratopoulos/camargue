@@ -50,7 +50,8 @@ int TSPSolver::call(SolutionProtocol solmeth){
       return 1;
     }
 
-    ABC.reset(new PSEP::ABC(GraphGroup, BestGroup, LPGroup, SupportGroup,
+    ABC.reset(new PSEP::ABC(BB::BranchPlan::Main,
+			    GraphGroup, BestGroup, LPGroup, SupportGroup,
 			    lower_bounds, *PureCut));
 
     return ABC->solve();

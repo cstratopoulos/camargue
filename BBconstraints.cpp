@@ -180,11 +180,18 @@ int Constraints::compute_right_update(const int clamp, const int partner,
 
 int Constraints::add_right_branch(const int edge){
   int rval = 0;
-  
-  rval = RBranch.active() ? explore_right(edge) :
-    add_first_right_rows(edge);
 
- CLEANUP:
+  switch(Strategy){
+  case BranchPlan::Main:
+    rval = RBranch.active() ? explore_right(edge) :
+      add_main_right_rows(edge);
+    break;
+  case BranchPlan::Naive:
+    rval = 1;
+    cout << "Alternate case goes here\n";
+    break;
+  }
+
   if(rval)
     cerr << "Problem in Constraints::add_right_branch\n";
   return rval;
@@ -212,15 +219,15 @@ int Constraints::explore_right(const int edge){
   return rval;
 }
 
-int Constraints::add_first_right_rows(const int edge){
+int Constraints::add_main_right_rows(const int edge){
   if(RBranch.active()){
-    cerr << "Problem in Constraints::add_first_right_rows: right branch "
+    cerr << "Problem in Constraints::add_main_right_rows: right branch "
 	 << "was already active\n";
     return 1;
   }
 
   if(LPCore.rebuild_basis(true)){
-    cerr << "Problem in Constraints::add_first_right_rows\n";
+    cerr << "Problem in Constraints::add_main_right_rows\n";
   }
 
   int range_start = PSEPlp_numrows(&m_lp), range_end;
@@ -242,7 +249,7 @@ int Constraints::add_first_right_rows(const int edge){
 
     if(PSEPlp_addrows(&m_lp, newrows, newnz, &RHS, &sense,
 		      &rmatbeg, &rmatind[0], &rmatval[0])){
-      cerr << "Problem in BB::Constraints::add_first_right_rows\n";
+      cerr << "Problem in BB::Constraints::add_main_right_rows\n";
       return 1;
     }
 
