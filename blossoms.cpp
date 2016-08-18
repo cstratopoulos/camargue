@@ -69,7 +69,6 @@ int Cut<blossom>::separate(){
 
  CLEANUP:
   CC_IFFREE(cut_nodes, int);
-  //  if(cut_nodes) free(cut_nodes);
   return rval;
 }
 
