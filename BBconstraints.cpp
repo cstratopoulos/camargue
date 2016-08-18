@@ -1,3 +1,5 @@
+#include<algorithm>
+
 #include<cmath>
 
 #include "BBconstraints.h"
@@ -72,13 +74,27 @@ int Constraints::unenforce(unique_ptr<TreeNode> &v){
   return rval;
 }
 
+bool Constraints::naive_compatible(const int clamp, const int partner){
+  int best_part  = best_tour_edges[partner];
+  double lp_clamp = m_lp_edges[clamp], lp_part = m_lp_edges[partner];
+
+  switch(best_part){
+  case 0:
+    return lp_clamp < lp_part;
+  case 1:
+  default:
+    return lp_part < lp_clamp;
+  }
+}
+
 int Constraints::compute_branch_edge(){
   int branch_edge = -1, index;
   double max_under_half = 0.0, min_over_half = 1.0;
   double LB = 0.0, UB = 1.0;
   double lp_weight;
   int max_len = 0;
-
+  naive_branch_candidates.clear();
+  
   for(int i = 0; i < support_indices.size(); i++){
     index = support_indices[i];
     if(EdgeStats.Right.count(index) || EdgeStats.Left.count(index)) continue;
@@ -110,10 +126,28 @@ int Constraints::compute_branch_edge(){
     if(lp_weight < LB || lp_weight > UB || EdgeStats.Right.count(index)
        || EdgeStats.Left.count(index))
       continue;
-    
-    if(edges[index].len > max_len){
-      branch_edge = index;
-      max_len = edges[index].len;
+
+    if(Strategy == BranchPlan::Naive)
+      naive_branch_candidates.push_back(index);
+    else
+      if(edges[index].len > max_len){
+	branch_edge = index;
+	max_len = edges[index].len;
+      }
+  }
+
+  if(Strategy == BranchPlan::Naive){
+    sort(naive_branch_candidates.begin(), naive_branch_candidates.end(),
+	 [this](const int a, const int b) -> bool {
+	   return edges[a].len > edges[b].len; });
+    for(int i = 0; i < naive_branch_candidates.size(); i++){
+      int edge = naive_branch_candidates[i];
+      for(int partner = 0; partner < m_lp_edges.size(); partner++){
+	if(naive_compatible(edge, partner)){
+	  naive_edge_partner = partner;
+	  return branch_edge;
+	}
+      }
     }
   }
 

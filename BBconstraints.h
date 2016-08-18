@@ -39,6 +39,8 @@ namespace PSEP {
       friend class PSEP::BB::Visitor;
 
       PSEP::BB::BranchPlan Strategy;
+
+      bool naive_compatible(const int clamp, const int partner);
       
       int add_left_clamp(const int edge);
       int remove_left_clamp(const int edge);
@@ -71,6 +73,9 @@ namespace PSEP {
       PSEPlp &m_lp;
 
       std::vector<int> &support_indices;
+
+      std::vector<int> naive_branch_candidates;
+      int naive_edge_partner;
 
       PSEP::BB::RightBranch &RBranch;
       PSEP::BB::EdgeStatuses &EdgeStats;
