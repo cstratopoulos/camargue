@@ -43,15 +43,13 @@ namespace PSEP{
     
     void profile(){
       std::cout << "   Total time during lightDP sep: " << std::setprecision(4)
-		<< total_dptime << "s\n";
-      std::cout << "   Average time per segment call: "
-		<< ((double) (total_segtime / total_segcalls)) << "\n";
-      std::cout << "                     2match call: "
-		<< ((double) (total_2mtime / total_2mcalls)) << "\n";
-      std::cout << "                    MIP cut call: "
-		<< (total_gencalls > 0 ?
-		    ((double) (total_gentime / total_gencalls)) : 0) << "\n"
-		<< std::setprecision(6);
+		<< total_dptime << "s\n"
+		<< "                     segment sep: "
+		<< total_segtime << "s\n"
+		<< "                     blossom sep: "
+		<< total_2mtime << "s\n"
+		<< "                         MIP sep: "
+		<< total_gentime << "s\n" << std::setprecision(6);
     }
 
   private:
