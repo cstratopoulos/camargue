@@ -14,7 +14,7 @@ extern "C" {
 
 #include "PSEP_util.h"
 
-namespace PSEP{
+namespace PSEP {
   struct Edge {
   Edge() : removable(false) {}
     Edge(int e0, int e1, int _len);

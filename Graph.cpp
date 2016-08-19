@@ -23,7 +23,8 @@ void Graph::print_edges() {
     }
 }
 
-int GraphUtils::connected(SupportGraph *G, int *icount, std::vector<int> &island,
+int GraphUtils::connected(SupportGraph *G, int *icount,
+			  std::vector<int> &island,
 		       int starting_node){
   *icount = 0;
   for(int i = 0; i < G->node_count; i++)
@@ -37,7 +38,8 @@ int GraphUtils::connected(SupportGraph *G, int *icount, std::vector<int> &island
     return 0;
 }
 
-void GraphUtils::dfs(int n, SupportGraph *G, int *icount, std::vector<int> &island)
+void GraphUtils::dfs(int n, SupportGraph *G, int *icount,
+		     std::vector<int> &island)
 {
   int neighbor;
   SNode *pn;
@@ -55,9 +57,10 @@ void GraphUtils::dfs(int n, SupportGraph *G, int *icount, std::vector<int> &isla
   }
 }
 
-void GraphUtils::get_delta (std::vector<int> &nodelist, std::vector<Edge> &elist,
-			 int *deltacount_p, std::vector<int> &delta,
-			 std::vector<int> &marks){
+void GraphUtils::get_delta (std::vector<int> &nodelist,
+			    std::vector<Edge> &elist,
+			    int *deltacount_p, std::vector<int> &delta,
+			    std::vector<int> &marks){
   for(int i = 0; i < nodelist.size(); i++)
     marks[nodelist[i]] = 1;
 
@@ -90,9 +93,9 @@ void GraphUtils::get_delta (int nsize, int *nlist, int ecount, int *elist,
 }
 
 int GraphUtils::build_s_graph (int node_count, int edge_count,
-			    vector<Edge> &edges,
-			    vector<int> &support_indices,
-			    vector<double> &m_lp_edges, SupportGraph *G_s)
+			       vector<Edge> &edges,
+			       vector<int> &support_indices,
+			       vector<double> &m_lp_edges, SupportGraph *G_s)
 {
   int i, ind, a, b;
   SNode *n;
