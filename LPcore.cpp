@@ -64,11 +64,18 @@ int Core::primal_opt(){
 
 
 int Core::pivot_back(){
+  double objval;
   int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
   if(rval) goto CLEANUP;
 
   rval = factor_basis();
   if(rval) goto CLEANUP;
+
+  objval = get_obj_val();
+  if(fabs(objval - m_min_tour_value) >= EPSILON){
+    cerr << "Wrong obj val: " << objval << ". ";
+    rval = 1;
+  }
 
  CLEANUP:
   if(rval)
@@ -96,7 +103,7 @@ double Core::set_edges(){
 }
 
 int Core::rebuild_basis(bool prune){
-  int rval = 0, infeas = 0;
+  int rval = 0;
   int ecount = m_lp_edges.size();
   int num_removed = 0;
   double objval;
