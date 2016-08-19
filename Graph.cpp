@@ -7,10 +7,11 @@
 using namespace std;
 
 
-Edge::Edge(int e0, int e1, int _len) {
-    end[0] = e0;
-    end[1] = e1;
-    len = _len;
+Edge::Edge(int e0, int e1, int _len):
+  len(_len),
+  removable(false){
+  end[0] = e0;
+  end[1] = e1;
 }
 
 bool Edge::ptr_compare(Edge *e0, Edge *e1) {

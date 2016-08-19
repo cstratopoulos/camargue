@@ -15,11 +15,12 @@ extern "C" {
 #include "PSEP_util.h"
 
 struct Edge {
-  Edge() {}
+Edge() : removable(false) {}
   Edge(int e0, int e1, int _len);
   
   int end[2];
   int len;
+  bool removable;
 
   bool operator<(const Edge& val) const {
     return len < val.len;
