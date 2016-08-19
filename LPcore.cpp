@@ -73,8 +73,12 @@ int Core::pivot_back(){
 
   objval = get_obj_val();
   if(fabs(objval - m_min_tour_value) >= EPSILON){
-    cerr << "Wrong obj val: " << objval << ". ";
-    rval = 1;
+    rval = rebuild_basis(false);
+    if(rval) goto CLEANUP;
+    else {
+      cout << "Fixed bad objval with basis rebuild\n";
+      rval = 1;
+    }
   }
 
  CLEANUP:
@@ -109,7 +113,7 @@ int Core::rebuild_basis(bool prune){
   double objval;
   old_colstat.resize(ecount);
 
-  double rebuild_time = PSEP_zeit();
+  //  double rebuild_time = PSEP_zeit();
   for(int i = 0; i < m_lp_edges.size(); i++)
     m_lp_edges[i] = best_tour_edges[i];
 
@@ -124,8 +128,6 @@ int Core::rebuild_basis(bool prune){
   
   rval = set_edges();
   if(rval) goto CLEANUP;
-
-  cout << "    Basis rebuild took " << (PSEP_zeit() - rebuild_time) << "s\n";
 
   objval = get_obj_val();
   if(fabs(objval - m_min_tour_value) >= EPSILON){
