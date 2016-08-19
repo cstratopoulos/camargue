@@ -8,7 +8,7 @@
 class PSEP_Printer {
  public:
   PSEP_Printer(std::vector<int> & _tour_nodes, std::vector<int> & _tour_edges,
-	       std::vector<double> & _lp_edges, std::vector<Edge> & _edges) :
+	       std::vector<double> & _lp_edges, std::vector<PSEP::Edge> & _edges) :
   tour_nodes(_tour_nodes), tour_edges(_tour_edges),
     m_lp_edges(_lp_edges), edges(_edges) {}
 
@@ -61,7 +61,7 @@ class PSEP_Printer {
   std::vector<int> &tour_nodes;
   std::vector<int> &tour_edges;
   std::vector<double> &m_lp_edges;
-  std::vector<Edge> &edges;
+  std::vector<PSEP::Edge> &edges;
 };
 
 
