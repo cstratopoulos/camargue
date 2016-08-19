@@ -99,26 +99,26 @@ void EdgeFix::delete_edges(){
   for(int i = 0; i < m_graph.edge_count; i++)
     edge_lookup[IntPair(edges[i].end[0], edges[i].end[1])] = edge_delset[i];
 
-  vector<Edge> new_graph_edges;
-  vector<int> new_best_edges;
-  vector<double> new_lp_edges;
-
-  for(int i = 0; i < edge_delset.size(); i++){
-    if(edge_delset[i] != -1){
-      new_best_edges.push_back(best_tour_edges[i]);
-      new_graph_edges.emplace_back(edges[i]);
-      new_lp_edges.push_back(m_lp_edges[i]);
+  for(int i = 0; i < edge_delset.size(); i++)
+    if(edge_delset[i] == -1){
+      edges[i].removable = true;
+      best_tour_edges[i] = -1;
+      m_lp_edges[i] = -1;
     }
-  }
 
-  edges.clear();
-  edges = new_graph_edges;
-  best_tour_edges.clear();
-  best_tour_edges = new_best_edges;
+  best_tour_edges.erase(remove(best_tour_edges.begin(),
+				  best_tour_edges.end(), -1),
+			best_tour_edges.end());
+  m_lp_edges.erase(remove(m_lp_edges.begin(), m_lp_edges.end(), -1),
+		   m_lp_edges.end());
+  edges.erase(remove_if(edges.begin(), edges.end(),
+			[](Edge &e){ return e.removable; }),
+	      edges.end());
+  
+
   
   m_graph.edge_count = edges.size();
   delta.resize(m_graph.edge_count);
-  m_lp_edges = new_lp_edges;
 
   total_time = PSEP_zeit() - total_time;
 
