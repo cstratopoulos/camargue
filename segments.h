@@ -32,8 +32,6 @@ namespace PSEP {
 
     SupportGraph &G_s;
 
-    //G_Utils gu;
-
     std::unique_ptr<seg> best;
   };
 }

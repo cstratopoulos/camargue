@@ -80,7 +80,7 @@ int Cut<blossom>::parse_coeffs(){
 
   deltacount = 0;
 
-  G_Utils::get_delta(best->handle, edges, &deltacount, delta, edge_marks);
+  GraphUtils::get_delta(best->handle, edges, &deltacount, delta, edge_marks);
 
   if(deltacount == 0){
     cerr << "Cuts<blossom>::parse_coeffs returned zero edges\n";

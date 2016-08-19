@@ -275,7 +275,7 @@ double Core::set_support_graph(){
     }
   }
 
-  rval = G_Utils::build_s_graph(m_graph.node_count, support_indices.size(),
+  rval = GraphUtils::build_s_graph(m_graph.node_count, support_indices.size(),
 				m_graph.edges, support_indices, m_lp_edges,
 				&G_s);
   
@@ -360,7 +360,7 @@ int Core::pivot_until_change(PivType &pivot_status){
 
   integral = is_integral();
     if(integral){
-    conn = G_Utils::connected(&G_s, &icount, island, 0);
+    conn = GraphUtils::connected(&G_s, &icount, island, 0);
     if(integral && conn){
       if(dual_feas)
 	pivot_status = PivType::FathomedTour;

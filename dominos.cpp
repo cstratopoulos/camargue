@@ -47,7 +47,7 @@ int Cut<domino>::parse_coeffs(){
   vector<int> domino_delta(ecount, 0);
   int deltacount = 0;
 
-  G_Utils::get_delta(SimpleDP.cut_nodes.size(),
+  GraphUtils::get_delta(SimpleDP.cut_nodes.size(),
 		     &(SimpleDP.cut_nodes)[0], ecount,
 		     &(SimpleDP.cut_elist)[0], &deltacount,
 		     &domino_delta[0], &cut_node_marks[0]);

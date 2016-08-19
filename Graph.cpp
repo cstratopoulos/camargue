@@ -5,6 +5,7 @@
 #include "Graph.h"
 
 using namespace std;
+using namespace PSEP;
 
 
 Edge::Edge(int e0, int e1, int _len):
@@ -12,10 +13,6 @@ Edge::Edge(int e0, int e1, int _len):
   removable(false){
   end[0] = e0;
   end[1] = e1;
-}
-
-bool Edge::ptr_compare(Edge *e0, Edge *e1) {
-    return *e0 < *e1; 
 }
 
 void Graph::print_edges() {
@@ -26,7 +23,7 @@ void Graph::print_edges() {
     }
 }
 
-int G_Utils::connected(SupportGraph *G, int *icount, std::vector<int> &island,
+int GraphUtils::connected(SupportGraph *G, int *icount, std::vector<int> &island,
 		       int starting_node){
   *icount = 0;
   for(int i = 0; i < G->node_count; i++)
@@ -40,7 +37,7 @@ int G_Utils::connected(SupportGraph *G, int *icount, std::vector<int> &island,
     return 0;
 }
 
-void G_Utils::dfs(int n, SupportGraph *G, int *icount, std::vector<int> &island)
+void GraphUtils::dfs(int n, SupportGraph *G, int *icount, std::vector<int> &island)
 {
   int neighbor;
   SNode *pn;
@@ -58,7 +55,7 @@ void G_Utils::dfs(int n, SupportGraph *G, int *icount, std::vector<int> &island)
   }
 }
 
-void G_Utils::get_delta (std::vector<int> &nodelist, std::vector<Edge> &elist,
+void GraphUtils::get_delta (std::vector<int> &nodelist, std::vector<Edge> &elist,
 			 int *deltacount_p, std::vector<int> &delta,
 			 std::vector<int> &marks){
   for(int i = 0; i < nodelist.size(); i++)
@@ -75,7 +72,7 @@ void G_Utils::get_delta (std::vector<int> &nodelist, std::vector<Edge> &elist,
     marks[nodelist[i]] = 0;
 }
 
-void G_Utils::get_delta (int nsize, int *nlist, int ecount, int *elist,
+void GraphUtils::get_delta (int nsize, int *nlist, int ecount, int *elist,
 			 int *deltacount, int *delta, int *marks){
   int i, k = 0;
 
@@ -92,7 +89,7 @@ void G_Utils::get_delta (int nsize, int *nlist, int ecount, int *elist,
   for (i = 0; i < nsize; i++) marks[nlist[i]] = 0;
 }
 
-int G_Utils::build_s_graph (int node_count, int edge_count,
+int GraphUtils::build_s_graph (int node_count, int edge_count,
 			    vector<Edge> &edges,
 			    vector<int> &support_indices,
 			    vector<double> &m_lp_edges, SupportGraph *G_s)

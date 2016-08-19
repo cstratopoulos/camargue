@@ -54,7 +54,7 @@ int Cut<seg>::parse_coeffs(){
   for(int i = best->start; i <= best->end; i++)
     segnodes.push_back(best_tour_nodes[i]);
 
-  G_Utils::get_delta(segnodes, edges, &deltacount, delta, edge_marks);
+  GraphUtils::get_delta(segnodes, edges, &deltacount, delta, edge_marks);
 
   if(deltacount == 0){
     cerr << "Cuts<seg>::parse_coeffs returned no edges\n";
