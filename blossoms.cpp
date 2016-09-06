@@ -63,6 +63,7 @@ int Cut<blossom>::separate(){
     }
 
     cut_ecap[i] = orig_weight;
+    CC_IFFREE(cut_nodes, int);
   }
 
   if(!best) rval = 2;
