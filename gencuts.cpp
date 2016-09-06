@@ -47,7 +47,6 @@ int Cut<general>::separate(const double piv_val){
     else
       cout << "Added.\n";
   } else {
-    cout << "Found no MIP cut, rval = 2\n";    
     rval = 2;
     //goto CLEANUP;
   }    

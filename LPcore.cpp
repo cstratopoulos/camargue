@@ -37,7 +37,7 @@ int Core::single_pivot(){
 
 int Core::nondegenerate_pivot(){
   int infeasible = 0, rval = 0;
-  double lowlimit = m_min_tour_value - 0.1;
+  double lowlimit = m_min_tour_value - EPSILON;
 
   rval = PSEPlp_primal_nd_pivot(&m_lp, &infeasible, lowlimit);
   if(rval || infeasible)
@@ -76,8 +76,9 @@ int Core::pivot_back(){
     rval = rebuild_basis(false);
     if(rval) goto CLEANUP;
     else {
-      cout << "Fixed bad objval with basis rebuild\n";
-      rval = 1;
+      //Bug: maybe return to this later
+      //cout << "Fixed bad objval with basis rebuild\n";
+      rval = 0;
     }
   }
 
@@ -131,14 +132,7 @@ int Core::rebuild_basis(bool prune){
 
   objval = get_obj_val();
   if(fabs(objval - m_min_tour_value) >= EPSILON){
-    cerr << "Basis rebuild switched objval\n";
-    for(int i = 0; i < m_lp_edges.size(); i++){
-      if(fabs(m_lp_edges[i] - best_tour_edges[i]) >= EPSILON){
-	cerr << "Basis rebuild gave wrong vector\n";
-	rval = 1; goto CLEANUP;
-      }
-    }  
-    cout << "Basis rebuild gave right vector\n";
+    cerr << "Basis rebuild switched objval\n";  
     rval = 1; goto CLEANUP;
   }
 
