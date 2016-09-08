@@ -1,0 +1,10 @@
+Reference functions from safe_mir code:
+
+gen_slvr.hpp: SLVRtableauRow(s) for how a Binv row and row of the matrix are
+	      used to get a single row of the tableau
+
+sys_cuts.hpp: CUTSaggregateSystem for how Binv and matrix row are aggregated
+	      in SLVRtableauRow
+	      
+	      CUTSaddMulTo for how individual multiplications are safely 
+	      performed by setting rounding direction
