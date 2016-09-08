@@ -23,7 +23,7 @@
  *          parse_coeffs() - turns cut structure into coefficients that can be
  *                           added to the LP.
  *                         - returns 0 if successful, 1 if an error occurs
- *          add_cut()    - adds the cut found to the LP
+ *          add_cut()    - adds the cut found to the cut queue
  *                       - returns 0 if successful, 1 if an error occurs
  *        
  *    STRUCTURES:
@@ -93,6 +93,17 @@ namespace PSEP {
     bool gomory_frac;
     bool disjunctive;
     bool rounding;
+  };
+
+  struct CPXcut {
+    CPXcut(std::vector<int> &_rmatind, std::vector<double> &_rmatval,
+	   char _sense, double _RHS) :
+    rmatind(_rmatind), rmatval(_rmatval), sense(_sense), RHS(_RHS) {}
+
+    std::vector<int> rmatind;
+    std::vector<double> rmatval;
+    char sense;
+    double RHS;
   };
 
   
