@@ -4,8 +4,13 @@
 
 #include<cmath>
 
-#include<safemir/src/cplex_slvr.hpp>
 #include<safemir/src/gen_slvr.hpp>
+#include<safemir/src/cplex_slvr.hpp>
+
+
+#include "gen_slvr.hpp"
+#include "cplex_slvr.hpp"
+
 
 #include "safegmi.h"
 #include "mip.h"
