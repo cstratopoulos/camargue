@@ -1,10 +1,18 @@
 Reference functions from safe_mir code:
 
-gen_slvr.hpp: SLVRtableauRow(s) for how a Binv row and row of the matrix are
+gen_slvr.hpp: SLVRtableauRow for how a Binv row and row of the matrix are
 	      used to get a single row of the tableau
+	      Sets constraint sense to 'G' (even though it is 'E')
+	      Checks that the desired row number is basic (!!!)
+	      
 
 sys_cuts.hpp: CUTSaggregateSystem for how Binv and matrix row are aggregated
 	      in SLVRtableauRow
 	      
 	      CUTSaddMulTo for how individual multiplications are safely 
 	      performed by setting rounding direction
+
+Basic outline:
+
+1. Get tableau row -- performed for each fractional (basic? nonbasic?) variable
+   
