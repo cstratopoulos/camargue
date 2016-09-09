@@ -99,6 +99,16 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     rval = LPCore.pivot_back();
     if(rval) goto CLEANUP;
 
+
+    cout << "Pivot value: " << piv_val << "\n";
+    print.pivot(piv_stat);
+    if(piv_stat == LP::PivType::Subtour){
+      cerr << "Can't run test on integral subtour pivot\n";
+      rval = 1; goto CLEANUP;
+    }
+    rval = CutControl.safe_gomory_sep();
+    if(rval) goto CLEANUP;
+
     cut_rval = CutControl.primal_sep(augrounds, piv_stat);
     if(cut_rval == 1){
       rval = 1;

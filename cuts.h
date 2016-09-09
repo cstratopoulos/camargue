@@ -95,8 +95,8 @@ namespace PSEP {
     bool rounding;
   };
 
-  struct CPXcut {
-    CPXcut(std::vector<int> &_rmatind, std::vector<double> &_rmatval,
+  struct safeGMI {
+    safeGMI(std::vector<int> &_rmatind, std::vector<double> &_rmatval,
 	   char _sense, double _RHS) :
     rmatind(_rmatind), rmatval(_rmatval), sense(_sense), RHS(_RHS) {}
 
