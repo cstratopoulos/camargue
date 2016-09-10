@@ -1,7 +1,7 @@
 Following Section 5.1 of safe mir paper, the steps of the routine
 
 Step 0. Obtain the constraint matrix
-     gen_slvr.hpp: SLVRformulationRows. See commented note about how to get
+     cplex_slvr.cpp: SLVRformulationRows. See commented note about how to get
      		   form_sys for CUTSsubstituteSlacks to work. It says we must
 		   add a slack variable for each row. 
 
