@@ -4,13 +4,10 @@
 
 #include<cmath>
 
-#include<safemir/src/gen_slvr.hpp>
-#include<safemir/src/cplex_slvr.hpp>
-
-
-#include "gen_slvr.hpp"
-#include "cplex_slvr.hpp"
-
+#define DO_SAFE_MIR_DBL 1
+#include "../programs/safemir/src/gen_slvr.hpp"
+#include "../programs/safemir/src/cplex_slvr.cpp"
+#include "../programs/safemir/src/ds_slvr.cpp"
 
 #include "safegmi.h"
 #include "mip.h"
@@ -80,7 +77,10 @@ int Cut<safeGMI>::test(){
   else
     cout << "It worked?\n";
 
+  cout << "Sense of tableau row: " << char(tab_row_sp->sense) << "\n";
+
   CUTSfreeSpRow(&tab_row_sp);
+  CUTSfreeSystem(form_sys);
   if(basis_info) free(basis_info);
   
   return 1;
