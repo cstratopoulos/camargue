@@ -1,0 +1,61 @@
+Following Section 5.1 of safe mir paper, the steps of the routine
+
+Step 0. Obtain the constraint matrix
+     gen_slvr.hpp: SLVRformulationRows. See commented note about how to get
+     		   form_sys for CUTSsubstituteSlacks to work. It says we must
+		   add a slack variable for each row. 
+
+Step 1. Add slack variables
+     util_cuts.hpp:CUTSaddSlackVariable for each row 
+     		   CUTSslackInfo 'it is important that this function be invoked
+		   		  before actually adding a slack variable'
+
+Step 2. Variable complementation.
+     Paper says to define the sets U and L (but not actually do anything)
+     Achterberg thesis says we only complement variables at their upper bound
+     fix_cuts.hpp: CUTSfixVarInfo and CUTSfixPoint return a new VarInfo (resp 
+     		   point) by fixing....is this what we want
+     ds_cuts.hpp: struct CUTSvarInfo_t it is not clear if this is responsible
+     		  for the L U business....maybe this is just specified manually
+		  according to the rule in the paper
+
+Step 3. Rank fractional basic variables; use this order for next step
+     Rank in nondecreasing value of |\hat x_j - 0.5| i.e., prefer variables
+     closer to 0.5 (hat is redundant since TSP is binary)
+
+Step 4. i. For each fractional basic variable, compute the tableau row
+     	gen_slvr.hpp: SLVRgetTableauRow
+     	ii. For each tableau row, compute the c-MIR inequality using U, L above
+	    ("after first scaling by 1,2,3")
+	iii. Ignore cuts violated by less than 0.001
+	iv. Stop procedure if some fixed number of cuts has been generated
+	safe_mir_dbl.cpp: MIRsafeGetMir_dbl ? This may be the routine for 
+			  actually computing the cuts. 
+			  Assumes 'flips' were computed correctly
+			  WHAT ARE FLIPS!!!!!
+			  MIRsafeFlipGetCoeff_dbl it is not clear what this
+			  does
+	ds_cuts.cpp: CUTSgetFlip (function macro) is called by MIRsafeFlip
+		     with arguments flips, father_index, but 'get' may mean
+		     that the flip was performed already.
+
+Remark: In safe_mir they are generating a round of GMI cuts, but we only want
+	one, the best (vis a vis violation and density) The step above 
+	should(?) give us enough information to perform such a ranking, i.e.,
+	we store a best cut found, hence bringing only one cut to the following
+	step
+
+Step 5. Substitute slacks. Safely substitute slacks in the cut
+     	util_cuts.cpp: CUTSsafeSubstituteSlacks requires form_sys and 
+		       a nonsparse row representation of a cut. 
+		       Says to use template function with the assumption
+		       of nonnegativity (all caps warning)
+	util_cuts.hpp: CUTSsubstituteSlacks template function....what is 
+		       assumption of nonnegativity????
+		       MIRsafeGetMir_dbl returns the cut in sparse format
+        ds_cuts.hpp: CUTSsp2nsp performs this conversion....and then we will 
+		     have to call CUTSnsp2sp to get it back to CPLEX form?
+		     
+Step 6. Scale (read: normalize?) cuts so multipliers/RHS have norm at most 1
+     	util_cuts.hpp: CUTSNormalizeSProw again there is a Safe version in the
+		       cpp file whose use is effectively disabled
