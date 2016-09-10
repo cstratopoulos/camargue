@@ -69,7 +69,7 @@ int CutControl::general_sep(const double piv_val){
 }
 
 int CutControl::safe_gomory_sep(){
-  int rval = safe_gomory.test();
+  int rval = safe_gomory.cutcall();
 
   if(rval == 1)
     cerr << "Problem in CutControl::safe_gomory_sep\n";
