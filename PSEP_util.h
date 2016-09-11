@@ -4,6 +4,8 @@
 #include<utility>
 #include<unordered_map>
 
+#define GOTO_CLEANUP(message) {std::cerr << message; goto CLEANUP;}
+
 namespace PSEP {
   enum class SolutionProtocol {
     PURECUT, ABC
