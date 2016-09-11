@@ -100,14 +100,6 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     if(rval) goto CLEANUP;
 
 
-    cout << "Pivot value: " << piv_val << "\n";
-    print.pivot(piv_stat);
-    if(piv_stat == LP::PivType::Subtour){
-      cerr << "Can't run test on integral subtour pivot\n";
-      rval = 1; goto CLEANUP;
-    }
-    rval = CutControl.safe_gomory_sep();
-    if(rval) goto CLEANUP;
 
     cut_rval = CutControl.primal_sep(augrounds, piv_stat);
     if(cut_rval == 1){
@@ -134,15 +126,10 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 	cout << "    ended with inseparable integral subtour\n";
 	break;
       }
-      cout << "\n  Round " << rounds
-      	   << ", calling general sep,"
-      	   << " piv val: " << piv_val << "\n";
-      cut_rval = CutControl.general_sep(piv_val);
-      if(cut_rval == 1) goto CLEANUP;
-      if(cut_rval == 2) break;
-      cut_rval = 0;
-
-      rval = LPCore.pivot_back();
+      cout << "    Round " << rounds << ", ";
+      cout << " obj: " << piv_val << ", ";
+      cout << "frac solution, testing safe gomory sep...\n";
+      rval = CutControl.safe_gomory_sep();
       if(rval) goto CLEANUP;
     }
   }

@@ -23,7 +23,8 @@ namespace PSEP {
     int cutcall();
 
   private:
-    int get_constraint_matrix();
+    int init_constraint_info();
+    int get_cuts();
     
     PSEPlp &m_lp;
     std::vector<double> &m_lp_edges;
@@ -36,7 +37,9 @@ namespace PSEP {
       vartype(PSEPlp_numcols(&m_lp), 'B'),
 	basis_info((SLVRbasisInfo_t *) NULL),
 	constraint_matrix((CUTSsystem_t<double> *) NULL),
-	tab_row_sparse((CUTSsprow_t<double> *) NULL){
+	tab_row_sparse((CUTSsprow_t<double> *) NULL),
+	var_info((CUTSvarInfo_t<double> *) NULL),
+	flips((CUTSflips_t *) NULL){
 	lp_obj.env = m_lp.cplex_env;
 	lp_obj.prob = m_lp.cplex_lp;
 	lp_obj.ctype = &vartype[0];
@@ -46,6 +49,8 @@ namespace PSEP {
 	SLVRfreeBasisInfo(&basis_info);
 	CUTSfreeSystem(&constraint_matrix);
 	CUTSfreeSpRow(&tab_row_sparse);
+	CUTSfreeVarInfo(&var_info);
+	if(flips->direction) free(flips->direction); free(flips);
       }
       
       std::vector<char> vartype;
@@ -54,7 +59,13 @@ namespace PSEP {
       SLVRbasisInfo_t *basis_info;
 
       CUTSsystem_t<double> *constraint_matrix;
+      
       CUTSsprow_t<double> *tab_row_sparse;
+      CUTSsprow_t<double> *current_cut_sparse;
+      CUTSsprow_t<double> *best_cut_sparse;
+
+      CUTSvarInfo_t<double> *var_info;
+      CUTSflips_t *flips;
     };
 
     std::unique_ptr<SafeMIRGroup> safe_mir_data;
