@@ -9,18 +9,20 @@ Step 1. Add slack variables
      util_cuts.hpp:CUTSaddSlackVariable for each row 
      		   CUTSslackInfo 'it is important that this function be invoked
 		   		  before actually adding a slack variable'
+				  ...no reference anywhere else, does not 
+				  appear to modify rows...actually needed???
 
 Step 2. Variable complementation.
      Paper says to define the sets U and L (but not actually do anything)
      Achterberg thesis says we only complement variables at their upper bound
-     fix_cuts.hpp: CUTSfixVarInfo and CUTSfixPoint return a new VarInfo (resp 
-     		   point) by fixing all variables and complementing
      ds_cuts.hpp: struct CUTSvarInfo_t it is not clear if this is responsible
      		  for the L U business....maybe this is just specified manually
 		  according to the rule in the paper
+		  struct CUTSflips appears to be the complementation struct
      cplex_slvr.cpp: SLVRgetVarInfo populates a CUTSvarInfo_t structure with
      		     information grabbed from CPLEX
-		     with_slacks should be true in our case??
+     gen_mir.hpp: MIRwhoToFlip performs the varaible flips     
+     
 
 Step 3. Rank fractional basic variables; use this order for next step
      Rank in nondecreasing value of |\hat x_j - 0.5| i.e., prefer variables
@@ -32,15 +34,8 @@ Step 4. i. For each fractional basic variable, compute the tableau row
 	    ("after first scaling by 1,2,3")
 	iii. Ignore cuts violated by less than 0.001
 	iv. Stop procedure if some fixed number of cuts has been generated
-	safe_mir_dbl.cpp: MIRsafeGetMir_dbl ? This may be the routine for 
-			  actually computing the cuts. 
-			  Assumes 'flips' were computed correctly
-			  WHAT ARE FLIPS!!!!!
-			  MIRsafeFlipGetCoeff_dbl it is not clear what this
-			  does
-	ds_cuts.cpp: CUTSgetFlip (function macro) is called by MIRsafeFlip
-		     with arguments flips, father_index, but 'get' may mean
-		     that the flip was performed already.
+	safe_mir_dbl.cpp: MIRsafeGetMir_dbl
+	     
 
 Remark: In safe_mir they are generating a round of GMI cuts, but we only want
 	one, the best (vis a vis violation and density) The step above 
@@ -62,15 +57,3 @@ Step 5. Substitute slacks. Safely substitute slacks in the cut
 Step 6. Scale (read: normalize?) cuts so multipliers/RHS have norm at most 1
      	util_cuts.hpp: CUTSNormalizeSProw again there is a Safe version in the
 		       cpp file whose use is effectively disabled
-
-
-REQUIRED DATA STRUCTURES (Possibly to be amalgamated in struct within cutclass)
-	 SLVRcplex_t -- the cplex problem object, initialized from m_lp
-	 CUTSsprow_t<double> -- tab_row_sp, need current and best
-	 SLVRbasisInfo_t -- basis info
-	 CUTSsystem_t<double> -- form_sys, the constraint matrix
-
-Approach: implement steps one at a time, try to grow the conglomerate data
-	  structure, hopefully implement constructors/destructors in a sensible
-	  way
-	  Maybe with each invocation, a new one is created
