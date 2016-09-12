@@ -43,6 +43,10 @@ int Cut<safeGMI>::cutcall(){
 int Cut<safeGMI>::init_constraint_info(){
   int rval = 0;
   int ncols = m_lp_edges.size();
+  int numrows = PSEPlp_numrows(&m_lp);
+
+  cout << "LP currently has " << ncols << " cols, " << numrows << " rows, "
+       << (ncols + numrows) << " total\n";
 
   rval = PSEPlp_copystart(&m_lp, &frac_colstat[0], &frac_rowstat[0],
 			  &m_lp_edges[0], NULL, NULL, NULL);
@@ -141,16 +145,26 @@ int Cut<safeGMI>::get_cuts(){
     cout << "Tab row " << i << " has sense "
 	 << safe_mir_data->tab_row_sparse->sense << ", "
 	 << safe_mir_data->tab_row_sparse->nz << " nonzeros, rhs: "
-	 << safe_mir_data->tab_row_sparse->rhs << "\n";
+	 << safe_mir_data->tab_row_sparse->rhs << ", "
+	 << safe_mir_data->tab_row_sparse->maxnz << " max nonzeros\n";
+
+    int max_ind = 0;
+    for(int j = 0; j < safe_mir_data->tab_row_sparse->nz; j++){
+      if(safe_mir_data->tab_row_sparse->rowind[j] > max_ind){
+	max_ind = safe_mir_data->tab_row_sparse->rowind[j];
+      }
+    }
+
+    cout << "Max index in tableau row is " << max_ind << "\n";
 
     //problem here: supposedly the tableau row contains a higher index
     //than numcols. need to check if it contains slacks somehow?
-    rval = MIRsafeComputeModRhs_dbl(safe_mir_data->tab_row_sparse,
-				    safe_mir_data->var_info,
-				    &modified_rhs,
-				    safe_mir_data->flips);
-    if(rval) GOTO_CLEANUP("MIRsafeComputeModRhs_dbl failed, ");
-    cout << "Modified rhs: " << modified_rhs << "\n";
+    // rval = MIRsafeComputeModRhs_dbl(safe_mir_data->tab_row_sparse,
+    // 				    safe_mir_data->var_info,
+    // 				    &modified_rhs,
+    // 				    safe_mir_data->flips);
+    // if(rval) GOTO_CLEANUP("MIRsafeComputeModRhs_dbl failed, ");
+    // cout << "Modified rhs: " << modified_rhs << "\n";
 				    
   }
   cout << "Got all tab rows and did nothing with them\n";
