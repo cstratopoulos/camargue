@@ -42,11 +42,11 @@ int Cut<safeGMI>::cutcall(){
 
 int Cut<safeGMI>::init_constraint_info(){
   int rval = 0;
-  int ncols = m_lp_edges.size();
+  int numcols = m_lp_edges.size();
   int numrows = PSEPlp_numrows(&m_lp);
 
-  cout << "LP currently has " << ncols << " cols, " << numrows << " rows, "
-       << (ncols + numrows) << " total\n";
+  cout << "LP currently has " << numcols << " cols, " << numrows << " rows, "
+       << (numcols + numrows) << " total\n";
 
   rval = PSEPlp_copystart(&m_lp, &frac_colstat[0], &frac_rowstat[0],
 			  &m_lp_edges[0], NULL, NULL, NULL);
@@ -73,7 +73,7 @@ int Cut<safeGMI>::init_constraint_info(){
     CUTSsystem_t<double> *form_sys = safe_mir_data->constraint_matrix;
 
     for(int i = 0; i < form_sys->sys_rows; i++){
-      rval = CUTSaddSlackVariable(form_sys->rows[i], ncols + i);
+      rval = CUTSaddSlackVariable(form_sys->rows[i], numcols + i);
       if(rval) GOTO_CLEANUP("CUTSaddSlackVariable failed, ");
     }
   }
@@ -89,11 +89,18 @@ int Cut<safeGMI>::init_constraint_info(){
   if(rval) GOTO_CLEANUP("SLVRgetVarInfo failed, ");
   cout << "Got var info, with slacks\n";
 
-  rval = CUTSnewFlips(&(safe_mir_data->flips), ncols);
+  safe_mir_data->full_x = SLVRgetFullX(&(safe_mir_data->lp_obj),
+				       safe_mir_data->constraint_matrix,
+				       &m_lp_edges[0]);
+  if(!safe_mir_data->full_x) GOTO_CLEANUP("SLVRgetFullX failed, ");
+  cout << "Got LP solution plus slacks (full x)\n";
+
+  rval = CUTSnewFlips(&(safe_mir_data->flips), numcols + numrows);
   if(rval) GOTO_CLEANUP("CUTSnewFlips failed, ");
 
-  rval = MIRwhoToFlip(safe_mir_data->var_info, &m_lp_edges[0],
-		      safe_mir_data->flips, ncols);
+  rval = MIRwhoToFlip(safe_mir_data->var_info,
+		      safe_mir_data->full_x,
+		      safe_mir_data->flips, numcols + numrows);
   if(rval) GOTO_CLEANUP("MIRwhoToFlip failed, ");
   cout << "Initialized flips and retrieved flip info, flips->nvars:"
        << safe_mir_data->flips->nvars << "\n";
@@ -108,6 +115,7 @@ int Cut<safeGMI>::init_constraint_info(){
 int Cut<safeGMI>::get_cuts(){
   int rval = 0;
   int numcols = m_lp_edges.size();
+  int numrows = PSEPlp_numrows(&m_lp);
 
   vector<int> frac_basic_vars;
   for(int i = 0; i < support_indices.size(); i++){
@@ -128,9 +136,12 @@ int Cut<safeGMI>::get_cuts(){
 
   cout << "Created and sorted list of fractional basic vars\n";
 
-  rval = (CUTSnewSpRow(&(safe_mir_data->tab_row_sparse), numcols) ||
-	  CUTSnewSpRow(&(safe_mir_data->current_cut_sparse), numcols) ||
-	  CUTSnewSpRow(&(safe_mir_data->best_cut_sparse), numcols));
+  rval = (CUTSnewSpRow(&(safe_mir_data->tab_row_sparse),
+		       numcols + numrows) ||
+	  CUTSnewSpRow(&(safe_mir_data->current_cut_sparse),
+		       numcols + numrows) ||
+	  CUTSnewSpRow(&(safe_mir_data->best_cut_sparse),
+		       numcols + numrows));
   if(rval) GOTO_CLEANUP("Out of memory for tab/cut rows, ");
   cout << "Allocated empty sparse cut/tab rows\n";
   
@@ -145,26 +156,17 @@ int Cut<safeGMI>::get_cuts(){
     cout << "Tab row " << i << " has sense "
 	 << safe_mir_data->tab_row_sparse->sense << ", "
 	 << safe_mir_data->tab_row_sparse->nz << " nonzeros, rhs: "
-	 << safe_mir_data->tab_row_sparse->rhs << ", "
-	 << safe_mir_data->tab_row_sparse->maxnz << " max nonzeros\n";
+	 << safe_mir_data->tab_row_sparse->rhs << ", with slack: "
+	 << safe_mir_data->tab_row_sparse->with_slack << "\n";
 
-    int max_ind = 0;
-    for(int j = 0; j < safe_mir_data->tab_row_sparse->nz; j++){
-      if(safe_mir_data->tab_row_sparse->rowind[j] > max_ind){
-	max_ind = safe_mir_data->tab_row_sparse->rowind[j];
-      }
-    }
-
-    cout << "Max index in tableau row is " << max_ind << "\n";
-
-    //problem here: supposedly the tableau row contains a higher index
-    //than numcols. need to check if it contains slacks somehow?
-    // rval = MIRsafeComputeModRhs_dbl(safe_mir_data->tab_row_sparse,
-    // 				    safe_mir_data->var_info,
-    // 				    &modified_rhs,
-    // 				    safe_mir_data->flips);
-    // if(rval) GOTO_CLEANUP("MIRsafeComputeModRhs_dbl failed, ");
-    // cout << "Modified rhs: " << modified_rhs << "\n";
+    // problem here: supposedly the tableau row contains a higher index
+    // than numcols. need to check if it contains slacks somehow?
+    rval = MIRsafeComputeModRhs_dbl(safe_mir_data->tab_row_sparse,
+    				    safe_mir_data->var_info,
+    				    &modified_rhs,
+    				    safe_mir_data->flips);
+    if(rval) GOTO_CLEANUP("MIRsafeComputeModRhs_dbl failed, ");
+    cout << "Modified rhs: " << modified_rhs << "\n";
 				    
   }
   cout << "Got all tab rows and did nothing with them\n";

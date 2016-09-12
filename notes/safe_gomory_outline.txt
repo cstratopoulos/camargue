@@ -32,6 +32,10 @@ Step 4. i. For each fractional basic variable, compute the tableau row
      	gen_slvr.hpp: SLVRgetTableauRow
      	ii. For each tableau row, compute the c-MIR inequality using U, L above
 	    ("after first scaling by 1,2,3")
+	    scalings are the parameters t_min and t_max passed to scaling-
+	    related functions. 
+	    Default values: t_min 1, t_max 3, max_scalings 15,
+	    	    	    cuts per constraint 10
 	iii. Ignore cuts violated by less than 0.001
 	iv. Stop procedure if some fixed number of cuts has been generated
 	safe_mir_dbl.cpp: MIRsafeGetMir_dbl
