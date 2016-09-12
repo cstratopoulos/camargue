@@ -1,0 +1,61 @@
+SAFE GMI SEPARATION FOLLOWING TEMPLATE OF cutmaster_slvr.hpp
+
+safe_gmi_data structure:
+	      double *lp_full_x
+	      CUTSsystem_t<double> *constraint_rows
+	      CUTSsystem_t<double> *tableau_rows
+	      CUTSvarInfo_t<double> *lp_var_info
+	      SLVRbasisInfo_t *basis_info
+
+	      CUTSsprowlist_t<double> *generated_cuts
+
+constants and tolerances:
+	  t_min 1: minimum scaling factor to use
+	  t_max 3: maximum scaling factor to use
+	  max_scalings 15: max number of scalings to try
+	  cuts per constraint 10: how many diff cuts to generate for one 
+	       	   	      	  constraint
+
+	  eps_eqdata 0: two constants are equal
+	  eps_viol 0.001: a cut is violated
+	  eps_scale 1e-6: comparing scaling coefficients
+	      
+getting basic lp info (SLVRcutmaster)
+	SLVRformulationRows: get the constraint matrix
+	SLVRgetBasisInfo: get basis info
+	SLVRgetFullX: get lp solution + slacks
+	SLVRgetVarInfo: get var info (with_slacks is true)
+	MIRcomputeVarRanking: rank the fractional variables (pass full_x)
+			      may skip this and use my own ranking bc only
+			      want fractional basis STRUCTURAL vars
+	Then we loop over the fractional basic variables
+	SLVRgetTableauRow: use individual calls to get tableau rows, adding
+			   them to tableau_rows, incrementing the size of 
+			   tableau_rows->sys_rows with each call
+
+At this point, SLVRcutter_iter is called, looping through the tableau_rows rows
+For each tableau row....
+    CUTSisCandidate: checks for fractional variables; makes sure row is 
+    		     nontrivial, etc. Row is skipped if not candidate
+    MIRsafeGetMirList_dbl: generates a list of MIR cuts for the
+    			   particular tableau row. Gets
+			   current tableau row
+			   var_info
+			   full_x
+			   var_info->nvars
+			   father_rows->rows[i]->with_slack
+			   lp_vranking
+			   t_min, t_max, maxscalings, cutsperfather
+			   pointer to num generated
+			   epsilon viol, scale, eqdata
+
+The steps above are done for every tableau row, giving the
+generated_cuts list. Then feclearexcept is done?
+	       CUTSlistSubstituteSlacks: substitute slacks in the
+	       				 cuts. Gets:
+					 constraint_rows, numcols,
+					 cutlist
+	       CUTSnormalizeList: scales cut to have norm at most 1
+	       CUTScleanListNotViol: removes unviolated cuts. Gets
+	       			     cutlist and full_x
+	       
