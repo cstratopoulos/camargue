@@ -107,6 +107,19 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       goto CLEANUP;
     }
 
+    if(cut_rval == 2){
+      if(piv_stat == LP::PivType::Subtour){
+	cout << "    ended with inseparable integral subtour\n";
+	break;
+      }
+      cout << "\n    Round " << rounds << ", calling safe GMI sep....\n";
+      rval = CutControl.safe_gomory_sep();
+      if(rval) goto CLEANUP;
+
+      rval = LPCore.pivot_back();
+      if(rval) goto CLEANUP;
+    }
+
     if(rounds % 50 == 0 && !plan.is_branch()){
       cout << "\n PIVOTING ROUND: " << rounds << " [ "
 	   << (LPCore.numrows() - LPCore.best_tour_nodes.size())
@@ -117,20 +130,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       cout << "   Avg piv time: " << setprecision(2)
 	   << ((double) (total_pivtime / rounds)) <<"s, (longest "
 	   << max_pivtime << "s)\n" << setprecision(6);
-      max_pivtime = 0;
-	   
-    }
-
-    if(cut_rval == 2){
-      if(piv_stat == LP::PivType::Subtour){
-	cout << "    ended with inseparable integral subtour\n";
-	break;
-      }
-      cout << "    Round " << rounds << ", ";
-      cout << " obj: " << piv_val << ", ";
-      cout << "frac solution, testing safe gomory sep...\n";
-      rval = CutControl.safe_gomory_sep();
-      if(rval) goto CLEANUP;
+      max_pivtime = 0;	   
     }
   }
 
