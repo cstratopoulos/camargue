@@ -86,15 +86,6 @@ namespace PSEP {
     std::vector<std::shared_ptr<CandTooth::SimpleTooth>> used_teeth;
   };
 
-  struct general {
-  general(bool _gomory, bool _disj, bool _mir) :
-    gomory_frac(_gomory), disjunctive(_disj), rounding(_mir) {}
-
-    bool gomory_frac;
-    bool disjunctive;
-    bool rounding;
-  };
-
   struct safeGMI {
     safeGMI(std::vector<int> &_rmatind, std::vector<double> &_rmatval,
 	   char _sense, double _RHS) :

@@ -8,7 +8,6 @@
 #include "segments.h"
 #include "blossoms.h"
 #include "dominos.h"
-#include "gencuts.h"
 #include "safegmi.h"
 #include "cuts.h"
 #include "PSEP_util.h"
@@ -30,9 +29,6 @@ namespace PSEP{
 	      BestGroup.best_tour_nodes, BestGroup.perm, LPGroup.m_lp,
 	      LPGroup.m_lp_edges, SupportGroup.G_s, SupportGroup.support_elist,
 	      SupportGroup.support_ecap),
-      general_cuts(true, true, true, BestGroup.best_tour_edges, LPGroup.m_lp,
-		   LPGroup.m_lp_edges, LPGroup.frac_colstat,
-		   LPGroup.frac_rowstat),
       safe_gomory(BestGroup.best_tour_edges,
 		  LPGroup.m_lp, LPGroup.m_lp_edges, LPGroup.frac_colstat,
 		  LPGroup.frac_rowstat,
@@ -44,7 +40,6 @@ namespace PSEP{
     
   public:
     int primal_sep(const int augrounds, const LP::PivType stat);
-    int general_sep(const double piv_val);
     int safe_gomory_sep();
     
     void profile(){
@@ -54,7 +49,7 @@ namespace PSEP{
 		<< total_segtime << "s\n"
 		<< "                     blossom sep: "
 		<< total_2mtime << "s\n"
-		<< "                         MIP sep: "
+		<< "                    safe GMI sep: "
 		<< total_gentime << "s\n" << std::setprecision(6);
     }
 
@@ -62,8 +57,6 @@ namespace PSEP{
     PSEP::Cut<PSEP::seg> segments;
     PSEP::Cut<PSEP::blossom> blossoms;
     PSEP::Cut<PSEP::domino> dominos;
-
-    PSEP::Cut<PSEP::general> general_cuts;
 
     PSEP::Cut<PSEP::safeGMI> safe_gomory;
 

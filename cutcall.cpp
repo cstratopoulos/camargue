@@ -57,16 +57,6 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat){
   return rval;
 }
 
-int CutControl::general_sep(const double piv_val){
-
-  int rval = general_cuts.separate(piv_val);
-
-
-  if(rval == 1)
-    cerr << "Problem in CutControl::general_sep\n";
-  return rval;
-}
-
 int CutControl::safe_gomory_sep(){
   double gentime = PSEP_zeit();
   int rval = safe_gomory.cutcall();
