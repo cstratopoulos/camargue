@@ -5,7 +5,6 @@ extern "C" {
 }
 
 #include "datagroups.h"
-#include "mip.h"
 
 using namespace std;
 using namespace PSEP::Data;
@@ -199,9 +198,6 @@ LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
   //Build the basic LP
   PSEPlp_init (&m_lp);
   PSEPlp_create (&m_lp, "subtour");
-
-  //Set MIP/presolve parameters
-  PSEPmip_param(&m_lp);
 
   /* Build a row for each degree equation */
   for(int i = 0; i < m_graph.node_count; i++) {

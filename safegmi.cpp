@@ -18,7 +18,6 @@
 #include<safemir/src/safe_mir_dbl.cpp>
 
 #include "safegmi.h"
-#include "mip.h"
 
 using namespace std;
 using namespace PSEP;
