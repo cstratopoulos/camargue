@@ -1,3 +1,13 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
+ *
+ *               UTILITY FUNCTIONS AND MACROS/ENUM CLASSES
+ *
+ * This header contains namespace and enum classes for labels/constants that
+ * are used elsewhere in the code, as well as some very simple structures
+ *
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef __PSEP_UTIL_H
 #define __PSEP_UTIL_H
 
@@ -7,29 +17,91 @@
 #define PSEP_GOTO_CLEANUP(message) {std::cerr << message; goto CLEANUP;}
 
 namespace PSEP {
+  /*
+   * SolutionProtocol is an enum class for one of the two arguments that may
+   * be passed to the TSPSolver constructor
+   * See pivplan.h for tuning the parameters of each of these protocols
+   *
+   * PURECUT - Attempts to solve the instance by adding only primal cutting
+   *    planes
+   * ABC - Runs PURECUT protocol until some specified termination condition,
+   *    then embeds it in an Augment-Branch-Cut solver
+   */
   enum class SolutionProtocol {
     PURECUT, ABC
       };
 
+  /*
+   * A very simple structure for creating a randomly generated euclidean TSP
+   * instance.
+   *
+   * nodecount - number of cities. a value of zero shall be considered an empty
+   *    or 'null' problem
+   * gridsize - specifies the range of coordinates possible
+   * seed - the random seed. if set to zero, problem will be generated 
+   *    randomly using the current time as seed. Nonzero values will reliably
+   *    generate the same problem.
+   */
   struct RandProb {
   RandProb() : nodecount(0), gridsize(100), seed(0) {}
     int nodecount;
     int gridsize;
     int seed;
   };
-  
+
+  /*
+   * The LP namespace here 
+   * contains constants, enum classes, and stuctures related 
+   * to the LP solver/solutions/relaxations. 
+   */
   namespace LP {
+
+    /* Tolerance by which two doubles are considered equal, or a number is
+     * considered equal to zero
+     */
     constexpr double EPSILON = 0.000001;
+
+    /* The CPLEX default iteration limit for simplex optimizers */
     constexpr long long DEFAULT_ITLIM = 9223372036800000000;
 
+    /*
+     * Pricing is an enum class for methods by which pivot variables may be
+     * selected in the primal simplex method. See CPLEX documentation for more
+     * info
+     *
+     * Devex
+     * SlackSteepest is steepest edge with slack initial norms
+     * Steepest is true steepest edge
+     */
     enum class Pricing {
       Devex, SlackSteepest, Steepest
     };
 
+    /*
+     * PivType is how we categorize LP solutions 
+     *
+     * Frac - fractional solution
+     * Subtour - integral subtour
+     * Tour - an augmented integral tour
+     * FathomedTour - an integral tour that is dual feasible, i.e., optimal
+     *    for the current LP relaxation. 
+     *    With PURECUT solution method, fathomed is synonymous with optimality
+     *    With ABC, this only means optimal at the current branching node
+     */
     enum class PivType {
       Frac, Subtour, Tour, FathomedTour
     };
 
+    /*
+     * Prefs is a simple struct to store preferences for the LP solver.
+     *
+     * price_method is one of the Pricing types indicated above
+     * dp_threshold - controls when simple domino parity inequality separation
+     *    will be called. Negative values mean no simple DP separation, no 
+     *    matter what. Nonnegative values mean simple DP separation will be
+     *    called only after that many rounds of cutting plane generation, or
+     *    if no other cuts are found
+     */
     struct Prefs {
     Prefs() : price_method(Pricing::Devex), dp_threshold(-1) {}
     Prefs(Pricing _price, int _dp_threshold) :
@@ -40,15 +112,21 @@ namespace PSEP {
     };
   }
 
-  
+
+  /*
+   * Some timing functions: zeit for CPU time, real_zeit for wall clock time
+   */
   double zeit (void);
   double real_zeit (void);
 }
 
-//hash function taken from boost hash_combine
-//this makes the edge lookup unordered map work
 typedef std::pair<int, int> IntPair;
 typedef std::unordered_map<IntPair, int> IntPairMap;
+
+/*
+ * This hash function is taken from boost hash_combine; it is needed for 
+ * us to be able to define an IntPairMap.
+ */
 
 template <class T>
 inline void hash_combine(std::size_t & seed, const T & v)

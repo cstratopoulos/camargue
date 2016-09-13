@@ -1,3 +1,14 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
+ *                   PURE CUTTING PLANE SOLVER CLASS
+ *
+ * This is one of the two possible solution protocol classes that may be 
+ * instatiated/executed by the TSPSolver class. It engages in a pure primal
+ * cutting plane solution protocol, in which we repeatedly pivot from the
+ * current best tour and find primal cutting planes, until separation fails
+ * or optimality is proved, or the tour is augmented to a better one.
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef PSEP_PURE_CUT_H
 #define PSEP_PURE_CUT_H
 

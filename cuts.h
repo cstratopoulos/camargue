@@ -1,46 +1,12 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  *                                                                            
- *                CUT TEMPLATE AND CUT STRUCTURE DEFINITIONS                  
- *                                                                            
- * An empty class template for the Cut data type used by the CutControl class 
- * and structure definitions for each type of cut used therein.
- * A specialization for a given cut type should support the named operations, 
- * while including additional functions/data as needed. 
- *                                                                            
- *    CLASS TEMPLATES:                                                        
- *      Cut<cut_type>
- *        public:
- *          int cut_call()
- *          Wrapper function calling private member functions in order
- *        private:
- *          int separate(), parse_coeffs(), add_cut()
- *          separate - the cut-specific (primal) separation routine which
- *                     stores a cut, if found, in the cut-specific storage
- *                     object. See specific headers for details. 
- *                   - returns 0 if successful,
- *                             1 if an error occurs,
- *                             2 if no cut is found
- *          parse_coeffs() - turns cut structure into coefficients that can be
- *                           added to the LP.
- *                         - returns 0 if successful, 1 if an error occurs
- *          add_cut()    - adds the cut found to the cut queue
- *                       - returns 0 if successful, 1 if an error occurs
- *        
- *    STRUCTURES:
- *      seg
- *        int start, int end, double viol
- *      Stores segment cuts -- subtour cuts arising from segments of the 
- *      incumbent best tour
- *      start, end - the start and endpoints of the segment, indicated as 
- *                   indices for accessing the vector best_tour_nodes. 
- *                   Thus the associated segment is best_tour_nodes[start] to
- *                   best_tour_nodes[end]
- *      viol - the amount by which the cut is violated
+ *                CUT TEMPLATE AND CUT STRUCTURE DEFINITIONS          
  *
- *      
-
-\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
+ * This file contains some structure definitions for types of cuts used in 
+ * the TSP solver, as well as a dummy cut template for use by the CutControl
+ * class
+ *                                                                            
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 #ifndef PSEP_CUTS_H
 #define PSEP_CUTS_H
 
@@ -50,32 +16,48 @@
 #include "tooth.h"
 
 namespace PSEP {
-  
+
+  /*
+   * Structure for storing segment cuts: subtour inequalities arising from
+   * segments of the current best tour.
+   * start, end - the start and endpoints of the segment, indicated as 
+   *              indices for accessing the vector best_tour_nodes. 
+   *              Thus the associated segment is best_tour_nodes[start] to
+   *              best_tour_nodes[end]
+   * viol - the amount by which the cut is violated
+   */
   struct seg {
-  seg(int _start, int _end, double _slack) :
-    start(_start), end(_end), viol(_slack) {}
+  seg(int _start, int _end, double _viol) :
+    start(_start), end(_end), viol(_viol) {}
+
     int start;
     int end;
     double viol;
-
-    bool operator <(const seg &val) const {
-      return viol > val.viol;
-    }
   };
 
+  /*
+   * Structure for storing blossom inequalities, aka 2-matching inequalities.
+   * These are simple comb inequalities where each tooth is an edge.
+   */
   struct blossom {
   blossom(std::vector<int> &_handle, int _cut_edge, double _val) :
     handle(_handle), cut_edge(_cut_edge), cut_val(_val){}
 
-    bool operator< (const blossom &val) const {
-      return cut_val < val.cut_val;
-    }
-
     std::vector<int> handle;
+
+    /* cut_edge represents the edge {u, v} for which a minimum uv-cut is 
+     * computed in the separation routine. From e, handle, and the 
+     * vector best_tour_edges it is possible to extract the blossom inequality
+     * See Letchford-Lodi Primal separation algorithms for details
+     */
     int cut_edge;
     double cut_val;
   };
 
+  /* The cuts below are dummy structures which are not actually used at the
+   * moment but may be useful if cut pools or column gen are implemented */
+  
+  /* Struct for storing simple DP inequalities */
   struct domino {
     domino(){}
     domino(std::vector<int> &_handle,
@@ -86,6 +68,9 @@ namespace PSEP {
     std::vector<std::shared_ptr<CandTooth::SimpleTooth>> used_teeth;
   };
 
+  /* cut mimicking the parameters used to add a row in CPLEX; used for safe
+   * Gomory cut separation
+   */
   struct safeGMI {
     safeGMI(std::vector<int> &_rmatind, std::vector<double> &_rmatval,
 	   char _sense, double _RHS) :
@@ -97,7 +82,21 @@ namespace PSEP {
     double RHS;
   };
 
-  
+
+  /*
+   * This is a dummy template class which suggests the structure of the 
+   * instantiation for a given cut type. The commented out names are 
+   * suggestions for methods that should be provided by an instantiation; 
+   * actual names/implementations may vary.
+   *
+   * cut_call - the wrapper function calling all the private methods
+   * separate - invokes the separation routine for cuts of type cut_t
+   * parse_coeffs - converts the cut_t cut, if found, into coefficients
+   *    that can be passed to CPLEX
+   * add_cut - the function for actually adding the row
+   *
+   * see segments.h, blossoms.h, dominos.h, etc for examples
+   */
   template<typename cut_t>
     class Cut {
   public:
