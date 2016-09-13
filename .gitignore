@@ -10,3 +10,6 @@
 
 #no main executable
 PSEP
+
+#no shell scripts
+*.sh
