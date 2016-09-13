@@ -177,7 +177,7 @@ int SimpleDP::call_CC_gomoryhu(){
   CCrandstate rstate;
   CC_GHtree T;
   int seed;
-  seed = (int) PSEP_real_zeit();
+  seed = (int) real_zeit();
   CCutil_sprand(seed, &rstate);
   CCcut_GHtreeinit(&T);
 

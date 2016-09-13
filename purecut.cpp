@@ -19,10 +19,10 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
   double fixtime = 0;
 
   if(plan.perform_elim()){
-    fixing_start = PSEP_zeit();
+    fixing_start = zeit();
     rval = LPFix.redcost_fixing();
     if(rval) goto CLEANUP;
-    fixing_start = PSEP_zeit() - fixing_start;
+    fixing_start = zeit() - fixing_start;
     fixtime += fixing_start;
   }
   
@@ -32,7 +32,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
   if(!plan.is_branch())
     cout << "Pivoting until optimality or no more cuts" << endl;
 
-  routine_start = PSEP_zeit();
+  routine_start = zeit();
   plan.start_timer();
   
   while(plan.condition(augrounds)){
@@ -42,10 +42,10 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     if(rounds % 50 == 0){
       if(plan.perform_elim()){
 	cout << "Calling edge elimination again...\n\n  ";
-	fixing_start = PSEP_zeit();
+	fixing_start = zeit();
 	rval = LPFix.redcost_fixing();
 	if(rval) goto CLEANUP;
-	fixing_start = PSEP_zeit() - fixing_start;
+	fixing_start = zeit() - fixing_start;
 	fixtime += fixing_start;
 
 	plan.current_edge_ratio = LPCore.numcols() / plan.ncount;
@@ -55,10 +55,10 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       }
     }
 
-    pivtime = PSEP_zeit();
+    pivtime = zeit();
     rval = LPCore.pivot_until_change(piv_stat);
     if(rval) goto CLEANUP;
-    pivtime = PSEP_zeit() - pivtime;
+    pivtime = zeit() - pivtime;
     total_pivtime += pivtime;
     if(pivtime > max_pivtime) max_pivtime = pivtime;
 
@@ -161,7 +161,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 
     
   cout << "\n Total time for Purecut::solve: "
-       << (PSEP_zeit() - routine_start) << "s\n";
+       << (zeit() - routine_start) << "s\n";
   if(plan.perform_elim())
     cout <<"         LPFix::redcost_fixing: "
 	 << fixtime << "s\n";

@@ -48,9 +48,9 @@ int Core::nondegenerate_pivot(){
 
 int Core::primal_opt(){
   int infeasible = 0;
-  double start = PSEP_zeit();
+  double start = zeit();
   int rval = PSEPlp_primal_opt(&m_lp, &infeasible);
-  start = PSEP_zeit() - start;
+  start = zeit() - start;
 
   if(rval)
     cerr << "Entry point LP_Core::primal_opt(), infeasible "
@@ -114,7 +114,7 @@ int Core::rebuild_basis(bool prune){
   double objval;
   old_colstat.resize(ecount);
 
-  //  double rebuild_time = PSEP_zeit();
+  //  double rebuild_time = zeit();
   for(int i = 0; i < m_lp_edges.size(); i++)
     m_lp_edges[i] = best_tour_edges[i];
 
@@ -325,7 +325,7 @@ int Core::pivot_until_change(PivType &pivot_status){
   int rowcount = PSEPlp_numrows(&m_lp);
   bool integral = false, conn = false, dual_feas = false;
 
-  double round_start = PSEP_zeit();
+  double round_start = zeit();
 
 
   old_rowstat.resize(rowcount);
@@ -347,7 +347,7 @@ int Core::pivot_until_change(PivType &pivot_status){
       break;    
   }
   
-  round_start = PSEP_zeit() - round_start;
+  round_start = zeit() - round_start;
 
   rval = set_support_graph();
   if(rval) goto CLEANUP;

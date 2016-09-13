@@ -7,7 +7,7 @@
 
 /* zeit function for recording times */
 
-double PSEP_zeit (void)
+double PSEP::zeit (void)
 {
     struct rusage ru;
 
@@ -17,7 +17,7 @@ double PSEP_zeit (void)
            ((double) ru.ru_utime.tv_usec)/1000000.0;
 }
 
-double PSEP_real_zeit (void)
+double PSEP::real_zeit (void)
 {
     return (double) time (0);
 }

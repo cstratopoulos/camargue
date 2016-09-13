@@ -23,21 +23,19 @@ int main(int argc, char* argv[]){
   unique_ptr<CCdatagroup> dat(new CCdatagroup);
   string probfile;
 
-  cout << "BRANCH VERSION: MASTER\n";
-
   if(initial_parse(argc, argv, probfile, randprob, prefs)){
     cerr << "Problem parsing arguments" << endl;
     exit(1);
   }
 
-  double overall = PSEP_zeit();
+  double overall = PSEP::zeit();
   PSEP::TSPSolver solver(probfile, randprob, prefs, dat);
   dat.reset();
   
   if(solver.call(PSEP::SolutionProtocol::PURECUT))
     exit(1);
   cout << "                    everything: "
-       << PSEP_zeit() - overall << "\n";
+       << PSEP::zeit() - overall << "\n";
 }
 
 static int initial_parse(int ac, char **av, string &fname,

@@ -9,35 +9,35 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat){
   int segval = 2, matchval = 2, dpval = 2;
   double segtime, matchtime, dptime;
 
-  segtime = PSEP_zeit();
+  segtime = zeit();
   segval = segments.cutcall();
   if(segval == 1){
     rval = 1;
     goto CLEANUP;
   }
-  segtime = PSEP_zeit() - segtime;
+  segtime = zeit() - segtime;
   total_segtime += segtime;
   total_segcalls++;
 
-  matchtime = PSEP_zeit();
+  matchtime = zeit();
   matchval = blossoms.cutcall();
   if(matchval == 1){
     rval = 1;
     goto CLEANUP;
   }
-  matchtime = PSEP_zeit() - matchtime;
+  matchtime = zeit() - matchtime;
   total_2mtime += matchtime;
   total_2mcalls++;
 
   if(prefs.dp_threshold >= 0 && augrounds >= prefs.dp_threshold){
     if(segval == 2 && matchval == 2 && stat != LP::PivType::Subtour){
-      dptime = PSEP_zeit();
+      dptime = zeit();
       dpval = dominos.cutcall();
       if(dpval == 1){
 	rval = 1;
 	goto CLEANUP;
       }
-      dptime = PSEP_zeit() - dptime;
+      dptime = zeit() - dptime;
       total_dptime += dptime;	
     }
   }
@@ -58,9 +58,9 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat){
 }
 
 int CutControl::safe_gomory_sep(){
-  double gentime = PSEP_zeit();
+  double gentime = zeit();
   int rval = safe_gomory.cutcall();
-  gentime = PSEP_zeit() - gentime;
+  gentime = zeit() - gentime;
   total_gentime += gentime;
   total_gencalls++;
   if(rval == 1)

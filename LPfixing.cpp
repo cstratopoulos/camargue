@@ -19,10 +19,10 @@ int EdgeFix::price(int *clamptotal, int *deltotal){
   edge_delset.resize(ecount);
 
   int infeasible = 0;
-  opt_time = PSEP_zeit();
+  opt_time = zeit();
   rval = PSEPlp_primal_opt(&m_lp, &infeasible);
   if(rval) goto CLEANUP;
-  opt_time = PSEP_zeit() - opt_time;
+  opt_time = zeit() - opt_time;
   cout << "Optimized LP in "
        << setprecision(0) << opt_time << "s, " << setprecision(6);
 
@@ -69,7 +69,7 @@ int EdgeFix::price(int *clamptotal, int *deltotal){
 
 int EdgeFix::fixup(){
   int rval = 0;
-  int total_time = PSEP_zeit();
+  int total_time = zeit();
 
   for(int i = 0; i < edge_delset.size(); i++){
     if(edge_delset[i] == FixStats::FIXED){
@@ -79,7 +79,7 @@ int EdgeFix::fixup(){
     }
   }
 
-  total_time += PSEP_zeit() - total_time;
+  total_time += zeit() - total_time;
   
  CLEANUP:
   if(rval)
@@ -95,7 +95,7 @@ int EdgeFix::delete_cols(){
 }
 
 void EdgeFix::delete_edges(){
-  double total_time = PSEP_zeit();
+  double total_time = zeit();
   for(int i = 0; i < m_graph.edge_count; i++)
     edge_lookup[IntPair(edges[i].end[0], edges[i].end[1])] = edge_delset[i];
 
@@ -120,7 +120,7 @@ void EdgeFix::delete_edges(){
   m_graph.edge_count = edges.size();
   delta.resize(m_graph.edge_count);
 
-  total_time = PSEP_zeit() - total_time;
+  total_time = zeit() - total_time;
 
   cout << edges.size() << " remain, "
        << "ratio "

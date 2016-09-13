@@ -23,7 +23,7 @@ namespace PSEP {
     PivotPlan(int _ncount, bool _branch, std::vector<ParamPair> ParamList);
 
     
-    void start_timer() {start_time = PSEP_zeit();}
+    void start_timer() {start_time = PSEP::zeit();}
     
     bool condition(const int augrounds) {
       if(bash_on_regardless) return true;
@@ -68,7 +68,7 @@ namespace PSEP {
 
     bool UnderTimeLimit(){
       if(max_time <= 0) return true;
-      runtime = PSEP_zeit() - start_time;
+      runtime = PSEP::zeit() - start_time;
       return runtime  < max_time;
     }
     double runtime;

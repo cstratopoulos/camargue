@@ -39,9 +39,14 @@ namespace PSEP {
       int dp_threshold;
     };
   }
+
+  
+  double zeit (void);
+  double real_zeit (void);
 }
 
 //hash function taken from boost hash_combine
+//this makes the edge lookup unordered map work
 typedef std::pair<int, int> IntPair;
 typedef std::unordered_map<IntPair, int> IntPairMap;
 
@@ -66,7 +71,5 @@ namespace std
   };
 }
 
-double PSEP_zeit (void);
-double PSEP_real_zeit (void);
 
 #endif
