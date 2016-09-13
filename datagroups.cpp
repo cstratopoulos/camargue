@@ -32,7 +32,8 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     if(randprob.seed == 0) randprob.seed = (int) real_zeit();
     cout << "Random seed: " << randprob.seed << "\n";
     CCutil_sprand(randprob.seed, &rstate);
-    rval = CCutil_getdata((char *) NULL, 1, CC_EUCLIDEAN, &(m_graph.node_count),
+    rval = CCutil_getdata((char *) NULL, 1, CC_EUCLIDEAN,
+			  &(m_graph.node_count),
 			  rawdat, use_gridsize, allow_dups, &rstate);
     if(rval){
       fprintf(stderr, "build randprob failed\n");
