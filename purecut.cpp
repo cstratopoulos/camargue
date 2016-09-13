@@ -67,8 +67,8 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     if(piv_stat == LP::PivType::FathomedTour){
       cout << "\n\n    ROUND " << rounds << " -- ";
       print.pivot(piv_stat);
-      cout << "                Pivot objval: "
-	   << LPCore.get_obj_val() << "\n";
+      cout << "                Pivot objval: ";
+      printf("%.6f\n", LPCore.get_obj_val());
       cout << "                * * * * * * * * * *\n";
       break;
     }
