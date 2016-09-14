@@ -26,6 +26,7 @@
 #include "printer.h"
 
 namespace PSEP {
+  /* Some forward declarations to allow for friend classes to be declared */
   class ABC;
   namespace BB {
     class Visitor;
@@ -33,6 +34,10 @@ namespace PSEP {
   
   class PureCut {
   public:
+    /*
+     * The constructor receives one of every single type of DataGroup
+     * These are needed to initiate all its private member classes
+     */
   PureCut(Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
 	  Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup):
     print(BestGroup.best_tour_nodes, BestGroup.best_tour_edges,
@@ -43,13 +48,28 @@ namespace PSEP {
       LPFix(BestGroup, GraphGroup, LPGroup){}
 
 
-    int solve(PSEP::PivotPlan &plan, PSEP::LP::PivType &piv_stat);
+    /*
+     * solve is the function for the main pure cutting plane solution loop/
+     * control flow. 
+     * plan - controls termination condition and cut adding behavior. See
+     *    pivplan.h for more info
+     * final_piv_stat - the last pivot status upon termination of the solution
+     *    loop
+     */
+    int solve(PSEP::PivotPlan &plan, PSEP::LP::PivType &final_piv_stat);
     PSEP_Printer print;
   
   private:
     friend class PSEP::BB::Visitor;
     friend class PSEP::ABC;
-    
+
+    /*
+     * CutControl - manages separation routines and addition of cuts to the LP
+     *    see cutcall.h
+     * LPPrune - manages the pruning of cuts from the LP, see LPprune.h
+     * LPCore - manages core LP functionality, see LPcore.h
+     * LPFix - manages fixing/eliminating edges by reduced cost, see LPfixing.h
+     */
     PSEP::CutControl CutControl;
     PSEP::LP::CutPrune LPPrune;
     PSEP::LP::Core LPCore;

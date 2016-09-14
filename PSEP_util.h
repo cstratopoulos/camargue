@@ -14,6 +14,25 @@
 #include<utility>
 #include<unordered_map>
 
+/*
+ * In this project virtually all functions will produce a pseudo function
+ * call graph in the event of an error, and they use the goto label CLEANUP
+ * as the exit point for this. Also almost all functions have integer return 
+ * types with nonzero values indicating error or special conditions. Thus
+ * if the function big_task() contains a call to function helper_task(), 
+ * use of this macro might look like
+ *
+ * int big_task()
+ *    int rval = helper_task()
+ *    if(rval) PSEP_GOTO_CLEANUP("helper_task failed, ");
+ *    ... (skipped control flow) ...
+ *    CLEANUP:
+ *        if(rval) cerr << " problem in big_task\n"
+ *
+ * This will result in "helper_task failed, problem in big_task" being printed
+ * to stderr, as well as similar error messages possibly embedded in 
+ * helper_task, hopefully giving a clean description of the source of error
+ */
 #define PSEP_GOTO_CLEANUP(message) {std::cerr << message; goto CLEANUP;}
 
 namespace PSEP {

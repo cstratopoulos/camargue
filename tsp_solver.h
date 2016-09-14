@@ -28,6 +28,7 @@ class TSPSolver {
    * fname.empty() implies use of randprob, randprob.nodecount of zero
    * implies use of fname. The command line argument parser is responsible
    * for giving precisely one valid argument. (PSEP.cpp in this case).
+   * If both are somehow nonempty, the filename will be chosen
    *
    * fname: a TSP instance with .tsp suffix using TSPLIB format
    * ranndprob: parameters for generating a random problem; see
@@ -55,7 +56,9 @@ class TSPSolver {
   Data::SupportGroup SupportGroup;
   Data::LPGroup LPGroup;
 
-  /* These are pointers to solution protocol classes */
+  /* These are pointers to solution protocol classes
+   * See purecut.h and ABC.h for info
+   */
   std::unique_ptr<PSEP::PureCut> PureCut;
   std::unique_ptr<PSEP::ABC> ABC;
 };
