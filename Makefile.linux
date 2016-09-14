@@ -1,0 +1,29 @@
+TARGET = PSEP
+INCLUDES = -I /software/cplex-12.6/distribution/cplex/include/ilcplex/\
+ -I /u2/castratopoulos/MyDocuments/Applications/
+LIBS = /software/cplex-12.6/distribution/cplex/lib/x86-64_linux/static_pic/libcplex.a 
+CONCORDE_LIBS = /u2/castratopoulos/MyDocuments/Applications/concorde/concorde.a
+CC = /opt/centos/devtoolset-1.1/root/usr/bin/c++
+CFLAGS =  -O3 -Wall -pedantic -Wno-missing-braces -Wno-long-long -std=c++11
+# -g
+# -ggdb
+.PHONY: default all clean
+
+default: $(TARGET)
+all: default
+
+OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
+HEADERS = $(wildcard *.h)
+HEADERSPP = $(wildcard *.hpp)
+
+%.o: %.cpp $(HEADERS) $(HEADERSPP)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+.PRECIOUS: $(TARGET) $(OBJECTS)
+
+$(TARGET): $(OBJECTS)
+	$(CC) $(OBJECTS) -Wall $(LIBS) -lm -lpthread  $(CONCORDE_LIBS) -o $@
+
+clean:
+	-rm -f *.o
+	-rm -f $(TARGET)
