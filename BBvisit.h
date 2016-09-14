@@ -3,11 +3,11 @@
 
 #include <memory>
 
-#include "BButils.h"
-#include "cutcall.h"
 #include "LPprune.h"
 #include "LPcore.h"
 #include "purecut.h"
+#include "cutcall.h"
+#include "BButils.h"
 #include "BBconstraints.h"
 
 namespace PSEP {

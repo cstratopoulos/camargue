@@ -1,12 +1,8 @@
 #ifndef PSEP_SIMPLEDP_H
 #define PSEP_SIMPLEDP_H
 
-extern "C" {
-#include <concorde/INCLUDE/cut.h>
-}
-
-#include "tooth.h"
 #include "lp.h"
+#include "tooth.h"
 #include "cuts.h"
 
 namespace PSEP {

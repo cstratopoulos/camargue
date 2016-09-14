@@ -4,11 +4,11 @@
 #include<memory>
 #include<stack>
 
+#include "datagroups.h"
+#include "cutcall.h"
 #include "BButils.h"
 #include "BBconstraints.h"
 #include "BBvisit.h"
-#include "datagroups.h"
-#include "cutcall.h"
 
 namespace PSEP {
   class ABC {

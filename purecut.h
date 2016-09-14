@@ -15,9 +15,9 @@
 #include <iostream>
 #include <vector>
 
+#include "lp.h"
 #include "datagroups.h"
 #include "Graph.h"
-#include "lp.h"
 #include "PSEP_util.h"
 #include "cutcall.h"
 #include "pivplan.h"

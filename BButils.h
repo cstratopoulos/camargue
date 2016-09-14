@@ -9,8 +9,8 @@
 #include<map>
 #include<utility>
 
-#include "datagroups.h"
 #include "lp.h"
+#include "datagroups.h"
 #include "PSEP_util.h"
 
 namespace PSEP {

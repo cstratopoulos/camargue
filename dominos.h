@@ -3,9 +3,9 @@
 
 #include<vector>
 
+#include "lp.h"
 #include "cuts.h"
 #include "Graph.h"
-#include "lp.h"
 #include "simpleDP.h"
 
 namespace PSEP{

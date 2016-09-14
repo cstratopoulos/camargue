@@ -3,9 +3,9 @@
 
 #include<vector>
 
+#include "lp.h"
 #include "cuts.h"
 #include "Graph.h"
-#include "lp.h"
 
 namespace PSEP {
   template<> class Cut<seg> {
