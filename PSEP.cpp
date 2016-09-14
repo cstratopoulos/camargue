@@ -9,7 +9,7 @@
 #include <getopt.h>
 #include <cstring>
 
-#include "TSP_solver.h"
+#include "tsp_solver.h"
 
 using namespace std;
 

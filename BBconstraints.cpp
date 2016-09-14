@@ -181,7 +181,8 @@ void Constraints::compute_right_row(const int clamp, const int partner,
   double clamp_best = best_tour_edges[clamp],
     partner_best = best_tour_edges[partner];
   RHS = clamp_best - partner_best;
-  rmatval = {2 * clamp_best - 1, 1 - 2 * partner_best};
+  rmatval[0] = 2.0 * clamp_best - 1;
+  rmatval[1] = 1 - 2.0 * partner_best;
 }
 
 
@@ -207,7 +208,8 @@ int Constraints::compute_right_update(const int clamp, const int partner,
   }
 
   RHS = clamp_best - partner_best;
-  rmatval = {2 * clamp_best - 1, 1 - 2 * partner_best};
+  rmatval[0] = 2 * clamp_best - 1;
+  rmatval[1] = 1 - 2 * partner_best;
 
   return 0;
 }

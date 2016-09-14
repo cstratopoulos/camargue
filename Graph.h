@@ -90,7 +90,7 @@ namespace PSEP {
 		       std::vector<int> &support_indices,
 		       std::vector<double> &m_lp_edges,
 		       SupportGraph *G_s);
-  };
+  }
 
   struct CC {
     struct GH {    

@@ -1,10 +1,10 @@
+#include "datagroups.h"
+
 extern "C" {
 #include <concorde/INCLUDE/linkern.h>
 #include <concorde/INCLUDE/util.h>
 #include <concorde/INCLUDE/edgegen.h>
 }
-
-#include "datagroups.h"
 
 using namespace std;
 using namespace PSEP::Data;

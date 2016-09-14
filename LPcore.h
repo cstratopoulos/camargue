@@ -6,7 +6,7 @@
 #include "lp.h"
 #include "Graph.h"
 #include "datagroups.h"
-#include "LPPrune.h"
+#include "LPprune.h"
 
 namespace PSEP {
   class PureCut;
