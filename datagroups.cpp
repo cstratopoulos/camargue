@@ -74,7 +74,7 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
   int tcount = 0;
   int *tlist = (int *) NULL;
   int *cyc = (int *) NULL;
-  double bestval, val, szeit;
+  double bestval, val;
   int trials = 2 * (ceil((int) ncount / 100));
   int silent = 1;
   int kicks = 5 * ncount;
@@ -84,7 +84,6 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
   
   cout << "LK seed: " << seed << ", " << trials << " trials\n";
 
-  szeit = CCutil_zeit ();
   bestval = INFINITY;
 
   //code copies from static int find_tour from concorde

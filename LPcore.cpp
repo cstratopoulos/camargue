@@ -317,7 +317,7 @@ int Core::update_best_tour(){
     perm[best_tour_nodes[i]] = i;
 
   return 0;
-};
+}
 
 int Core::pivot_until_change(PivType &pivot_status){
   int rval = 0;
