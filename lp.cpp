@@ -59,7 +59,7 @@ int PSEPlp_new_row (PSEPlp *lp, char sense, double rhs){
   rval = CPXnewrows (lp->cplex_env, lp->cplex_lp, 1, arhs, asense,
 		     (double *) NULL, (char **) NULL);
   if (rval) {
-    fprintf (stderr, "CPXnewrows failed\n"); goto CLEANUP;
+    fprintf (stderr, "CPXnewrows failed, rval %d\n", rval); goto CLEANUP;
   }
  CLEANUP:
   return rval;

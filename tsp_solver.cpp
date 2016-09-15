@@ -2,6 +2,7 @@
 
 #include "tsp_solver.h"
 #include "lp.h"
+#include "PSEP_util.h"
 
 using namespace std;
 using namespace PSEP;
@@ -11,13 +12,22 @@ TSPSolver::TSPSolver(const string &fname, RandProb &randprob, LP::Prefs _prefs,
   GraphGroup(fname, randprob, dat),
   BestGroup(GraphGroup.m_graph, dat),
   LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm){
-  
+
+  try{
   PureCut.reset(new PSEP::PureCut(GraphGroup, BestGroup, LPGroup,
 				  SupportGroup));
+  } catch (const std::bad_alloc &){
+    cerr << "TSPSolver constructor failed to declare PureCut\n";
+    PureCut.reset(NULL);
+  }
 }
 
 int TSPSolver::call(SolutionProtocol solmeth){
   LP::PivType piv_status;
+  int rval = 0;
+
+  rval = (!GraphGroup || !BestGroup || !LPGroup || !PureCut);
+  if(rval) goto CLEANUP;
   
   if(solmeth == SolutionProtocol::PURECUT){
     PivotPlan plan;
@@ -43,7 +53,11 @@ int TSPSolver::call(SolutionProtocol solmeth){
     }
 
     int ecount = GraphGroup.m_graph.edge_count;
-    std::vector<double> lower_bounds(ecount);
+    std::vector<double> lower_bounds;
+    try{ lower_bounds.resize(ecount); }
+    catch(const std::bad_alloc &) {
+      rval = 1; PSEP_GOTO_CLEANUP("Couldn't allocate lower bounds, ");
+    }
 
     if(PSEPlp_getlb(&(LPGroup.m_lp), &lower_bounds[0], 0, ecount - 1)){
       cerr << "TSPSolver.call(ABC) failed to get lower bounds\n";
@@ -56,5 +70,10 @@ int TSPSolver::call(SolutionProtocol solmeth){
 
     return ABC->solve();
   }
+
+ CLEANUP:
+  if(rval)
+    cerr << "TSPSolver.call failed\n";
+  return rval;
 }
   

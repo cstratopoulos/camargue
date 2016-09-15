@@ -19,10 +19,7 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
 
   if(!fname.empty()){
     rval = CCutil_gettsplib(filestring, &(m_graph.node_count), rawdat);
-    if (rval){
-      fprintf(stderr, "get tsplib failed\n");
-      exit(1);
-    }
+    if (rval) PSEP_GOTO_CLEANUP("CCutil_gettsplib failed, ");
   }
   else {
     m_graph.node_count = randprob.nodecount;
@@ -35,32 +32,41 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     rval = CCutil_getdata((char *) NULL, 1, CC_EUCLIDEAN,
 			  &(m_graph.node_count),
 			  rawdat, use_gridsize, allow_dups, &rstate);
-    if(rval){
-      fprintf(stderr, "build randprob failed\n");
-      exit(1);
-    }
+    if(rval) PSEP_GOTO_CLEANUP("CCutil_getdata randprob failed, ");
   }
 
   
-  int ncount = m_graph.node_count;
-  int ecount = (ncount * (ncount -1 )) / 2;
-  m_graph.edge_count = ecount;
-  m_graph.edges.resize(ecount);
-  int e_index = 0;
+  m_graph.edge_count = (m_graph.node_count * (m_graph.node_count - 1)) / 2;
+  try{ m_graph.edges.resize(m_graph.edge_count); }
+  catch(const std::bad_alloc &){
+    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for m_graph.edges, ");
+  }
   
-  for (int i = 0; i < ncount; i++){
-    for (int j = i+1; j < ncount; j++){
-      m_graph.edges[e_index].end[0] = i;
-      m_graph.edges[e_index].end[1] = j;
-      m_graph.edges[e_index].len = CCutil_dat_edgelen(i, j, rawdat);
-      m_graph.edge_lookup.emplace(IntPair(i,j), e_index);
-      e_index++;
+  { int e_index = 0; 
+    for (int i = 0; i < m_graph.node_count; i++){
+      for (int j = i+1; j < m_graph.node_count; j++){
+	m_graph.edges[e_index].end[0] = i;
+	m_graph.edges[e_index].end[1] = j;
+	m_graph.edges[e_index].len = CCutil_dat_edgelen(i, j, rawdat);
+	m_graph.edge_lookup.emplace(IntPair(i,j), e_index);
+	e_index++;
+      }
     }
   }
 
+  try{
   island.resize(m_graph.node_count);
   delta.resize(m_graph.edge_count, 0);
   edge_marks.resize(m_graph.node_count, 0);
+  } catch(const std::bad_alloc &){
+    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for dfs vectors, ");
+  }
+
+ CLEANUP:
+  if(rval){
+    cerr << "Problem in GraphGroup constructor\n";
+    m_graph.node_count = 0;
+  }
 }
 
 BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
@@ -91,36 +97,38 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
   CCrandstate *rstate = &rand_state;
   cyc = CC_SAFE_MALLOC(ncount, int); 
   if(!cyc){
-    cerr << "Out of memory for find_tour\n";
-    rval = 1; goto CLEANUP;
+    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for cyc, ");
   }
-  
+
+  try{
   best_tour_nodes.resize(ncount);
   perm.resize(ncount);
   best_tour_edges.resize(m_graph.edge_count, 0);
+  } catch(const std::bad_alloc &){
+    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for BestGroup vectors, ");
+  }
 
   CCedgegen_init_edgegengroup (&plan);
   plan.quadnearest = 2;
   rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &ecount,
 			  &elist, silent, rstate);
-  CCcheck_rval (rval, "CCedgegen_edges failed");
+  if(rval) PSEP_GOTO_CLEANUP("CCedgegen_edges failed, ");
   plan.quadnearest = 0;
 
   plan.tour.greedy = 1;
   rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &tcount,
 			  &tlist, silent, rstate);
-  CCcheck_rval (rval, "CCedgegen_edges failed");
+  if(rval) PSEP_GOTO_CLEANUP("CCedgegen_edges failed, ");
 
   if (tcount != ncount) {
-    fprintf (stderr, "wrong edgeset from CCedgegen_edges\n");
-    rval = 1; goto CLEANUP;
+    rval = 1; PSEP_GOTO_CLEANUP("Wrong edgeset from CCedgegen_edges, ");
   }
 
   rval = CCutil_edge_to_cycle (ncount, tlist, &istour, cyc);
-  CCcheck_rval (rval, "CCutil_edge_to_cycle failed");
+  if(rval) PSEP_GOTO_CLEANUP("CCutil_edge_to_cycle failed, ");
+  
   if (istour == 0) {
-    fprintf (stderr, "Starting tour has an error\n");
-    rval = 1; goto CLEANUP;
+    rval = 1; PSEP_GOTO_CLEANUP("Starting tour has an error, ");
   }
   CC_FREE (tlist, int);
 
@@ -128,8 +136,8 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
 			 cyc, &best_tour_nodes[0], &bestval, silent, 0.0, 0.0,
 			 (char *) NULL,
 			 CC_LK_GEOMETRIC_KICK, rstate);
-  CCcheck_rval (rval, "CClinkern_tour failed");
-  if(rval) goto CLEANUP;
+  if(rval) PSEP_GOTO_CLEANUP("CClinkern_tour failed, ");
+  
   //end of copied code (from find_tour)
   cout << "LK initial run: " << bestval << endl;
 
@@ -140,8 +148,8 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
     rval = CClinkern_tour(ncount, rawdat, ecount, elist, ncount, kicks,
 			  (int *) NULL, cyc, &val, 1, 0.0, 0.0,
 			  (char *) NULL, CC_LK_GEOMETRIC_KICK, rstate);
-    if(rval)
-      cerr << "CClinkern_tour failed\n";
+  if(rval) PSEP_GOTO_CLEANUP("CClinkern_tour failed, ");
+  
     cout << "LK run " << i << ": " << val << "\n";
     if(val < bestval){
       for(int j = 0; j < ncount; j++)
@@ -155,9 +163,7 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
 			  &best_tour_nodes[0], cyc, &bestval, 1, 0.0, 0.0,
 			  (char *) NULL,
 			  CC_LK_GEOMETRIC_KICK, rstate);
-    if(rval){
-      cerr << "CClinkern_tour failed\n"; goto CLEANUP;
-    }
+    if(rval) PSEP_GOTO_CLEANUP("CClinkern_tour failed, ");
 
     cout << "LK run from best tour: " << bestval << "\n";
     for(int j = 0; j < ncount; j++)
@@ -189,39 +195,65 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
   CC_IFFREE (elist, int);
   CC_IFFREE (tlist, int);
   CCutil_freedatagroup(dat.get());
-  if(rval)
-    exit(1);
+  if(rval){
+    cerr << "Problem in BestGroup constructor\n";
+    best_tour_edges.clear();
+    best_tour_nodes.clear();
+    perm.clear();
+  }
 }
 
 LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
 			   const vector<int> &perm){
-  //Build the basic LP
-  PSEPlp_init (&m_lp);
-  PSEPlp_create (&m_lp, "subtour");
-
-  /* Build a row for each degree equation */
-  for(int i = 0; i < m_graph.node_count; i++) {
-    PSEPlp_new_row (&m_lp, 'E', 2.0);
-  }
-
-  /* Build a column for each edge of the Graph */
+  int rval = 0;
   int cmatbeg = 0, num_vars = 1, num_non_zero = 2;
   double coefficients[2] = {1.0, 1.0};
   double lower_bound = 0.0;
   double upper_bound = 1.0;
+  
+  //Build the basic LP
+  rval = PSEPlp_init (&m_lp);
+  if(rval) goto CLEANUP;
+
+  rval = PSEPlp_create (&m_lp, "subtour");
+  if(rval) goto CLEANUP;
+	  
+
+  /* Build a row for each degree equation */
+  for(int i = 0; i < m_graph.node_count; i++) {
+    rval = PSEPlp_new_row (&m_lp, 'E', 2.0);
+    if(rval) goto CLEANUP;
+  }
+
+  /* Build a column for each edge of the Graph */
   for(int j = 0; j < m_graph.edge_count; j++) {
     int *nodes = (int*)m_graph.edges[j].end;
     double objective_val = (double)m_graph.edges[j].len;
-    PSEPlp_addcols (&m_lp, num_vars, num_non_zero, &objective_val,
-		    &cmatbeg, nodes, coefficients, &lower_bound,
-		    &upper_bound);
+    rval = PSEPlp_addcols (&m_lp, num_vars, num_non_zero, &objective_val,
+			   &cmatbeg, nodes, coefficients, &lower_bound,
+			   &upper_bound);
+    if(rval) goto CLEANUP;
   }
 
-  m_lp_edges.resize(m_graph.edge_count);
   prefs = _prefs;
 
-  old_colstat.resize(m_graph.edge_count, CPX_AT_LOWER);
-  old_rowstat.resize(m_graph.node_count, CPX_AT_LOWER);
-  frac_colstat.resize(m_graph.edge_count);
-  frac_rowstat.resize(m_graph.edge_count);
+  try {
+    m_lp_edges.resize(m_graph.edge_count);
+    old_colstat.resize(m_graph.edge_count, CPX_AT_LOWER);
+    old_rowstat.resize(m_graph.node_count, CPX_AT_LOWER);
+    frac_colstat.resize(m_graph.edge_count);
+    frac_rowstat.resize(m_graph.edge_count);
+  } catch(const std::bad_alloc &){
+    rval = 1; PSEP_GOTO_CLEANUP("Problem allocating LP vectors, ");
+  }
+
+ CLEANUP:
+  if(rval){
+    cerr << "LPGroup constructor failed\n";
+    m_lp_edges.clear();
+    old_colstat.clear();
+    old_rowstat.clear();
+    frac_colstat.clear();
+    frac_rowstat.clear();
+  }
 }

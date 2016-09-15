@@ -18,6 +18,10 @@ namespace PSEP {
   struct Edge {
   Edge() : removable(false) {}
     Edge(int e0, int e1, int _len);
+
+    bool operator==(const Edge &rhs) const {
+      return ((end[0] == rhs.end[0]) && (end[1] == rhs.end[1]));
+    }
   
     int end[2];
     int len;
@@ -27,6 +31,8 @@ namespace PSEP {
   struct Graph {
   Graph() : node_count(0), edge_count(0) {}
 
+    operator bool() const { return node_count > 0; }
+    
     void print_edges();
 
     int node_count;

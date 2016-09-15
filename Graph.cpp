@@ -11,8 +11,13 @@ using namespace PSEP;
 Edge::Edge(int e0, int e1, int _len):
   len(_len),
   removable(false){
-  end[0] = e0;
-  end[1] = e1;
+  if(e0 < e1){
+    end[0] = e0;
+    end[1] = e1;
+  } else {
+    end[0] = e1;
+    end[1] = e0;
+  }
 }
 
 void Graph::print_edges() {
