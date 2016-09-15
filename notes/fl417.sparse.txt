@@ -1,0 +1,109 @@
+True steepest edge
+Problem Name: fl417
+Drilling problem (Reinelt)
+Problem Type: TSP
+Number of Nodes: 417
+Rounded Euclidean Norm (CC_EUCLIDEAN)
+    GENERATING SPARSE GRAPH ONLY
+    636 edges in sparse graph
+LK seed: 1473966991, 4 trials
+LK initial run: 11861
+LK run 0: 11861
+LK run 1: 11861
+LK run 2: 11861
+LK run 3: 11954
+LK run from best tour: 11861
+Pivoting until optimality or no more cuts
+
+ PIVOTING ROUND: 50 [ 90 cuts in the LP ]
+   Pivot status: Fractional
+   Pivot objval: 11851
+   Avg piv time: 0.0025s, (longest 0.004s)
+
+ PIVOTING ROUND: 100 [ 158 cuts in the LP ]
+   Pivot status: Fractional
+   Pivot objval: 11851.9
+   Avg piv time: 0.0033s, (longest 0.006s)
+
+ PIVOTING ROUND: 150 [ 219 cuts in the LP ]
+   Pivot status: Fractional
+   Pivot objval: 11853.1
+   Avg piv time: 0.0043s, (longest 0.009s)
+
+    Round 182, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 3, viol: 0.5...Added.
+
+ PIVOTING ROUND: 200 [ 275 cuts in the LP ]
+   Pivot status: Fractional
+   Pivot objval: 11855.4
+   Avg piv time: 0.0053s, (longest 0.01s)
+
+    Round 210, calling safe GMI sep....
+    Found safe Gomory cut, exact: 0, num nz: 72, viol: 0.0359589...Added.
+
+    Round 216, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 2, viol: 0.5...Added.
+
+    Round 222, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 56, viol: 0.00847458...Added.
+
+    Round 223, calling safe GMI sep....
+    Found safe Gomory cut, exact: 0, num nz: 85, viol: 0.0111615...Added.
+
+    Round 225, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 92, viol: 0.0021666...Added.
+
+    Round 230, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 95, viol: 0.0007672...Added.
+
+    Round 231, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 98, viol: 0.000664729...Added.
+
+    Round 236, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 5, viol: 0.25...Added.
+
+    Round 239, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 2, viol: 0.5...Added.
+
+ PIVOTING ROUND: 250 [ 329 cuts in the LP ]
+   Pivot status: Fractional
+   Pivot objval: 11854.9
+   Avg piv time: 0.006s, (longest 0.011s)
+
+    Round 255, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 2, viol: 0.5...Added.
+
+    Round 267, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 44, viol: 0.0625...Added.
+
+    Round 272, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 69, viol: 0.0555556...Added.
+
+    Round 273, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 150, viol: 0.0192308...Added.
+
+    Round 275, calling safe GMI sep....
+    Found safe Gomory cut, exact: 0, num nz: 150, viol: 0.0164609...Added.
+
+    Round 280, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 2, viol: 0.5...Added.
+
+    Round 282, calling safe GMI sep....
+    Found safe Gomory cut, exact: 1, num nz: 2, viol: 0.5...Added.
+
+
+    ROUND 283 -- Pivot status: Tour fathomed optimal
+                Pivot objval: 11861.000000
+                * * * * * * * * * *
+  362 cutting planes added over 283 rounds of separation
+   Total time during lightDP sep: 0s
+                     segment sep: 0.09599s
+                     blossom sep: 1.639s
+                    safe GMI sep: 0.07799s
+
+ Total time for Purecut::solve: 3.9274s
+                    everything: 4.32334
+
+real    0m4.353s
+user    0m4.324s
+sys     0m0.023s
