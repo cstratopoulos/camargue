@@ -53,5 +53,7 @@ PivotPlan::PivotPlan(int _ncount, Presets preset) :
     branch = true;
     max_augrounds = 250;
     break;
+  case Presets::SPARSE:
+    break;
   }
 }

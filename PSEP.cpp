@@ -14,7 +14,8 @@
 using namespace std;
 
 static int initial_parse(int ac, char **av, string &fname,
-			 PSEP::RandProb &randprob, PSEP::LP::Prefs &prefs);
+			 PSEP::RandProb &randprob, PSEP::LP::Prefs &prefs,
+			 bool &sparseflag);
 static void usage(const string &fname);
 
 int main(int argc, char* argv[]){
@@ -22,17 +23,18 @@ int main(int argc, char* argv[]){
   PSEP::RandProb randprob;
   unique_ptr<CCdatagroup> dat(new CCdatagroup);
   string probfile;
+  bool do_sparse = false;
 
-  if(initial_parse(argc, argv, probfile, randprob, prefs)){
+  if(initial_parse(argc, argv, probfile, randprob, prefs, do_sparse)){
     cerr << "Problem parsing arguments" << endl;
     exit(1);
   }
 
   double overall = PSEP::zeit();
-  PSEP::TSPSolver solver(probfile, randprob, prefs, dat);
+  PSEP::TSPSolver solver(probfile, randprob, prefs, dat, do_sparse);
   dat.reset();
   
-  if(solver.call(PSEP::SolutionProtocol::PURECUT))
+  if(solver.call(PSEP::SolutionProtocol::PURECUT, do_sparse))
     exit(1);
   cout << "                    everything: "
        << PSEP::zeit() - overall << "\n";
@@ -40,7 +42,7 @@ int main(int argc, char* argv[]){
 
 static int initial_parse(int ac, char **av, string &fname,
 			 PSEP::RandProb &randprob,
-			 PSEP::LP::Prefs &prefs){
+			 PSEP::LP::Prefs &prefs, bool &sparseflag){
   bool rand = false;
   int pricing_choice = 0;
   int dp_factor = -1;
@@ -55,7 +57,7 @@ static int initial_parse(int ac, char **av, string &fname,
     return 1;
   }
 
-  while((c = getopt(ac, av, "aD:p:Rg:n:s:")) != EOF) {
+  while((c = getopt(ac, av, "aD:p:RSg:n:s:")) != EOF) {
     switch(c) {
     case 'D':
       dp_factor = atoi(optarg);
@@ -65,6 +67,9 @@ static int initial_parse(int ac, char **av, string &fname,
       break;
     case 'R':
       rand = true;
+      break;
+    case 'S':
+      sparseflag = true;
       break;
     case 'g':
       gridsize = atoi(optarg);
@@ -134,6 +139,8 @@ static void usage(const string &fname){
   fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", fname.data());
   fprintf(stderr, "-------FLAG OPTIONS ---------------------------------\n");
   fprintf(stderr, "-R    generate random problem\n");
+  fprintf(stderr, "-S    only solve sparse instance with edge set from \n");
+  fprintf(stderr,"       10 Lin-Kernighan tours\n");
   fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ---------------\n");
   fprintf(stderr, "-D    only call simpleDP sep after 5x rounds of cuts \n");
   fprintf(stderr, "      with no augmentation. (disabled by default)\n");

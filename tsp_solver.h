@@ -38,13 +38,14 @@ class TSPSolver {
    */
   TSPSolver(const std::string &fname, PSEP::RandProb &randprob,
 	    PSEP::LP::Prefs _prefs,
-	    std::unique_ptr<CCdatagroup> &dat);
+	    std::unique_ptr<CCdatagroup> &dat,
+	    const bool sparse);
 
   /*
    * The function to invoke the TSP solver with solution protocol specified
    * by  solmeth. See PSEP_util.h and below for info
    */
-  int call(PSEP::SolutionProtocol solmeth);
+  int call(PSEP::SolutionProtocol solmeth, const bool sparse);
   
  private:
   /*

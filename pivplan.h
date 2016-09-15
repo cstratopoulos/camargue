@@ -42,8 +42,10 @@ namespace PSEP {
      *    AugLimit -
      * BASH_ON - bash on regardless: solving proceeds until either optimality
      *     is proved or cut generation fails
+     * SPARSE - bash on regardless but eliminate no edges, implicitly assuming
+     *     the instance is already sparse
      */
-    enum class Presets { ROOT, BRANCH, BASH_ON };
+    enum class Presets { ROOT, BRANCH, BASH_ON, SPARSE };
 
     /*
      * Params are parameters that can be used to define/initialize a PivotPlan
@@ -65,13 +67,13 @@ namespace PSEP {
 
 
     /* The default constructor creates a BASH_ON plan */
-  PivotPlan() : current_edge_ratio(INFINITY),
-      ncount(1), bash_on_regardless(true), branch(false) {}
     /* Constructor may also accept a Preset or vector of ParamPairs --
      * the parameters to be used and their values. With both of these, we
      * must pass the problem node count to the plan so that edge ratios
      * can be computed. 
      */
+  PivotPlan() : current_edge_ratio(INFINITY),
+      ncount(1), bash_on_regardless(true), branch(false) {}
     PivotPlan(int _ncount, Presets Preset);
     PivotPlan(int _ncount, bool _branch, std::vector<ParamPair> ParamList);
 
@@ -123,7 +125,7 @@ namespace PSEP {
 
     /* current_edge_ratio is the ratio of edges in the graph to ncount */
     double current_edge_ratio;
-    const int ncount;
+    /*const*/ int ncount;
     /* returns whether or not this is a branching plan */
     bool is_branch() {return branch;}
 

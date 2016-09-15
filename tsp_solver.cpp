@@ -8,8 +8,9 @@ using namespace std;
 using namespace PSEP;
 
 TSPSolver::TSPSolver(const string &fname, RandProb &randprob, LP::Prefs _prefs,
-		     unique_ptr<CCdatagroup> &dat) :
-  GraphGroup(fname, randprob, dat),
+		     unique_ptr<CCdatagroup> &dat,
+		     const bool sparse) :
+  GraphGroup(fname, randprob, dat, sparse),
   BestGroup(GraphGroup.m_graph, dat),
   LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm){
 
@@ -22,7 +23,7 @@ TSPSolver::TSPSolver(const string &fname, RandProb &randprob, LP::Prefs _prefs,
   }
 }
 
-int TSPSolver::call(SolutionProtocol solmeth){
+int TSPSolver::call(SolutionProtocol solmeth, const bool sparse){
   LP::PivType piv_status;
   int rval = 0;
 
@@ -31,6 +32,8 @@ int TSPSolver::call(SolutionProtocol solmeth){
   
   if(solmeth == SolutionProtocol::PURECUT){
     PivotPlan plan;
+    if(sparse)
+      plan = PivotPlan(GraphGroup.m_graph.node_count, PivPresets::SPARSE);      
    
     if(PureCut->solve(plan, piv_status)){
       cerr << "TSPSolver.call(PURECUT) failed\n";

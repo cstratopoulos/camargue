@@ -34,7 +34,8 @@ namespace Data {
   struct GraphGroup {
     /* constructor parameters are exactly as in tsp_solver.h */
     GraphGroup(const std::string &fname, PSEP::RandProb &randprob,
-	       std::unique_ptr<CCdatagroup> &dat);
+	       std::unique_ptr<CCdatagroup> &dat,
+	       const bool sparse);
 
     operator bool() const { return m_graph; }
 

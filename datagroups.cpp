@@ -1,5 +1,8 @@
 #include "datagroups.h"
 
+#include<algorithm>
+#include<cmath>
+
 extern "C" {
 #include <concorde/INCLUDE/linkern.h>
 #include <concorde/INCLUDE/util.h>
@@ -10,10 +13,12 @@ using namespace std;
 using namespace PSEP::Data;
 
 GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
-		       unique_ptr<CCdatagroup> &dat){
+		       unique_ptr<CCdatagroup> &dat,
+		       const bool sparse){
   int rval = 0;
   CCdatagroup *rawdat = dat.get();
   char *filestring = const_cast<char *>(fname.data());
+  int *elist = (int *) NULL;
 
   CCutil_init_datagroup(rawdat);
 
@@ -35,23 +40,54 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     if(rval) PSEP_GOTO_CLEANUP("CCutil_getdata randprob failed, ");
   }
 
-  
-  m_graph.edge_count = (m_graph.node_count * (m_graph.node_count - 1)) / 2;
-  try{ m_graph.edges.resize(m_graph.edge_count); }
-  catch(const std::bad_alloc &){
-    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for m_graph.edges, ");
-  }
-  
-  { int e_index = 0; 
-    for (int i = 0; i < m_graph.node_count; i++){
-      for (int j = i+1; j < m_graph.node_count; j++){
-	m_graph.edges[e_index].end[0] = i;
-	m_graph.edges[e_index].end[1] = j;
-	m_graph.edges[e_index].len = CCutil_dat_edgelen(i, j, rawdat);
-	m_graph.edge_lookup.emplace(IntPair(i,j), e_index);
-	e_index++;
-      }
+  if(!sparse){  
+    m_graph.edge_count = (m_graph.node_count * (m_graph.node_count - 1)) / 2;
+    try{ m_graph.edges.resize(m_graph.edge_count); }
+    catch(const std::bad_alloc &){
+      rval = 1; PSEP_GOTO_CLEANUP("Out of memory for m_graph.edges, ");
     }
+  
+    { int e_index = 0; 
+      for (int i = 0; i < m_graph.node_count; i++){
+	for (int j = i+1; j < m_graph.node_count; j++){
+	  Edge e(i, j, CCutil_dat_edgelen(i, j, rawdat));
+	  
+	  m_graph.edges[e_index] = e;
+	  m_graph.edge_lookup.emplace(IntPair(i,j), e_index);
+	  e_index++;
+	}
+      }}
+  } else {
+    cout << "    GENERATING SPARSE GRAPH ONLY\n";
+    CCedgegengroup plan;
+    CCrandstate rstate;
+    
+    CCutil_sprand((int) real_zeit(), &rstate);
+    CCedgegen_init_edgegengroup(&plan);
+    plan.linkern.count = 10;
+    plan.linkern.quadnearest = 2;
+    plan.linkern.greedy_start = 0;
+    plan.linkern.nkicks = (m_graph.node_count / 100) + 1;
+
+    rval = CCedgegen_edges(&plan, m_graph.node_count, rawdat, NULL,
+			   &(m_graph.edge_count), &elist, 1, &rstate);
+    if(rval) PSEP_GOTO_CLEANUP("Problem with CCedgegen_edges, ");
+    
+    try{ m_graph.edges.resize(m_graph.edge_count); }
+    catch(const std::bad_alloc &){
+      rval = 1; PSEP_GOTO_CLEANUP("Out of memory for m_graph.edges, ");
+    }
+
+    for(int i = 0; i < m_graph.edge_count; i++){
+      Edge e(elist[2 * i], elist[(2 * i) + 1],
+	     CCutil_dat_edgelen(elist[2 * i], elist[(2 * i) + 1], rawdat));
+      
+      m_graph.edges[i] = e;
+      m_graph.edge_lookup.emplace(IntPair(e.end[0], e.end[1]), i);
+    }
+
+    cout << "    " << m_graph.edge_count
+	 << " edges in sparse graph\n";
   }
 
   try{
@@ -63,6 +99,7 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
   }
 
  CLEANUP:
+  if(elist) free(elist);
   if(rval){
     cerr << "Problem in GraphGroup constructor\n";
     m_graph.node_count = 0;
@@ -81,12 +118,13 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
   int *tlist = (int *) NULL;
   int *cyc = (int *) NULL;
   double bestval, val;
-  int trials = 2 * (ceil((int) ncount / 100));
+  int trials = 4;
   int silent = 1;
   int kicks = 5 * ncount;
   int istour;
   int seed;
   seed = (int) real_zeit();
+  bool sparse = (m_graph.edge_count < (ncount * (ncount - 1)) / 2);
   
   cout << "LK seed: " << seed << ", " << trials << " trials\n";
 
@@ -95,12 +133,13 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
   //code copies from static int find_tour from concorde
   CCutil_sprand(seed, &rand_state);
   CCrandstate *rstate = &rand_state;
+
   cyc = CC_SAFE_MALLOC(ncount, int); 
   if(!cyc){
     rval = 1; PSEP_GOTO_CLEANUP("Out of memory for cyc, ");
   }
 
-  try{
+  try {
   best_tour_nodes.resize(ncount);
   perm.resize(ncount);
   best_tour_edges.resize(m_graph.edge_count, 0);
@@ -108,32 +147,47 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
     rval = 1; PSEP_GOTO_CLEANUP("Out of memory for BestGroup vectors, ");
   }
 
-  CCedgegen_init_edgegengroup (&plan);
-  plan.quadnearest = 2;
-  rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &ecount,
-			  &elist, silent, rstate);
-  if(rval) PSEP_GOTO_CLEANUP("CCedgegen_edges failed, ");
-  plan.quadnearest = 0;
+  if(!sparse){
+    CCedgegen_init_edgegengroup (&plan);
+    plan.quadnearest = 2;
+    rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &ecount,
+			    &elist, silent, rstate);
+    if(rval) PSEP_GOTO_CLEANUP("CCedgegen_edges failed, ");
+    plan.quadnearest = 0;
 
-  plan.tour.greedy = 1;
-  rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &tcount,
-			  &tlist, silent, rstate);
-  if(rval) PSEP_GOTO_CLEANUP("CCedgegen_edges failed, ");
+    plan.tour.greedy = 1;
+    rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &tcount,
+			    &tlist, silent, rstate);
+    if(rval) PSEP_GOTO_CLEANUP("CCedgegen_edges failed, ");
 
-  if (tcount != ncount) {
-    rval = 1; PSEP_GOTO_CLEANUP("Wrong edgeset from CCedgegen_edges, ");
-  }
+    if (tcount != ncount) {
+      rval = 1; PSEP_GOTO_CLEANUP("Wrong edgeset from CCedgegen_edges, ");
+    }
 
-  rval = CCutil_edge_to_cycle (ncount, tlist, &istour, cyc);
-  if(rval) PSEP_GOTO_CLEANUP("CCutil_edge_to_cycle failed, ");
+    rval = CCutil_edge_to_cycle (ncount, tlist, &istour, cyc);
+    if(rval) PSEP_GOTO_CLEANUP("CCutil_edge_to_cycle failed, ");
   
-  if (istour == 0) {
-    rval = 1; PSEP_GOTO_CLEANUP("Starting tour has an error, ");
-  }
-  CC_FREE (tlist, int);
+    if (istour == 0) {
+      rval = 1; PSEP_GOTO_CLEANUP("Starting tour has an error, ");
+    }
+    CC_FREE (tlist, int);
+  } else {
+    ecount = m_graph.edge_count;
+    elist = CC_SAFE_MALLOC(2 * ecount, int);
+    if(!elist){
+      rval = 1; PSEP_GOTO_CLEANUP("Out of memory for elist, ");
+    }
 
+    for(int i = 0; i < ecount; i++){
+      elist[2 * i] = m_graph.edges[i].end[0];
+      elist[(2 * i) + 1] = m_graph.edges[i].end[1];
+    }
+  }
+
+  //in a sparse graph we do not bother putting a greedy tour in sparse
   rval = CClinkern_tour (ncount, rawdat, ecount, elist, ncount, kicks,
-			 cyc, &best_tour_nodes[0], &bestval, silent, 0.0, 0.0,
+			 sparse ? (int *) NULL : cyc,
+			 &best_tour_nodes[0], &bestval, silent, 0.0, 0.0,
 			 (char *) NULL,
 			 CC_LK_GEOMETRIC_KICK, rstate);
   if(rval) PSEP_GOTO_CLEANUP("CClinkern_tour failed, ");
@@ -141,9 +195,7 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
   //end of copied code (from find_tour)
   cout << "LK initial run: " << bestval << endl;
 
-  //begin copied code from find_good_tour in tsp_call.c
-  //must be commented out for dummy tour
-  
+  //begin copied code from find_good_tour in tsp_call.c  
   for(int i = 0; i < trials; i++){
     rval = CClinkern_tour(ncount, rawdat, ecount, elist, ncount, kicks,
 			  (int *) NULL, cyc, &val, 1, 0.0, 0.0,
@@ -157,7 +209,7 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
       bestval = val;
     }
   }
-
+  
   if (trials > 0){
     rval = CClinkern_tour(ncount, rawdat, ecount, elist, ncount, 2 * kicks,
 			  &best_tour_nodes[0], cyc, &bestval, 1, 0.0, 0.0,
@@ -173,9 +225,8 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
   for(int i = 0; i < m_graph.node_count; i++)
     perm[best_tour_nodes[i]] = i;
   
-  ecount = m_graph.edge_count;
   min_tour_value = bestval;
-
+  
   for(int i = 0; i < m_graph.edge_count; i++){
     Edge e = m_graph.edges[i];
     int ind0, ind1;

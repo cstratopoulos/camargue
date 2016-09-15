@@ -132,8 +132,17 @@ int Core::rebuild_basis(bool prune){
 
   objval = get_obj_val();
   if(fabs(objval - m_min_tour_value) >= EPSILON){
-    cerr << "Basis rebuild switched objval\n";  
-    rval = 1; goto CLEANUP;
+    cout << "Basis rebuild switched objval: " << objval << "...";
+    rval = single_pivot();
+    if(rval) goto CLEANUP;
+
+    objval = get_obj_val();
+    if(fabs(objval - m_min_tour_value) < EPSILON){
+      cout << "fixed with single pivot\n";
+    } else {
+      cout << "still wrong: " << objval << "\n";
+      rval = 1; goto CLEANUP; 
+    }
   }
 
   rval = PSEPlp_getbase(&m_lp, &old_colstat[0], NULL);
@@ -207,9 +216,8 @@ int Core::rebuild_basis(int &numremoved, IntPair skiprange,
 }
 
 int Core::basis_init(){
-  old_colstat.resize(m_graph.edge_count);
-  for(int i = 0; i < old_colstat.size(); i++)
-    old_colstat[i] = CPX_AT_LOWER;
+  for(int i = 0; i < m_graph.edge_count; i++)
+    m_lp_edges[i] = best_tour_edges[i];
   
   for(int i = 0; i < m_graph.edge_count; i++){
     Edge e = m_graph.edges[i];
@@ -237,12 +245,31 @@ int Core::basis_init(){
       }
     } 
   }
-  
-  int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
+
+  double objval = 0;
+  //int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
+  int rval = PSEPlp_copystart(&m_lp, &old_colstat[0], &old_rowstat[0],
+			      &m_lp_edges[0], NULL, NULL, NULL);
   if(rval) goto CLEANUP;
 
   rval = factor_basis();
   if(rval) goto CLEANUP;
+
+  objval = get_obj_val();
+  if(fabs(objval - m_min_tour_value) >= EPSILON){
+    cout << "Basis init switched objval: " << objval << "...";
+
+    rval = single_pivot();
+    if(rval) goto CLEANUP;
+
+    objval = get_obj_val();
+    if(fabs(objval - m_min_tour_value) < EPSILON){
+      cout << "Fixed with single pivot.\n";
+    } else {
+      cout << "Still wrong: " << objval << "\n";
+      rval = 1; goto CLEANUP;
+    }
+  }
     
   rval = set_edges();
   if(rval) goto CLEANUP;
