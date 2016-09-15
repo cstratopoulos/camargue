@@ -10,6 +10,13 @@ TOPIC GOALS FOR FALL 2016
 	 graph edges. 
 	 No additional edge elimination should be performed during the 
 	 PureCut loop. 
+   Ref code: tsp_call.c:
+       init_edgegengroup(&plan)
+       plan.linkern.count = 10
+       		   .quadnearest = 2
+		   .greedy_start = 0
+		   .nkicks = (ncount / 100) + 1
+	Then call edgegen_edges
 
 2. Improve simple DP sep
    -Speed up odd cut computation (Letchford paper)

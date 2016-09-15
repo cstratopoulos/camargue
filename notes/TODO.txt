@@ -1,3 +1,10 @@
+While re-reading and re-editing code, all vector allocations in constructors
+should be placed in appropriate try/catch blocks. Should write an operator
+bool for each struct that can be tested after initialization. Something like
+explicit operator bool() const that returns true if the class is empty or 
+if a failure flag was set during construction. These should replace all the
+exit(1) statements. 
+
 maybe come up with a generic profiler function that operates on a list of
 pairs corresponding to variables and a string for their name, and also somehow
 stores an indicator for if we should report percentage/ratio/average
@@ -32,10 +39,6 @@ cut, if an augmentation takes place, we can fix edges using reduced
 costs from the root and the new best tour opt value as the integrality
 gap.
 
-
-DCMST GOMORY CUTS
-generate only those with integer coefficients...could be more
-numerically stable and easier to implement?
 
 --
 
