@@ -89,7 +89,7 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
   //code copies from static int find_tour from concorde
   CCutil_sprand(seed, &rand_state);
   CCrandstate *rstate = &rand_state;
-  cyc = CC_SAFE_MALLOC(ncount, int); //commented out to allow dummy tour
+  cyc = CC_SAFE_MALLOC(ncount, int); 
   if(!cyc){
     cerr << "Out of memory for find_tour\n";
     rval = 1; goto CLEANUP;
