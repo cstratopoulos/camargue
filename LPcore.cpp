@@ -20,30 +20,28 @@ inline bool Core::is_integral(){
 
 int Core::is_best_tour_feas(bool &result){
   int rval = 0;
-  vector<double> double_best_tour;
   vector<double> feas_stat;
   result = true;
 
-  try{ double_best_tour.resize(best_tour_edges.size()); }
-  catch(const std::bad_alloc &) {
-    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for double best tour, ");
-  }
+  if(best_tour_edges_lp.size() != best_tour_edges.size()){
+      best_tour_edges_lp.resize(best_tour_edges.size());
+      for(const int i: best_tour_edges)
+	best_tour_edges_lp[i] = best_tour_edges[i];
+    }
 
   try { feas_stat.resize(numrows()); } catch(const std::bad_alloc &) {
     rval = 1; PSEP_GOTO_CLEANUP("Out of memory for feas stat, ");
   }
-  
-  for(int i = 0; i < best_tour_edges.size(); i++)
-    double_best_tour[i] = best_tour_edges[i];
 
-  rval = PSEPlp_getrowinfeas(&m_lp, &double_best_tour[0], &feas_stat[0],
+  rval = PSEPlp_getrowinfeas(&m_lp, &best_tour_edges_lp[0], &feas_stat[0],
 			     0, numrows() - 1);
   if(rval) goto CLEANUP;
 
-  for(const double &feas_entry : feas_stat)
-    if(feas_entry != 0.0){
+  for(int i = 0; i < feas_stat.size(); i++)
+    if(feas_stat[i] != 0.0){
+      cout << "Row " << i << " infeasible, feas_stat: "
+	   << feas_stat[i] << "\n";
       result = false;
-      break;
     }
 
  CLEANUP:
@@ -74,9 +72,11 @@ int Core::nondegenerate_pivot(){
   double lowlimit = m_min_tour_value - EPSILON;
 
   rval = PSEPlp_primal_nd_pivot(&m_lp, &infeasible, lowlimit);
-  if(rval || infeasible)
+  if(rval || infeasible){
     cerr << "Problem in LPCore::nondegenerate_pivot, infeasible: "
 	 << infeasible << "\n";
+    rval = 1;
+  }
   return rval;
 }
 
@@ -98,22 +98,21 @@ int Core::primal_opt(){
 
 
 int Core::pivot_back(){
-  double objval;
-  int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
+  bool tour_feas = false;
+  //int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
+  int rval = PSEPlp_copystart(&m_lp, &old_colstat[0], &old_rowstat[0],
+			      &best_tour_edges_lp[0], NULL, NULL, NULL);
   if(rval) goto CLEANUP;
 
   rval = factor_basis();
   if(rval) goto CLEANUP;
 
-  objval = get_obj_val();
-  if(fabs(objval - m_min_tour_value) >= EPSILON){
-    rval = rebuild_basis(false);
-    if(rval) goto CLEANUP;
-    else {
-      //Bug: maybe return to this later
-      //cout << "Fixed bad objval with basis rebuild\n";
-      rval = 0;
-    }
+  rval = is_best_tour_feas(tour_feas);
+  if(rval) goto CLEANUP;
+  
+  if(!tour_feas){
+    cout << "Best tour is infeasible after pivot back!\n";
+    rval = 1;
   }
 
  CLEANUP:
@@ -145,12 +144,14 @@ int Core::rebuild_basis(bool prune){
   int rval = 0;
   int ecount = m_lp_edges.size();
   int num_removed = 0;
-  double objval;
+  bool tour_feas;
+  
   old_colstat.resize(ecount);
+  best_tour_edges_lp.resize(ecount);
 
   //  double rebuild_time = zeit();
   for(int i = 0; i < m_lp_edges.size(); i++)
-    m_lp_edges[i] = best_tour_edges[i];
+    best_tour_edges_lp[i] = best_tour_edges[i];
 
   rval = PSEPlp_copystart(&m_lp,
 			  NULL, NULL,
@@ -164,32 +165,17 @@ int Core::rebuild_basis(bool prune){
   rval = set_edges();
   if(rval) goto CLEANUP;
 
-  objval = get_obj_val();
-  if(fabs(objval - m_min_tour_value) >= EPSILON){
-    cout << "Basis rebuild switched objval: " << objval << "...";
+  tour_feas = false;
+  rval = is_best_tour_feas(tour_feas);
+  if(rval) goto CLEANUP;
 
-    bool tour_feas = false;
-    rval = is_best_tour_feas(tour_feas);
-    if(rval) goto CLEANUP;
-
-    if(tour_feas)
-      cout << "Best tour is still feasible\n";
-    else {
-      cout << "Best tour is infeasible!\n";
-      rval = 1; goto CLEANUP;
-    }
-    
-    rval = single_pivot();
-    if(rval) goto CLEANUP;
-
-    objval = get_obj_val();
-    if(fabs(objval - m_min_tour_value) < EPSILON){
-      cout << "fixed with single pivot\n";
-    } else {
-      cout << "still wrong: " << objval << "\n";
-      rval = 1; goto CLEANUP; 
-    }
+  if(tour_feas)
+    cout << "Best tour is still feasible\n";
+  else {
+    cout << "Best tour is infeasible!\n";
+    rval = 1; goto CLEANUP;
   }
+
 
   rval = PSEPlp_getbase(&m_lp, &old_colstat[0], NULL);
   if(rval) goto CLEANUP;
@@ -262,14 +248,22 @@ int Core::rebuild_basis(int &numremoved, IntPair skiprange,
 }
 
 int Core::basis_init(){
+  int rval = 0;
   int ecount = best_tour_edges.size();
-  
-  old_colstat.resize(ecount);
+
+  //for now can assume size of old colstat is non-increasing, hence no
+  //need for try - catch
+  old_colstat.resize(ecount); 
   for(const int i: old_colstat)
     old_colstat[i] = CPX_AT_LOWER;
+
+  try { best_tour_edges_lp.resize(best_tour_edges.size()); }
+  catch(const bad_alloc &){
+    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for lp best tour edge, ");
+  }
   
   for(int i = 0; i < ecount; i++)
-    m_lp_edges[i] = best_tour_edges[i];
+    best_tour_edges_lp[i] = best_tour_edges[i];
   
   //the routine for constructing a starting basis, as per Padberg-Hong
   for(int i = 0; i < ecount; i++){
@@ -299,45 +293,14 @@ int Core::basis_init(){
     } 
   }
 
-  double objval = 0;
-  //int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
-  int rval = PSEPlp_copystart(&m_lp, &old_colstat[0], &old_rowstat[0],
-			      &m_lp_edges[0], NULL, NULL, NULL);
+  //rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
+  rval = PSEPlp_copystart(&m_lp, &old_colstat[0], &old_rowstat[0],
+			      &best_tour_edges_lp[0], NULL, NULL, NULL);
   if(rval) goto CLEANUP;
 
   rval = factor_basis();
   if(rval) goto CLEANUP;
-
-  // objval = get_obj_val();
-  // if(fabs(objval - m_min_tour_value) >= EPSILON){
-  //   cout << "Basis init switched objval: " << objval << "\n";
-
-  //   bool tour_feas = false;
-  //   rval = is_best_tour_feas(tour_feas);
-  //   if(rval) goto CLEANUP;
-
-  //   if(tour_feas)
-  //     cout << "Best tour is still feasible\n";
-  //   else {
-  //     cout << "Best tour is infeasible!\n";
-  //     rval = 1; goto CLEANUP;
-  //   }
-
-  //   rval = single_pivot();
-  //   if(rval) goto CLEANUP;
-
-  //   objval = get_obj_val();
-  //   if(fabs(objval - m_min_tour_value) < EPSILON){
-  //     cout << "Fixed with single pivot.\n";
-  //   } else {
-  //     cout << "Still wrong: " << objval << "\n";
-  //     rval = 1; goto CLEANUP;
-  //   }
-  // }
     
-  rval = set_edges();
-  if(rval) goto CLEANUP;
-  
   CLEANUP:
   if(rval)
     cerr << "Error entry point: basis_init()" << endl;

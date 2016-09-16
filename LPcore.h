@@ -96,6 +96,8 @@ namespace PSEP {
       std::vector<int> &best_tour_nodes;
       std::vector<int> &perm;
 
+      std::vector<double> best_tour_edges_lp;
+
       double &m_min_tour_value;
 
       std::vector<int> &island;

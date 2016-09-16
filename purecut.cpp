@@ -99,8 +99,6 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     rval = LPCore.pivot_back();
     if(rval) goto CLEANUP;
 
-
-
     cut_rval = CutControl.primal_sep(augrounds, piv_stat);
     if(cut_rval == 1){
       rval = 1;

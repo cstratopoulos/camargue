@@ -33,6 +33,7 @@ namespace PSEP{
 		  LPGroup.m_lp, LPGroup.m_lp_edges, LPGroup.frac_colstat,
 		  LPGroup.frac_rowstat,
 		  SupportGroup.support_indices),
+      m_lp(LPGroup.m_lp),
       prefs(LPGroup.prefs),
       total_segtime(0), total_2mtime(0), total_dptime(0), total_gentime(0),
       total_segcalls(0), total_2mcalls(0), total_gencalls(0){}
@@ -60,6 +61,7 @@ namespace PSEP{
 
     PSEP::Cut<PSEP::safeGMI> safe_gomory;
 
+    PSEPlp &m_lp; //TODO: Remove after debugging
     PSEP::LP::Prefs &prefs;
 
     double total_segtime, total_2mtime, total_dptime, total_gentime;

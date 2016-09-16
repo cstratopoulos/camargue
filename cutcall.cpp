@@ -15,6 +15,12 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat){
     rval = 1;
     goto CLEANUP;
   }
+  
+  //
+  // if(!segval) cout << "Added segment cut, row number "
+  // 		   << (PSEPlp_numrows(&m_lp) - 1) << "\n";
+  //
+  
   segtime = zeit() - segtime;
   total_segtime += segtime;
   total_segcalls++;
@@ -25,6 +31,11 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat){
     rval = 1;
     goto CLEANUP;
   }
+
+  //
+  // if(!matchval) cout << "Added 2match cut, row number "
+  // 		   << (PSEPlp_numrows(&m_lp) - 1) << "\n";
+  //
   matchtime = zeit() - matchtime;
   total_2mtime += matchtime;
   total_2mcalls++;
