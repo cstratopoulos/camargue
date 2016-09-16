@@ -18,6 +18,11 @@ int EdgeFix::price(int *clamptotal, int *deltotal){
 
   *clamptotal = 0; *deltotal = 0;
 
+  //
+  cout << "In EdgeFix::price....printing best tour\n";
+  PSEP::print_vec_nonzero(best_tour_edges);
+  //
+  
   try {
     redcosts.resize(ecount);
     edge_delset.resize(ecount);
@@ -51,6 +56,9 @@ int EdgeFix::price(int *clamptotal, int *deltotal){
 
     if(cur_red > 0 && best_tour_edges[i] != 1){
       edge_delset[i] = FixStats::DELETE;
+      //
+      cout << "Deleting edge " << i << "\n";
+      //
       (*deltotal)++;
       continue;
     }

@@ -263,6 +263,11 @@ int Core::rebuild_basis(int &numremoved, IntPair skiprange,
 
 int Core::basis_init(){
   int ecount = best_tour_edges.size();
+  
+  old_colstat.resize(ecount);
+  for(const int i: old_colstat)
+    old_colstat[i] = CPX_AT_LOWER;
+  
   for(int i = 0; i < ecount; i++)
     m_lp_edges[i] = best_tour_edges[i];
   
@@ -303,32 +308,32 @@ int Core::basis_init(){
   rval = factor_basis();
   if(rval) goto CLEANUP;
 
-  objval = get_obj_val();
-  if(fabs(objval - m_min_tour_value) >= EPSILON){
-    cout << "Basis init switched objval: " << objval << "\n";
+  // objval = get_obj_val();
+  // if(fabs(objval - m_min_tour_value) >= EPSILON){
+  //   cout << "Basis init switched objval: " << objval << "\n";
 
-    bool tour_feas = false;
-    rval = is_best_tour_feas(tour_feas);
-    if(rval) goto CLEANUP;
+  //   bool tour_feas = false;
+  //   rval = is_best_tour_feas(tour_feas);
+  //   if(rval) goto CLEANUP;
 
-    if(tour_feas)
-      cout << "Best tour is still feasible\n";
-    else {
-      cout << "Best tour is infeasible!\n";
-      rval = 1; goto CLEANUP;
-    }
+  //   if(tour_feas)
+  //     cout << "Best tour is still feasible\n";
+  //   else {
+  //     cout << "Best tour is infeasible!\n";
+  //     rval = 1; goto CLEANUP;
+  //   }
 
-    rval = single_pivot();
-    if(rval) goto CLEANUP;
+  //   rval = single_pivot();
+  //   if(rval) goto CLEANUP;
 
-    objval = get_obj_val();
-    if(fabs(objval - m_min_tour_value) < EPSILON){
-      cout << "Fixed with single pivot.\n";
-    } else {
-      cout << "Still wrong: " << objval << "\n";
-      rval = 1; goto CLEANUP;
-    }
-  }
+  //   objval = get_obj_val();
+  //   if(fabs(objval - m_min_tour_value) < EPSILON){
+  //     cout << "Fixed with single pivot.\n";
+  //   } else {
+  //     cout << "Still wrong: " << objval << "\n";
+  //     rval = 1; goto CLEANUP;
+  //   }
+  // }
     
   rval = set_edges();
   if(rval) goto CLEANUP;
