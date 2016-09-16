@@ -15,6 +15,7 @@
 #include<unordered_map>
 #include<vector>
 #include<iostream>
+#include<type_traits>
 
 /*
  * In this project virtually all functions will produce a pseudo function
@@ -145,6 +146,18 @@ namespace PSEP {
     void print_vec(std::vector<entry_t> const &vec){
     for(int i = 0; i < vec.size(); i++)
       std::cout << "Entry " << i << ": " << vec[i] << "\n";
+  }
+
+  //utility function to print nonzero entries of a numeric vector
+  template<
+    typename entry_t,
+    typename =
+    typename std::enable_if<std::is_arithmetic<entry_t>::value, entry_t>::type
+    >
+    void print_vec_nonzero(std::vector<entry_t> const &vec){
+    for(int i = 0; i < vec.size(); i++)
+      if(vec[i] != 0)
+	std::cout << "Entry " << i << ": " << vec[i] << "\n";
   }
     
 }
