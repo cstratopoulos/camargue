@@ -11,14 +11,20 @@ using namespace PSEP::LP;
 int EdgeFix::price(int *clamptotal, int *deltotal){
   int rval = 0;
   int ecount = m_graph.edge_count;
-  vector<double> redcosts(ecount);
+  vector<double> redcosts;
   double GAP, lp_LB, cur_red, cur_abs;
   double opt_time;
+  int infeasible = 0;
+
   *clamptotal = 0; *deltotal = 0;
 
-  edge_delset.resize(ecount);
+  try {
+    redcosts.resize(ecount);
+    edge_delset.resize(ecount);
+  } catch(const bad_alloc &){
+    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for redcosts/delset, ");
+  }
 
-  int infeasible = 0;
   opt_time = zeit();
   rval = PSEPlp_primal_opt(&m_lp, &infeasible);
   if(rval) goto CLEANUP;
