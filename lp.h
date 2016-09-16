@@ -146,6 +146,12 @@ int PSEPlp_getpi (PSEPlp *lp, double *pi, int begin, int end);
 //access the lower bounds on a range of variables
 int PSEPlp_getlb (PSEPlp *lp, double *lb, int begin, int end);
 
+//computes infeasibility of a given solution
+//the array feas_stat will be nonzero in entry i if the ith row is violated
+//by x. If x is null, the current LP solution is used.
+int PSEPlp_getrowinfeas (PSEPlp *lp, double const *x, double *feas_stat,
+			 int begin, int end);
+
 //access the basis header, stored in head, and basic variable values stored in
 //x; either may be NULL if not needed
 int PSEPlp_bhead (PSEPlp *lp, int *head, double *x);

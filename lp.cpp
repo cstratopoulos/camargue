@@ -15,6 +15,11 @@ int PSEPlp_init (PSEPlp *lp){
     goto CLEANUP;
   }
 
+  rval = CPXsetintparam(lp->cplex_env, CPXPARAM_Preprocessing_Presolve,
+			CPX_OFF);
+  if(rval)
+    fprintf(stderr, "CPXsetintparam failed, return code %d\n", rval);
+
  CLEANUP:
   return rval;
 }
@@ -544,6 +549,16 @@ int PSEPlp_getlb(PSEPlp *lp, double *lb, int begin, int end){
   int rval = CPXgetlb(lp->cplex_env, lp->cplex_lp, lb, begin, end);
   if(rval)
     fprintf(stderr, "lp_getlb failed, rval %d\n", rval);
+
+  return rval;
+}
+
+int PSEPlp_getrowinfeas(PSEPlp *lp, double const *x, double *feas_stat,
+			int begin, int end){
+  int rval = CPXgetrowinfeas(lp->cplex_env, lp->cplex_lp, x, feas_stat,
+			     begin, end);
+  if(rval)
+    fprintf(stderr, "lp_getrowinfeas failed, rval %d\n", rval);
 
   return rval;
 }
