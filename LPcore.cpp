@@ -18,6 +18,40 @@ inline bool Core::is_integral(){
   return true;
 }
 
+int Core::is_best_tour_feas(bool &result){
+  int rval = 0;
+  vector<double> double_best_tour;
+  vector<double> feas_stat;
+  result = true;
+
+  try{ double_best_tour.resize(best_tour_edges.size()); }
+  catch(const std::bad_alloc &) {
+    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for double best tour, ");
+  }
+
+  try { feas_stat.resize(numrows()); } catch(const std::bad_alloc &) {
+    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for feas stat, ");
+  }
+  
+  for(int i = 0; i < best_tour_edges.size(); i++)
+    double_best_tour[i] = best_tour_edges[i];
+
+  rval = PSEPlp_getrowinfeas(&m_lp, &double_best_tour[0], &feas_stat[0],
+			     0, numrows() - 1);
+  if(rval) goto CLEANUP;
+
+  for(const double &feas_entry : feas_stat)
+    if(feas_entry != 0.0){
+      result = false;
+      break;
+    }
+
+ CLEANUP:
+  if(rval)
+    cerr << "Problem in Core::is_best_tour_feas\n";
+  return rval;
+}
+
 int Core::factor_basis(){
   int rval = PSEPlp_no_opt(&m_lp);
   if(rval)
@@ -133,6 +167,18 @@ int Core::rebuild_basis(bool prune){
   objval = get_obj_val();
   if(fabs(objval - m_min_tour_value) >= EPSILON){
     cout << "Basis rebuild switched objval: " << objval << "...";
+
+    bool tour_feas = false;
+    rval = is_best_tour_feas(tour_feas);
+    if(rval) goto CLEANUP;
+
+    if(tour_feas)
+      cout << "Best tour is still feasible\n";
+    else {
+      cout << "Best tour is infeasible!\n";
+      rval = 1; goto CLEANUP;
+    }
+    
     rval = single_pivot();
     if(rval) goto CLEANUP;
 
@@ -216,10 +262,12 @@ int Core::rebuild_basis(int &numremoved, IntPair skiprange,
 }
 
 int Core::basis_init(){
-  for(int i = 0; i < m_graph.edge_count; i++)
+  int ecount = best_tour_edges.size();
+  for(int i = 0; i < ecount; i++)
     m_lp_edges[i] = best_tour_edges[i];
   
-  for(int i = 0; i < m_graph.edge_count; i++){
+  //the routine for constructing a starting basis, as per Padberg-Hong
+  for(int i = 0; i < ecount; i++){
     Edge e = m_graph.edges[i];
     int ind0, ind1;
     if(perm[e.end[0]] < perm[e.end[1]]){
@@ -257,7 +305,18 @@ int Core::basis_init(){
 
   objval = get_obj_val();
   if(fabs(objval - m_min_tour_value) >= EPSILON){
-    cout << "Basis init switched objval: " << objval << "...";
+    cout << "Basis init switched objval: " << objval << "\n";
+
+    bool tour_feas = false;
+    rval = is_best_tour_feas(tour_feas);
+    if(rval) goto CLEANUP;
+
+    if(tour_feas)
+      cout << "Best tour is still feasible\n";
+    else {
+      cout << "Best tour is infeasible!\n";
+      rval = 1; goto CLEANUP;
+    }
 
     rval = single_pivot();
     if(rval) goto CLEANUP;

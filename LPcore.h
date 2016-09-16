@@ -40,6 +40,8 @@ namespace PSEP {
       bool is_dual_feas();
       bool is_integral();
 
+      int is_best_tour_feas(bool &result);
+
       int factor_basis();
       int single_pivot();
       int nondegenerate_pivot();
