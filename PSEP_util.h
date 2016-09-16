@@ -13,6 +13,8 @@
 
 #include<utility>
 #include<unordered_map>
+#include<vector>
+#include<iostream>
 
 /*
  * In this project virtually all functions will produce a pseudo function
@@ -137,6 +139,14 @@ namespace PSEP {
    */
   double zeit (void);
   double real_zeit (void);
+
+  //utility function to print every entry of a vector
+  template<typename entry_t>
+    void print_vec(std::vector<entry_t> const &vec){
+    for(int i = 0; i < vec.size(); i++)
+      std::cout << "Entry " << i << ": " << vec[i] << "\n";
+  }
+    
 }
 
 typedef std::pair<int, int> IntPair;
