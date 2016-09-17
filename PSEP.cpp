@@ -129,7 +129,7 @@ static int initial_parse(int ac, char **av, string &fname,
 
   prefs.dp_threshold = 5 * dp_factor;
   if(dp_factor >= 0)
-    cout << "DP separation will be tried after "
+    cout << "DP separation will be tried every "
 	 << prefs.dp_threshold << " non-degenerate pivots w no augmentation\n";
 
   return 0;

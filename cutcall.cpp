@@ -40,7 +40,8 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat){
   total_2mtime += matchtime;
   total_2mcalls++;
 
-  if(prefs.dp_threshold >= 0 && augrounds >= prefs.dp_threshold){
+  if(prefs.dp_threshold >= 0 && augrounds > 0 &&
+     (augrounds % prefs.dp_threshold == 0)){
     if(segval == 2 && matchval == 2 && stat != LP::PivType::Subtour){
       dptime = zeit();
       dpval = dominos.cutcall();
