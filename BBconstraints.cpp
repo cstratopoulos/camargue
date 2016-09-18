@@ -231,7 +231,7 @@ int Constraints::add_right_branch(const int edge){
   if(rval)
     cerr << "Problem in Constraints::add_right_branch\n";
   return rval;
-};
+}
 
 int Constraints::explore_right(const int edge){
   int rval = 0, rownum;
