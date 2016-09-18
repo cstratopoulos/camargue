@@ -226,6 +226,9 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
     perm[best_tour_nodes[i]] = i;
   
   min_tour_value = bestval;
+
+  cout << "PRINTING BEST TOUR:\n";
+  PSEP::print_vec(best_tour_nodes);
   
   for(int i = 0; i < m_graph.edge_count; i++){
     Edge e = m_graph.edges[i];
@@ -238,6 +241,9 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
       
     if(ind1 - ind0 == 1 || (ind0 == 0 && ind1 == m_graph.node_count - 1)){
       best_tour_edges[i] = 1;
+      m_graph.print_edge(i);
+      //BUG FOUND??? NOT ALL EDGES MAKING IT INTO TOUR
+      //CHECK CONTROL FLOW BC CERTAIN EDGES ARE NOT MAKING IT IN
     }
   }
 

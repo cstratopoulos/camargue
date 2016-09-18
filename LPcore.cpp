@@ -300,6 +300,18 @@ int Core::basis_init(){
 
   rval = factor_basis();
   if(rval) goto CLEANUP;
+
+
+  { bool result;
+  rval = is_best_tour_feas(result);
+  if(rval) goto CLEANUP;
+  if(result)
+    cout << "Best tour feasible\n";
+  else {
+    cout << "BEST TOUR INFEASIBLE AT BASIS INIT!!!\n";
+    rval = 1;
+  }
+  }
     
   CLEANUP:
   if(rval)

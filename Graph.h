@@ -40,7 +40,7 @@ namespace PSEP {
     std::vector<Edge> edges;
     IntPairMap edge_lookup;
 
-    void print_edge(int i){
+    void print_edge(int i) const {
       if(i >= edge_count)
 	std::cout << "Edge out of range" << std::endl;
       else
