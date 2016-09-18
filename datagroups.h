@@ -62,7 +62,8 @@ namespace Data {
   /* Stores information about the current best tour */
   struct BestGroup {
     /* The constructor takes graph and dat initialized by GraphGroup */
-    BestGroup(const Graph &graph, std::unique_ptr<CCdatagroup> &dat);
+    BestGroup(Graph &graph, std::vector<int> &delta,
+	      std::unique_ptr<CCdatagroup> &dat);
 
     operator bool() const { return !best_tour_nodes.empty(); }
 

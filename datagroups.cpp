@@ -1,6 +1,10 @@
 #include "datagroups.h"
 
 #include<algorithm>
+#include<unordered_map>
+#include<iostream>
+#include<vector>
+
 #include<cmath>
 
 extern "C" {
@@ -8,6 +12,8 @@ extern "C" {
 #include <concorde/INCLUDE/util.h>
 #include <concorde/INCLUDE/edgegen.h>
 }
+
+#include "PSEP_util.h"
 
 using namespace std;
 using namespace PSEP::Data;
@@ -78,12 +84,14 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
       rval = 1; PSEP_GOTO_CLEANUP("Out of memory for m_graph.edges, ");
     }
 
+    cout << "Edges from GraphGroup constructor: \n";
     for(int i = 0; i < m_graph.edge_count; i++){
       Edge e(elist[2 * i], elist[(2 * i) + 1],
 	     CCutil_dat_edgelen(elist[2 * i], elist[(2 * i) + 1], rawdat));
       
       m_graph.edges[i] = e;
       m_graph.edge_lookup.emplace(IntPair(e.end[0], e.end[1]), i);
+      m_graph.print_edge(i);
     }
 
     cout << "    " << m_graph.edge_count
@@ -106,7 +114,8 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
   }
 }
 
-BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
+BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
+		     unique_ptr<CCdatagroup> &dat){
   int rval = 0;
   CCrandstate rand_state;
   CCedgegengroup plan;
@@ -148,6 +157,7 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
   }
 
   if(!sparse){
+    cout << "Doing non-sparse quad-nearest and greedy tour\n";
     CCedgegen_init_edgegengroup (&plan);
     plan.quadnearest = 2;
     rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &ecount,
@@ -172,21 +182,25 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
     }
     CC_FREE (tlist, int);
   } else {
+    cout << "Doing sparse LK protocol\n";
     ecount = m_graph.edge_count;
     elist = CC_SAFE_MALLOC(2 * ecount, int);
     if(!elist){
       rval = 1; PSEP_GOTO_CLEANUP("Out of memory for elist, ");
     }
 
+    cout << "Printing the good elist edges made available to LK\n";
     for(int i = 0; i < ecount; i++){
       elist[2 * i] = m_graph.edges[i].end[0];
       elist[(2 * i) + 1] = m_graph.edges[i].end[1];
+      cout << "i = " << i << ": " << elist[2*i]
+	   << ", " << elist[2*i + 1] << "\n";
     }
   }
 
-  //in a sparse graph we do not bother putting a greedy tour in sparse
+  //in a sparse graph we do not bother putting a greedy tour as incycle
   rval = CClinkern_tour (ncount, rawdat, ecount, elist, ncount, kicks,
-			 sparse ? (int *) NULL : cyc,
+			 sparse ? (int *) NULL : cyc, //
 			 &best_tour_nodes[0], &bestval, silent, 0.0, 0.0,
 			 (char *) NULL,
 			 CC_LK_GEOMETRIC_KICK, rstate);
@@ -229,22 +243,42 @@ BestGroup::BestGroup(const Graph &m_graph, unique_ptr<CCdatagroup> &dat){
 
   cout << "PRINTING BEST TOUR:\n";
   PSEP::print_vec(best_tour_nodes);
-  
-  for(int i = 0; i < m_graph.edge_count; i++){
-    Edge e = m_graph.edges[i];
-    int ind0, ind1;
-    if(perm[e.end[0]] < perm[e.end[1]]){
-      ind0 = perm[e.end[0]]; ind1 = perm[e.end[1]];
-    } else {
-      ind1 = perm[e.end[0]]; ind0 = perm[e.end[1]];
+
+  cout << "SETTING BEST TOUR EDGES AND PRINTING EACH EDGE:\n";
+  for(int i = 0; i < ncount; i++){
+    cout << "i = " << i << ": ";
+    int end0 = fmin(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
+    int end1 = fmax(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
+    IntPairMap::const_iterator edge_it =
+      m_graph.edge_lookup.find(IntPair(end0, end1));
+    if(edge_it == m_graph.edge_lookup.end()){
+      rval = 1;
+      PSEP_GOTO_CLEANUP("Couldn't find edge index " << end0 << ", "
+			<< end1 << ", ");  
     }
-      
-    if(ind1 - ind0 == 1 || (ind0 == 0 && ind1 == m_graph.node_count - 1)){
-      best_tour_edges[i] = 1;
-      m_graph.print_edge(i);
-      //BUG FOUND??? NOT ALL EDGES MAKING IT INTO TOUR
-      //CHECK CONTROL FLOW BC CERTAIN EDGES ARE NOT MAKING IT IN
-    }
+
+    int edge_index = edge_it->second;    
+    best_tour_edges[edge_index] = 1;
+    m_graph.print_edge(edge_index);
+  }
+
+  cout << "CHECKING IF EVEN GRAPH NEEDS EDGE ADDED\n";
+  if((ncount % 2) == 0){
+    int end0 = fmin(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
+    int end1 = fmax(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
+    IntPairMap::const_iterator edge_it =
+      m_graph.edge_lookup.find(IntPair(end0, end1));
+
+    if(edge_it == m_graph.edge_lookup.end()){
+      cout << "Adding extra edge just for basis\n";
+      Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, rawdat));
+
+      m_graph.edges.push_back(e);
+      m_graph.edge_lookup[IntPair(end0, end1)] = m_graph.edges.size() - 1;
+      m_graph.edge_count += 1;
+      best_tour_edges.push_back(0);
+      delta.push_back(0);
+    }    
   }
 
  CLEANUP:

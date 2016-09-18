@@ -11,7 +11,7 @@ TSPSolver::TSPSolver(const string &fname, RandProb &randprob, LP::Prefs _prefs,
 		     unique_ptr<CCdatagroup> &dat,
 		     const bool sparse) :
   GraphGroup(fname, randprob, dat, sparse),
-  BestGroup(GraphGroup.m_graph, dat),
+  BestGroup(GraphGroup.m_graph, GraphGroup.delta, dat),
   LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm){
 
   try{

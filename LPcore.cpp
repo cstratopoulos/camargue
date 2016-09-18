@@ -250,6 +250,7 @@ int Core::rebuild_basis(int &numremoved, IntPair skiprange,
 int Core::basis_init(){
   int rval = 0;
   int ecount = best_tour_edges.size();
+  int ncount = m_graph.node_count;
 
   //for now can assume size of old colstat is non-increasing, hence no
   //need for try - catch
@@ -264,34 +265,55 @@ int Core::basis_init(){
   
   for(int i = 0; i < ecount; i++)
     best_tour_edges_lp[i] = best_tour_edges[i];
-  
-  //the routine for constructing a starting basis, as per Padberg-Hong
-  for(int i = 0; i < ecount; i++){
-    Edge e = m_graph.edges[i];
-    int ind0, ind1;
-    if(perm[e.end[0]] < perm[e.end[1]]){
-      ind0 = perm[e.end[0]]; ind1 = perm[e.end[1]];
-    } else {
-      ind1 = perm[e.end[0]]; ind0 = perm[e.end[1]];
-    }
-      
-    if(ind1 - ind0 == 1 || (ind0 == 0 && ind1 == m_graph.node_count - 1)){
-      old_colstat[i] = CPX_BASIC;
-      if(m_graph.node_count %2 == 1)
-	continue;	
+
+  cout << "Doing standard basis loop\n";
+  for(int i = 0; i < ncount; i++){
+    int end0 = fmin(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
+    int end1 = fmax(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
+    IntPairMap::const_iterator edge_it =
+      m_graph.edge_lookup.find(IntPair(end0, end1));
+    if(edge_it == m_graph.edge_lookup.end()){
+      rval = 1;
+      PSEP_GOTO_CLEANUP("Couldn't find " << end0 << ", " << end1 << ", ");
     }
 
-    if(m_graph.node_count % 2 == 0){
-      if(ind0 == m_graph.node_count - 2 && ind1 == m_graph.node_count - 1){
-	old_colstat[i] = CPX_AT_UPPER;
-	continue;
-      }
-
-      if(ind0 == 0 && ind1 == m_graph.node_count - 2){
-	old_colstat[i] = CPX_BASIC;
-      }
-    } 
+    int edge_index = edge_it->second;
+    old_colstat[edge_index] = CPX_BASIC;
   }
+
+  cout << "Doing even basis fix\n";
+  if((ncount % 2) == 0){
+    int end0 = fmin(best_tour_nodes[ncount - 2], best_tour_nodes[ncount - 1]);
+    int end1 = fmax(best_tour_nodes[ncount - 2], best_tour_nodes[ncount - 1]);
+
+    cout << "Doing nonbasic column\n";
+    IntPairMap::const_iterator edge_it =
+      m_graph.edge_lookup.find(IntPair(end0, end1));
+    if(edge_it == m_graph.edge_lookup.end()){
+      rval = 1;
+      PSEP_GOTO_CLEANUP("Couldn't find " << end0 << ", " << end1 << ", ");
+    }
+
+    //the discarded column, i_{n-1}, i_{n} is at upper
+    int edge_index = edge_it->second;
+    old_colstat[edge_index] = CPX_AT_UPPER;
+
+    end0 = fmin(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
+    end1 = fmax(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
+
+    cout << "Doing extra basic column\n";
+    edge_it = m_graph.edge_lookup.find(IntPair(end0, end1));
+    if(edge_it == m_graph.edge_lookup.end()){
+      rval = 1;
+      PSEP_GOTO_CLEANUP("Couldn't find " << end0 << ", " << end1 << ", ");
+    }
+
+    //the edge i_{1}, i_{n-1} is added
+    edge_index = edge_it->second;
+    old_colstat[edge_index] = CPX_BASIC;
+  }
+
+  
 
   //rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
   rval = PSEPlp_copystart(&m_lp, &old_colstat[0], &old_rowstat[0],
