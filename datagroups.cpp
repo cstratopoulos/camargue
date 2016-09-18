@@ -254,7 +254,10 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
     if(edge_it == m_graph.edge_lookup.end()){
       rval = 1;
       PSEP_GOTO_CLEANUP("Couldn't find edge index " << end0 << ", "
-			<< end1 << ", ");  
+			<< end1 << ", ");
+      //NEW BUG
+      //Somehow the LK tour is adding an edge that was not present in the
+      //good edges from the graph
     }
 
     int edge_index = edge_it->second;    
