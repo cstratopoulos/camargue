@@ -37,6 +37,12 @@
  * helper_task, hopefully giving a clean description of the source of error
  */
 #define PSEP_GOTO_CLEANUP(message) {std::cerr << message; goto CLEANUP;}
+#define PSEP_CHECK_RVAL(rval, message) {\
+  if ((rval)) {\
+  std::cerr << message;\
+  goto CLEANUP;\
+  }\
+  }
 
 namespace PSEP {
   /*
