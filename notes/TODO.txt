@@ -9,6 +9,25 @@ I think LPfixing should be a derived class of LPCore? Because maybe LPCore
 should be called LPManip, hence LPFixing is a type of LPManip...maybe 
 LPPrune as well....
 
+Approach: Make the main objects of LPCore protected instead of private, then
+	  derived classes can access them.
+	  Moreover, add a reference copy constructor to LPCore.
+	  Derived classes should be constructed with any additional info they
+	  need, plus a reference to LPCore from which they can construct
+	  a copy of it. 
+
+Instead of a Cut template, we should have a Cut abstract class: contains 
+only virtual methods, all of which must be implemented by derived classes. 
+See Wiki article for Virtual function>>abstract classes
+
+In preparation for column generation approach, (and also for portability?)
+cut classes should not get the LP itself. They should just store a best cut
+or coefficients or something and have CutControl manage the addition of cuts
+
+With blossoms and dominos, it may make sense to store a list/pool of violated
+cuts and check those before generating new ones.
+Probably shouldn't bother with segments though
+
 maybe come up with a generic profiler function that operates on a list of
 pairs corresponding to variables and a string for their name, and also somehow
 stores an indicator for if we should report percentage/ratio/average
@@ -23,9 +42,6 @@ concorde along with wrappers? eg.,
 struct CC with sub-structs GH (for gomoryhu), cut for st_cut
 (including subtour poly)
 learn to call CPXaddrowS for multiple cuts
-
-see edgegen.c and edgegen.h, also tsp_call.c for ideas how to use
-concorde to build initial edge set
 
 tooth aggregated coefficients: instead of an ecount length vector, 
 create a map of type <Int, Double> mapping edges to their coeff
