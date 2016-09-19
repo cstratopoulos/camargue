@@ -14,11 +14,17 @@ TSPSolver::TSPSolver(const string &fname, RandProb &randprob, LP::Prefs _prefs,
   BestGroup(GraphGroup.m_graph, GraphGroup.delta, dat),
   LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm){
 
+  if(!GraphGroup || !BestGroup || !LPGroup){
+    cerr << "Bad DataGroup, PureCut will not be constructed\n";
+    PureCut.reset(NULL);
+    return;
+  }
+
   try{
-  PureCut.reset(new PSEP::PureCut(GraphGroup, BestGroup, LPGroup,
-				  SupportGroup));
+    PureCut.reset(new PSEP::PureCut(GraphGroup, BestGroup, LPGroup,
+				    SupportGroup));
   } catch (const std::bad_alloc &){
-    cerr << "TSPSolver constructor failed to declare PureCut\n";
+    cerr << "TSPSolver constructor failed to construct PureCut\n";
     PureCut.reset(NULL);
   }
 }
@@ -27,8 +33,8 @@ int TSPSolver::call(SolutionProtocol solmeth, const bool sparse){
   LP::PivType piv_status;
   int rval = 0;
 
-  rval = (!GraphGroup || !BestGroup || !LPGroup || !PureCut);
-  if(rval) goto CLEANUP;
+  rval = !PureCut;
+  PSEP_CHECK_RVAL(rval, "PureCut is NULL, ");
   
   if(solmeth == SolutionProtocol::PURECUT){
     PivotPlan plan;
