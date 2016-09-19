@@ -243,7 +243,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
 
   cout << "PRINTING BEST TOUR:\n";
   PSEP::print_vec(best_tour_nodes);
-
+  { int missing = 0;
   cout << "SETTING BEST TOUR EDGES AND PRINTING EACH EDGE:\n";
   for(int i = 0; i < ncount; i++){
     cout << "i = " << i << ": ";
@@ -251,19 +251,33 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
     int end1 = fmax(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
     IntPairMap::const_iterator edge_it =
       m_graph.edge_lookup.find(IntPair(end0, end1));
+    
     if(edge_it == m_graph.edge_lookup.end()){
+      cerr << "Couldn't find edge index " << end0 << ", "
+	   << end1 << ", \n";
       rval = 1;
-      PSEP_GOTO_CLEANUP("Couldn't find edge index " << end0 << ", "
-			<< end1 << ", ");
-      //NEW BUG
-      //Somehow the LK tour is adding an edge that was not present in the
-      //good edges from the graph
+      missing++;
+
+      Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, rawdat));
+
+      m_graph.edges.push_back(e);
+      m_graph.edge_lookup[IntPair(end0, end1)] = m_graph.edges.size() - 1;
+      m_graph.edge_count += 1;
+      best_tour_edges.push_back(0);
+      delta.push_back(0);
+      edge_it = m_graph.edge_lookup.find(IntPair(end0, end1));
     }
 
     int edge_index = edge_it->second;    
     best_tour_edges[edge_index] = 1;
     m_graph.print_edge(edge_index);
   }
+  cout << "Added " << missing << " missing edges\n";
+  if(rval) goto CLEANUP;
+  }
+
+
+
 
   cout << "CHECKING IF EVEN GRAPH NEEDS EDGE ADDED\n";
   if((ncount % 2) == 0){
