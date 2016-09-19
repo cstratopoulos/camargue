@@ -91,7 +91,6 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
       
       m_graph.edges[i] = e;
       m_graph.edge_lookup.emplace(IntPair(e.end[0], e.end[1]), i);
-      m_graph.print_edge(i);
     }
 
     cout << "    " << m_graph.edge_count
@@ -182,19 +181,15 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
     }
     CC_FREE (tlist, int);
   } else {
-    cout << "Doing sparse LK protocol\n";
     ecount = m_graph.edge_count;
     elist = CC_SAFE_MALLOC(2 * ecount, int);
     if(!elist){
       rval = 1; PSEP_GOTO_CLEANUP("Out of memory for elist, ");
     }
 
-    cout << "Printing the good elist edges made available to LK\n";
     for(int i = 0; i < ecount; i++){
       elist[2 * i] = m_graph.edges[i].end[0];
       elist[(2 * i) + 1] = m_graph.edges[i].end[1];
-      cout << "i = " << i << ": " << elist[2*i]
-	   << ", " << elist[2*i + 1] << "\n";
     }
   }
 
@@ -241,21 +236,14 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   
   min_tour_value = bestval;
 
-  cout << "PRINTING BEST TOUR:\n";
-  PSEP::print_vec(best_tour_nodes);
   { int missing = 0;
-  cout << "SETTING BEST TOUR EDGES AND PRINTING EACH EDGE:\n";
   for(int i = 0; i < ncount; i++){
-    cout << "i = " << i << ": ";
     int end0 = fmin(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
     int end1 = fmax(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
     IntPairMap::const_iterator edge_it =
       m_graph.edge_lookup.find(IntPair(end0, end1));
     
     if(edge_it == m_graph.edge_lookup.end()){
-      cerr << "Couldn't find edge index " << end0 << ", "
-	   << end1 << ", \n";
-      rval = 1;
       missing++;
 
       Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, rawdat));
@@ -270,16 +258,10 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
 
     int edge_index = edge_it->second;    
     best_tour_edges[edge_index] = 1;
-    m_graph.print_edge(edge_index);
   }
-  cout << "Added " << missing << " missing edges\n";
-  if(rval) goto CLEANUP;
+  cout << "Added " << missing << " additional edges. ";
   }
 
-
-
-
-  cout << "CHECKING IF EVEN GRAPH NEEDS EDGE ADDED\n";
   if((ncount % 2) == 0){
     int end0 = fmin(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
     int end1 = fmax(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
@@ -287,7 +269,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
       m_graph.edge_lookup.find(IntPair(end0, end1));
 
     if(edge_it == m_graph.edge_lookup.end()){
-      cout << "Adding extra edge just for basis\n";
+      cout << "Adding extra edge just for basis.";
       Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, rawdat));
 
       m_graph.edges.push_back(e);
@@ -297,6 +279,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
       delta.push_back(0);
     }    
   }
+  cout << "\n";
 
  CLEANUP:
   CC_IFFREE (cyc, int);

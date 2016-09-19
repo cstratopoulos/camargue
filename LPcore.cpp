@@ -266,7 +266,6 @@ int Core::basis_init(){
   for(int i = 0; i < ecount; i++)
     best_tour_edges_lp[i] = best_tour_edges[i];
 
-  cout << "Doing standard basis loop\n";
   for(int i = 0; i < ncount; i++){
     int end0 = fmin(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
     int end1 = fmax(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
@@ -281,12 +280,10 @@ int Core::basis_init(){
     old_colstat[edge_index] = CPX_BASIC;
   }
 
-  cout << "Doing even basis fix\n";
   if((ncount % 2) == 0){
     int end0 = fmin(best_tour_nodes[ncount - 2], best_tour_nodes[ncount - 1]);
     int end1 = fmax(best_tour_nodes[ncount - 2], best_tour_nodes[ncount - 1]);
 
-    cout << "Doing nonbasic column\n";
     IntPairMap::const_iterator edge_it =
       m_graph.edge_lookup.find(IntPair(end0, end1));
     if(edge_it == m_graph.edge_lookup.end()){
@@ -301,7 +298,6 @@ int Core::basis_init(){
     end0 = fmin(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
     end1 = fmax(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
 
-    cout << "Doing extra basic column\n";
     edge_it = m_graph.edge_lookup.find(IntPair(end0, end1));
     if(edge_it == m_graph.edge_lookup.end()){
       rval = 1;
