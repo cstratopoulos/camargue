@@ -91,6 +91,7 @@ namespace PSEP {
     void get_delta (int nsize, int *nlist, int ecount, int *elist,
 		    int *deltacount, int *delta, int *edge_marks);
 
+    //TODO: This should just be a member function of SupportGraph
     int build_s_graph (int node_count, int edge_count,
 		       std::vector<Edge> &edges,
 		       std::vector<int> &support_indices,
