@@ -18,17 +18,14 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
   double routine_start, fixing_start;
   double fixtime = 0;
 
-  if(plan.perform_elim()){
-    fixing_start = zeit();
-    rval = LPFix.redcost_fixing();
-    if(rval) goto CLEANUP;
-    fixing_start = zeit() - fixing_start;
-    fixtime += fixing_start;
-  }
+  // if(plan.perform_elim()){
+  //   fixing_start = zeit();
+  //   rval = LPFix.redcost_fixing();
+  //   if(rval) goto CLEANUP;
+  //   fixing_start = zeit() - fixing_start;
+  //   fixtime += fixing_start;
+  // }
   
-  rval = LPCore.basis_init();
-  if(rval) goto CLEANUP;
-
   if(!plan.is_branch())
     cout << "Pivoting until optimality or no more cuts" << endl;
 
