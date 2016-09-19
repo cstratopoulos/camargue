@@ -16,9 +16,8 @@ Approach: Make the main objects of LPCore protected instead of private, then
 	  need, plus a reference to LPCore from which they can construct
 	  a copy of it. 
 
-Instead of a Cut template, we should have a Cut abstract class: contains 
-only virtual methods, all of which must be implemented by derived classes. 
-See Wiki article for Virtual function>>abstract classes
+Instead of a Cut template, we should have a CutCall<typename cut_t> abstract
+template class....
 
 In preparation for column generation approach, (and also for portability?)
 cut classes should not get the LP itself. They should just store a best cut
