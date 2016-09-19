@@ -61,7 +61,6 @@ namespace PSEP{
 
     PSEP::Cut<PSEP::safeGMI> safe_gomory;
 
-    PSEPlp &m_lp; //TODO: Remove after debugging
     PSEP::LP::Prefs &prefs;
 
     double total_segtime, total_2mtime, total_dptime, total_gentime;
