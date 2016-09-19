@@ -9,12 +9,6 @@
  * datagroups, and (if applicable) they should initialize their member classes
  * with individual members of the relevant data groups.
  *
- * All DataGroups contain an operator bool(), which MUST be tested before use.
- * This will test false if the constructor encountered an error either 
- * allocating memory or making a library function call. Thus, for example,
- *                if(!GraphGroup) { //error }
- * could be used to check for an error constructing the GraphGroup, and handle
- * it appropriately. 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 #ifndef PSEP_DATAGROUP_H
 #define PSEP_DATAGROUP_H
@@ -30,8 +24,20 @@
 
 namespace PSEP {
 namespace Data {
+  /* 
+   *DataGroup is the pure abstract class from which (almost) all of the
+   * other structs are derived. 
+   */
+  struct DataGroup {
+    /*
+     * All DataGroups must provide an operator bool overload which will
+     * return false if the constructor failed
+     */
+    virtual operator bool() const = 0;
+  };
+  
   /* GraphGroup stores pure combinatorial information about the problem */
-  struct GraphGroup {
+  struct GraphGroup : DataGroup {
     /* constructor parameters are exactly as in tsp_solver.h */
     GraphGroup(const std::string &fname, PSEP::RandProb &randprob,
 	       std::unique_ptr<CCdatagroup> &dat,
@@ -60,7 +66,7 @@ namespace Data {
   };
 
   /* Stores information about the current best tour */
-  struct BestGroup {
+  struct BestGroup : DataGroup {
     /* The constructor takes graph and dat initialized by GraphGroup */
     BestGroup(Graph &graph, std::vector<int> &delta,
 	      std::unique_ptr<CCdatagroup> &dat);
@@ -85,7 +91,7 @@ namespace Data {
   };
 
   /* This group stores objects related to the LP solver/LP relaxation */
-  struct LPGroup {
+  struct LPGroup : DataGroup {
     LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
 	    const std::vector<int> &perm);
     ~LPGroup(){PSEPlp_free(&m_lp);}
@@ -117,7 +123,8 @@ namespace Data {
    * SupportGroup is the structure responsible for managing a support graph
    * and the information about the associated LP solution
    */
-  struct SupportGroup {
+  //TODO: make this a derived class as well
+  struct SupportGroup  {
     /*
      * G_s - a graph whose edges are the edges from GraphGroup::m_graph
      *     for which the corresponding entry of m_lp_edges is nonnegative
