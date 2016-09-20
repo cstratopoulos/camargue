@@ -18,11 +18,13 @@ namespace PSEP {
 
     int cutcall();
 
-  private:
+  protected:
     int separate();
-    int parse_coeffs();
     int add_cut();
-
+    
+  private:
+    int parse_coeffs();
+    
     int deltacount;
     std::vector<int> &delta;
     std::vector<int> &edge_marks;

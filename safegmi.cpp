@@ -53,10 +53,10 @@ int Cut<safeGMI>::cutcall(){
   rval = get_tab_rows();
   if(rval) goto CLEANUP;
 
-  rval = get_cuts();
+  rval = separate();
   if(rval) goto CLEANUP;
 
-  rval = add_best();
+  rval = add_cut();
   if(rval) goto CLEANUP;
   
  CLEANUP:
@@ -161,7 +161,7 @@ int Cut<safeGMI>::get_tab_rows(){
   return rval;  
 }
 
-int Cut<safeGMI>::get_cuts(){
+int Cut<safeGMI>::separate(){
   int rval = 0;
 
   int num_added = 0, total_num_added = 0;
@@ -190,11 +190,11 @@ int Cut<safeGMI>::get_cuts(){
 
  CLEANUP:
   if(rval == 1)
-    cerr << "problem in Cut<safeGMI>::get_cuts\n";
+    cerr << "problem in Cut<safeGMI>::separate\n";
   return rval;
 }
 
-int Cut<safeGMI>::add_best(){
+int Cut<safeGMI>::add_cut(){
   int rval = 0;
   
   int numcols = PSEPlp_numcols(&m_lp), rmatbeg = 0;
@@ -259,6 +259,6 @@ int Cut<safeGMI>::add_best(){
 
  CLEANUP:
   if(rval == 1)
-    cerr << "Problem in Cut<safeGMI>::add_best\n";
+    cerr << "Problem in Cut<safeGMI>::add_cut\n";
   return rval;
 }

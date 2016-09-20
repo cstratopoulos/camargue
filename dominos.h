@@ -22,10 +22,12 @@ namespace PSEP{
 	       _support_ecap, _edge_lookup, _m_lp) {}
     int cutcall();
 
-  private:
+  protected:
     int separate();
-    int parse_coeffs();
     int add_cut();
+
+  private:
+    int parse_coeffs();
 
     PSEPlp &m_lp;
     std::vector<double> &m_lp_edges;

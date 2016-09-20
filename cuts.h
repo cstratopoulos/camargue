@@ -84,28 +84,22 @@ namespace PSEP {
 
 
   /*
-   * This is a dummy template class which suggests the structure of the 
-   * instantiation for a given cut type. The commented out names are 
-   * suggestions for methods that should be provided by an instantiation; 
-   * actual names/implementations may vary.
+   * This pure abstract class defines the interface to a separation routine
+   * for a given cut type
    *
-   * cut_call - the wrapper function calling all the private methods
+   * cut_call - the wrapper function calling all the protected methods
    * separate - invokes the separation routine for cuts of type cut_t
-   * parse_coeffs - converts the cut_t cut, if found, into coefficients
-   *    that can be passed to CPLEX
    * add_cut - the function for actually adding the row
-   *
+   *           TODO: will just add the hypergraph to queue??
    * see segments.h, blossoms.h, dominos.h, etc for examples
    */
-  template<typename cut_t>
-    class Cut {
+  template<typename cut_t> class Cut {
   public:
-    //int cut_call(){ return 1;}
+    virtual int cut_call() = 0;
 
-  private:
-    /* int separate(){ return 1;} */
-    /* int parse_coeffs(){ return 1;} */
-    /* int add_cut(){return 1;} */
+  protected:
+    virtual int separate() = 0;
+    virtual int add_cut() = 0;
   };
 }
 

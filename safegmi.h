@@ -25,11 +25,13 @@ namespace PSEP {
 
     int cutcall();
 
+  protected:
+    int separate();
+    int add_cut();
+
   private:
     int init_constraint_info();
     int get_tab_rows();
-    int get_cuts();
-    int add_best();
 
     std::vector<int> &best_tour_edges;
     
