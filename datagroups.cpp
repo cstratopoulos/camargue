@@ -64,16 +64,19 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
 	}
       }}
   } else {
-    cout << "    GENERATING SPARSE GRAPH ONLY\n";
+    cout << "    GENERATING SPARSE GRAPH ONLY, ";
     CCedgegengroup plan;
     CCrandstate rstate;
     
     CCutil_sprand((int) real_zeit(), &rstate);
     CCedgegen_init_edgegengroup(&plan);
     plan.linkern.count = 10;
-    plan.linkern.quadnearest = 2;
+    plan.linkern.quadnearest = 5;
     plan.linkern.greedy_start = 0;
     plan.linkern.nkicks = (m_graph.node_count / 100) + 1;
+
+    cout << plan.linkern.count << " LK trials, quad "
+	 << plan.linkern.quadnearest << "-nearest \n";
 
     rval = CCedgegen_edges(&plan, m_graph.node_count, rawdat, NULL,
 			   &(m_graph.edge_count), &elist, 1, &rstate);
