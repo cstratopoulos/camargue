@@ -102,8 +102,14 @@ int EdgeFix::delete_cols(){
 
 void EdgeFix::delete_edges(){
   double total_time = zeit();
-  for(int i = 0; i < m_graph.edge_count; i++)
-    edge_lookup[IntPair(edges[i].end[0], edges[i].end[1])] = edge_delset[i];
+  for(int i = 0; i < m_graph.edge_count; i++){
+    IntPairMap::iterator edge_it = edge_lookup.find(IntPair(edges[i].end[0],
+							    edges[i].end[1]));
+    if(edge_delset[i] == - 1)
+      edge_lookup.erase(edge_it);
+    else
+      edge_it->second = edge_delset[i];
+  }
 
   for(int i = 0; i < edge_delset.size(); i++)
     if(edge_delset[i] == -1){
