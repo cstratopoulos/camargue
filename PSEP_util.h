@@ -17,6 +17,8 @@
 #include<iostream>
 #include<type_traits>
 
+#include<boost/functional/hash.hpp>
+
 /*
  * In this project virtually all functions will produce a pseudo function
  * call graph in the event of an error, and they use the goto label CLEANUP
@@ -169,33 +171,7 @@ namespace PSEP {
 }
 
 typedef std::pair<int, int> IntPair;
-typedef std::unordered_map<IntPair, int> IntPairMap;
-
-/*
- * This hash function is taken from boost hash_combine; it is needed for 
- * us to be able to define an IntPairMap.
- */
-
-template <class T>
-inline void hash_combine(std::size_t & seed, const T & v)
-{
-  std::hash<T> hasher;
-  seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-}
-
-namespace std
-{
-  template<typename S, typename T> struct hash<pair<S, T>>
-  {
-    inline size_t operator()(const pair<S, T> & v) const
-    {
-      size_t seed = 0;
-      ::hash_combine(seed, v.first);
-      ::hash_combine(seed, v.second);
-      return seed;
-    }
-  };
-}
+typedef std::unordered_map<IntPair, int, boost::hash<IntPair>> IntPairMap;
 
 
 #endif
