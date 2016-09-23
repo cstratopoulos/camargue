@@ -1,14 +1,13 @@
 TARGET = PSEP
 INCLUDES = -I /software/cplex-12.6/distribution/cplex/include/ilcplex/\
- -I /u2/castratopoulos/MyDocuments/Applications/
+ -I /u2/castratopoulos/MyDocuments/Applications/ \
+ -I /u2/castratopoulos/MyDocuments/Applications/boost_1_61_0
 LIBS = /software/cplex-12.6/distribution/cplex/lib/x86-64_linux/static_pic/libcplex.a 
 CONCORDE_LIBS = /u2/castratopoulos/MyDocuments/Applications/concorde/concorde.a
 CC = /opt/centos/devtoolset-1.1/root/usr/bin/c++
 CFLAGS =  -O3 -Wall -pedantic -Wno-missing-braces -Wno-long-long \
 -Wno-variadic-macros -Wno-sign-compare -Wno-format \
 -Wno-maybe-uninitialized -std=c++11
-# -g
-# -ggdb
 .PHONY: default all clean
 
 default: $(TARGET)
