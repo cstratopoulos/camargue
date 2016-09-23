@@ -3,7 +3,7 @@
 #include<algorithm>
 #include<math.h>
 
-#include "LPfixing.h"
+#include "LPfixing.hpp"
 
 using namespace std;
 using namespace PSEP::LP;

@@ -1,9 +1,9 @@
 #ifndef PSEP_SIMPLEDP_H
 #define PSEP_SIMPLEDP_H
 
-#include "lp.h"
-#include "tooth.h"
-#include "cuts.h"
+#include "lp.hpp"
+#include "tooth.hpp"
+#include "cuts.hpp"
 
 namespace PSEP {
   class SimpleDP {

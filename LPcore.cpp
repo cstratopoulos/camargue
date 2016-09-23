@@ -1,4 +1,4 @@
-#include "LPcore.h"
+#include "LPcore.hpp"
 
 #include <math.h>
 #include <iomanip>

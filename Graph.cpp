@@ -2,7 +2,7 @@
 		   
 #include <iostream>
 
-#include "Graph.h"
+#include "Graph.hpp"
 
 using namespace std;
 using namespace PSEP;

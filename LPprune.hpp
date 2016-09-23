@@ -3,9 +3,9 @@
 
 #include<vector>
 
-#include "lp.h"
-#include "datagroups.h"
-#include "PSEP_util.h"
+#include "lp.hpp"
+#include "datagroups.hpp"
+#include "PSEP_util.hpp"
 
 namespace PSEP {
   namespace LP {

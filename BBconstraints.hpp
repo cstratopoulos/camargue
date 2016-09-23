@@ -5,11 +5,11 @@
 #include<memory>
 #include<vector>
 
-#include "lp.h"
-#include "Graph.h"
-#include "BButils.h"
-#include "LPprune.h"
-#include "LPcore.h"
+#include "lp.hpp"
+#include "Graph.hpp"
+#include "BButils.hpp"
+#include "LPprune.hpp"
+#include "LPcore.hpp"
 
 namespace PSEP {
   namespace BB {

@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "PSEP_util.h"
+#include "PSEP_util.hpp"
 
 class PSEP_Printer {
  public:

@@ -14,10 +14,9 @@ default: $(TARGET)
 all: default
 
 OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
-HEADERS = $(wildcard *.h)
-HEADERSPP = $(wildcard *.hpp)
+HEADERS = $(wildcard *.hpp)
 
-%.o: %.cpp $(HEADERS) $(HEADERSPP)
+%.o: %.cpp $(HEADERS) 
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 .PRECIOUS: $(TARGET) $(OBJECTS)

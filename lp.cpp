@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-#include "lp.h"
+#include "lp.hpp"
 
 int PSEPlp_init (PSEPlp *lp){
   int rval = 0;

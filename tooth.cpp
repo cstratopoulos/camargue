@@ -1,7 +1,7 @@
 #include<iomanip>
 
-#include "tooth.h"
-#include "PSEP_util.h"
+#include "tooth.hpp"
+#include "PSEP_util.hpp"
 
 using namespace std;
 using namespace PSEP;

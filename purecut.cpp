@@ -1,4 +1,4 @@
-#include "purecut.h"
+#include "purecut.hpp"
 
 #include<iomanip>
 

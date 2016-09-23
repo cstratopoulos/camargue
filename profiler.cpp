@@ -1,4 +1,4 @@
-#include "profiler.h"
+#include "profiler.hpp"
 
 double PSEP_Timer::pivot_time = 0;
 double PSEP_Timer::opt_time = 0;

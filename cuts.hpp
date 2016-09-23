@@ -13,7 +13,7 @@
 #include <memory>
 #include <vector>
 
-#include "tooth.h"
+#include "tooth.hpp"
 
 namespace PSEP {
 

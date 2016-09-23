@@ -3,7 +3,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <time.h>
-#include "PSEP_util.h"
+#include "PSEP_util.hpp"
 
 /* zeit function for recording times */
 

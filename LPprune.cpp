@@ -1,7 +1,7 @@
 #include<iostream>
 #include<algorithm>
 
-#include "LPprune.h"
+#include "LPprune.hpp"
 
 using namespace std;
 using namespace PSEP::LP;

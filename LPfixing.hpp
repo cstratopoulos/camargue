@@ -3,10 +3,10 @@
 
 #include<vector>
 
-#include "lp.h"
-#include "datagroups.h"
-#include "Graph.h"
-#include "PSEP_util.h"
+#include "lp.hpp"
+#include "datagroups.hpp"
+#include "Graph.hpp"
+#include "PSEP_util.hpp"
 
 namespace PSEP {
   namespace LP {

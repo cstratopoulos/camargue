@@ -8,8 +8,8 @@
 #include<safemir/src/cutmaster_slvr.hpp>
 #include<safemir/src/ds_cuts.hpp>
 
-#include "lp.h"
-#include "cuts.h"
+#include "lp.hpp"
+#include "cuts.hpp"
 
 namespace PSEP {
   template<> class Cut<safeGMI> {

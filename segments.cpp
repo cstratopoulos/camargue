@@ -1,6 +1,6 @@
 #include<iostream>
 
-#include "segments.h"
+#include "segments.hpp"
 
 using namespace std;
 using namespace PSEP;

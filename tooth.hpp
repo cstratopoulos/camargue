@@ -5,7 +5,7 @@
 #include<list>
 #include<algorithm>
 
-#include "Graph.h"
+#include "Graph.hpp"
 
 namespace PSEP {
   class SimpleDP;

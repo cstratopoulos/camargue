@@ -13,11 +13,11 @@
 #include <vector>
 #include <memory>
 
-#include "datagroups.h"
-#include "purecut.h"
-#include "ABC.h"
-#include "pivplan.h"
-#include "PSEP_util.h"
+#include "datagroups.hpp"
+#include "purecut.hpp"
+#include "ABC.hpp"
+#include "pivplan.hpp"
+#include "PSEP_util.hpp"
 
 
 namespace PSEP{

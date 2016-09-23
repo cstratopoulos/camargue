@@ -1,4 +1,4 @@
-#include "datagroups.h"
+#include "datagroups.hpp"
 
 #include<algorithm>
 #include<unordered_map>
@@ -13,7 +13,7 @@ extern "C" {
 #include <concorde/INCLUDE/edgegen.h>
 }
 
-#include "PSEP_util.h"
+#include "PSEP_util.hpp"
 
 using namespace std;
 using namespace PSEP::Data;

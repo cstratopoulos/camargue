@@ -17,7 +17,7 @@
 #include<safemir/src/ds_cuts.cpp>
 #include<safemir/src/safe_mir_dbl.cpp>
 
-#include "safegmi.h"
+#include "safegmi.hpp"
 
 using namespace std;
 using namespace PSEP;

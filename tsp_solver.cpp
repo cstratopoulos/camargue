@@ -1,8 +1,8 @@
 #include<iostream>
 
-#include "tsp_solver.h"
-#include "lp.h"
-#include "PSEP_util.h"
+#include "tsp_solver.hpp"
+#include "lp.hpp"
+#include "PSEP_util.hpp"
 
 using namespace std;
 using namespace PSEP;

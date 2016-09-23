@@ -15,15 +15,15 @@
 #include <iostream>
 #include <vector>
 
-#include "lp.h"
-#include "datagroups.h"
-#include "Graph.h"
-#include "PSEP_util.h"
-#include "cutcall.h"
-#include "pivplan.h"
-#include "LPcore.h"
-#include "LPfixing.h"
-#include "printer.h"
+#include "lp.hpp"
+#include "datagroups.hpp"
+#include "Graph.hpp"
+#include "PSEP_util.hpp"
+#include "cutcall.hpp"
+#include "pivplan.hpp"
+#include "LPcore.hpp"
+#include "LPfixing.hpp"
+#include "printer.hpp"
 
 namespace PSEP {
   /* Some forward declarations to allow for friend classes to be declared */

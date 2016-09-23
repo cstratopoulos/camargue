@@ -3,12 +3,12 @@
 
 #include <memory>
 
-#include "LPprune.h"
-#include "LPcore.h"
-#include "purecut.h"
-#include "cutcall.h"
-#include "BButils.h"
-#include "BBconstraints.h"
+#include "LPprune.hpp"
+#include "LPcore.hpp"
+#include "purecut.hpp"
+#include "cutcall.hpp"
+#include "BButils.hpp"
+#include "BBconstraints.hpp"
 
 namespace PSEP {
   namespace BB {

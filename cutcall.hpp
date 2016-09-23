@@ -4,13 +4,13 @@
 #include<iostream>
 #include<iomanip>
 
-#include "datagroups.h"
-#include "segments.h"
-#include "blossoms.h"
-#include "dominos.h"
-#include "safegmi.h"
-#include "cuts.h"
-#include "PSEP_util.h"
+#include "datagroups.hpp"
+#include "segments.hpp"
+#include "blossoms.hpp"
+#include "dominos.hpp"
+#include "safegmi.hpp"
+#include "cuts.hpp"
+#include "PSEP_util.hpp"
 
 namespace PSEP{
   class CutControl {

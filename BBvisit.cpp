@@ -1,9 +1,9 @@
 #include<iostream>
 #include<vector>
 
-#include "BBvisit.h"
-#include "PSEP_util.h"
-#include "pivplan.h"
+#include "BBvisit.hpp"
+#include "PSEP_util.hpp"
+#include "pivplan.hpp"
 
 using namespace std;
 using namespace PSEP;

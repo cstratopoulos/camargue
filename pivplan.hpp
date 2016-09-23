@@ -23,7 +23,7 @@
 #include<iostream>
 #include<iomanip>
 
-#include "PSEP_util.h"
+#include "PSEP_util.hpp"
 
 namespace PSEP {
   class PivotPlan {

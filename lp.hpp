@@ -2,7 +2,7 @@
 #define PSEP_LP_H
 
 #include <cplex.h>
-#include "PSEP_util.h"
+#include "PSEP_util.hpp"
                 
 //LP object consisting of CPLEX environment pointer and CPLEX LP pointer
 struct PSEPlp {

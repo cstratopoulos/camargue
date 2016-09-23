@@ -1,6 +1,6 @@
 #include<iostream>
 
-#include "dominos.h"
+#include "dominos.hpp"
 
 
 using namespace std;

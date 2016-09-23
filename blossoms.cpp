@@ -1,6 +1,6 @@
 #include<iostream>
 
-#include "blossoms.h"
+#include "blossoms.hpp"
 
 using namespace std;
 using namespace PSEP;

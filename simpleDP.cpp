@@ -1,4 +1,4 @@
-#include "simpleDP.h"
+#include "simpleDP.hpp"
 
 using namespace std;
 using namespace PSEP;

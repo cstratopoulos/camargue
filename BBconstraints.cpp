@@ -2,7 +2,7 @@
 
 #include<cmath>
 
-#include "BBconstraints.h"
+#include "BBconstraints.hpp"
 
 using namespace std;
 using namespace PSEP::BB;

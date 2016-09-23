@@ -8,7 +8,7 @@
 
 #include<math.h>
 
-#include "PSEP_util.h"
+#include "PSEP_util.hpp"
 
 extern "C" {
 #include <concorde/INCLUDE/cut.h>

@@ -15,8 +15,8 @@
 #include<cstring>
 #include<getopt.h>
 
-#include "tsp_solver.h"
-#include "PSEP_util.h"
+#include "tsp_solver.hpp"
+#include "PSEP_util.hpp"
 
 using namespace std;
 
@@ -24,25 +24,25 @@ static int initial_parse(int ac, char **av, string &fname,
 			 PSEP::RandProb &randprob, PSEP::LP::Prefs &prefs,
 			 bool &sparseflag);
 
-struct IntervalSet {
-  IntervalSet(list<IntPair> &_interval_list) :
-    interval_list(_interval_list), use_count (0) {}
+// struct IntervalSet {
+//   IntervalSet(list<IntPair> &_interval_list) :
+//     interval_list(_interval_list), use_count (0) {}
 
-  IntervalSet(list<IntPair> _interval_list) :
-    interval_list(_interval_list), use_count (0) {}
+//   IntervalSet(list<IntPair> _interval_list) :
+//     interval_list(_interval_list), use_count (0) {}
     
-  list<IntPair> interval_list;
-  int use_count;
+//   list<IntPair> interval_list;
+//   int use_count;
 
-  bool operator==(const IntervalSet &rhs) const {
-    return interval_list == rhs.interval_list;
-  }
-};
+//   bool operator==(const IntervalSet &rhs) const {
+//     return interval_list == rhs.interval_list;
+//   }
+// };
 
-size_t hash_value(const IntervalSet &b) {
-  boost::hash<list<IntPair>> hasher;
-  return hasher(b.interval_list);
-}
+// size_t hash_value(const IntervalSet &b) {
+//   boost::hash<list<IntPair>> hasher;
+//   return hasher(b.interval_list);
+// }
 
 static void usage(const string &fname);
 
@@ -53,28 +53,28 @@ int main(int argc, char* argv[]){
   string probfile;
   bool do_sparse = false;
 
-  unordered_set<IntervalSet, boost::hash<IntervalSet>> set_bank;
+  // unordered_set<IntervalSet, boost::hash<IntervalSet>> set_bank;
 
-  IntervalSet set0(list<IntPair>{IntPair(1,2), IntPair(3,4)});
-  IntervalSet set1(list<IntPair>{IntPair(3,5), IntPair(7,9)});
+  // IntervalSet set0(list<IntPair>{IntPair(1,2), IntPair(3,4)});
+  // IntervalSet set1(list<IntPair>{IntPair(3,5), IntPair(7,9)});
 
-  set_bank.insert(set0); set_bank.insert(set1);
+  // set_bank.insert(set0); set_bank.insert(set1);
 
-  cout << "Set bank now has size: " << set_bank.size() << "\n";
+  // cout << "Set bank now has size: " << set_bank.size() << "\n";
 
-  IntervalSet dup0(list<IntPair>{IntPair(3,4), IntPair(1,2)});
+  // IntervalSet dup0(list<IntPair>{IntPair(3,4), IntPair(1,2)});
 
-  cout << "dup0 == set0:" << (dup0 == set0) << "\n";
-  cout << "Count of dup0 in bank: " << set_bank.count(dup0) << "\n";
+  // cout << "dup0 == set0:" << (dup0 == set0) << "\n";
+  // cout << "Count of dup0 in bank: " << set_bank.count(dup0) << "\n";
 
-  dup0.interval_list.sort();
+  // dup0.interval_list.sort();
 
-  cout << "Same things after sorting: \n";
-  cout << "dup0 == set0: " << (dup0 == set0) << "\n";
-  cout << "Count of dup0 in bank: " << set_bank.count(dup0) << "\n";
+  // cout << "Same things after sorting: \n";
+  // cout << "dup0 == set0: " << (dup0 == set0) << "\n";
+  // cout << "Count of dup0 in bank: " << set_bank.count(dup0) << "\n";
 
   
-  return 1;
+  // return 1;
 
   if(initial_parse(argc, argv, probfile, randprob, prefs, do_sparse)){
     cerr << "Problem parsing arguments" << endl;

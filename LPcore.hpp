@@ -3,11 +3,11 @@
 
 #include<iostream>
 
-#include "lp.h"
-#include "PSEP_util.h"
-#include "Graph.h"
-#include "datagroups.h"
-#include "LPprune.h"
+#include "lp.hpp"
+#include "PSEP_util.hpp"
+#include "Graph.hpp"
+#include "datagroups.hpp"
+#include "LPprune.hpp"
 
 namespace PSEP {
   class PureCut;

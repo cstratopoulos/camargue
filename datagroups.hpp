@@ -18,9 +18,9 @@
 
 #include<math.h>
 
-#include "PSEP_util.h"
-#include "lp.h"
-#include "Graph.h"
+#include "PSEP_util.hpp"
+#include "lp.hpp"
+#include "Graph.hpp"
 
 namespace PSEP {
 namespace Data {
