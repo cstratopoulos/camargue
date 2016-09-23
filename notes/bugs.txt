@@ -1,5 +1,9 @@
 simpleDP:
-sometimes tries to add cuts with an odd LHS coefficient
-probably due to not correctly building web edges/adding
-nonneg inequalities or something
-should try to fix later
+-List of light teeth will sometimes be nonempty before calling adding with a
+given root
+-Root distant teeth sep takes enormous amounts of time to add zero teeth?
+
+Makefile issues:
+the three major external libraries included in this project are boost, concorde,
+and CPLEX. In any include statements, concorde MUST be incuded last of these
+three or it will cause compiler warnings on the Linux environment
