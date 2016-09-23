@@ -8,11 +8,11 @@
 
 #include<math.h>
 
+#include "PSEP_util.h"
+
 extern "C" {
 #include <concorde/INCLUDE/cut.h>
 }
-
-#include "PSEP_util.h"
 
 namespace PSEP {
   struct Edge {
