@@ -9,7 +9,7 @@
 
 #include "PSEP_util.hpp"
 
-//namespace PSEP{
+namespace PSEP{
 
 void hashing_test();
 void interactive_test();
@@ -63,7 +63,7 @@ private:
   
   std::vector<int> tour_nodes;
   std::vector<int> perm;
-}
+};
 
 
 }
