@@ -91,7 +91,7 @@ IntervalSet::IntervalSet(vector<int> &nodelist,
   int rval = 0;
 
   sort(nodelist.begin(), nodelist.end(),
-       [perm](int &node1, int &node2) -> bool {
+       [perm](const int node1, const int node2) -> bool {
 	 return perm[node1] < perm[node2];
        });
 
