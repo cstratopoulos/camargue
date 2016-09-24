@@ -22,7 +22,7 @@
 
 namespace PSEP{
 class TSPSolver {
- public:
+public:
   /*  The default constructor for the TSPSolver class.
    * ONE OF fname or randprob may be used to initialize the problem
    * fname.empty() implies use of randprob, randprob.nodecount of zero
@@ -47,7 +47,7 @@ class TSPSolver {
    */
   int call(PSEP::SolutionProtocol solmeth, const bool sparse);
   
- private:
+private:
   /*
    * These are the data categories used by various aspects of the solver,
    * see datagroups.h for more info.
