@@ -33,7 +33,7 @@ namespace Data {
      * All DataGroups must provide an operator bool overload which will
      * return false if the constructor failed
      */
-    virtual operator bool() const = 0;
+    virtual explicit operator bool() const = 0;
   };
   
   /* GraphGroup stores pure combinatorial information about the problem */
@@ -43,7 +43,7 @@ namespace Data {
 	       std::unique_ptr<CCdatagroup> &dat,
 	       const bool sparse);
 
-    operator bool() const { return m_graph; }
+    explicit operator bool() const { return m_graph; }
 
     /*
      * m_graph: A Graph object describing the TSP instance, see Graph.h for 
@@ -71,7 +71,7 @@ namespace Data {
     BestGroup(Graph &graph, std::vector<int> &delta,
 	      std::unique_ptr<CCdatagroup> &dat);
 
-    operator bool() const { return !best_tour_nodes.empty(); }
+    explicit operator bool() const { return !best_tour_nodes.empty(); }
 
     /*
      * best_tour_edges - a binary vector of length graph.edge_count indicating
@@ -96,7 +96,7 @@ namespace Data {
 	    const std::vector<int> &perm);
     ~LPGroup(){PSEPlp_free(&m_lp);}
 
-    operator bool() const { return !m_lp_edges.empty(); }
+    explicit operator bool() const { return !m_lp_edges.empty(); }
 
     /*
      * m_lp - the LP environment/problem object for use with the routines 
