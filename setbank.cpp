@@ -72,13 +72,25 @@ void interactive_test(){
 
     IntervalSet newset(set_nodes, tour_nodes, perm);
 
-    set_bank.insert(newset);
+    SetRef get = set_bank.find(newset);
+    if(get == set_bank.end()){
+      cout << "Adding new element\n";
+      newset.add_use();
+      set_bank.insert(newset);
+    } else {
+      cout << "Incrementing existing element\n";
+      get->add_use();
+    }
+    
     cout << "Size of set bank is now: " << set_bank.size() << "\n";
 
     cout << "Continue? y for yes: ";
     cin >> answer;
   }
-  cout << "Done testing.\n";  
+  cout << "Done testing, printing use counts:\n";
+  for(SetRef it = set_bank.begin(); it != set_bank.end(); it++){
+    cout << it->use_count << "\n";
+  }
 }
 
 }

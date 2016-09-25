@@ -23,6 +23,9 @@ struct IntervalSet {
   
   std::vector<IntPair> interval_list;
   int use_count;
+
+  void add_use() const { const_cast<IntervalSet *>(this)->use_count += 1; }
+  void del_use() const { const_cast<IntervalSet *>(this)->use_count -= 1; }
   
   explicit operator bool() const { return !(interval_list.empty()); }
   bool operator==(const IntervalSet &rhs) const {
