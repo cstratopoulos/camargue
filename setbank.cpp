@@ -12,30 +12,6 @@ std::size_t hash_value(const IntervalSet &S){
   boost::hash<std::vector<IntPair>> hahser;
   return hahser(S.interval_list);
 }
-  
-void hashing_test(){
-  IntervalSet set1({IntPair(1, 2), IntPair(3,4)});
-  IntervalSet set2({IntPair(3,5), IntPair(7,9)});
-  IntervalSet dup1({IntPair(3,4), IntPair(1,2)});
-  dup1.use_count++;
-
-  std::cout << "Created set 1:\n"; set1.print();
-  std::cout << "set1 use count: " << set1.use_count << ", dup1: "
-	    << dup1.use_count << "\n";
-  std::cout << "Test set1 == dup1: " << (set1 == dup1) << "\n";
-
-  SetHash set_bank;
-  set_bank.insert(set1);
-  set_bank.insert(set2);
-  std::cout << "After adding set1 and 2, set_bank size: "
-	    << set_bank.size() << "\n";
-  std::cout << "Trying to find dup1: " << set_bank.count(dup1) << "\n";
-
-  sort(dup1.interval_list.begin(), dup1.interval_list.end());
-
-  std::cout << "After sorting, dup1 == set1: " << (set1 == dup1) << "\n";
-  std::cout << "Trying to find dup1: " << set_bank.count(dup1) << "\n";
-}
 
 void interactive_test(){
   int node_count;
@@ -97,6 +73,8 @@ void interactive_test(){
 
 using namespace PSEP;
 
+unique_ptr<SetBank> HyperGraph::source_setbank;
+
 IntervalSet::IntervalSet(vector<int> &nodelist,
 			 const vector<int> &best_tour_nodes,
 			 const vector<int> &perm) : use_count(0) {
@@ -133,4 +111,12 @@ IntervalSet::IntervalSet(vector<int> &nodelist,
     cerr << "IntervalSet constructor failed\n";
     interval_list.clear();
   }
+}
+
+SetBank::SetBank(vector<int> &best_tour_nodes,
+		 vector<int> &_perm) :
+  tour_nodes(best_tour_nodes),
+  perm(_perm)
+{
+  HyperGraph::source_setbank.reset(this);
 }

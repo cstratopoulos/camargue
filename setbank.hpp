@@ -11,7 +11,6 @@
 
 namespace PSEP{
 
-void hashing_test();
 void interactive_test();
 
 struct IntervalSet {
@@ -43,29 +42,39 @@ std::size_t hash_value(const IntervalSet &S);
 
 typedef std::unordered_set<IntervalSet, boost::hash<IntervalSet>> SetHash;
 typedef SetHash::iterator SetRef;
-
-struct HyperGraph {
-  std::vector<SetRef> set_refs;
-  int rhs;
-  int row_number;
-};
+  //wont work, iterators invalidated by re-hashing
 
 class SetBank {
-  SetBank(std::vector<int> &best_tour_nodes, std::vector<int> &_perm) :
-    tour_nodes(best_tour_nodes), perm(_perm) {}
+public:
+  SetBank(std::vector<int> &best_tour_nodes, std::vector<int> &_perm);
 
-  void get_hypergraph(HyperGraph &newcut,
-		      std::vector<std::vector<int>> &hypergraph_edges);
-  void delete_hypergraph(HyperGraph &oldcut);  
+  SetRef add_or_increment(IntervalSet &newset);
+  void del_or_decrement(IntervalSet &oldset);
   
-private:
-  SetRef add_or_increment(std::vector<int> nodeset);
-  void remove_or_decrement(std::vector<int> nodeset);
-  
+private:  
   SetHash set_bank;
   
   std::vector<int> tour_nodes;
   std::vector<int> perm;
+};
+
+class HyperGraph {
+public:
+  HyperGraph(const std::vector<std::vector<int>> &node_sets,
+	     const int rhs);
+
+  void get_cplex_cut(std::vector<int> &rmatind, std::vector<double> &rmatval,
+		     char &sense, int &rhs);
+  
+  template<typename number_t>
+  int get_activity(std::vector<number_t> x, double &activity);
+
+private:
+  friend class SetBank;
+  std::vector<SetRef> set_refs;
+  int rhs;
+
+  static std::unique_ptr<SetBank> source_setbank;
 };
 
 
