@@ -1,9 +1,10 @@
 While re-reading and re-editing code, all vector allocations in constructors
-should be placed in appropriate try/catch blocks. Should write an operator
-bool for each struct that can be tested after initialization. Something like
-explicit operator bool() const that returns true if the class is empty or 
-if a failure flag was set during construction. These should replace all the
-exit(1) statements. 
+should be placed in appropriate try blocks. Previous approach of overloading
+an operator bool is the zombie struct solution which is not ideal. 
+I think that the constructors should 'try' allocations or calls to Concorde
+and throw exceptions (rather than throw and catch and set success/failure) and
+these exceptions should be caught by the entry point function?
+See try function blocks and the herb sutter gotw page on them
 
 I think LPfixing should be a derived class of LPCore? Because maybe LPCore
 should be called LPManip, hence LPFixing is a type of LPManip...maybe 
