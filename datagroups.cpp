@@ -3,6 +3,7 @@
 #include<algorithm>
 #include<unordered_map>
 #include<iostream>
+#include<iomanip>
 #include<vector>
 
 #include<cmath>
@@ -87,7 +88,6 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
       rval = 1; PSEP_GOTO_CLEANUP("Out of memory for m_graph.edges, ");
     }
 
-    cout << "Edges from GraphGroup constructor: \n";
     for(int i = 0; i < m_graph.edge_count; i++){
       Edge e(elist[2 * i], elist[(2 * i) + 1],
 	     CCutil_dat_edgelen(elist[2 * i], elist[(2 * i) + 1], rawdat));
@@ -97,7 +97,9 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     }
 
     cout << "    " << m_graph.edge_count
-	 << " edges in sparse graph\n";
+	 << " edges in sparse graph, ratio to nodes: " << setprecision(2)
+	 << ((double) m_graph.edge_count / m_graph.node_count)
+	 << setprecision(6) << "\n";
   }
 
   try{
