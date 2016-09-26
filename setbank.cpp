@@ -39,9 +39,10 @@ void interactive_test(){
   while(answer == 'a' || answer == 'd'){
     if(answer == 'a'){
       int numsets;
-      vector<vector<int>> node_sets;
       cout << "Enter number of sets in hypergraph: ";
       cin >> numsets;
+      vector<vector<int>> node_sets(numsets);
+
       HyperGraph::CutType cut_t;
 
       if(numsets == 1)
@@ -63,7 +64,6 @@ void interactive_test(){
 	}
       }
 
-      cout << "Constructing hypergraph\n";
       cut_bank.emplace_back(HyperGraph(node_sets, cut_t));
     } else {
       int delete_ind;
@@ -74,6 +74,7 @@ void interactive_test(){
       if(delete_ind < 0 || delete_ind >= cut_bank.size()){
 	cout << "Index out of range\n";
       } else {
+	(cut_bank.begin() + delete_ind)->delete_refs();
 	cut_bank.erase(cut_bank.begin() + delete_ind);
       }
     }
@@ -86,7 +87,7 @@ void interactive_test(){
 
 using namespace PSEP;
 
-unique_ptr<SetBank> HyperGraph::source_setbank;
+SetBank *HyperGraph::source_setbank;
 
 IntervalSet::IntervalSet(vector<int> &nodelist,
 			 const vector<int> &best_tour_nodes,
@@ -121,7 +122,7 @@ SetBank::SetBank(vector<int> &best_tour_nodes,
   tour_nodes(best_tour_nodes),
   perm(_perm)
 {
-  HyperGraph::source_setbank.reset(this);
+  HyperGraph::source_setbank = this;
 }
 
 IntervalSet *SetBank::add_or_increment(IntervalSet &newset)
@@ -162,6 +163,7 @@ HyperGraph::HyperGraph(vector<vector<int>> &node_sets,
   cut_type(_cut_type),
   rhs((cut_type == CutType::Segment) ? 2 : ((3 * node_sets.size()) + 1))
 {
+  cout << "Calling hypergraph constructor...\n";
   for(vector<int> &current_set : node_sets){
     IntervalSet test_set(current_set, source_setbank->tour_nodes,
 			 source_setbank->perm);
@@ -169,11 +171,11 @@ HyperGraph::HyperGraph(vector<vector<int>> &node_sets,
     
     set_refs.push_back(current_ref);
   }
+  cout << "Done constructing\n";
 }
 
-HyperGraph::~HyperGraph()
-{
-  for(IntervalSet *ref : set_refs)
-    source_setbank->del_or_decrement(*ref);
+void HyperGraph::delete_refs(){
+  for(IntervalSet *old_set : set_refs)
+    source_setbank->del_or_decrement(*old_set);
 }
 

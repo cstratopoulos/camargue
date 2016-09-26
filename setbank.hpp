@@ -53,14 +53,8 @@ public:
   
   HyperGraph(std::vector<std::vector<int>> &node_sets,
 	     const CutType _cut_type);
-  ~HyperGraph();
 
-
-  int get_cplex_cut(std::vector<int> &rmatind, std::vector<double> &rmatval,
-		     char &sense, int &rhs);
-  
-  template<typename number_t>
-  int get_activity(std::vector<number_t> x, double &activity);
+  void delete_refs();
 
 private:
   friend class SetBank;
@@ -68,7 +62,7 @@ private:
   CutType cut_type;
   int rhs;
 
-  static std::unique_ptr<SetBank> source_setbank;
+  static SetBank *source_setbank;
 };
 
 class SetBank {
@@ -78,7 +72,7 @@ public:
 private:
   friend HyperGraph::HyperGraph(std::vector<std::vector<int>> &node_sets,
 				const CutType _cut_type);
-  friend HyperGraph::~HyperGraph();
+  friend void HyperGraph::delete_refs();
   IntervalSet *add_or_increment(IntervalSet &newset);
   void del_or_decrement(IntervalSet &oldset);
   

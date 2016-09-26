@@ -3,7 +3,8 @@
 using namespace std;
 using namespace PSEP;
 
-int CutControl::primal_sep(const int augrounds, const LP::PivType stat){
+int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
+{
   int rval = 0;
   
   int segval = 2, matchval = 2, dpval = 2;

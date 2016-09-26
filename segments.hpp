@@ -12,9 +12,11 @@ namespace PSEP {
   public:
     Cut<seg>(std::vector<int> &_delta, std::vector<int> &_edge_marks,
 	     std::vector<Edge> &_edges, std::vector<int> &_best_tour_nodes,
-	     PSEPlp &_m_lp, SupportGraph &_G_s):
+	     PSEPlp &_m_lp, SupportGraph &_G_s,
+	     CutQueue<HyperGraph> &segment_queue):
     deltacount(0), delta(_delta), edge_marks(_edge_marks), edges(_edges),
-      best_tour_nodes(_best_tour_nodes), m_lp(_m_lp), G_s(_G_s) {}
+      best_tour_nodes(_best_tour_nodes), m_lp(_m_lp), G_s(_G_s),
+      seg_q(segment_queue){}
 
     int cutcall();
 
@@ -35,6 +37,7 @@ namespace PSEP {
     SupportGraph &G_s;
 
     std::unique_ptr<seg> best;
+    CutQueue<HyperGraph> &seg_q;
   };
 }
 

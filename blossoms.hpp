@@ -15,12 +15,14 @@ namespace PSEP{
 		 PSEPlp &_m_lp, std::vector<double> &_m_lp_edges,
 		 std::vector<int> &_support_indices,
 		 std::vector<int> &_support_elist,
-		 std::vector<double> &_support_ecap):
+		 std::vector<double> &_support_ecap,
+		 CutQueue<HyperGraph> &blossom_queue):
     deltacount(0), delta(_delta), edge_marks(_edge_marks), edges(_edges),
       best_tour_edges(_best_tour_edges), m_lp(_m_lp),
       m_lp_edges(_m_lp_edges),
       support_indices(_support_indices),
-      support_elist(_support_elist), support_ecap(_support_ecap) {}
+      support_elist(_support_elist), support_ecap(_support_ecap),
+      blossom_q(blossom_queue) {}
 
     int cutcall();
 
@@ -45,6 +47,8 @@ namespace PSEP{
     std::vector<double> cut_ecap;
 
     std::unique_ptr<blossom> best;
+
+    CutQueue<HyperGraph> &blossom_q;
   };
 }
 
