@@ -1,8 +1,8 @@
 #include "cuts.hpp"
 
 using namespace std;
-using namespace PSEP;
 
+namespace PSEP {
 template<>
 void CutQueue<HyperGraph>::push_front(const HyperGraph &H)
 {
@@ -18,4 +18,6 @@ void CutQueue<HyperGraph>::pop_front()
 {
   cut_q.front().delete_refs();
   cut_q.pop_front();
+}
+
 }
