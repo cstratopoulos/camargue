@@ -82,7 +82,8 @@ unique_ptr<SetBank> HyperGraph::source_setbank;
 
 IntervalSet::IntervalSet(vector<int> &nodelist,
 			 const vector<int> &best_tour_nodes,
-			 const vector<int> &perm) : use_count(0) {
+			 const vector<int> &perm) : use_count(0)
+{
   int rval = 0;
 
   sort(nodelist.begin(), nodelist.end(),
@@ -152,3 +153,5 @@ void SetBank::del_or_decrement(IntervalSet &oldset)
       set_bank.erase(find_it);
   }
 }
+
+

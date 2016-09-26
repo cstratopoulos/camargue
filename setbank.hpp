@@ -58,10 +58,16 @@ private:
 
 class HyperGraph {
 public:
+  enum class CutType {
+    Segment, Blossom
+  };
+  
   HyperGraph(const std::vector<std::vector<int>> &node_sets,
-	     const int rhs);
+	     const CutType &_cut_type);
+  ~HyperGraph();
 
-  void get_cplex_cut(std::vector<int> &rmatind, std::vector<double> &rmatval,
+
+  int get_cplex_cut(std::vector<int> &rmatind, std::vector<double> &rmatval,
 		     char &sense, int &rhs);
   
   template<typename number_t>
@@ -71,6 +77,7 @@ private:
   friend class SetBank;
   std::vector<IntervalSet*> set_refs;
   int rhs;
+  const CutType cut_type;
 
   static std::unique_ptr<SetBank> source_setbank;
 };
