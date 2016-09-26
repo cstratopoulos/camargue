@@ -47,15 +47,20 @@ void interactive_test(){
     }
 
     IntervalSet newset(set_nodes, tour_nodes, perm);
+    cout << "Address of newset: " << &newset << "\n";
 
-    SetRef get = set_bank.find(newset);
+    SetHash::iterator get = set_bank.find(newset);
     if(get == set_bank.end()){
-      cout << "Adding new element\n";
+      cout << "Adding new element, address in set: ";
       newset.add_use();
       set_bank.insert(newset);
+      get = set_bank.find(newset);
+      cout << &(*get) << "\n";
     } else {
-      cout << "Incrementing existing element\n";
+      cout << "Incrementing existing element, address: "
+	   << &(*get) << "\n";
       get->add_use();
+      
     }
     
     cout << "Size of set bank is now: " << set_bank.size() << "\n";
@@ -63,9 +68,9 @@ void interactive_test(){
     cout << "Continue? y for yes: ";
     cin >> answer;
   }
-  cout << "Done testing, printing use counts:\n";
-  for(SetRef it = set_bank.begin(); it != set_bank.end(); it++){
-    cout << it->use_count << "\n";
+  cout << "Done testing, printing use counts/addresses:\n";
+  for(SetHash::iterator it = set_bank.begin(); it != set_bank.end(); it++){
+    cout << it->use_count << ", " << &(*it) << "\n";
   }
 }
 
@@ -119,4 +124,31 @@ SetBank::SetBank(vector<int> &best_tour_nodes,
   perm(_perm)
 {
   HyperGraph::source_setbank.reset(this);
+}
+
+const IntervalSet *SetBank::add_or_increment(IntervalSet &newset)
+{
+  SetHash::iterator find_it = set_bank.find(newset);
+
+  if(find_it != set_bank.end()){
+    find_it->add_use();
+  } else {
+    newset.add_use();
+    set_bank.insert(newset);
+    find_it = set_bank.find(newset);    
+  }
+
+  return &(*find_it);
+}
+
+void SetBank::del_or_decrement(IntervalSet &oldset)
+{
+  SetHash::iterator find_it = set_bank.find(oldset);
+
+  if(find_it != set_bank.end()){
+    find_it->del_use();
+
+    if(find_it->use_count == 0)
+      set_bank.erase(find_it);
+  }
 }

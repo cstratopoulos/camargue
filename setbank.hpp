@@ -41,14 +41,12 @@ struct IntervalSet {
 std::size_t hash_value(const IntervalSet &S);
 
 typedef std::unordered_set<IntervalSet, boost::hash<IntervalSet>> SetHash;
-typedef SetHash::iterator SetRef;
-  //wont work, iterators invalidated by re-hashing
 
 class SetBank {
 public:
   SetBank(std::vector<int> &best_tour_nodes, std::vector<int> &_perm);
 
-  SetRef add_or_increment(IntervalSet &newset);
+  const IntervalSet *add_or_increment(IntervalSet &newset);
   void del_or_decrement(IntervalSet &oldset);
   
 private:  
@@ -71,7 +69,7 @@ public:
 
 private:
   friend class SetBank;
-  std::vector<SetRef> set_refs;
+  std::vector<IntervalSet*> set_refs;
   int rhs;
 
   static std::unique_ptr<SetBank> source_setbank;
