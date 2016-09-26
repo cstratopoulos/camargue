@@ -12,6 +12,9 @@ See:
 Key idea: Exceptions can be propagated instead of having error handlers 
 littered throughout the code
 
+Possible alternate approach: exceptions are reserved for container 
+resize/insert calls and constructors. Other than that, use rval system.
+
 maybe come up with a generic profiler function that operates on a list of
 pairs corresponding to variables and a string for their name, and also somehow
 stores an indicator for if we should report percentage/ratio/average

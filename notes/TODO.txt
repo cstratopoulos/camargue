@@ -1,4 +1,7 @@
-
+Putting the decrementer in the call to HyperGraph deletor seems to cause
+problems. There should be an external_rep class with a delete_cut member
+function that calls erase on the vector of cuts and calls delete_refs on
+the cut being deleted
 
 I think LPfixing should be a derived class of LPCore? Because maybe LPCore
 should be called LPManip, hence LPFixing is a type of LPManip...maybe 
