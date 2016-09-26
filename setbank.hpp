@@ -42,28 +42,17 @@ std::size_t hash_value(const IntervalSet &S);
 
 typedef std::unordered_set<IntervalSet, boost::hash<IntervalSet>> SetHash;
 
-class SetBank {
-public:
-  SetBank(std::vector<int> &best_tour_nodes, std::vector<int> &_perm);
-
-  const IntervalSet *add_or_increment(IntervalSet &newset);
-  void del_or_decrement(IntervalSet &oldset);
+//forward declaration for static unique pointer
+class SetBank;
   
-private:  
-  SetHash set_bank;
-  
-  std::vector<int> tour_nodes;
-  std::vector<int> perm;
-};
-
 class HyperGraph {
 public:
   enum class CutType {
     Segment, Blossom
   };
   
-  HyperGraph(const std::vector<std::vector<int>> &node_sets,
-	     const CutType &_cut_type);
+  HyperGraph(std::vector<std::vector<int>> &node_sets,
+	     const CutType _cut_type);
   ~HyperGraph();
 
 
@@ -76,10 +65,27 @@ public:
 private:
   friend class SetBank;
   std::vector<IntervalSet*> set_refs;
+  CutType cut_type;
   int rhs;
-  const CutType cut_type;
 
   static std::unique_ptr<SetBank> source_setbank;
+};
+
+class SetBank {
+public:
+  SetBank(std::vector<int> &best_tour_nodes, std::vector<int> &_perm);
+  
+private:
+  friend HyperGraph::HyperGraph(std::vector<std::vector<int>> &node_sets,
+				const CutType _cut_type);
+  friend HyperGraph::~HyperGraph();
+  IntervalSet *add_or_increment(IntervalSet &newset);
+  void del_or_decrement(IntervalSet &oldset);
+  
+  SetHash set_bank;
+  
+  std::vector<int> tour_nodes;
+  std::vector<int> perm;
 };
 
 
