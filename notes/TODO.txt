@@ -1,10 +1,4 @@
-While re-reading and re-editing code, all vector allocations in constructors
-should be placed in appropriate try blocks. Previous approach of overloading
-an operator bool is the zombie struct solution which is not ideal. 
-I think that the constructors should 'try' allocations or calls to Concorde
-and throw exceptions (rather than throw and catch and set success/failure) and
-these exceptions should be caught by the entry point function?
-See try function blocks and the herb sutter gotw page on them
+
 
 I think LPfixing should be a derived class of LPCore? Because maybe LPCore
 should be called LPManip, hence LPFixing is a type of LPManip...maybe 
@@ -28,19 +22,6 @@ With blossoms and dominos, it may make sense to store a list/pool of violated
 cuts and check those before generating new ones.
 Probably shouldn't bother with segments though
 
-maybe come up with a generic profiler function that operates on a list of
-pairs corresponding to variables and a string for their name, and also somehow
-stores an indicator for if we should report percentage/ratio/average
-IDEA: have a few vectors, e.g. representing times, cuts, num pivots, something
-like that. BUT instead take an initializer list of strings which will
-be the lookup key for a map to int or double...or map to int/double
-and string where string can be the lookup key for total or average,
-etc. 
-
-idea: .....maybe just a CCutils.h file for things we need from
-concorde along with wrappers? eg.,
-struct CC with sub-structs GH (for gomoryhu), cut for st_cut
-(including subtour poly)
 learn to call CPXaddrowS for multiple cuts
 
 tooth aggregated coefficients: instead of an ecount length vector, 
