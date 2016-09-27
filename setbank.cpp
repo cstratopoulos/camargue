@@ -125,6 +125,31 @@ SetBank::SetBank(vector<int> &best_tour_nodes,
   HyperGraph::source_setbank = this;
 }
 
+int SetBank::extract_nodelist(const IntervalSet &interval_set,
+			      vector<int> &result_nodelist){
+  int rval = 0;
+  result_nodelist.clear();
+  const vector<IntPair> &interval_list = interval_set.interval_list;
+
+  for(const IntPair &endpoints : interval_list){
+    int start_ind = endpoints.first, end_ind = endpoints.second;
+
+    try {
+    for(int j = start_ind; j <= end_ind; j++)
+      result_nodelist.push_back(tour_nodes[j]);
+    } catch (const bad_alloc &){
+      rval = 1; PSEP_GOTO_CLEANUP("Couldn't push back result nodelist, ");
+    }
+  }
+
+ CLEANUP:
+  if(rval){
+    cerr << "SetBank::extract_nodelist failed, result_nodelist invalid\n";
+    result_nodelist.clear();
+  }
+  return rval;
+}
+
 IntervalSet *SetBank::add_or_increment(IntervalSet &newset)
 {
   SetHash::iterator find_it = set_bank.find(newset);

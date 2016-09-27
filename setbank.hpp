@@ -72,6 +72,8 @@ private:
 class SetBank {
 public:
   SetBank(std::vector<int> &best_tour_nodes, std::vector<int> &_perm);
+  int extract_nodelist(const IntervalSet &interval_set,
+		       std::vector<int> &result_nodelist);
   
 private:
   friend HyperGraph::HyperGraph(std::vector<std::vector<int>> &node_sets,
