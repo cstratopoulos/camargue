@@ -11,7 +11,7 @@ int Cut<blossom>::separate(){
   int end0, end1;
   int best_tour_entry;
   int ncount = 2 * support_indices.size();
-  double orig_weight, changed_weight, cutval;
+  double orig_weight, changed_weight, cutval, min_cutval = 1.0;
   int *cut_nodes = (int *) NULL;
   int cutcount = 0;
 
@@ -52,13 +52,16 @@ int Cut<blossom>::separate(){
     }
 
     if(cutval < 1 - LP::EPSILON){
-      if(!best || cutval < best->cut_val){
+      if(cutval <= min_cutval){
 	vector<int> handle;
 	for(int j = 0; j < cutcount; j++){
 	  handle.push_back(cut_nodes[j]);
 	}
 
-	best.reset(new blossom(handle, cut_edge_index, cutval));
+	blossom new_cut(handle, cut_edge_index, cutval);
+	try { local_q.push_front(new_cut); } catch (...) {
+	  rval = 1; PSEP_GOTO_CLEANUP("Problem pushing new cut to queue, ");
+	}
       }
     }
 
@@ -66,65 +69,85 @@ int Cut<blossom>::separate(){
     CC_IFFREE(cut_nodes, int);
   }
 
-  if(!best) rval = 2;
+  if(local_q.empty()) rval = 2;
 
  CLEANUP:
   CC_IFFREE(cut_nodes, int);
   return rval;
 }
 
-int Cut<blossom>::parse_coeffs(){
-  if(!best){
-    cerr << "Cuts<blossom>::parse_coeffs tried to parse null pointer\n";
-    return 1;
+
+int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
+  int rval = 0;
+  int cutedge = blossom_cut.cut_edge;
+  deltacount = 0;
+  vector<vector<int>> node_sets;
+  
+  try { node_sets.push_back(blossom_cut.handle); } catch (...) {
+    rval = 1; PSEP_GOTO_CLEANUP("Problem pushing back node set, ");
   }
 
-  deltacount = 0;
-
-  GraphUtils::get_delta(best->handle, edges, &deltacount, delta, edge_marks);
+  GraphUtils::get_delta(blossom_cut.handle, edges, &deltacount, delta,
+			edge_marks);
 
   if(deltacount == 0){
-    cerr << "Cuts<blossom>::parse_coeffs returned zero edges\n";
-    return 1;
+    rval = 1; PSEP_GOTO_CLEANUP("Get delta returned zero handle edges, ");
   }
-
-  return 0;
-}
-
-int Cut<blossom>::add_cut(){
-  int rval = 0, newrows = 1, newnz = deltacount;
-  int rmatbeg[1] = {0};
-  char sense[1] = {'G'};
-  double rhs[1];
-  int num_teeth = 0;
-  vector<double> rmatval(deltacount, 1.0);
-  int cutedge = best->cut_edge;
 
   switch(best_tour_edges[cutedge]){
   case 0:
     for(int i = 0; i < deltacount; i++)
       if(m_lp_edges[delta[i]] > LP::EPSILON &&
 	 (best_tour_edges[delta[i]] == 1 || delta[i] == cutedge)){
-	rmatval[i] = -1.0;
-	num_teeth++;
+	int edge_index = delta[i];
+	vector<int> new_tooth{edges[edge_index].end[0],
+	    edges[edge_index].end[1]};
+	try { node_sets.push_back(new_tooth); } catch (...) {
+	  rval = 1; PSEP_GOTO_CLEANUP("Problem pushing back node set, ");
+	}
       }
     break;
+
   case 1:
     for(int i = 0; i < deltacount; i++)
       if(m_lp_edges[delta[i]] > LP::EPSILON &&
 	 (best_tour_edges[delta[i]] == 1 && delta[i] != cutedge)){
-	rmatval[i] = -1.0;
-	num_teeth++;
+	int edge_index = delta[i];
+	vector<int> new_tooth{edges[edge_index].end[0],
+	    edges[edge_index].end[1]};
+	try { node_sets.push_back(new_tooth); } catch (...) {
+	  rval = 1; PSEP_GOTO_CLEANUP("Problem pushing back node set, ");
+	}
       }
   }
 
-  rhs[0] = 1 - num_teeth;  
+  try {
+  HyperGraph newcut(node_sets, HyperGraph::CutType::Blossom);
+  external_q.push_front(newcut);
+  } catch (...) {
+    rval = 1; PSEP_GOTO_CLEANUP("Couldn't push to external queue, ");
+  }
 
-  rval = PSEPlp_addrows (&m_lp, newrows, newnz, rhs, sense, rmatbeg,
-			 &delta[0], &rmatval[0]);
+  
 
+ CLEANUP:
   if(rval)
-    cerr << "Entry point: Cut<blossom>::add_cut" << endl;
+    cerr << "Cut<blossom>::build_hypergraph failed\n";
+  return rval;
+}
+
+int Cut<blossom>::add_cuts(){
+  int rval = 0;
+  
+  while(!local_q.empty()){
+    rval = build_hypergraph(local_q.peek_front());
+    if(rval) goto CLEANUP;
+    local_q.pop_front();
+  }
+
+ CLEANUP:
+  if(rval)
+    cerr << "problem in Cut<blossom>::add_cuts\n";
   return rval;
 }
 
@@ -134,10 +157,7 @@ int Cut<blossom>::cutcall(){
   rval = separate();
   if(rval) goto CLEANUP;
 
-  rval = parse_coeffs();
-  if(rval) goto CLEANUP;
-
-  rval = add_cut();
+  rval = add_cuts();
   if(rval) goto CLEANUP;
 
  CLEANUP:

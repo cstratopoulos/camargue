@@ -85,7 +85,7 @@ namespace PSEP {
 		   std::vector<int> &island, int starting_node);
     void dfs (int n, SupportGraph *G, int *icount,
 	      std::vector<int> &island);  
-    void get_delta (std::vector<int> &nodelist, std::vector<Edge> &elist,
+    void get_delta (const std::vector<int> &nodelist, std::vector<Edge> &elist,
 		    int *deltacount_p, std::vector<int> &delta,
 		    std::vector<int> &marks);
     void get_delta (int nsize, int *nlist, int ecount, int *elist,

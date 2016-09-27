@@ -62,7 +62,7 @@ void GraphUtils::dfs(int n, SupportGraph *G, int *icount,
   }
 }
 
-void GraphUtils::get_delta (std::vector<int> &nodelist,
+void GraphUtils::get_delta (const std::vector<int> &nodelist,
 			    std::vector<Edge> &elist,
 			    int *deltacount_p, std::vector<int> &delta,
 			    std::vector<int> &marks){

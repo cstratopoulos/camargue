@@ -53,13 +53,17 @@ public:
   
   HyperGraph(std::vector<std::vector<int>> &node_sets,
 	     const CutType _cut_type);
+  HyperGraph(const IntPair &segment_ends);
+  static bool same_tour(const std::vector<int> &best_tour_nodes);
 
   void delete_refs();
+  CutType cut_type;
+  std::vector<IntervalSet*> set_refs;
+
+
 
 private:
   friend class SetBank;
-  std::vector<IntervalSet*> set_refs;
-  CutType cut_type;
   int rhs;
 
   static SetBank *source_setbank;
@@ -72,7 +76,9 @@ public:
 private:
   friend HyperGraph::HyperGraph(std::vector<std::vector<int>> &node_sets,
 				const CutType _cut_type);
+  friend HyperGraph::HyperGraph(const IntPair &segment_ends);
   friend void HyperGraph::delete_refs();
+  friend bool HyperGraph::same_tour(const std::vector<int> &best_tour_nodes);
   IntervalSet *add_or_increment(IntervalSet &newset);
   void del_or_decrement(IntervalSet &oldset);
   

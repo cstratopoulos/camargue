@@ -20,14 +20,13 @@ class CutControl {
 public:
   CutControl(Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
 	     Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup):
-    //separate cut classes
+    set_repo(BestGroup.best_tour_nodes, BestGroup.perm),
     segment_q(seg_q_max), blossom_q(blossom_q_max),
-    segments(GraphGroup.delta, GraphGroup.edge_marks, GraphGroup.m_graph.edges,
-	     BestGroup.best_tour_nodes, LPGroup.m_lp, SupportGroup.G_s,
+    segments(GraphGroup.edge_marks, BestGroup.best_tour_nodes, SupportGroup.G_s,
 	     segment_q),
     blossoms(GraphGroup.delta, GraphGroup.edge_marks,
 	     GraphGroup.m_graph.edges, BestGroup.best_tour_edges,
-	     LPGroup.m_lp, LPGroup.m_lp_edges, SupportGroup.support_indices,
+	     LPGroup.m_lp_edges, SupportGroup.support_indices,
 	     SupportGroup.support_elist, SupportGroup.support_ecap,
 	     blossom_q),
     dominos(GraphGroup.edge_marks,
@@ -51,6 +50,8 @@ public:
   void profile();
 
 private:
+  SetBank set_repo;
+  
   CutQueue<HyperGraph> segment_q;
   CutQueue<HyperGraph> blossom_q;
   

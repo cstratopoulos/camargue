@@ -131,13 +131,10 @@ IntervalSet *SetBank::add_or_increment(IntervalSet &newset)
 
   if(find_it != set_bank.end()){
     find_it->add_use();
-    cout << "Incrementing existing element, now "
-	 << find_it->use_count << "\n";
   } else {
     newset.add_use();
     set_bank.insert(newset);
     find_it = set_bank.find(newset);
-    cout << "Adding new element with single use\n";
   }
 
   return const_cast<IntervalSet*>(&(*find_it));
@@ -149,10 +146,8 @@ void SetBank::del_or_decrement(IntervalSet &oldset)
 
   if(find_it != set_bank.end()){
     find_it->del_use();
-    cout << "Decrementing use count, now " << find_it->use_count;
     if(find_it->use_count == 0){
       set_bank.erase(find_it);
-      cout << ", erasing unused element.";
     }
     cout << "\n";
   }
@@ -163,7 +158,6 @@ HyperGraph::HyperGraph(vector<vector<int>> &node_sets,
   cut_type(_cut_type),
   rhs((cut_type == CutType::Segment) ? 2 : ((3 * node_sets.size()) + 1))
 {
-  cout << "Calling hypergraph constructor...\n";
   for(vector<int> &current_set : node_sets){
     IntervalSet test_set(current_set, source_setbank->tour_nodes,
 			 source_setbank->perm);
@@ -171,7 +165,20 @@ HyperGraph::HyperGraph(vector<vector<int>> &node_sets,
     
     set_refs.push_back(current_ref);
   }
-  cout << "Done constructing\n";
+}
+
+HyperGraph::HyperGraph(const IntPair &segment_ends) :
+  cut_type(CutType::Segment),
+  rhs(2)
+{
+  IntervalSet test_set{{segment_ends}};
+  IntervalSet *new_ref = source_setbank->add_or_increment(test_set);
+  set_refs.push_back(new_ref);
+}
+
+bool HyperGraph::same_tour(const vector<int> &best_tour_nodes)
+{
+  return best_tour_nodes == source_setbank->tour_nodes;
 }
 
 void HyperGraph::delete_refs(){

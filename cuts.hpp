@@ -138,36 +138,36 @@ public:
   
   void pop_front() { cut_q.pop_front(); }  
   bool empty() const { return cut_q.empty(); }
+  int size() const { return cut_q.size(); }
 
 private:
   std::list<cut_rep> cut_q;
 };
 
-/*
-templace<typename cut_rep>
-class CutTranslate {
-public:
-  CutTranslate(PSEP::GraphGroup &GraphGroup);
+// templace<typename cut_rep>
+// class CutTranslate {
+// public:
+//   CutTranslate(PSEP::GraphGroup &GraphGroup) :
+//     edges(GraphGroup.m_graph.edges),
+//     delta(GraphGroup.delta),
+//     edge_marks(GraphGroup.edge_marks),
+//     edge_lookup(GraphGroup.m_graph.edge_lookup) {}
   
-  virtual int get_sparse_row(const cut_rep &H, std::vector<int> &rmatind,
-			     std::vector<double> &rmatval, char &sense,
-			     double &rhs);
+//   virtual int get_sparse_row(const cut_rep &H, std::vector<int> &rmatind,
+// 			     std::vector<double> &rmatval, char &sense,
+// 			     double &rhs);
   
-  virtual int get_sparse_row_if(bool &violated,
-				const cut_rep &H, std::vector<int> &rmatind,
-				std::vector<double> &rmatval, char &sense,
-				double &rhs);
+//   virtual int get_sparse_row_if(bool &violated,
+// 				const cut_rep &H, std::vector<int> &rmatind,
+// 				std::vector<double> &rmatval, char &sense,
+// 				double &rhs);
 
-  // template<typename number_t>
-  // virtual int get_activity(const vector<number_t> &x, double &activity);
-
-private:
-  std::vector<Edge> &edges;
-  std::vector<int> &delta;
-  std::vector<int> &edge_marks;
-  IntPairMap &edge_lookup;
-};
-*/
+// private:
+//   std::vector<Edge> &edges;
+//   std::vector<int> &delta;
+//   std::vector<int> &edge_marks;
+//   IntPairMap &edge_lookup;
+// };
 
 }
 

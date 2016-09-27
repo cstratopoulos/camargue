@@ -10,17 +10,23 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   int segval = 2, matchval = 2, dpval = 2;
   double segtime, matchtime, dptime;
 
+  cout << "Calling segment sep....";
+  
   segtime = zeit();
   segval = segments.cutcall();
   if(segval == 1){
     rval = 1;
     goto CLEANUP;
   }
+
+  cout << "Size of segment queue after call: " << segment_q.size() << "\n";
   
   segtime = zeit() - segtime;
   total_segtime += segtime;
   total_segcalls++;
 
+
+  cout << "Calling blossom sep...";
   matchtime = zeit();
   matchval = blossoms.cutcall();
   if(matchval == 1){
@@ -28,9 +34,13 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     goto CLEANUP;
   }
 
+  cout << "Size of blossom queue after call: " << blossom_q.size() << "\n";
+
   matchtime = zeit() - matchtime;
   total_2mtime += matchtime;
   total_2mcalls++;
+
+  rval = 1; goto CLEANUP;
 
   if(prefs.dp_threshold >= 0 && augrounds > 0 &&
      (augrounds % prefs.dp_threshold == 0)){

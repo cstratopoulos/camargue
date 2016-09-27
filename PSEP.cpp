@@ -22,10 +22,7 @@ static int initial_parse(int ac, char **av, string &fname,
 
 static void usage(const string &fname);
 
-int main(int argc, char* argv[]){
-  PSEP::interactive_test();
-  return 1;
-  
+int main(int argc, char* argv[]){  
   PSEP::LP::Prefs prefs;
   PSEP::RandProb randprob;
   unique_ptr<CCdatagroup> dat(new CCdatagroup);
