@@ -3,10 +3,11 @@
 #include <map>
 
 using namespace std;
-using namespace PSEP;
+
+namespace PSEP {
   
 template<>
-void PSEP::CutQueue<HyperGraph>::push_front(const HyperGraph &H)
+void CutQueue<HyperGraph>::push_front(const HyperGraph &H)
 { 
   cut_q.push_front(H);
   if(cut_q.size() > q_capacity){
@@ -16,9 +17,12 @@ void PSEP::CutQueue<HyperGraph>::push_front(const HyperGraph &H)
 }
 
 template<>
-void PSEP::CutQueue<HyperGraph>::pop_front()
+void CutQueue<HyperGraph>::pop_front()
 {
   cut_q.front().delete_refs();
   cut_q.pop_front();
 }
 
+  
+
+}
