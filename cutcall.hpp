@@ -21,6 +21,7 @@ public:
   CutControl(Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
 	     Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup):
     //separate cut classes
+    segment_q(seg_q_max), blossom_q(blossom_q_max),
     segments(GraphGroup.delta, GraphGroup.edge_marks, GraphGroup.m_graph.edges,
 	     BestGroup.best_tour_nodes, LPGroup.m_lp, SupportGroup.G_s,
 	     segment_q),
@@ -47,16 +48,7 @@ public:
   int primal_sep(const int augrounds, const LP::PivType stat);
   int safe_gomory_sep();
     
-  void profile(){
-    std::cout << "   Total time during lightDP sep: " << std::setprecision(4)
-	      << total_dptime << "s\n"
-	      << "                     segment sep: "
-	      << total_segtime << "s\n"
-	      << "                     blossom sep: "
-	      << total_2mtime << "s\n"
-	      << "                    safe GMI sep: "
-	      << total_gentime << "s\n" << std::setprecision(6);
-  }
+  void profile();
 
 private:
   CutQueue<HyperGraph> segment_q;

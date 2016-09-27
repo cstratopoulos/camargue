@@ -22,7 +22,8 @@ namespace PSEP{
       m_lp_edges(_m_lp_edges),
       support_indices(_support_indices),
       support_elist(_support_elist), support_ecap(_support_ecap),
-      blossom_q(blossom_queue) {}
+      local_q(blossom_q_max),
+      external_q(blossom_queue) {}
 
     int cutcall();
 
@@ -48,7 +49,8 @@ namespace PSEP{
 
     std::unique_ptr<blossom> best;
 
-    CutQueue<HyperGraph> &blossom_q;
+    CutQueue<blossom> local_q;
+    CutQueue<HyperGraph> &external_q;
   };
 }
 

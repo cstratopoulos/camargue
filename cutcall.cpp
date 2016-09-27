@@ -17,11 +17,6 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     goto CLEANUP;
   }
   
-  //
-  // if(!segval) cout << "Added segment cut, row number "
-  // 		   << (PSEPlp_numrows(&m_lp) - 1) << "\n";
-  //
-  
   segtime = zeit() - segtime;
   total_segtime += segtime;
   total_segcalls++;
@@ -33,10 +28,6 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     goto CLEANUP;
   }
 
-  //
-  // if(!matchval) cout << "Added 2match cut, row number "
-  // 		   << (PSEPlp_numrows(&m_lp) - 1) << "\n";
-  //
   matchtime = zeit() - matchtime;
   total_2mtime += matchtime;
   total_2mcalls++;
@@ -79,4 +70,16 @@ int CutControl::safe_gomory_sep(){
   if(rval == 1)
     cerr << "Problem in CutControl::safe_gomory_sep\n";
   return rval;
+}
+
+void CutControl::profile()
+{
+  std::cout << "   Total time during lightDP sep: " << std::setprecision(4)
+	    << total_dptime << "s\n"
+	    << "                     segment sep: "
+	    << total_segtime << "s\n"
+	    << "                     blossom sep: "
+	    << total_2mtime << "s\n"
+	    << "                    safe GMI sep: "
+	    << total_gentime << "s\n" << std::setprecision(6);
 }

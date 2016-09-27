@@ -16,7 +16,8 @@ namespace PSEP {
 	     CutQueue<HyperGraph> &segment_queue):
     deltacount(0), delta(_delta), edge_marks(_edge_marks), edges(_edges),
       best_tour_nodes(_best_tour_nodes), m_lp(_m_lp), G_s(_G_s),
-      seg_q(segment_queue){}
+      local_q(seg_q_max),
+      external_q(segment_queue){}
 
     int cutcall();
 
@@ -37,7 +38,9 @@ namespace PSEP {
     SupportGraph &G_s;
 
     std::unique_ptr<seg> best;
-    CutQueue<HyperGraph> &seg_q;
+
+    CutQueue<seg> local_q;
+    CutQueue<HyperGraph> &external_q;
   };
 }
 

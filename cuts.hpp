@@ -13,10 +13,16 @@
 #include <memory>
 #include <vector>
 
+#include "PSEP_util.hpp"
 #include "setbank.hpp"
 #include "tooth.hpp"
+#include "datagroups.hpp"
+#include "Graph.hpp"
 
 namespace PSEP {
+constexpr int max_add = 4;
+constexpr int seg_q_max = max_add;
+constexpr int blossom_q_max = 15;
 
 /*
  * Structure for storing segment cuts: subtour inequalities arising from
@@ -103,19 +109,65 @@ protected:
   virtual int add_cut() = 0;
 };
 
+
+/*
+ * This template class provides an interface for dealing with a queue of
+ * (hopefully compressed) representations of cuts, cut_rep. In practice this 
+ * will be a HyperGraph (see setbank.hpp), or a structure for storing simple
+ * DP inequalities (see dominos.hpp, simpleDP.hpp)
+ */
+  
 template<typename cut_rep>
 class CutQueue {
 public:
-  static constexpr int q_capacity = 15;
+  CutQueue(const int cap) : q_capacity(cap) {}
+  
+  //the max number of cuts to be stored in the queue
+  const int q_capacity;
 
+  //returns a reference to the most recently added cut
   const cut_rep &peek_front() const { return cut_q.front(); }
-  virtual void push_front(const cut_rep &H);
-  virtual void pop_front();
+  
+  //pushes a new cut to the front of the queue, popping the oldest one from
+  //the back if we are at capacity
+  void push_front(const cut_rep &H)
+  {
+    cut_q.push_front(H);
+    if(cut_q.size() > q_capacity) cut_q.pop_back();
+  }
+  
+  void pop_front() { cut_q.pop_front(); }  
   bool empty() const { return cut_q.empty(); }
 
 private:
   std::list<cut_rep> cut_q;
 };
+
+/*
+templace<typename cut_rep>
+class CutTranslate {
+public:
+  CutTranslate(PSEP::GraphGroup &GraphGroup);
+  
+  virtual int get_sparse_row(const cut_rep &H, std::vector<int> &rmatind,
+			     std::vector<double> &rmatval, char &sense,
+			     double &rhs);
+  
+  virtual int get_sparse_row_if(bool &violated,
+				const cut_rep &H, std::vector<int> &rmatind,
+				std::vector<double> &rmatval, char &sense,
+				double &rhs);
+
+  // template<typename number_t>
+  // virtual int get_activity(const vector<number_t> &x, double &activity);
+
+private:
+  std::vector<Edge> &edges;
+  std::vector<int> &delta;
+  std::vector<int> &edge_marks;
+  IntPairMap &edge_lookup;
+};
+*/
 
 }
 
