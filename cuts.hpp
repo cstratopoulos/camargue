@@ -112,9 +112,10 @@ protected:
 
 /*
  * This template class provides an interface for dealing with a queue of
- * (hopefully compressed) representations of cuts, cut_rep. In practice this 
+ * representations of cuts, cut_rep. In practice this 
  * will be a HyperGraph (see setbank.hpp), or a structure for storing simple
- * DP inequalities (see dominos.hpp, simpleDP.hpp)
+ * DP inequalities (see dominos.hpp, simpleDP.hpp), or the locally used 
+ * structure from within a separator (see segments.cpp, blossoms.cpp)
  */
   
 template<typename cut_rep>
@@ -144,31 +145,37 @@ private:
   std::list<cut_rep> cut_q;
 };
 
-// templace<typename cut_rep>
-// class CutTranslate {
-// public:
-//   CutTranslate(PSEP::GraphGroup &GraphGroup) :
-//     edges(GraphGroup.m_graph.edges),
-//     delta(GraphGroup.delta),
-//     edge_marks(GraphGroup.edge_marks),
-//     edge_lookup(GraphGroup.m_graph.edge_lookup) {}
-  
-//   virtual int get_sparse_row(const cut_rep &H, std::vector<int> &rmatind,
-// 			     std::vector<double> &rmatval, char &sense,
-// 			     double &rhs);
-  
-//   virtual int get_sparse_row_if(bool &violated,
-// 				const cut_rep &H, std::vector<int> &rmatind,
-// 				std::vector<double> &rmatval, char &sense,
-// 				double &rhs);
+class CutTranslate {
+public:
+  CutTranslate(Data::GraphGroup &GraphGroup) :
+    edges(GraphGroup.m_graph.edges),
+    delta(GraphGroup.delta),
+    edge_marks(GraphGroup.edge_marks),
+    edge_lookup(GraphGroup.m_graph.edge_lookup) {}
 
-// private:
-//   std::vector<Edge> &edges;
-//   std::vector<int> &delta;
-//   std::vector<int> &edge_marks;
-//   IntPairMap &edge_lookup;
-// };
+  int get_sparse_row(const HyperGraph &H, std::vector<int> &rmatind,
+		     std::vector<double> &rmatval, char &sense, double &rhs);
+  int get_sparse_row_if(bool &violated, const HyperGraph &H,
+			std::vector<int> &rmatind, std::vector<double> &rmatval,
+			char &sense, double &rhs);
+
+private:
+  std::vector<Edge> &edges;
+  std::vector<int> &delta;
+  std::vector<int> &edge_marks;
+  IntPairMap &edge_lookup;
+};
 
 }
+
+/*
+ *       FORWARD DECLARATIONS OF PARTIAL TEMPLATE SPECIALIZATIONS
+ */
+
+template<>
+void PSEP::CutQueue<PSEP::HyperGraph>::push_front(const PSEP::HyperGraph &H);
+
+template<>
+void PSEP::CutQueue<PSEP::HyperGraph>::pop_front();
 
 #endif
