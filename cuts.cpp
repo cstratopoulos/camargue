@@ -22,6 +22,13 @@ void CutQueue<HyperGraph>::pop_front()
   cut_q.pop_front();
 }
 
-  
+}
 
+using namespace PSEP;
+
+int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
+				 vector<double> &rmatval, char &sense,
+				 double &rhs)
+{
+  
 }
