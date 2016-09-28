@@ -93,9 +93,6 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       continue;
     }
 
-    rval = LPCore.pivot_back();
-    if(rval) goto CLEANUP;
-
     cut_rval = CutControl.primal_sep(augrounds, piv_stat);
     if(cut_rval == 1){
       rval = 1;
@@ -111,10 +108,13 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       rval = CutControl.safe_gomory_sep();
       if(rval == 1) goto CLEANUP;
       if(rval == 2) break;
-
-      rval = LPCore.pivot_back();
-      if(rval) goto CLEANUP;
     }
+
+    rval = LPCore.pivot_back();
+    if(rval) goto CLEANUP;
+
+    rval = CutControl.add_primal_cuts();
+    if(rval) goto CLEANUP;
 
     if(rounds % 50 == 0 && !plan.is_branch()){
       cout << "\n PIVOTING ROUND: " << rounds << " [ "

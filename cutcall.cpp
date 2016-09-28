@@ -9,6 +9,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   
   int segval = 2, matchval = 2, dpval = 2;
   double segtime, matchtime, dptime;
+  bool pool_blossoms;
 
   cout << "Calling segment sep....";
   
@@ -19,42 +20,46 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     goto CLEANUP;
   }
 
-  cout << "Size of segment queue after call: " << segment_q.size() << "\n";
   
   segtime = zeit() - segtime;
   total_segtime += segtime;
   total_segcalls++;
 
 
-  cout << "Calling blossom sep...";
   matchtime = zeit();
-  matchval = blossoms.cutcall();
-  if(matchval == 1){
-    rval = 1;
-    goto CLEANUP;
-  }
+  
+  rval = q_has_viol(pool_blossoms, blossom_q);
+  if(rval) goto CLEANUP;
 
-  cout << "Size of blossom queue after call: " << blossom_q.size() << "\n";
+  if(pool_blossoms)
+    blossom_q.q_fresh = false;
+  else {
+    matchval = blossoms.cutcall();
+    if(matchval == 1){
+      rval = 1;
+      goto CLEANUP;
+    }
+    
+    blossom_q.q_fresh = true;
+  }
 
   matchtime = zeit() - matchtime;
   total_2mtime += matchtime;
   total_2mcalls++;
 
-  rval = 1; goto CLEANUP;
-
-  if(prefs.dp_threshold >= 0 && augrounds > 0 &&
-     (augrounds % prefs.dp_threshold == 0)){
-    if(segval == 2 && matchval == 2 && stat != LP::PivType::Subtour){
-      dptime = zeit();
-      dpval = dominos.cutcall();
-      if(dpval == 1){
-	rval = 1;
-	goto CLEANUP;
-      }
-      dptime = zeit() - dptime;
-      total_dptime += dptime;	
-    }
-  }
+  // if(prefs.dp_threshold >= 0 && augrounds > 0 &&
+  //    (augrounds % prefs.dp_threshold == 0)){
+  //   if(segval == 2 && matchval == 2 && stat != LP::PivType::Subtour){
+  //     dptime = zeit();
+  //     dpval = dominos.cutcall();
+  //     if(dpval == 1){
+  // 	rval = 1;
+  // 	goto CLEANUP;
+  //     }
+  //     dptime = zeit() - dptime;
+  //     total_dptime += dptime;	
+  //   }
+  // }
 
   if(segval == 2 && matchval == 2 && dpval == 2)
     rval = 2;
@@ -68,6 +73,67 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     cerr << "Cuts<blossom>::cutcall\n";
   if(dpval == 1)
     cerr << "Cuts<domino>::cutcall\n";
+  return rval;
+}
+
+int CutControl::add_primal_cuts()
+{
+  int rval = 0;
+  int seg_added = 0, blossom_added = 0;
+  vector<int> rmatind;
+  vector<double> rmatval;
+  char sense;
+  double rhs;
+  int rmatbeg = 0;
+
+  while(!segment_q.empty() && seg_added < max_add){
+    rval = translator.get_sparse_row(segment_q.peek_front(),
+				     rmatind, rmatval, sense, rhs);
+    if(rval) goto CLEANUP;
+
+    rval = PSEPlp_addrows(&m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
+			  &rmatind[0], &rmatval[0]);
+    if(rval) goto CLEANUP;
+
+    seg_added++;
+    segment_q.pop_front();
+  }
+
+  if(blossom_q.q_fresh){
+    while(!blossom_q.empty() && blossom_added < max_add){
+      rval = translator.get_sparse_row(blossom_q.peek_front(),
+				       rmatind, rmatval, sense, rhs);
+      if(rval) goto CLEANUP;
+
+      rval = PSEPlp_addrows(&m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
+			    &rmatind[0], &rmatval[0]);
+      if(rval) goto CLEANUP;
+
+      blossom_added++;
+      blossom_q.pop_front();
+    } 
+  } else {
+    while(!blossom_q.empty() && blossom_added < max_add){
+      bool is_violated = false;
+      rval = translator.get_sparse_row_if(is_violated, blossom_q.peek_front(),
+					  m_lp_edges, rmatind, rmatval,
+					  sense, rhs);
+      if(rval) goto CLEANUP;
+
+      if(is_violated){
+	rval = PSEPlp_addrows(&m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
+			      &rmatind[0], &rmatval[0]);
+	if(rval) goto CLEANUP;
+
+	blossom_added++;
+      }
+      blossom_q.pop_front();
+    } 
+  }
+
+ CLEANUP:
+  if(rval)
+    cerr << "CutControl::add_primal_cuts failed\n";
   return rval;
 }
 
@@ -92,4 +158,27 @@ void CutControl::profile()
 	    << total_2mtime << "s\n"
 	    << "                    safe GMI sep: "
 	    << total_gentime << "s\n" << std::setprecision(6);
+}
+
+int CutControl::q_has_viol(bool &result,
+				CutQueue<HyperGraph> &pool_q)
+{
+  int rval = 0;
+  result = false;
+
+  while(!pool_q.empty()){
+    rval = translator.is_cut_violated(result, pool_q.peek_front(),
+				      m_lp_edges);
+    if(rval) goto CLEANUP;
+
+    if(result)
+      break;
+
+    pool_q.pop_front();
+  }
+
+ CLEANUP:
+  if(rval)
+    cerr << "CutControl::q_contains_viol failed\n";
+  return rval;
 }

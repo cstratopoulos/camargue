@@ -121,7 +121,7 @@ protected:
 template<typename cut_rep>
 class CutQueue {
 public:
-  CutQueue(const int cap) : q_capacity(cap) {}
+  CutQueue(const int cap) : q_capacity(cap), q_fresh(true) {}
   
   //the max number of cuts to be stored in the queue
   const int q_capacity;
@@ -140,6 +140,8 @@ public:
   void pop_front() { cut_q.pop_front(); }  
   bool empty() const { return cut_q.empty(); }
   int size() const { return cut_q.size(); }
+
+  bool q_fresh;
 
 private:
   std::list<cut_rep> cut_q;

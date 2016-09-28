@@ -35,6 +35,8 @@ int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
 
   vector<int> body_nodes;
   int deltacount = 0;
+  rmatind.clear();
+  rmatval.clear();
   
   rval = H.source_setbank->extract_nodelist(*(H.set_refs[0]),
 					    body_nodes);

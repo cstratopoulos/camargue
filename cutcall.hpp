@@ -5,6 +5,7 @@
 #include<iomanip>
 #include<list>
 
+#include "lp.hpp"
 #include "datagroups.hpp"
 #include "segments.hpp"
 #include "blossoms.hpp"
@@ -21,6 +22,7 @@ public:
   CutControl(Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
 	     Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup):
     set_repo(BestGroup.best_tour_nodes, BestGroup.perm),
+    translator(GraphGroup),
     segment_q(seg_q_max), blossom_q(blossom_q_max),
     segments(GraphGroup.edge_marks, BestGroup.best_tour_nodes, SupportGroup.G_s,
 	     segment_q),
@@ -38,19 +40,24 @@ public:
 		LPGroup.m_lp, LPGroup.m_lp_edges, LPGroup.frac_colstat,
 		LPGroup.frac_rowstat,
 		SupportGroup.support_indices),
-    prefs(LPGroup.prefs),
+    prefs(LPGroup.prefs), m_lp(LPGroup.m_lp), m_lp_edges(LPGroup.m_lp_edges),
     total_segtime(0), total_2mtime(0), total_dptime(0), total_gentime(0),
     total_segcalls(0), total_2mcalls(0), total_gencalls(0){}
 
     
 public:
   int primal_sep(const int augrounds, const LP::PivType stat);
+  int add_primal_cuts();
+  
   int safe_gomory_sep();
     
   void profile();
 
 private:
+  int q_has_viol(bool &result, CutQueue<HyperGraph> &pool_q);
+  
   SetBank set_repo;
+  CutTranslate translator;
   
   CutQueue<HyperGraph> segment_q;
   CutQueue<HyperGraph> blossom_q;
@@ -62,6 +69,8 @@ private:
   PSEP::Cut<PSEP::safeGMI> safe_gomory;
 
   PSEP::LP::Prefs &prefs;
+  PSEPlp &m_lp;
+  std::vector<double> &m_lp_edges;
 
   double total_segtime, total_2mtime, total_dptime, total_gentime;
   int total_segcalls, total_2mcalls, total_gencalls;
