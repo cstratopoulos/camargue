@@ -45,8 +45,7 @@ typedef std::unordered_set<IntervalSet, boost::hash<IntervalSet>> SetHash;
 //forward declaration for static unique pointer
 class SetBank;
   
-class HyperGraph {
-public:
+struct HyperGraph {
   enum class CutType {
     Segment, Blossom
   };
@@ -59,12 +58,6 @@ public:
   void delete_refs();
   CutType cut_type;
   std::vector<IntervalSet*> set_refs;
-
-
-
-private:
-  friend class SetBank;
-  int rhs;
 
   static SetBank *source_setbank;
 };

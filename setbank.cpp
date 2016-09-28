@@ -180,8 +180,7 @@ void SetBank::del_or_decrement(IntervalSet &oldset)
 
 HyperGraph::HyperGraph(vector<vector<int>> &node_sets,
 		       const CutType _cut_type) :
-  cut_type(_cut_type),
-  rhs((cut_type == CutType::Segment) ? 2 : ((3 * node_sets.size()) + 1))
+  cut_type(_cut_type)
 {
   for(vector<int> &current_set : node_sets){
     IntervalSet test_set(current_set, source_setbank->tour_nodes,
@@ -193,8 +192,7 @@ HyperGraph::HyperGraph(vector<vector<int>> &node_sets,
 }
 
 HyperGraph::HyperGraph(const IntPair &segment_ends) :
-  cut_type(CutType::Segment),
-  rhs(2)
+  cut_type(CutType::Segment)
 {
   IntervalSet test_set{{segment_ends}};
   IntervalSet *new_ref = source_setbank->add_or_increment(test_set);
