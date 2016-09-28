@@ -160,6 +160,18 @@ public:
 			char &sense, double &rhs);
 
 private:
+  template<typename number_t>
+  void get_activity(double &activity, const std::vector<number_t> &x,
+		    const std::vector<int> &rmatind,
+		    const std::vector<double> &rmatval)
+  {
+    activity = 0;
+    for(int i = 0; i < rmatind.size(); i++){
+      int index = rmatind[i];
+      activity += x[index] * rmatval[i];
+    }
+  }
+  
   std::vector<Edge> &edges;
   std::vector<int> &delta;
   std::vector<int> &edge_marks;
