@@ -96,3 +96,62 @@ int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
   }
   return rval;
 }
+
+int CutTranslate::get_sparse_row_if(bool &violated, const HyperGraph &H,
+				    const vector<double> &x,
+				    vector<int> &rmatind,
+				    vector<double> &rmatval, char &sense,
+				    double &rhs)
+{
+  int rval = 0;
+  violated = false;
+  double activity;
+
+  rval = get_sparse_row(H, rmatind, rmatval, sense, rhs);
+  PSEP_CHECK_RVAL(rval, "Couldn't get sparse row, ");
+
+  get_activity(activity, x, rmatind, rmatval);
+
+  switch(sense){
+  case 'G':
+    violated = (activity < rhs);
+    break;
+  case 'L':
+    violated = (activity > rhs);
+    break;
+  default:
+    rval = 1;
+    PSEP_GOTO_CLEANUP("Uncaught row sense " << sense << ", ");
+  }
+
+ CLEANUP:
+  if(rval)
+    std::cerr << "CutTranslate<HyperGraph>::get_sparse_row_if failed, "
+	      << "row is invalid.\n";
+
+  if(rval || !violated){
+    rmatind.clear();
+    rmatval.clear();
+  }
+  
+  return rval;
+}
+
+int CutTranslate::is_cut_violated(bool &violated, const HyperGraph &H,
+				  vector<double> &x)
+{
+  int rval = 0;
+  vector<int> rmatind;
+  vector<double> rmatval;
+  char sense; double rhs;
+
+  violated = false;
+
+  rval = get_sparse_row_if(violated, H, x, rmatind, rmatval, sense, rhs);
+  PSEP_CHECK_RVAL(rval, "Couldn't test violation, ");
+
+ CLEANUP:
+  if(rval)
+    cerr << "CutTranslate::is_cut_violated failed\n";
+  return rval;
+}

@@ -156,8 +156,11 @@ public:
   int get_sparse_row(const HyperGraph &H, std::vector<int> &rmatind,
 		     std::vector<double> &rmatval, char &sense, double &rhs);
   int get_sparse_row_if(bool &violated, const HyperGraph &H,
+			const std::vector<double> &x,
 			std::vector<int> &rmatind, std::vector<double> &rmatval,
 			char &sense, double &rhs);
+  int is_cut_violated(bool &violated, const HyperGraph &H,
+		      std::vector<double> &x);
 
 private:
   template<typename number_t>
