@@ -183,16 +183,19 @@ private:
   IntPairMap &edge_lookup;
 };
 
-}
-
 /*
  *       FORWARD DECLARATIONS OF PARTIAL TEMPLATE SPECIALIZATIONS
  */
 
-template<>
-void PSEP::CutQueue<PSEP::HyperGraph>::push_front(const PSEP::HyperGraph &H);
 
 template<>
-void PSEP::CutQueue<PSEP::HyperGraph>::pop_front();
+void CutQueue<HyperGraph>::push_front(const HyperGraph &H);
+
+template<>
+void CutQueue<HyperGraph>::pop_front();
+  
+}
+
+
 
 #endif
