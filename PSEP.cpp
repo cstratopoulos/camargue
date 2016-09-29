@@ -50,6 +50,8 @@ static int initial_parse(int ac, char **av, string &fname,
   bool rand = false;
   int pricing_choice = 0;
   int dp_factor = -1;
+  int cuts_per_round = 2;
+  int max_q_size = 15;
   int seed = 0;
   int ncount = 0;
   int gridsize = 100;
@@ -61,10 +63,16 @@ static int initial_parse(int ac, char **av, string &fname,
     return 1;
   }
 
-  while((c = getopt(ac, av, "aD:p:RSg:n:s:")) != EOF) {
+  while((c = getopt(ac, av, "aD:c:q:p:RSg:n:s:")) != EOF) {
     switch(c) {
     case 'D':
       dp_factor = atoi(optarg);
+      break;
+    case 'c':
+      cuts_per_round = atoi(optarg);
+      break;
+    case 'q':
+      max_q_size = atoi(optarg);
       break;
     case 'p':
       pricing_choice = atoi(optarg);
@@ -136,6 +144,14 @@ static int initial_parse(int ac, char **av, string &fname,
     cout << "DP separation will be tried every "
 	 << prefs.dp_threshold << " non-degenerate pivots w no augmentation\n";
 
+  if(cuts_per_round < 1 || max_q_size < 1 || max_q_size < cuts_per_round){
+    cerr << "Invalid cuts per round or queue capacity\n";
+    usage(av[0]);
+    return 1;
+  }
+  prefs.max_per_round = cuts_per_round;
+  prefs.q_max_size = max_q_size;
+
   return 0;
 }
 
@@ -146,9 +162,13 @@ static void usage(const string &fname){
   fprintf(stderr, "-S    only solve sparse instance with edge set from \n");
   fprintf(stderr,"       10 Lin-Kernighan tours\n");
   fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ---------------\n");
+  fprintf(stderr, "-c    add at most this many cuts per round\n");
+  fprintf(stderr, "-q    keep a queue of at most this many blossom cuts to \n");
+  fprintf(stderr, "      be checked before calling the blossom separation \n");
+  fprintf(stderr, "      all over again\n");
   fprintf(stderr, "-D    only call simpleDP sep after 5x rounds of cuts \n");
   fprintf(stderr, "      with no augmentation. (disabled by default)\n");
-  fprintf(stderr, "-p     set primal pricing protocol to:\n");
+  fprintf(stderr, "-p    set primal pricing protocol to:\n");
   fprintf(stderr, "    0 (default) devex\n");
   fprintf(stderr, "    1 steepest edge with slack initial norms\n");
   fprintf(stderr, "    2 true steepest edge.\n");
