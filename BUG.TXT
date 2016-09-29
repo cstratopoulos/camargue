@@ -1,4 +1,0 @@
-best tour edges not being set in datagroups::bestgroup constructor
-
-Possibly use edge row lookup instead of perm to add edges to best tour
-

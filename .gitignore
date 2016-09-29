@@ -11,6 +11,6 @@
 #no main executable
 PSEP
 
-#no shell scripts
-*.sh
+#no softlink to problems folder or sloc script
 problems
+sloc
