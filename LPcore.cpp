@@ -323,9 +323,7 @@ int Core::basis_init(){
   { bool result;
   rval = is_best_tour_feas(result);
   if(rval) goto CLEANUP;
-  if(result)
-    cout << "Best tour feasible\n";
-  else {
+  if(!result) {
     cout << "BEST TOUR INFEASIBLE AT BASIS INIT!!!\n";
     rval = 1;
   }
