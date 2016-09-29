@@ -11,8 +11,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   double segtime, matchtime, dptime;
   bool pool_blossoms;
 
-  cout << "Calling segment sep....";
-  
+  cout << "Calling segment sep....\n";  
   segtime = zeit();
   segval = segments.cutcall();
   if(segval == 1){
@@ -27,13 +26,17 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
 
 
   matchtime = zeit();
-  
+
+  cout << "Calling blossom sep....";
   rval = q_has_viol(pool_blossoms, blossom_q);
   if(rval) goto CLEANUP;
 
-  if(pool_blossoms)
+  if(pool_blossoms){
+    cout << "pool blossoms found\n";
     blossom_q.q_fresh = false;
+  }
   else {
+    cout << "calling separator again\n";
     matchval = blossoms.cutcall();
     if(matchval == 1){
       rval = 1;
@@ -86,6 +89,7 @@ int CutControl::add_primal_cuts()
   double rhs;
   int rmatbeg = 0;
 
+  cout << "Adding segment cuts\n";
   while(!segment_q.empty() && seg_added < max_add){
     rval = translator.get_sparse_row(segment_q.peek_front(),
 				     rmatind, rmatval, sense, rhs);
@@ -99,6 +103,7 @@ int CutControl::add_primal_cuts()
     segment_q.pop_front();
   }
 
+  cout << "Adding blossom cuts\n";
   if(blossom_q.q_fresh){
     while(!blossom_q.empty() && blossom_added < max_add){
       rval = translator.get_sparse_row(blossom_q.peek_front(),
@@ -130,6 +135,9 @@ int CutControl::add_primal_cuts()
       blossom_q.pop_front();
     } 
   }
+
+  cout << "Added " << seg_added << " segments and " << blossom_added
+       << " blossoms\n";
 
  CLEANUP:
   if(rval)

@@ -174,7 +174,6 @@ void SetBank::del_or_decrement(IntervalSet &oldset)
     if(find_it->use_count == 0){
       set_bank.erase(find_it);
     }
-    cout << "\n";
   }
 }
 
