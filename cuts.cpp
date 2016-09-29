@@ -1,5 +1,6 @@
 #include "cuts.hpp"
 
+#include <map>
 
 using namespace std;
 
@@ -33,59 +34,50 @@ int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
   int rval = 0;
   sense = 'G';
 
+  map<int, double> coef_map;
   vector<int> body_nodes;
   int deltacount = 0;
   rmatind.clear();
   rmatval.clear();
 
-  cout << "Extracting from source setbank...";
+  
   rval = H.source_setbank->extract_nodelist(*(H.set_refs[0]),
 					    body_nodes);
   PSEP_CHECK_RVAL(rval, "Couldn't extract nodelist, ");
-  cout << "Done" << endl;
+  
 
-  cout << "Getting delta...";
+  
   GraphUtils::get_delta(body_nodes, edges, &deltacount, delta, edge_marks);
   rval = (deltacount == 0);
   PSEP_CHECK_RVAL(rval, "Body nodes gave empty delta, ");
-  cout << "Done, deltacount: " << deltacount << endl;
+  
 
-  cout << "Resizing rmatind and rmatval...";
-  try { rmatind.resize(deltacount); rmatval.resize(deltacount, 1.0); }
+  try {
+    rmatind.resize(deltacount);
+    rmatval.resize(deltacount);
+    for(int i = 0; i < deltacount; i++)
+      coef_map[delta[i]] = 1.0;
+  }
   catch(const std::bad_alloc &){
     rval = 1; PSEP_GOTO_CLEANUP("Out of memory for sparse row, ");
   }
-  cout << "Done, rmatind size " << rmatind.size() << ", rmatval size "
-       << rmatval.size() << endl;
-
-  cout << "Copying delta to rmatind...";
-  for(int i = 0; i < deltacount; i++)
-    rmatind[i] = delta[i];
-  cout << "Done" << endl;
 
   switch(H.cut_type){
   case HyperGraph::CutType::Segment:
-    cout << "SWITCH: Segment case (done)" << endl;
+    
     rhs = 2;
-    goto CLEANUP;
     break;
 
   case HyperGraph::CutType::Blossom:
-    cout << "SWITCH: BLOSSOM CASE" << endl;
-
-    cout << "Getting num teeth and setting rhs...";
     int num_teeth = H.set_refs.size() - 1;
     rhs = 1 - num_teeth;
-    cout << "Done" << endl;
-
-    cout << "TOOTH EXTRACTION LOOP" << endl;
+    
     //skip the first ref, it is body above
     for(int i = 1; i < H.set_refs.size(); i++){
       vector<int> edge_tooth;
       int edge_index;
       IntPairMap::iterator find_it;
-
-      cout << "Extracting nodelist...";
+      
       rval = H.source_setbank->extract_nodelist(*(H.set_refs[i]), edge_tooth);
       PSEP_CHECK_RVAL(rval, "Couldn't extract blossom tooth, ");
 
@@ -94,29 +86,27 @@ int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
 				    << "nodes! ");
       }
 
-      cout << "Done. (With correct vector size too!)" << endl;
-      cout << "Tooth vector has entries: " << edge_tooth[0] << ", "
-	   << edge_tooth[1] << endl;
-
-      cout << "Finding edge in edge_lookup...";
+      
       find_it = edge_lookup.find(IntPair(fmin(edge_tooth[0], edge_tooth[1]),
 					 fmax(edge_tooth[0], edge_tooth[1])));
       rval = (find_it == edge_lookup.end());
       PSEP_CHECK_RVAL(rval, "Couldn't find tooth in edge lookup, ");
-      cout << "Done and found" << endl;
-
-      cout << "Printing the find iterator" << endl;
-      cout << "find_it->first, the IntPair key: "
-	   << find_it->first.first << ", " << find_it->first.second << endl;
-      cout << "find_it->second, the edge index: " << find_it->second << endl;
+            
       edge_index = find_it->second;
-
-      cout << "Writing rmatval entry " << edge_index  << endl;
-      rmatval[edge_index] = -1.0;
-      cout << "Wrote rmatval" << endl;
+      coef_map[edge_index] = -1.0;
     }
     
     break;
+  }
+
+  {//scoped temporary variable
+    int i = 0;
+    for(map<int, double>::iterator it = coef_map.begin(); it != coef_map.end();
+	it++){
+      rmatind[i] = it->first;
+      rmatval[i] = it->second;
+      i++;
+    }
   }
 
  CLEANUP:
