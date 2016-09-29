@@ -85,7 +85,7 @@ int CutControl::add_primal_cuts()
   double rhs;
   int rmatbeg = 0;
 
-  while(!segment_q.empty() && seg_added < max_add){
+  while(!segment_q.empty() && seg_added < prefs.max_per_round){
     rval = translator.get_sparse_row(segment_q.peek_front(),
 				     rmatind, rmatval, sense, rhs);
     if(rval) goto CLEANUP;
@@ -99,7 +99,7 @@ int CutControl::add_primal_cuts()
   }
 
   if(blossom_q.q_fresh){
-    while(!blossom_q.empty() && blossom_added < max_add){
+    while(!blossom_q.empty() && blossom_added < prefs.max_per_round){
       rval = translator.get_sparse_row(blossom_q.peek_front(),
 				       rmatind, rmatval, sense, rhs);
       if(rval) goto CLEANUP;
@@ -112,7 +112,7 @@ int CutControl::add_primal_cuts()
       blossom_q.pop_front();
     } 
   } else {
-    while(!blossom_q.empty() && blossom_added < max_add){
+    while(!blossom_q.empty() && blossom_added < prefs.max_per_round){
       bool is_violated = false;
       rval = translator.get_sparse_row_if(is_violated, blossom_q.peek_front(),
 					  m_lp_edges, rmatind, rmatval,

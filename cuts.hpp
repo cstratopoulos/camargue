@@ -20,10 +20,6 @@
 #include "Graph.hpp"
 
 namespace PSEP {
-constexpr int max_add = 4;
-constexpr int seg_q_max = max_add;
-constexpr int blossom_q_max = 15;
-
 /*
  * Structure for storing segment cuts: subtour inequalities arising from
  * segments of the current best tour.

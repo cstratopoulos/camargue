@@ -13,7 +13,7 @@ namespace PSEP {
     Cut<seg>(std::vector<int> &_edge_marks, std::vector<int> &_best_tour_nodes,
 	     SupportGraph &_G_s, CutQueue<HyperGraph> &segment_queue):
     edge_marks(_edge_marks), best_tour_nodes(_best_tour_nodes), G_s(_G_s),
-      local_q(seg_q_max),
+      local_q(segment_queue.q_capacity),
       external_q(segment_queue){}
 
     int cutcall();

@@ -39,11 +39,11 @@
  * helper_task, hopefully giving a clean description of the source of error
  */
 #define PSEP_GOTO_CLEANUP(message) {std::cerr << message; goto CLEANUP;}
-#define PSEP_CHECK_RVAL(rval, message) {\
-  if ((rval)) {\
-  std::cerr << message;\
-  goto CLEANUP;\
-  }\
+#define PSEP_CHECK_RVAL(rval, message) {                                       \
+  if ((rval)) {                                                                \
+    std::cerr << message;						\
+    goto CLEANUP;							\
+  }									\
   }
 
 namespace PSEP {
@@ -133,12 +133,23 @@ namespace PSEP {
      *    if no other cuts are found
      */
     struct Prefs {
-    Prefs() : price_method(Pricing::Devex), dp_threshold(-1) {}
-    Prefs(Pricing _price, int _dp_threshold) :
-      price_method(_price), dp_threshold(_dp_threshold) {}
+      Prefs() :
+	price_method(Pricing::Devex),
+	dp_threshold(-1),
+	max_per_round(2),
+	q_max_size(15) {}
+      
+      Prefs(Pricing _price, int _dp_threshold, int max_round, int q_max) :
+	price_method(_price),
+	dp_threshold(_dp_threshold),
+	max_per_round(max_round),
+	q_max_size(q_max){}
       
       Pricing price_method;
+      
       int dp_threshold;
+      int max_per_round;
+      int q_max_size;
     };
   }
 

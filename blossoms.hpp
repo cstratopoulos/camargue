@@ -22,7 +22,7 @@ namespace PSEP{
       m_lp_edges(_m_lp_edges),
       support_indices(_support_indices),
       support_elist(_support_elist), support_ecap(_support_ecap),
-      local_q(blossom_q_max),
+      local_q(blossom_queue.q_capacity),
       external_q(blossom_queue) {}
 
     int cutcall();

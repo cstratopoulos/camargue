@@ -23,7 +23,8 @@ public:
 	     Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup):
     set_repo(BestGroup.best_tour_nodes, BestGroup.perm),
     translator(GraphGroup),
-    segment_q(seg_q_max), blossom_q(blossom_q_max),
+    segment_q(LPGroup.prefs.max_per_round),
+    blossom_q(LPGroup.prefs.q_max_size),
     segments(GraphGroup.edge_marks, BestGroup.best_tour_nodes, SupportGroup.G_s,
 	     segment_q),
     blossoms(GraphGroup.delta, GraphGroup.edge_marks,

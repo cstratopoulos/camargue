@@ -306,6 +306,7 @@ LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
   double coefficients[2] = {1.0, 1.0};
   double lower_bound = 0.0;
   double upper_bound = 1.0;
+
   
   //Build the basic LP
   rval = PSEPlp_init (&m_lp);
@@ -332,6 +333,10 @@ LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
   }
 
   prefs = _prefs;
+
+  cout << "Adding at most " << prefs.max_per_round << " cuts per round, "
+       << "keeping at most " << prefs.q_max_size << " candidate blossoms\n";
+
 
   try {
     m_lp_edges.resize(m_graph.edge_count);
