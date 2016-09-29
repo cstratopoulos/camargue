@@ -69,7 +69,7 @@ namespace Data {
   struct BestGroup : DataGroup {
     /* The constructor takes graph and dat initialized by GraphGroup */
     BestGroup(Graph &graph, std::vector<int> &delta,
-	      std::unique_ptr<CCdatagroup> &dat);
+	      std::unique_ptr<CCdatagroup> &dat, const int user_seed);
 
     explicit operator bool() const { return !best_tour_nodes.empty(); }
 

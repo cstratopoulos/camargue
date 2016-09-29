@@ -68,8 +68,10 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     cout << "    GENERATING SPARSE GRAPH ONLY, ";
     CCedgegengroup plan;
     CCrandstate rstate;
+    int edgegen_seed = (randprob.seed == 0) ? ((int) real_zeit()) :
+      randprob.seed;
     
-    CCutil_sprand((int) real_zeit(), &rstate);
+    CCutil_sprand(edgegen_seed, &rstate);
     CCedgegen_init_edgegengroup(&plan);
     plan.linkern.count = 10;
     plan.linkern.quadnearest = 5;
@@ -77,7 +79,8 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     plan.linkern.nkicks = (m_graph.node_count / 100) + 1;
 
     cout << plan.linkern.count << " LK trials, quad "
-	 << plan.linkern.quadnearest << "-nearest \n";
+	 << plan.linkern.quadnearest << "-nearest, seed " << edgegen_seed
+	 << "\n";
 
     rval = CCedgegen_edges(&plan, m_graph.node_count, rawdat, NULL,
 			   &(m_graph.edge_count), &elist, 1, &rstate);
@@ -119,7 +122,7 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
 }
 
 BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
-		     unique_ptr<CCdatagroup> &dat){
+		     unique_ptr<CCdatagroup> &dat, const int user_seed){
   int rval = 0;
   CCrandstate rand_state;
   CCedgegengroup plan;
@@ -131,14 +134,13 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   int *tlist = (int *) NULL;
   int *cyc = (int *) NULL;
   double bestval, val;
-  int trials = 4;
+  int trials = (user_seed == 0) ? 4 : 0;
   int silent = 1;
   int kicks = 5 * ncount;
   int istour;
-  int seed;
-  seed = (int) real_zeit();
+  int seed = (user_seed == 0) ? ((int) real_zeit()) : user_seed;
   bool sparse = (m_graph.edge_count < (ncount * (ncount - 1)) / 2);
-  
+
   cout << "LK seed: " << seed << ", " << trials << " trials\n";
 
   bestval = INFINITY;

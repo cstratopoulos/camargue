@@ -154,18 +154,18 @@ static int initial_parse(int ac, char **av, string &fname,
 
   return 0;
 }
-
+//TODO update gomory sep to conform to cuts per round
 static void usage(const string &fname){
   fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", fname.data());
-  fprintf(stderr, "-------FLAG OPTIONS ---------------------------------\n");
+  fprintf(stderr, "-------FLAG OPTIONS ------------------------------------\n");
   fprintf(stderr, "-R    generate random problem\n");
   fprintf(stderr, "-S    only solve sparse instance with edge set from \n");
   fprintf(stderr,"       10 Lin-Kernighan tours\n");
-  fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ---------------\n");
-  fprintf(stderr, "-c    add at most this many cuts per round\n");
-  fprintf(stderr, "-q    keep a queue of at most this many blossom cuts to \n");
+  fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ------------------\n");
+  fprintf(stderr, "-c    add at most x cuts per round (default 2)\n");
+  fprintf(stderr, "-q    keep a queue of at most x blossom cuts to \n");
   fprintf(stderr, "      be checked before calling the blossom separation \n");
-  fprintf(stderr, "      all over again\n");
+  fprintf(stderr, "      all over again (default 15)\n");
   fprintf(stderr, "-D    only call simpleDP sep after 5x rounds of cuts \n");
   fprintf(stderr, "      with no augmentation. (disabled by default)\n");
   fprintf(stderr, "-p    set primal pricing protocol to:\n");
@@ -175,5 +175,9 @@ static void usage(const string &fname){
   fprintf(stderr, "-g    gridsize for random problem (100 default)\n");
   fprintf(stderr, "-n    nodecount for random problem (must be nonzero if\n");
   fprintf(stderr, "      -R is used\n");
-  fprintf(stderr, "-s    random seed for random problem\n");
+  fprintf(stderr, "-s    random seed for random problem and Lin-Kernighan.\n");
+  fprintf(stderr, "      If not set, current time will be used.\n");
+  fprintf(stderr, "      If set, initial tour will be constructed from only\n");
+  fprintf(stderr, "      one run of Lin-Kernighan (rather than independent \n");
+  fprintf(stderr, "      trials), to allow reproducibility.\n");
 }
