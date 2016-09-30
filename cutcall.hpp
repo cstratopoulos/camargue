@@ -52,7 +52,7 @@ public:
   
   int safe_gomory_sep();
     
-  void profile();
+  void profile(const double total_time);
 
 private:
   int q_has_viol(bool &result, CutQueue<HyperGraph> &pool_q);

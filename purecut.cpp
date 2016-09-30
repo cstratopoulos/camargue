@@ -15,7 +15,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 
   double pivtime, total_pivtime = 0, max_pivtime = 0;
   int num_removed = 0;
-  double routine_start, fixing_start;
+  double routine_start, fixing_start, routine_total;
   double fixtime = 0;
 
   // if(plan.perform_elim()){
@@ -130,6 +130,8 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     }
   }
 
+  routine_total = zeit() - routine_start;
+
   if(plan.is_branch() && piv_stat == LP::PivType::Tour){
     cout << "   Terminated due to augmented tour in branch solve ("
 	 << rounds << " rounds)\n";
@@ -153,13 +155,14 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 	 << rounds << " rounds of separation" << endl;
 
   if(!plan.is_branch())
-    CutControl.profile();
+    CutControl.profile(routine_total);
 
-  cout << "             Total time pivoting: " << total_pivtime << "\n";
+  cout << "             Total time pivoting: " << total_pivtime << ", ratio: "
+       << (total_pivtime / routine_total) << "\n";
 
     
   cout << "\n Total time for Purecut::solve: "
-       << (zeit() - routine_start) << "s\n";
+       << (routine_total) << "s\n";
   if(plan.perform_elim())
     cout <<"         LPFix::redcost_fixing: "
 	 << fixtime << "s\n";

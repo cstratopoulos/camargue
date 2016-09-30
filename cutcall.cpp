@@ -148,16 +148,21 @@ int CutControl::safe_gomory_sep(){
   return rval;
 }
 
-void CutControl::profile()
+void CutControl::profile(const double total_time)
 {
   std::cout << "   Total time during lightDP sep: " << std::setprecision(4)
-	    << total_dptime << "s\n"
+	    << total_dptime << ", ratio: "
+	    << (total_dptime / total_time) << "\n"
 	    << "                     segment sep: "
-	    << total_segtime << "s\n"
+	    << total_segtime << ", ratio: "
+	    << (total_segtime / total_time) << "\n"
 	    << "                     blossom sep: "
-	    << total_2mtime << "s\n"
+	    << total_2mtime << ", ratio: "
+	    << (total_2mtime / total_time) << "\n"		 
 	    << "                    safe GMI sep: "
-	    << total_gentime << "s\n" << std::setprecision(6);
+	    << total_gentime << ", ratio: "
+	    << (total_gentime / total_time) << "\n"
+	    << std::setprecision(6);
 }
 
 int CutControl::q_has_viol(bool &result,
