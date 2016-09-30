@@ -8,8 +8,11 @@ for i in 1 2 3 4 5; do
 	grep 'blossom sep' >> "$rawtimes"
 done
 
-cat "$rawtimes" | tr -d -c '[.0-9\n]' > "$rawtimes"tmp.txt
-mv "$rawtimes"tmp.txt "$rawtimes"
+sed -i.back 's/.*ratio: //g' "$rawtimes"
+rm *.back
+
+#cat "$rawtimes" | tr -d -c '[.0-9\n]' > "$rawtimes"tmp.txt
+#mv "$rawtimes"tmp.txt "$rawtimes"
 
 sumvar=$(paste -s -d + "$rawtimes")
 avg=$(echo "($sumvar)/5" | bc -l)
