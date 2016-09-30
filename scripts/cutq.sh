@@ -8,7 +8,7 @@ for i in 1 2 3 4 5; do
 	grep 'blossom sep' >> "$rawtimes"
 done
 
-sed -i.back 's/.*ratio: //g' "$rawtimes"
+sed -i.back 's/.*ratio. //g' "$rawtimes"
 rm *.back
 
 #cat "$rawtimes" | tr -d -c '[.0-9\n]' > "$rawtimes"tmp.txt
