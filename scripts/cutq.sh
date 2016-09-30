@@ -13,7 +13,7 @@ mv "$rawtimes"tmp.txt "$rawtimes"
 
 sumvar=$(paste -s -d + "$rawtimes")
 avg=$(echo "($sumvar)/5" | bc -l)
-printf "%s size %d average %.6f\n" "$probname" "$qsize" "$avg" \
+printf "%s %.3d avg %.6f\n" "$probname" "$qsize" "$avg" \
        >> "$probname"_q_reports.txt
 
 rm "$rawtimes"
