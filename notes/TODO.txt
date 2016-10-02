@@ -1,3 +1,8 @@
+There may be no need to specialize the CutQueue template class. Once an 
+ExternalCut rep class is created, we will simply move HyperGraphs to the
+cut bank of that class. Thus the deletion of set references should not 
+take place until then. 
+
 Putting the decrementer in the call to HyperGraph deletor seems to cause
 problems. There should be an external_rep class with a delete_cut member
 function that calls erase on the vector of cuts and calls delete_refs on
