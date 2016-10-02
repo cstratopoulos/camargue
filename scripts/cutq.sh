@@ -9,7 +9,7 @@ for i in 1 2 3; do
 done
 
 sed -i.back 's/.*ratio. //g' "$rawtimes"
-rm *.back
+#rm *.back
 
 sumvar=$(paste -s -d + "$rawtimes")
 avg=$(echo "($sumvar)/3" | bc -l)
