@@ -1,5 +1,9 @@
-for args; do
+for prob; do
     for qcap in 1 15 50 100; do
-	./cutq.sh "$qcap" "$args"
+	./cutq.sh "$qcap" "$prob"
     done
+
+    sort -nk3 "$prob"_ratios.txt -o "$prob"_ratios.txt
+    sort -nk3 "$prob"_times.txt -o "$prob"_times.txt
+    rm "$prob"_q*.txt
 done

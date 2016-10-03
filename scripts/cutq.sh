@@ -1,19 +1,30 @@
 qsize=$1 #first argument is queue size to test
 probname=$2 #second argument is problem name with no .tsp suffix
-rawtimes="$probname"_q"$qsize".txt
+rawdata="$probname"_q"$qsize".txt
+rawratios="$probname"_q"$qsize"_ratios.txt
+rawtimes="$probname"_q"$qsize"_times.txt
+>"$rawdata"
+>"$rawratios"
 >"$rawtimes"
 
-for i in 1 2 3; do
+for i in 1 2 3 4; do
     ../PSEP -S -c 1 -q "$qsize" ../problems/"$probname".tsp |
-	grep 'blossom sep' >> "$rawtimes"
+	grep 'blossom sep' >> "$rawdata"
 done
 
-sed -i.back 's/.*ratio. //g' "$rawtimes"
-#rm *.back
+sed 's/.*ratio. //g' "$rawdata" >> "$rawratios"
+sed 's/.*sep. //g' "$rawdata" | sed 's/,.*//g' >> "$rawtimes"
 
-sumvar=$(paste -s -d + "$rawtimes")
-avg=$(echo "($sumvar)/3" | bc -l)
-printf "%s %.3d avg %.6f\n" "$probname" "$qsize" "$avg" \
-       >> "$probname"_q_reports.txt
+sumtimes=$(paste -s -d + "$rawtimes")
+sumratios=$(paste -s -d + "$rawratios")
 
-rm "$rawtimes"
+avgtime=$(echo "($sumtimes)/4" | bc -l)
+avgratio=$(echo "($sumratios)/4" | bc -l)
+
+printf "%s %.3d %.6f\n" "$probname" "$qsize" "$avgtime" \
+       >> "$probname"_times.txt
+
+printf "%s %.3d %.6f\n" "$probname" "$qsize" "$avgratio" \
+       >> "$probname"_ratios.txt
+
+rm "$rawratios" "$rawtimes"
