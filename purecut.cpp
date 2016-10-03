@@ -104,7 +104,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 	cout << "    ended with inseparable integral subtour\n";
 	break;
       }
-      cout << "\n    Round " << rounds << ", calling safe GMI sep....\n";
+      cout << "\n    Round " << rounds << ", calling safe GMI sep....";
       rval = CutControl.safe_gomory_sep();
       if(rval == 1) goto CLEANUP;
       if(rval == 2) break;

@@ -22,28 +22,6 @@
 using namespace std;
 using namespace PSEP;
 
-struct cut_obj {
-  cut_obj(bool _exact, int _zeros, double _viol,
-	  CUTSsprow_t<double> *_row):
-    exact(_exact),
-    zeros(_zeros),
-    viol(_viol),
-    row(_row){}
-
-  bool exact;
-  int zeros;
-  double viol;
-
-  CUTSsprow_t<double> *row;
-};
-
-//idiom for lexicographic order:
-//exactness is most important, then sparsity, then viol
-static bool operator >(const cut_obj &a, const cut_obj &b) {
-  return std::tie(a.exact, a.zeros, a.viol) >
-    std::tie(b.exact, b.zeros, b.viol);
-}
-
 int Cut<safeGMI>::cutcall(){
   int rval = 0;
   
@@ -197,6 +175,7 @@ int Cut<safeGMI>::separate(){
 
 int Cut<safeGMI>::add_cut(){
   int rval = 0;
+  int num_added = 0;
   
   int numcols = PSEPlp_numcols(&m_lp), rmatbeg = 0;
   vector<double> best_edges;
@@ -235,28 +214,48 @@ int Cut<safeGMI>::add_cut(){
     cut_obj current_cut(exact, numcols - nz, lp_viol, cur_row);
     if(current_cut > best_cut){
       best_cut = current_cut;
+      local_q.push_front(current_cut);
     }
   }
   
 
-  if(!best_cut.row){
+  if(!best_cut.row || local_q.empty()){
     rval = 2;
     cout << "No feasible cuts found\n";
     goto CLEANUP;
   }
-  
-  cout << "    Found safe Gomory cut, exact: " << best_cut.exact << ", "
-       << "num nz: " << (numcols - best_cut.zeros) << ", "
-       << "viol: " << best_cut.viol << "...";
 
-  rval = PSEPlp_addrows(&m_lp, 1, numcols - best_cut.zeros,
-			&best_cut.row->rhs, &best_cut.row->sense,
-			&rmatbeg, best_cut.row->rowind,
-			best_cut.row->rowval);
-  if(rval) PSEP_GOTO_CLEANUP("Couldn't add cut, ");
-  cout << "Added.\n";
-	     
-  
+
+  best_cut = local_q.peek_front();
+  if(!best_cut.exact){
+    rval = PSEPlp_addrows(&m_lp, 1, numcols - best_cut.zeros,
+			  &best_cut.row->rhs, &best_cut.row->sense,
+			  &rmatbeg, best_cut.row->rowind,
+			  best_cut.row->rowval);
+    PSEP_CHECK_RVAL(rval, "Couldn't add cut, ");
+
+    num_added++;
+
+    //TODO: replace this with a propper .clear() method
+    while(!local_q.empty()) local_q.pop_front();
+  }
+
+  while(!local_q.empty()){
+    best_cut = local_q.peek_front();
+
+    if(best_cut.exact){
+      rval = PSEPlp_addrows(&m_lp, 1, numcols - best_cut.zeros,
+			    &best_cut.row->rhs, &best_cut.row->sense,
+			    &rmatbeg, best_cut.row->rowind,
+			    best_cut.row->rowval);
+      PSEP_CHECK_RVAL(rval, "Couldn't add cut, ");
+      num_added++;
+    }
+
+    local_q.pop_front();
+  }
+
+  cout << "Added round of " << num_added << " safe Gomory cuts\n";
 
  CLEANUP:
   if(rval == 1)
