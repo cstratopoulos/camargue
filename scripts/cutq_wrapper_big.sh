@@ -1,5 +1,5 @@
 for prob; do
-    for qcap in 15 50 100; do
+    for qcap in 50 100 150 250; do
 	./cutq.sh "$qcap" "$prob"
     done
 
