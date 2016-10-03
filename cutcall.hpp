@@ -39,7 +39,7 @@ public:
 	    SupportGroup.support_ecap),
     safe_gomory(BestGroup.best_tour_edges,
 		LPGroup.m_lp, LPGroup.m_lp_edges, LPGroup.frac_colstat,
-		LPGroup.frac_rowstat,
+		//LPGroup.frac_rowstat,
 		SupportGroup.support_indices),
     prefs(LPGroup.prefs), m_lp(LPGroup.m_lp), m_lp_edges(LPGroup.m_lp_edges),
     total_segtime(0), total_2mtime(0), total_dptime(0), total_gentime(0),
