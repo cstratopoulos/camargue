@@ -133,17 +133,8 @@ namespace PSEP {
      *    if no other cuts are found
      */
     struct Prefs {
-      Prefs() :
-	price_method(Pricing::Devex),
-	dp_threshold(-1),
-	max_per_round(2),
-	q_max_size(15) {}
-      
-      Prefs(Pricing _price, int _dp_threshold, int max_round, int q_max) :
-	price_method(_price),
-	dp_threshold(_dp_threshold),
-	max_per_round(max_round),
-	q_max_size(q_max){}
+      Prefs();
+      Prefs(Pricing _price, int _dp_threshold, int max_round, int q_max);
       
       Pricing price_method;
       

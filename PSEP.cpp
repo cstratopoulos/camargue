@@ -50,8 +50,8 @@ static int initial_parse(int ac, char **av, string &fname,
   bool rand = false;
   int pricing_choice = 0;
   int dp_factor = -1;
-  int cuts_per_round = 2;
-  int max_q_size = 15;
+  int cuts_per_round = 1;
+  int max_q_size = 50;
   int seed = 0;
   int ncount = 0;
   int gridsize = 100;
