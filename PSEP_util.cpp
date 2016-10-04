@@ -12,7 +12,7 @@ LP::Prefs::Prefs() :
   price_method(LP::Pricing::Devex),
   dp_threshold(-1),
   max_per_round(1),
-  q_max_size(50) {}
+  q_max_size(150) {}
 
 LP::Prefs::Prefs(LP::Pricing _price, int _dp_threshold, int max_round,
 		 int q_max) :
