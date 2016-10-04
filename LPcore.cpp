@@ -111,7 +111,7 @@ int Core::pivot_back(){
   if(rval) goto CLEANUP;
   
   if(!tour_feas){
-    cout << "Best tour is infeasible after pivot back!\n";
+    cerr << "Best tour is infeasible after pivot back!\n";
     rval = 1;
   }
 
