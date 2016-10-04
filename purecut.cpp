@@ -157,12 +157,13 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
   if(!plan.is_branch())
     CutControl.profile(routine_total);
 
-  cout << "             Total time pivoting: " << total_pivtime << ", ratio: "
+  cout << "             Total time (s) pivoting: " << total_pivtime
+       << ", ratio: "
        << (total_pivtime / routine_total) << "\n";
 
     
-  cout << "\n Total time for Purecut::solve: "
-       << (routine_total) << "s\n";
+  cout << "\n Total time (s) for Purecut::solve: "
+       << (routine_total) << "\n";
   if(plan.perform_elim())
     cout <<"         LPFix::redcost_fixing: "
 	 << fixtime << "s\n";
