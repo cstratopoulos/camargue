@@ -47,13 +47,12 @@ int Cut<safeGMI>::cutcall(){
 int Cut<safeGMI>::init_constraint_info(){
   int rval = 0;
 
-  // This should no longer be necessary with new cut add control flow
-  // rval = PSEPlp_copystart(&m_lp, &frac_colstat[0], &frac_rowstat[0],
-  // 			  &m_lp_edges[0], NULL, NULL, NULL);
-  // if(rval) PSEP_GOTO_CLEANUP("Failed to copy frac solution, ");
+  rval = PSEPlp_copystart(&m_lp, &frac_colstat[0], &frac_rowstat[0],
+   			  &m_lp_edges[0], NULL, NULL, NULL);
+  if(rval) PSEP_GOTO_CLEANUP("Failed to copy frac solution, ");
 
-  // rval = PSEPlp_no_opt(&m_lp);
-  // if(rval) PSEP_GOTO_CLEANUP("Failed to factor basis, ");
+  rval = PSEPlp_no_opt(&m_lp);
+  if(rval) PSEP_GOTO_CLEANUP("Failed to factor basis, ");
   
   try { safe_mir_data.reset(new SafeMIRGroup(m_lp)); }
   catch(const std::bad_alloc &e){

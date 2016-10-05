@@ -99,6 +99,9 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       goto CLEANUP;
     }
 
+    rval = LPCore.pivot_back();
+    if(rval) goto CLEANUP;
+
     if(cut_rval == 2){
       if(piv_stat == LP::PivType::Subtour){
 	cout << "    ended with inseparable integral subtour\n";
@@ -109,9 +112,6 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       if(rval == 1) goto CLEANUP;
       if(rval == 2) break;
     }
-
-    rval = LPCore.pivot_back();
-    if(rval) goto CLEANUP;
 
     rval = CutControl.add_primal_cuts();
     if(rval) goto CLEANUP;
