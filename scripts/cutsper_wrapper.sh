@@ -3,7 +3,7 @@ for prob; do
 	./cutsper.sh "$maxround" "$prob"
     done
 
-    for suff in _pivratios.txt _pivtimes.txt _soltimes.txt; do
+    for suff in _pivratios.txt _soltimes.txt _failratios.txt; do
 	sort -nk3 "$prob""$suff" -o "$prob""$suff"
     done
 done
