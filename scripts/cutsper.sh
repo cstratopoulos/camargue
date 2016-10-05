@@ -26,12 +26,12 @@ rawsol="$prefix"_sol.txt
 >"$rawpiv"
 >"$rawsol"
 
-for i in 1 2 3 4; do
-    ../PSEP -S -c "$rsize" ../problems/"$probname".tsp |
-	grep 'pivoting\|solve' >> "$rawdata"
+for i in 1 2 3 4 5; do
+    ../PSEP -S -c "$rsize" ../problems/"$probname".tsp 2>&1 |
+	grep 'pivoting\|solve\|failed' >> "$rawdata"
 done
 
-cat "$rawdata" | grep 'solve' >> "$rawsol"
+cat "$rawdata" | grep 'Total.*solve' >> "$rawsol"
 cat "$rawdata" | grep 'pivot' >> "$rawpiv"
 
 pivtimes="$prefix"_piv_times.txt
@@ -55,12 +55,14 @@ rm "$rawsol" "$rawpiv"
 sumpivtimes=$(paste -s -d + "$pivtimes")
 sumpivratios=$(paste -s -d + "$pivratios")
 sumsoltimes=$(paste -s -d + "$soltimes")
+failcount=$(cat "$rawdata" | grep 'failed' | wc -l)
 
 rm "$pivtimes" "$pivratios" "$soltimes" "$rawdata"
 
-avgpivtime=$(echo "($sumpivtimes)/4" | bc -l)
-avgpivratio=$(echo "($sumpivratios)/4" | bc -l)
-avgsoltime=$(echo "($sumsoltimes)/4" | bc -l)
+avgpivtime=$(echo "($sumpivtimes)/5" | bc -l)
+avgpivratio=$(echo "($sumpivratios)/5" | bc -l)
+avgsoltime=$(echo "($sumsoltimes)/5" | bc -l)
+failratio=$(echo "($failcount)/5" | bc -l)
 
 printf "%s %.2d %.6f\n" "$probname" "$rsize" "$avgpivtime" \
        >> "$probname"_pivtimes.txt
@@ -70,3 +72,6 @@ printf "%s %.2d %.6f\n" "$probname" "$rsize" "$avgpivratio" \
 
 printf "%s %.2d %.6f\n" "$probname" "$rsize" "$avgsoltime" \
        >> "$probname"_soltimes.txt
+
+printf "%s %.2d %.1f\n" "$probname" "$rsize" "$failratio" \
+       >> "$probname"_failratios.txt
