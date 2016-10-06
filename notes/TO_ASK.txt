@@ -1,0 +1,20 @@
+Column Generation
+    Is it necessary to ever optimize the LP or do we just work with reduced
+    costs (and the dual solution) from the most recent non-degenerate pivot?
+
+Cut pruning
+    If we only prune cuts after every augmentation, a great number will
+    accumulate in the LP. In Concorde, cuts whose dual variable is less than
+    0.001 after 10 LP solves are deleted from the LP. What might be a primal
+    analogue of this? 
+    Considerations:
+	-LP Solves in Concorde happen only after every 250 cuts
+	-One LP solve may consist of hundreds single pivots
+
+Branching
+    What variable selection rule is used? Strong, most infeasible, etc.? 
+    Suppose we are in a DFS traversal of the tree, and we eventually perform
+    a right branch (adding many rows). Right branches at further depth are 
+    simply performed by changing the sign of these inequalities. But what if
+    the right branch is fathomed, and we have to perform another right branch
+    closer to the root?
