@@ -29,7 +29,7 @@ int Cut<seg>::separate(){
 
       double viol = fabs(lhs - (current_size - 1));
       if(lhs > current_size - 1 && viol >= 0.002){
-	if(viol > best_viol){
+	if(viol >= best_viol){
 	  best_viol = viol;
 	  seg newbest(i, j, viol);
 	  try { local_q.push_front(newbest); } catch(...) {

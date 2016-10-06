@@ -139,13 +139,12 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
 
 int Cut<blossom>::add_cuts(){
   int rval = 0;
-
+  
   while(!local_q.empty()){
     rval = build_hypergraph(local_q.peek_front());
     if(rval) goto CLEANUP;
     local_q.pop_front();
   }
-
 
  CLEANUP:
   if(rval)
