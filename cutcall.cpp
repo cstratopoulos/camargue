@@ -31,6 +31,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
 
   if(pool_blossoms){
     blossom_q.q_fresh = false;
+    matchval = 0;
   }
   else {
     matchval = blossoms.cutcall();
@@ -110,7 +111,7 @@ int CutControl::add_primal_cuts()
 
       blossom_added++;
       blossom_q.pop_front();
-    } 
+    }
   } else {
     while(!blossom_q.empty() && blossom_added < prefs.max_per_round){
       bool is_violated = false;
@@ -127,7 +128,7 @@ int CutControl::add_primal_cuts()
 	blossom_added++;
       }
       blossom_q.pop_front();
-    } 
+    }
   }
 
 
