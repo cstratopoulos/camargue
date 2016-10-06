@@ -7,3 +7,54 @@ Makefile issues:
 the three major external libraries included in this project are boost, concorde,
 and CPLEX. In any include statements, concorde MUST be incuded last of these
 three or it will cause compiler warnings on the Linux environment
+research/PSEP$ ./PSEP -S problems/lin318.tsp 
+Devex pricing
+Problem Name: lin318
+Problem Type: TSP
+318-city problem (Lin/Kernighan)
+Number of Nodes: 318
+Rounded Euclidean Norm (CC_EUCLIDEAN)
+    GENERATING SPARSE GRAPH ONLY, 10 LK trials, quad 5-nearest, seed 1475537089
+    485 edges in sparse graph, ratio to nodes: 1.5
+LK seed: 1475537089, 4 trials
+LK initial run: 42163
+LK run 0: 42120
+LK run 1: 42208
+LK run 2: 42316
+LK run 3: 42143
+LK run from best tour: 42120
+Added 1 additional edges. Adding extra edge just for basis.
+Adding at most 1 cuts per round, keeping at most 150 candidate blossoms
+Pivoting until optimality or no more cuts
+
+    Round 35, calling safe GMI sep....Added round of 1 safe Gomory cuts
+
+ PIVOTING ROUND: 50 [ 95 cuts in the LP ]
+   Pivot status: Fractional
+   Pivot objval: 42034.7
+   Avg piv time: 0.0023s, (longest 0.0036s)
+
+    Round 56, calling safe GMI sep....Added round of 1 safe Gomory cuts
+
+    Round 59, calling safe GMI sep....Added round of 1 safe Gomory cuts
+Supposed improvement?? objval: 42091
+
+
+    !!!AUGMENTED TOUR!!!!
+Pivot status: New tour
+                Pivot objval: 42091
+               Pruned 30 non-tight cuts from the LP
+Supposed improvement?? objval: 42083
+
+
+    !!!AUGMENTED TOUR!!!!
+Pivot status: New tour
+                Pivot objval: 42082.9
+               Pruned 5 non-tight cuts from the LP
+
+    Round 64, calling safe GMI sep....Added round of 1 safe Gomory cuts
+Row 399 infeasible, feas_stat: -4.4409e-16
+Best tour is infeasible after pivot back!
+Error entry point: pivot_back()
+Error entry point: PureCut::solve()
+TSPSolver.call(PURECUT) failed
