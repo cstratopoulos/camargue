@@ -61,10 +61,10 @@ int Cut<blossom>::separate(){
       }
 
       blossom new_cut(handle, cut_edge_index, cutval);
-      try {
+      try { //if it is a better cut it goes to the front for immediate adding
 	if(cutval <= min_cutval)
 	  local_q.push_front(new_cut);
-	else
+	else //it goes to the back for use in the pool if applicable
 	  local_q.push_back(new_cut);
       } catch (...) {
 	rval = 1; PSEP_GOTO_CLEANUP("Problem pushing new cut to queue, ");
