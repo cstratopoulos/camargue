@@ -132,6 +132,12 @@ public:
     cut_q.push_front(H);
     if(cut_q.size() > q_capacity) cut_q.pop_back();
   }
+
+  void push_back(const cut_rep &H)
+  {
+    if(cut_q.size() >= q_capacity) cut_q.pop_back();
+    cut_q.push_back(H);
+  }
   
   void pop_front() { cut_q.pop_front(); }  
   bool empty() const { return cut_q.empty(); }
@@ -186,6 +192,9 @@ private:
 
 template<>
 void CutQueue<HyperGraph>::push_front(const HyperGraph &H);
+
+template<>
+void CutQueue<HyperGraph>::push_back(const HyperGraph &H);
 
 template<>
 void CutQueue<HyperGraph>::pop_front();
