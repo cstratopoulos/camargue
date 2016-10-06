@@ -52,18 +52,23 @@ int Cut<blossom>::separate(){
     }
 
     if(cutval < 1 - LP::EPSILON){
-      if(cutval <= min_cutval){
+      if(cutval <= min_cutval)
 	min_cutval = cutval;
-	vector<int> handle;
-	for(int j = 0; j < cutcount; j++){
-	  handle.push_back(cut_nodes[j]);
-	}
-
-	blossom new_cut(handle, cut_edge_index, cutval);
-	try { local_q.push_front(new_cut); } catch (...) {
-	  rval = 1; PSEP_GOTO_CLEANUP("Problem pushing new cut to queue, ");
-	}
+      
+      vector<int> handle;
+      for(int j = 0; j < cutcount; j++){
+	handle.push_back(cut_nodes[j]);
       }
+
+      blossom new_cut(handle, cut_edge_index, cutval);
+      try {
+	if(cutval <= min_cutval)
+	  local_q.push_front(new_cut);
+	else
+	  local_q.push_back(new_cut);
+      } catch (...) {
+	rval = 1; PSEP_GOTO_CLEANUP("Problem pushing new cut to queue, ");
+      }      
     }
 
     cut_ecap[i] = orig_weight;
@@ -124,7 +129,7 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
 
   try {
   HyperGraph newcut(node_sets, HyperGraph::CutType::Blossom);
-  external_q.push_front(newcut);
+  external_q.push_back(newcut);
   } catch (...) {
     rval = 1; PSEP_GOTO_CLEANUP("Couldn't push to external queue, ");
   }
@@ -143,6 +148,7 @@ int Cut<blossom>::add_cuts(){
   while(!local_q.empty()){
     rval = build_hypergraph(local_q.peek_front());
     if(rval) goto CLEANUP;
+    
     local_q.pop_front();
   }
 
