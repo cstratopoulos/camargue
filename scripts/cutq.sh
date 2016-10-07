@@ -8,7 +8,7 @@ rawtimes="$probname"_q"$qsize"_times.txt
 >"$rawtimes"
 
 for i in 1 2 3 4; do
-    ../PSEP -S -c 1 -q "$qsize" ../problems/"$probname".tsp |
+    ../PSEP -S -c 4 -q "$qsize" ../problems/"$probname".tsp |
 	grep 'blossom sep' >> "$rawdata"
 done
 
