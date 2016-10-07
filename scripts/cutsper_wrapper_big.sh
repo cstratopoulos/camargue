@@ -1,5 +1,5 @@
 for prob; do
-    for maxround in 15 25 50 100; do
+    for maxround in 12 16 25 50; do
 	./cutsper.sh "$maxround" "$prob"
     done
 
