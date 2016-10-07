@@ -1,4 +1,0 @@
-                     blossom sep: 6.39, ratio: 0.7094
-                     blossom sep: 7.372, ratio: 0.6146
-                     blossom sep: 6.644, ratio: 0.6423
-                     blossom sep: 5.774, ratio: 0.6559
