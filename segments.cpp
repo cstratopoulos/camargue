@@ -55,7 +55,7 @@ int Cut<seg>::build_hypergraph(const seg& seg_cut){
   if(HyperGraph::same_tour(best_tour_nodes)){
     try {
     HyperGraph newcut(IntPair(seg_cut.start, seg_cut.end));
-    external_q.push_front(newcut);
+    external_q.push_back(newcut);
     } catch (...) {
       rval = 1; PSEP_GOTO_CLEANUP("Problem adding hypergraph to queue, ");
     }
@@ -67,7 +67,7 @@ int Cut<seg>::build_hypergraph(const seg& seg_cut){
 	segment_nodes[0].push_back(best_tour_nodes[i]);
 
       HyperGraph newcut(segment_nodes, HyperGraph::CutType::Segment);
-      external_q.push_front(newcut);
+      external_q.push_back(newcut);
     } catch (...){
       rval = 1; PSEP_GOTO_CLEANUP("Problem adding hypergraph to queue, ");
     }

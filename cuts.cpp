@@ -17,6 +17,16 @@ void CutQueue<HyperGraph>::push_front(const HyperGraph &H)
 }
 
 template<>
+void CutQueue<HyperGraph>::push_back(const HyperGraph &H)
+{
+  if(cut_q.size() >= q_capacity){
+    cut_q.back().delete_refs();
+    cut_q.pop_back();
+  }
+  cut_q.push_back(H);
+}
+
+template<>
 void CutQueue<HyperGraph>::pop_front()
 {
   cut_q.front().delete_refs();
