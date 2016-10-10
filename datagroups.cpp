@@ -136,7 +136,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   int *tlist = (int *) NULL;
   int *cyc = (int *) NULL;
   double bestval, val;
-  int trials = 1;
+  int trials = (user_seed == 0) ? 1 : 0;
   int silent = 1;
   int kicks = 500;
   int istour;
