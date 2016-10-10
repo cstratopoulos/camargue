@@ -101,6 +101,7 @@ namespace PSEP {
 
       double &m_min_tour_value;
 
+      int icount;
       std::vector<int> &island;
       std::vector<int> &delta;
       std::vector<int> &edge_marks;

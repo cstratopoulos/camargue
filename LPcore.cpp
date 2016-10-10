@@ -403,7 +403,7 @@ int Core::update_best_tour(){
 
 int Core::pivot_until_change(PivType &pivot_status){
   int rval = 0;
-  int icount = 0;
+  icount = 0;
   int rowcount = PSEPlp_numrows(&m_lp);
   bool integral = false, conn = false, dual_feas = false;
 
@@ -437,6 +437,7 @@ int Core::pivot_until_change(PivType &pivot_status){
   integral = is_integral();
     if(integral){
     conn = GraphUtils::connected(&G_s, &icount, island, 0);
+    cout << "Integral subtour had icount: " << icount << "\n";
     if(integral && conn){
       if(dual_feas)
 	pivot_status = PivType::FathomedTour;
