@@ -1,21 +1,23 @@
 PID=$$
-probname=$1
-rawdata="$probname"_"$PID"_raw
->"$rawdata".txt
+quad=$1
+probname=$2
+prefix="$probname"_quad"$quad"_"$PID"
+rawdata="$prefix"_raw.txt
+>"$rawdata"
 
 
-../PSEP -Sc2 -u10  ../problems/"$1".tsp >> "$rawdata".txt 2>&1
+../PSEP -Sc2 -u"$quad"  ../problems/"$probname".tsp >> "$rawdata" 2>&1
 
-opt=$(grep -i 'fathomed optimal' "$rawdata".txt | wc -l)
+opt=$(grep -i 'fathomed optimal' "$rawdata" | wc -l)
 
 if [ "$opt" -ge 1 ]
 then
-    mv "$rawdata".txt "$probname"_"$PID"_success.txt
+    mv "$rawdata" "$prefix"_success.txt
     echo "Successful run!"
     echo -n $'\a'
     echo -n $'\a'
     echo -n $'\a'
 else
-    rm "$rawdata".txt
+    rm "$rawdata"
 fi
     
