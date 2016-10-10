@@ -73,6 +73,7 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     
     CCutil_sprand(edgegen_seed, &rstate);
     CCedgegen_init_edgegengroup(&plan);
+    plan.quadnearest = 2;
     plan.linkern.count = 10;
     plan.linkern.quadnearest = 5;
     plan.linkern.greedy_start = 0;
@@ -137,7 +138,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   double bestval, val;
   int trials = 1;
   int silent = 1;
-  int kicks = 5 * ncount;
+  int kicks = 500;
   int istour;
   int seed = (user_seed == 0) ? ((int) real_zeit()) : user_seed;
   bool sparse = (m_graph.edge_count < (ncount * (ncount - 1)) / 2);
