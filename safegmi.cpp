@@ -8,7 +8,8 @@
 
 #define DO_SAFE_MIR_DBL 1
 #define SAFE_MIR_DEBUG_LEVEL DBG_LEVEL_HIGH
-#define CUTSslackSign( row ) ( row->sense == 'L' ? 1 : (row->sense == 'E' ? 0 : -1 ) )
+#define CUTSslackSign( row ) ( row->sense == 'L' ? 1 :\
+			       (row->sense == 'E' ? 0 : -1 ) )
 #include<safemir/src/gen_slvr.hpp>
 #include<safemir/src/util_cuts.hpp>
 #include<safemir/src/gen_mir.cpp>
