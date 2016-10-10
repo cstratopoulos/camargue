@@ -113,7 +113,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       if(rval == 2) break;
     }
 
-    rval = CutControl.add_primal_cuts();
+    rval = CutControl.add_primal_cuts(); //TODO: this should add the gomory cuts
     if(rval) goto CLEANUP;
 
     if(rounds % 50 == 0 && !plan.is_branch()){
