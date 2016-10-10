@@ -41,7 +41,7 @@ namespace Data {
     /* constructor parameters are exactly as in tsp_solver.h */
     GraphGroup(const std::string &fname, PSEP::RandProb &randprob,
 	       std::unique_ptr<CCdatagroup> &dat,
-	       const bool sparse);
+	       const bool sparse, const int quadnearest);
 
     explicit operator bool() const { return m_graph; }
 

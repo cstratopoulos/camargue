@@ -9,8 +9,8 @@ using namespace PSEP;
 
 TSPSolver::TSPSolver(const string &fname, RandProb &randprob, LP::Prefs _prefs,
 		     unique_ptr<CCdatagroup> &dat,
-		     const bool sparse) :
-  GraphGroup(fname, randprob, dat, sparse),
+		     const bool sparse, const int quadnearest) :
+  GraphGroup(fname, randprob, dat, sparse, quadnearest),
   BestGroup(GraphGroup.m_graph, GraphGroup.delta, dat, randprob.seed),
   LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm){
 

@@ -18,7 +18,7 @@ using namespace std;
 
 static int initial_parse(int ac, char **av, string &fname,
 			 PSEP::RandProb &randprob, PSEP::LP::Prefs &prefs,
-			 bool &sparseflag);
+			 bool &sparseflag, int &qnearest);
 
 static void usage(const string &fname);
 
@@ -28,14 +28,16 @@ int main(int argc, char* argv[]){
   unique_ptr<CCdatagroup> dat(new CCdatagroup);
   string probfile;
   bool do_sparse = false;
+  int qnearest = 0;
+  //TODO: probably put this somewhere else
 
-  if(initial_parse(argc, argv, probfile, randprob, prefs, do_sparse)){
+  if(initial_parse(argc, argv, probfile, randprob, prefs, do_sparse, qnearest)){
     cerr << "Problem parsing arguments" << endl;
     exit(1);
   }
 
   double overall = PSEP::zeit();
-  PSEP::TSPSolver solver(probfile, randprob, prefs, dat, do_sparse);
+  PSEP::TSPSolver solver(probfile, randprob, prefs, dat, do_sparse, qnearest);
   dat.reset();
   
   if(solver.call(PSEP::SolutionProtocol::PURECUT, do_sparse))
@@ -46,7 +48,8 @@ int main(int argc, char* argv[]){
 
 static int initial_parse(int ac, char **av, string &fname,
 			 PSEP::RandProb &randprob,
-			 PSEP::LP::Prefs &prefs, bool &sparseflag){
+			 PSEP::LP::Prefs &prefs, bool &sparseflag,
+			 int &qnearest){
   bool rand = false;
   int pricing_choice = 0;
   int dp_factor = -1;
@@ -55,6 +58,7 @@ static int initial_parse(int ac, char **av, string &fname,
   int seed = 0;
   int ncount = 0;
   int gridsize = 100;
+  qnearest = 0;
 
   int c;
 
@@ -63,7 +67,7 @@ static int initial_parse(int ac, char **av, string &fname,
     return 1;
   }
 
-  while((c = getopt(ac, av, "aD:c:q:p:RSg:n:s:")) != EOF) {
+  while((c = getopt(ac, av, "aD:c:q:p:RSg:n:s:u:")) != EOF) {
     switch(c) {
     case 'D':
       dp_factor = atoi(optarg);
@@ -91,6 +95,9 @@ static int initial_parse(int ac, char **av, string &fname,
       break;
     case 's':
       seed = atoi(optarg);
+      break;
+    case 'u':
+      qnearest = atoi(optarg);
       break;
     case '?':
     default:
@@ -152,9 +159,15 @@ static int initial_parse(int ac, char **av, string &fname,
   prefs.max_per_round = cuts_per_round;
   prefs.q_max_size = max_q_size;
 
+  if(qnearest < 0 || qnearest > 10){
+    cerr << "Invalid choice of quad-nearest density\n";
+    usage(av[0]);
+    return 1;
+  }
+
   return 0;
 }
-//TODO update gomory sep to conform to cuts per round
+
 static void usage(const string &fname){
   fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", fname.data());
   fprintf(stderr, "-------FLAG OPTIONS ------------------------------------\n");
@@ -180,4 +193,6 @@ static void usage(const string &fname){
   fprintf(stderr, "      If set, initial tour will be constructed from only\n");
   fprintf(stderr, "      one run of Lin-Kernighan (rather than independent \n");
   fprintf(stderr, "      trials), to allow reproducibility.\n");
+  fprintf(stderr, "-u    initial edge set will be union of 10 LK tours plus\n");
+  fprintf(stderr, "      quad x-nearest edges (0 default).\n");
 }

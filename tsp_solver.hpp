@@ -39,7 +39,7 @@ public:
   TSPSolver(const std::string &fname, PSEP::RandProb &randprob,
 	    PSEP::LP::Prefs _prefs,
 	    std::unique_ptr<CCdatagroup> &dat,
-	    const bool sparse);
+	    const bool sparse, const int quadnearest);
 
   /*
    * The function to invoke the TSP solver with solution protocol specified

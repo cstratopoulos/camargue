@@ -77,10 +77,10 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       if(plan.is_branch())
 	break;
 
-      cout << "\n\n    !!!AUGMENTED TOUR!!!!" << endl;
+      cout << "\n\n    !!!AUGMENTED TOUR!!!!\n    ";
       print.pivot(piv_stat);
-      cout << "                Pivot objval: "
-	   << LPCore.get_obj_val() << "\n";
+      cout << "                Pivot objval: ";
+      printf("%.6f\n", LPCore.get_obj_val());
       
       rval = LPCore.update_best_tour();
       if(rval) goto CLEANUP;

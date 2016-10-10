@@ -21,7 +21,7 @@ using namespace PSEP::Data;
 
 GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
 		       unique_ptr<CCdatagroup> &dat,
-		       const bool sparse){
+		       const bool sparse, const int quadnearest){
   int rval = 0;
   CCdatagroup *rawdat = dat.get();
   char *filestring = const_cast<char *>(fname.data());
@@ -77,9 +77,10 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     plan.linkern.quadnearest = 5;
     plan.linkern.greedy_start = 0;
     plan.linkern.nkicks = (m_graph.node_count / 100) + 1;
+    plan.quadnearest = quadnearest;
 
     cout << plan.linkern.count << " LK trials, quad "
-	 << plan.linkern.quadnearest << "-nearest, seed " << edgegen_seed
+	 << plan.quadnearest << "-nearest, seed " << edgegen_seed
 	 << "\n";
 
     rval = CCedgegen_edges(&plan, m_graph.node_count, rawdat, NULL,
@@ -134,7 +135,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   int *tlist = (int *) NULL;
   int *cyc = (int *) NULL;
   double bestval, val;
-  int trials = (user_seed == 0) ? 4 : 0;
+  int trials = 4;// (user_seed == 0) ? 4 : 0;
   int silent = 1;
   int kicks = 5 * ncount;
   int istour;
@@ -147,7 +148,6 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
 
   //code copies from static int find_tour from concorde
   CCutil_sprand(seed, &rand_state);
-  CCrandstate *rstate = &rand_state;
 
   cyc = CC_SAFE_MALLOC(ncount, int); 
   if(!cyc){
@@ -167,13 +167,13 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
     CCedgegen_init_edgegengroup (&plan);
     plan.quadnearest = 2;
     rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &ecount,
-			    &elist, silent, rstate);
+			    &elist, silent, &rand_state);
     if(rval) PSEP_GOTO_CLEANUP("CCedgegen_edges failed, ");
     plan.quadnearest = 0;
 
     plan.tour.greedy = 1;
     rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &tcount,
-			    &tlist, silent, rstate);
+			    &tlist, silent, &rand_state);
     if(rval) PSEP_GOTO_CLEANUP("CCedgegen_edges failed, ");
 
     if (tcount != ncount) {
@@ -205,7 +205,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
 			 sparse ? (int *) NULL : cyc, //
 			 &best_tour_nodes[0], &bestval, silent, 0.0, 0.0,
 			 (char *) NULL,
-			 CC_LK_GEOMETRIC_KICK, rstate);
+			 CC_LK_GEOMETRIC_KICK, &rand_state);
   if(rval) PSEP_GOTO_CLEANUP("CClinkern_tour failed, ");
   
   //end of copied code (from find_tour)
@@ -215,7 +215,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   for(int i = 0; i < trials; i++){
     rval = CClinkern_tour(ncount, rawdat, ecount, elist, ncount, kicks,
 			  (int *) NULL, cyc, &val, 1, 0.0, 0.0,
-			  (char *) NULL, CC_LK_GEOMETRIC_KICK, rstate);
+			  (char *) NULL, CC_LK_GEOMETRIC_KICK, &rand_state);
   if(rval) PSEP_GOTO_CLEANUP("CClinkern_tour failed, ");
   
     cout << "LK run " << i << ": " << val << "\n";
@@ -230,7 +230,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
     rval = CClinkern_tour(ncount, rawdat, ecount, elist, ncount, 2 * kicks,
 			  &best_tour_nodes[0], cyc, &bestval, 1, 0.0, 0.0,
 			  (char *) NULL,
-			  CC_LK_GEOMETRIC_KICK, rstate);
+			  CC_LK_GEOMETRIC_KICK, &rand_state);
     if(rval) PSEP_GOTO_CLEANUP("CClinkern_tour failed, ");
 
     cout << "LK run from best tour: " << bestval << "\n";
