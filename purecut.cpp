@@ -99,18 +99,31 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       goto CLEANUP;
     }
 
-    rval = LPCore.pivot_back();
-    if(rval) goto CLEANUP;
-
+    //pivot_back used to be here
+    
     if(cut_rval == 2){
       if(piv_stat == LP::PivType::Subtour){
-	cout << "    ended with inseparable integral subtour\n";
-	break;
+	cout << "    TESTING!!!! inseparable integral subtour\n";
+
+	rval = LPCore.add_connect_cut();
+	if(rval) goto CLEANUP;
       }
+
+      rval = LPCore.pivot_back();
+      if(rval) goto CLEANUP;
+      
       cout << "\n    Round " << rounds << ", calling safe GMI sep....";
       rval = CutControl.safe_gomory_sep();
       if(rval == 1) goto CLEANUP;
       if(rval == 2) break;
+
+      if(piv_stat == LP::PivType::Subtour){
+	rval = LPCore.del_connect_cut();
+	if(rval) goto CLEANUP;
+      }
+    } else { //TODO: this is a bit ungraceful
+      rval = LPCore.pivot_back();
+      if(rval) goto CLEANUP;
     }
 
     rval = CutControl.add_primal_cuts(); //TODO: this should add the gomory cuts
