@@ -10,7 +10,8 @@ probname=$1
 rawdata="$probname"_"$PID"
 >"$rawdata".txt
 
-../PSEP -Sc2 -u5 ../problems/"$probname".tsp 2>&1 >> "$rawdata".txt
+sleep 2s
+../PSEP -Sc2 -u10 ../problems/"$probname".tsp >> "$rawdata".txt 2>&1
 
 insep=$(grep -il 'inseparable' "$rawdata".txt | wc -l)
 aug=$(grep -i 'augmented' "$rawdata".txt | wc -l)
