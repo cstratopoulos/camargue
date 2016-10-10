@@ -78,7 +78,10 @@ int PSEPlp_addrows (PSEPlp *lp, int newrows, int newnz, double *rhs,
   rval = CPXaddrows (lp->cplex_env, lp->cplex_lp, 0, newrows, newnz,
 		     rhs, sense, rmatbeg, rmatind, rmatval,
 		     (char **) NULL, (char **) NULL);
-  if (rval) {fprintf(stderr, "CPXaddrows failed\n"); goto CLEANUP;}
+  if (rval) {
+    fprintf(stderr, "CPXaddrows failed, rval%d\n", rval);
+    goto CLEANUP;
+  }
 
  CLEANUP:
   return rval;
@@ -100,7 +103,7 @@ int PSEPlp_getrows(PSEPlp *lp, int *nzcnt_p, int *rmatbeg, int *rmatind,
 
 int PSEPlp_delrows(PSEPlp *lp, int begin, int end){
   int rval = CPXdelrows(lp->cplex_env, lp->cplex_lp, begin, end);
-  if(rval) {fprintf(stderr, "CPXdelrows failed\n");}
+  if(rval) {fprintf(stderr, "CPXdelrows failed, rval %d\n", rval);}
   return rval;
 }
 
@@ -356,7 +359,7 @@ int PSEPlp_dual_pivot (PSEPlp *lp, int *infeasible){
   
   rval = CPXdualopt (lp->cplex_env, lp->cplex_lp);
   if (rval){
-    fprintf (stderr, "CPXprimopt failed\n");
+    fprintf (stderr, "CPXprimopt failed, rval %d\n", rval);
     goto CLEANUP;
   }
 
