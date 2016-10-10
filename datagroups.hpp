@@ -33,6 +33,7 @@ namespace Data {
      * All DataGroups must provide an operator bool overload which will
      * return false if the constructor failed
      */
+    //TODO: replace this with try catch in constructors
     virtual explicit operator bool() const = 0;
   };
   
