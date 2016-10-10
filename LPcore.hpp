@@ -49,6 +49,9 @@ namespace PSEP {
       int pivot_back();
       int primal_opt();
 
+      int add_connect_cut();
+      int del_connect_cut();
+
       int rebuild_basis(bool prune);
       int rebuild_basis(int &numremoved, IntPair skiprange,
 			std::vector<int> &delset);
@@ -70,6 +73,8 @@ namespace PSEP {
       void change_pricing();
 
     private:
+      int dual_pivot();
+      
       PSEP::LP::CutPrune &LPPrune;
       PSEPlp &m_lp;
       Graph &m_graph;
@@ -102,6 +107,7 @@ namespace PSEP {
       double &m_min_tour_value;
 
       int icount;
+      int connect_cut_delrow;
       std::vector<int> &island;
       std::vector<int> &delta;
       std::vector<int> &edge_marks;

@@ -121,6 +121,87 @@ int Core::pivot_back(){
   return rval;
 }
 
+int Core::dual_pivot()
+{
+  int infeasible = 0;
+  int rval = PSEPlp_dual_pivot(&m_lp, &infeasible);
+
+  if(rval || infeasible){
+    cerr << "Problem in LP::Core::dual_pivot(), infeasible "
+	 << infeasible << "\n";
+    goto CLEANUP;
+  }
+
+  try {
+  frac_colstat.resize(numcols());
+  frac_rowstat.resize(numrows());
+  } catch(...) { rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize row/colstat, "); }
+
+  rval = PSEPlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
+  PSEP_CHECK_RVAL(rval, "Couldn't get frac basis, ");
+  
+
+ CLEANUP:
+  return rval;
+}
+
+int Core::add_connect_cut()
+{
+  int rval = 0, deltacount = 0;
+  int rmatbeg = 0, newrows = 1;
+  char sense = 'G';
+  double rhs = 2.0;
+  vector<int> island_vec(island.begin(), island.begin() + icount);
+  vector<double> rmatval;
+
+  connect_cut_delrow = numrows();
+
+  if(icount == m_graph.node_count){
+    rval = 1;
+    PSEP_GOTO_CLEANUP("Tried to add whole graph as connect cut, ");
+  }
+
+  GraphUtils::get_delta(island_vec, m_graph.edges, &deltacount, delta,
+			edge_marks);
+
+  try { rmatval.resize(deltacount, 1.0); } catch(...) {
+    rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize rmatval, ");
+  }
+
+  rval = PSEPlp_addrows(&m_lp, newrows, deltacount, &rhs, &sense, &rmatbeg,
+			&delta[0], &rmatval[0]);
+  PSEP_CHECK_RVAL(rval, "Couldn't add subtour row, ");
+
+  rval = dual_pivot();
+  if(rval) goto CLEANUP;
+  
+
+ CLEANUP:
+  if(rval){
+    cerr << "Problem in LP::Core::add_connect_cut\n";
+    connect_cut_delrow = -1;
+  }
+  return rval;
+}
+
+int Core::del_connect_cut()
+{
+  int rval = 0;
+  if(connect_cut_delrow < 0){
+    rval = 1;
+    PSEP_GOTO_CLEANUP("Tried to delete negative row, ");
+  }
+
+  rval = PSEPlp_delrows(&m_lp, connect_cut_delrow, connect_cut_delrow);
+  PSEP_CHECK_RVAL(rval, "Couldn't delete subtour row, ");
+
+ CLEANUP:
+  if(rval)
+    cerr << "LP::Core::del_connect_cut failed\n";
+  connect_cut_delrow = -1;
+  return rval;
+}
+
 double Core::get_obj_val(){
   double objval;
   PSEPlp_objval(&m_lp, &objval);
