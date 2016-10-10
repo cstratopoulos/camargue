@@ -135,13 +135,25 @@ int Core::dual_pivot()
   try {
   frac_colstat.resize(numcols());
   frac_rowstat.resize(numrows());
-  } catch(...) { rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize row/colstat, "); }
+  } catch(...) {
+    rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize row/colstat, ");
+  }
 
   rval = PSEPlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
   PSEP_CHECK_RVAL(rval, "Couldn't get frac basis, ");
-  
+
+  rval = set_edges();
+  if(rval) goto CLEANUP;
+
+  if(is_integral()){
+    rval = 1; PSEP_GOTO_CLEANUP("LP solution still integral! ");
+  } else {
+    cout << "    Dual pivoted to fractional solution.\n";
+  }
 
  CLEANUP:
+  if(rval)
+    cerr << "Problem in LP::Core::dual_pivot\n";
   return rval;
 }
 
@@ -171,6 +183,7 @@ int Core::add_connect_cut()
   rval = PSEPlp_addrows(&m_lp, newrows, deltacount, &rhs, &sense, &rmatbeg,
 			&delta[0], &rmatval[0]);
   PSEP_CHECK_RVAL(rval, "Couldn't add subtour row, ");
+  cout << "    Added connect cut row!" << endl;
 
   rval = dual_pivot();
   if(rval) goto CLEANUP;
@@ -194,6 +207,7 @@ int Core::del_connect_cut()
 
   rval = PSEPlp_delrows(&m_lp, connect_cut_delrow, connect_cut_delrow);
   PSEP_CHECK_RVAL(rval, "Couldn't delete subtour row, ");
+  cout << "    Deleted non-tight connect cut!" << endl;
 
  CLEANUP:
   if(rval)
@@ -518,7 +532,6 @@ int Core::pivot_until_change(PivType &pivot_status){
   integral = is_integral();
     if(integral){
     conn = GraphUtils::connected(&G_s, &icount, island, 0);
-    cout << "Integral subtour had icount: " << icount << "\n";
     if(integral && conn){
       if(dual_feas)
 	pivot_status = PivType::FathomedTour;
