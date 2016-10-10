@@ -99,7 +99,7 @@ namespace PSEP {
 		       SupportGraph *G_s);
   }
 
-  struct CC {
+  struct CC {//TODO: This should just be namespaces
     struct GH {    
       static void grab_cut_dfs(CC_GHnode *n, std::vector<int> &cut_nlist){
 	for(int i = 0; i < n->listcount; i++)
