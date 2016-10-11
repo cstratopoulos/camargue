@@ -57,6 +57,18 @@ struct blossom {
   double cut_val;
 };
 
+/*
+ * Structure for storing blossom inequalities obtained by Padberg-Hong
+ * odd component heuristic
+ */
+struct fastblossom {
+  fastblossom(std::vector<int> &_handle, std::vector<int> &_edge_indices) :
+    handle(_handle), edge_indices(_edge_indices) {}
+
+  std::vector<int> handle;
+  std::vector<int> edge_indices;
+};
+
 /* The cuts below are dummy structures which are not actually used at the
  * moment but may be useful if cut pools or column gen are implemented */
   
@@ -98,11 +110,11 @@ struct safeGMI {
  */
 template<typename cut_t> class Cut {
 public:
-  virtual int cut_call() = 0;
+  virtual int cutcall();// = 0;
 
 protected:
-  virtual int separate() = 0;
-  virtual int add_cut() = 0;
+  virtual int separate();// = 0;
+  virtual int add_cuts();// = 0;
 };
 
 
