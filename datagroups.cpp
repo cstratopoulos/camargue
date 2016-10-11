@@ -292,7 +292,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   CC_IFFREE (cyc, int);
   CC_IFFREE (elist, int);
   CC_IFFREE (tlist, int);
-  CCutil_freedatagroup(dat.get());
+  CCutil_freedatagroup(rawdat);
   if(rval){
     cerr << "Problem in BestGroup constructor\n";
     best_tour_edges.clear();
