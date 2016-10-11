@@ -1,4 +1,4 @@
-#include<iostream>
+#include <iostream>
 
 #include "blossoms.hpp"
 
@@ -15,7 +15,9 @@ int Cut<blossom>::separate(){
   int *cut_nodes = (int *) NULL;
   int cutcount = 0;
 
-  cut_ecap.resize(support_ecap.size());
+  try { cut_ecap.resize(support_ecap.size()); } catch(...){
+    rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize cut_ecap, ");
+  }
 
   for(int i = 0; i < support_indices.size(); i++){
     if(best_tour_edges[support_indices[i]] == 0)
@@ -170,6 +172,5 @@ int Cut<blossom>::cutcall(){
  CLEANUP:
   if(rval == 1)
     cerr << "Problem in Cuts<blossom>::cutcall\n";
-  best.reset(NULL);
   return rval;
 }
