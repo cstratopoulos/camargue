@@ -111,7 +111,8 @@ int Core::pivot_back(){
   if(rval) goto CLEANUP;
   
   if(!tour_feas){
-    cerr << "Best tour is infeasible after pivot back!\n";
+    cerr << "Best tour is infeasible after pivot back! "
+	 << numrows() << " rows in the LP\n";
     rval = 1;
   }
 
