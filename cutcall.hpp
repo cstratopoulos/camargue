@@ -25,7 +25,8 @@ public:
     translator(GraphGroup),
     segment_q(LPGroup.prefs.max_per_round),
     blossom_q(LPGroup.prefs.q_max_size),
-    segments(GraphGroup.edge_marks, BestGroup.best_tour_nodes, SupportGroup.G_s,
+    segments(GraphGroup.edge_marks, BestGroup.best_tour_nodes,
+	     SupportGroup.G_s,
 	     segment_q),
     blossoms(GraphGroup.delta, GraphGroup.edge_marks,
 	     GraphGroup.m_graph.edges, BestGroup.best_tour_edges,
@@ -41,7 +42,7 @@ public:
 		LPGroup.m_lp, LPGroup.m_lp_edges, LPGroup.frac_colstat,
 		LPGroup.frac_rowstat,
 		SupportGroup.support_indices,
-		2 * LPGroup.prefs.max_per_round),
+		3 * LPGroup.prefs.max_per_round),
     prefs(LPGroup.prefs), m_lp(LPGroup.m_lp), m_lp_edges(LPGroup.m_lp_edges),
     total_segtime(0), total_2mtime(0), total_dptime(0), total_gentime(0),
     total_segcalls(0), total_2mcalls(0), total_gencalls(0){}

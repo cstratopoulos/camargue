@@ -73,15 +73,14 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     
     CCutil_sprand(edgegen_seed, &rstate);
     CCedgegen_init_edgegengroup(&plan);
-    plan.quadnearest = 2;
     plan.linkern.count = 10;
     plan.linkern.quadnearest = 5;
     plan.linkern.greedy_start = 0;
     plan.linkern.nkicks = (m_graph.node_count / 100) + 1;
-    plan.quadnearest = quadnearest;
+    plan.nearest = quadnearest;
 
-    cout << plan.linkern.count << " LK trials, quad "
-	 << plan.quadnearest << "-nearest, seed " << edgegen_seed
+    cout << plan.linkern.count << " LK tours, "
+	 << plan.nearest << "-nearest, seed " << edgegen_seed
 	 << "\n";
 
     rval = CCedgegen_edges(&plan, m_graph.node_count, rawdat, NULL,
@@ -136,9 +135,9 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   int *tlist = (int *) NULL;
   int *cyc = (int *) NULL;
   double bestval, val;
-  int trials = (user_seed == 0) ? 1 : 0;
+  int trials = (user_seed == 0) ? 10 : 0;
   int silent = 1;
-  int kicks = 500;
+  int kicks = 1000;
   int istour;
   int seed = (user_seed == 0) ? ((int) real_zeit()) : user_seed;
   bool sparse = (m_graph.edge_count < (ncount * (ncount - 1)) / 2);
