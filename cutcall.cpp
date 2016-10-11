@@ -33,10 +33,12 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     blossom_q.q_fresh = false;
   }
   else {
-    matchval = blossoms.cutcall();
-    if(matchval == 1){
-      rval = 1;
-      goto CLEANUP;
+    matchval = fastblossoms.cutcall();
+    if(matchval == 1){ rval = 1; goto CLEANUP; }
+
+    if(matchval == 2){
+      matchval = blossoms.cutcall();
+      if(matchval == 1){ rval = 1; goto CLEANUP; }
     }
     
     blossom_q.q_fresh = true;

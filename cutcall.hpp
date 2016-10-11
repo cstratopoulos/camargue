@@ -9,6 +9,7 @@
 #include "datagroups.hpp"
 #include "segments.hpp"
 #include "blossoms.hpp"
+#include "fastblossoms.hpp"
 #include "dominos.hpp"
 #include "safegmi.hpp"
 #include "cuts.hpp"
@@ -30,6 +31,11 @@ public:
 	     segment_q),
     blossoms(GraphGroup.delta, GraphGroup.edge_marks,
 	     GraphGroup.m_graph.edges, BestGroup.best_tour_edges,
+	     LPGroup.m_lp_edges, SupportGroup.support_indices,
+	     SupportGroup.support_elist, SupportGroup.support_ecap,
+	     blossom_q),
+    fastblossoms(GraphGroup.delta, GraphGroup.edge_marks,
+	     GraphGroup.m_graph, BestGroup.best_tour_edges,
 	     LPGroup.m_lp_edges, SupportGroup.support_indices,
 	     SupportGroup.support_elist, SupportGroup.support_ecap,
 	     blossom_q),
@@ -66,7 +72,8 @@ private:
   CutQueue<HyperGraph> blossom_q;
   
   PSEP::Cut<PSEP::seg> segments;
-  PSEP::Cut<PSEP::blossom> blossoms;  
+  PSEP::Cut<PSEP::blossom> blossoms;
+  PSEP::Cut<PSEP::fastblossom> fastblossoms;
   PSEP::Cut<PSEP::domino> dominos;
 
   PSEP::Cut<PSEP::safeGMI> safe_gomory;
