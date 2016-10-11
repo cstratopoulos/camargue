@@ -73,8 +73,7 @@ int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
   }
 
   switch(H.cut_type){
-  case HyperGraph::CutType::Segment:
-    
+  case HyperGraph::CutType::Segment:    
     rhs = 2;
     break;
 
