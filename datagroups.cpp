@@ -28,6 +28,7 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
   int *elist = (int *) NULL;
 
   CCutil_init_datagroup(rawdat);
+  if(randprob.seed == 0) randprob.seed = (int) real_zeit();
 
   if(!fname.empty()){
     rval = CCutil_gettsplib(filestring, &(m_graph.node_count), rawdat);
@@ -38,7 +39,7 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     CCrandstate rstate;
     int use_gridsize = randprob.gridsize;
     int allow_dups = 1;
-    if(randprob.seed == 0) randprob.seed = (int) real_zeit();
+
     cout << "Random seed: " << randprob.seed << "\n";
     CCutil_sprand(randprob.seed, &rstate);
     rval = CCutil_getdata((char *) NULL, 1, CC_EUCLIDEAN,
@@ -68,8 +69,7 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     cout << "    GENERATING SPARSE GRAPH ONLY, ";
     CCedgegengroup plan;
     CCrandstate rstate;
-    int edgegen_seed = (randprob.seed == 0) ? ((int) real_zeit()) :
-      randprob.seed;
+    int edgegen_seed = randprob.seed;
     
     CCutil_sprand(edgegen_seed, &rstate);
     CCedgegen_init_edgegengroup(&plan);
@@ -135,7 +135,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   int *tlist = (int *) NULL;
   int *cyc = (int *) NULL;
   double bestval, val;
-  int trials = (user_seed == 0) ? 10 : 0;
+  int trials = 4;// (user_seed == 0) ? 10 : 0;
   int silent = 1;
   int kicks = 1000;
   int istour;
