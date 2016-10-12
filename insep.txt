@@ -1,1 +1,0 @@
-./PSEP -Sc2 -u2 -s 1 problems/d2103.tsp
