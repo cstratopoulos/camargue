@@ -87,7 +87,6 @@ int CutControl::add_primal_cuts()
   double rhs;
   int rmatbeg = 0;
 
-
   while(!segment_q.empty() && seg_added < prefs.max_per_round){
     rval = translator.get_sparse_row(segment_q.peek_front(),
 				     rmatind, rmatval, sense, rhs);
