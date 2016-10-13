@@ -479,8 +479,7 @@ bool Core::test_new_tour(){
       objval += m_graph.edges[i].len;
 
   result = objval < m_min_tour_value && is_integral();
-  if(result)
-    cout << "Supposed improvement?? objval: " << objval << "\n";
+
   return result;
 }
 
@@ -559,7 +558,6 @@ int Core::pivot_until_change(PivType &pivot_status){
 	pivot_status = PivType::FathomedTour;
       else {
 	pivot_status = PivType::Tour;
-	cout << "Pivoted to tour, icount: " << icount << endl;
       }
     } else {
       pivot_status = PivType::Subtour;

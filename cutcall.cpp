@@ -3,8 +3,6 @@
 using namespace std;
 using namespace PSEP;
 
-int BLOSSOM_FLAG;
-
 int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
 {
   int rval = 0;
@@ -12,9 +10,6 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   int segval = 2, matchval = 2, dpval = 2;
   double segtime, matchtime, dptime;
   bool pool_blossoms;
-  
-  bool loud = (augrounds == 3);
-  BLOSSOM_FLAG = (augrounds == 3 && PSEPlp_numrows(&m_lp) > 3000);
 
   segtime = zeit();
   segval = segments.cutcall();
@@ -29,7 +24,6 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   total_segcalls++;
 
 
-  if(loud) cout << "Calling blossom sep" << endl;
   matchtime = zeit();
 
   rval = q_has_viol(pool_blossoms, blossom_q);
@@ -39,20 +33,12 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     blossom_q.q_fresh = false;
   }
   else {
-    if(loud)
-      cout << "No pool blossoms, calling fastblossoms" << endl;
     matchval = fastblossoms.cutcall();
     if(matchval == 1){ rval = 1; goto CLEANUP; }
 
     if(matchval == 2){
-      if(loud)
-	cout << "No fastblossoms, calling exact blossoms" << endl;
       matchval = blossoms.cutcall();
       if(matchval == 1){ rval = 1; goto CLEANUP; }
-      if(loud && !matchval)
-	cout << "exact blossoms found" << endl;
-    } else{
-      if(loud) cout << "Fastblossoms found" << endl;
     }
     
     blossom_q.q_fresh = true;
@@ -101,8 +87,6 @@ int CutControl::add_primal_cuts()
   double rhs;
   int rmatbeg = 0;
 
-  int numrows = PSEPlp_numrows(&m_lp);
-  bool loud = (numrows >= 3129 && numrows <= 3137);
 
   while(!segment_q.empty() && seg_added < prefs.max_per_round){
     rval = translator.get_sparse_row(segment_q.peek_front(),
@@ -113,8 +97,6 @@ int CutControl::add_primal_cuts()
 			  &rmatind[0], &rmatval[0]);
     if(rval) goto CLEANUP;
 
-    if(loud) cout << "Added segment" << endl;
-    
     seg_added++;
     segment_q.pop_front();
   }
@@ -129,8 +111,6 @@ int CutControl::add_primal_cuts()
 			    &rmatind[0], &rmatval[0]);
       if(rval) goto CLEANUP;
 
-      if(loud) cout << "Added fresh blossom" << endl;
-      
       blossom_added++;
       blossom_q.pop_front();
     } 
@@ -147,7 +127,6 @@ int CutControl::add_primal_cuts()
 			      &rmatind[0], &rmatval[0]);
 	if(rval) goto CLEANUP;
 
-	if(loud) cout << "Added violated pool blossom" << endl;
 	
 	blossom_added++;
       }
