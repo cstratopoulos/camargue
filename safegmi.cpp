@@ -163,7 +163,7 @@ int Cut<safeGMI>::separate(){
   if(rval) PSEP_GOTO_CLEANUP("SLVRcutter_iter failed, ");
 
   if(safe_mir_data->generated_cuts->size == 0){
-    cout << "No safe mir cuts found\n";
+    cout << "No safe MIR cuts generated\n";
     rval = 2;
   }
 
