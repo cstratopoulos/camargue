@@ -1,3 +1,0 @@
-./PSEP -Sc2 -s1476329206 problems/pr1002.tsp
-./PSEP -s1476329728 -Sc2 -u5 problems/gr431.tsp
-./PSEP -s1476329882 -Sc2 -u5 problems/gr229.tsp
