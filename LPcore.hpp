@@ -107,7 +107,7 @@ namespace PSEP {
       double &m_min_tour_value;
 
       int icount;
-      int connect_cut_delrow;
+      IntPair connect_cut_range;
       std::vector<int> &island;
       std::vector<int> &delta;
       std::vector<int> &edge_marks;

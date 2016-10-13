@@ -167,37 +167,43 @@ int Core::add_connect_cut()
   int rmatbeg = 0, newrows = 1;
   char sense = 'G';
   double rhs = 2.0;
-  vector<int> island_vec(island.begin(), island.begin() + icount);
+  vector<int> island_vec;
   vector<double> rmatval;
 
-  connect_cut_delrow = numrows();
+  connect_cut_range.first = numrows();
+  connect_cut_range.second = connect_cut_range.first;
 
-  if(icount == m_graph.node_count){
-    rval = 1;
-    PSEP_GOTO_CLEANUP("Tried to add whole graph as connect cut, ");
-  }
 
-  GraphUtils::get_delta(island_vec, m_graph.edges, &deltacount, delta,
-			edge_marks);
+  do {
+    island_vec = vector<int>(island.begin(), island.begin() + icount);
+    
+    GraphUtils::get_delta(island_vec, m_graph.edges, &deltacount, delta,
+			  edge_marks);
 
-  try { rmatval.resize(deltacount, 1.0); } catch(...) {
-    rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize rmatval, ");
-  }
+    try { rmatval.resize(deltacount, 1.0); } catch(...) {
+      rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize rmatval, ");
+    }
 
-  rval = PSEPlp_addrows(&m_lp, newrows, deltacount, &rhs, &sense, &rmatbeg,
-			&delta[0], &rmatval[0]);
-  PSEP_CHECK_RVAL(rval, "Couldn't add subtour row, ");
-  cout << "\n    "
-       << "Added connect cut row for primal-inseparable integral subtour...";
+    connect_cut_range.second = numrows();
 
-  rval = nondegenerate_pivot();
-  if(rval) goto CLEANUP;
+    rval = PSEPlp_addrows(&m_lp, newrows, deltacount, &rhs, &sense, &rmatbeg,
+			  &delta[0], &rmatval[0]);
+    PSEP_CHECK_RVAL(rval, "Couldn't add subtour row, ");
 
-  rval = set_edges();
-  if(rval) goto CLEANUP;
+    rval = nondegenerate_pivot();
+    if(rval) goto CLEANUP;
 
-  rval = is_integral();
-  PSEP_CHECK_RVAL(rval, "LP solution still integral! ");
+    rval = set_edges();
+    if(rval) goto CLEANUP;
+
+    rval = set_support_graph();
+    if(rval) goto CLEANUP;  
+  
+  } while(!GraphUtils::connected(&G_s, &icount, island, 0));
+
+  cout << "\n    Added "
+       << (connect_cut_range.second - connect_cut_range.first + 1)
+       << " connect cuts, integral: " << is_integral();
 
   frac_colstat.resize(numcols());
   frac_rowstat.resize(numrows());
@@ -207,7 +213,7 @@ int Core::add_connect_cut()
  CLEANUP:
   if(rval){
     cerr << "Problem in LP::Core::add_connect_cut\n";
-    connect_cut_delrow = -1;
+    connect_cut_range = IntPair(-1, -1);
   }
   return rval;
 }
@@ -215,19 +221,20 @@ int Core::add_connect_cut()
 int Core::del_connect_cut()
 {
   int rval = 0;
-  if(connect_cut_delrow < 0){
+  if(connect_cut_range.first < 0){
     rval = 1;
     PSEP_GOTO_CLEANUP("Tried to delete negative row, ");
   }
 
-  rval = PSEPlp_delrows(&m_lp, connect_cut_delrow, connect_cut_delrow);
+  rval = PSEPlp_delrows(&m_lp, connect_cut_range.first,
+			connect_cut_range.second);
   PSEP_CHECK_RVAL(rval, "Couldn't delete subtour row, ");
-  cout << "    ...Deleted non-tight connect cut." << endl;
+  cout << "    ...Deleted non-tight connect cut(s)." << endl;
 
  CLEANUP:
   if(rval)
     cerr << "LP::Core::del_connect_cut failed\n";
-  connect_cut_delrow = -1;
+  connect_cut_range = IntPair(-1, -1);
   return rval;
 }
 
