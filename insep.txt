@@ -1,0 +1,5 @@
+./PSEP -Ss1476389587 problems/gr431.tsp
+./PSEP -Ss1476389678 problems/pcb442.tsp 
+./PSEP -Ss1476389742 problems/pcb442.tsp 
+./PSEP -Ss1476389809 problems/pcb442.tsp
+./PSEP -Ss1476390377 problems/d198.tsp
