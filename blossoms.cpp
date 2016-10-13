@@ -94,6 +94,7 @@ int Cut<blossom>::separate(){
 int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
   int rval = 0;
   int cutedge = blossom_cut.cut_edge;
+  int num_teeth = 0;
   deltacount = 0;
   vector<vector<int>> node_sets;
   vector<Edge> &edges(m_graph.edges);
@@ -137,15 +138,16 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
       }
   }
 
+  num_teeth = node_sets.size() - 1;
 
-  try {
-  HyperGraph newcut(node_sets, HyperGraph::CutType::Blossom);
-  external_q.push_back(newcut);
-  } catch (...) {
-    rval = 1; PSEP_GOTO_CLEANUP("Couldn't push to external queue, ");
+  if(num_teeth %2 == 1){
+    try {
+      HyperGraph newcut(node_sets, HyperGraph::CutType::Blossom);
+      external_q.push_back(newcut);
+    } catch (...) {
+      rval = 1; PSEP_GOTO_CLEANUP("Couldn't push to external queue, ");
+    }
   }
-
-  
 
  CLEANUP:
   if(rval)
@@ -163,8 +165,10 @@ int Cut<blossom>::add_cuts(){
     local_q.pop_front();
   }
 
+  if(external_q.empty()) rval = 2;
+
  CLEANUP:
-  if(rval)
+  if(rval == 1)
     cerr << "problem in Cut<blossom>::add_cuts\n";
   return rval;
 }
