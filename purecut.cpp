@@ -77,7 +77,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       if(plan.is_branch())
 	break;
 
-      cout << "\n\n    !!!AUGMENTED TOUR!!!!\n    ";
+      cout << "\n\n    !!!AUGMENTED TOUR!!!! Round " << rounds << "\n    ";
       print.pivot(piv_stat);
       cout << "                Pivot objval: ";
       printf("%.6f\n", LPCore.get_obj_val());
