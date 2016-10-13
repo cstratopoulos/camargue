@@ -103,8 +103,6 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     
     if(cut_rval == 2){
       if(piv_stat == LP::PivType::Subtour){
-	cout << "    TESTING!!!! inseparable integral subtour\n";
-
 	rval = LPCore.add_connect_cut();
 	if(rval) goto CLEANUP;
       }

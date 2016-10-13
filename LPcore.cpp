@@ -124,8 +124,10 @@ int Core::pivot_back(){
 
 int Core::dual_pivot()
 {
-  int infeasible = 0;
-  int rval = PSEPlp_dual_pivot(&m_lp, &infeasible);
+  int infeasible = 0, rval = 0;
+  cout << "PRIMAL PIVOTING INSTEAD LOL!!" << endl;
+  rval = nondegenerate_pivot();
+  //  rval = PSEPlp_dual_pivot(&m_lp, &infeasible);
 
   if(rval || infeasible){
     cerr << "Problem in LP::Core::dual_pivot(), infeasible "
@@ -149,7 +151,8 @@ int Core::dual_pivot()
   if(is_integral()){
     rval = 1; PSEP_GOTO_CLEANUP("LP solution still integral! ");
   } else {
-    cout << "    Dual pivoted to fractional solution.\n";
+    cout << "    Dual pivoted to fractional solution, objval : "
+	 << get_obj_val() << ", infeasible: " << infeasible << endl;
   }
 
  CLEANUP:
@@ -184,11 +187,22 @@ int Core::add_connect_cut()
   rval = PSEPlp_addrows(&m_lp, newrows, deltacount, &rhs, &sense, &rmatbeg,
 			&delta[0], &rmatval[0]);
   PSEP_CHECK_RVAL(rval, "Couldn't add subtour row, ");
-  cout << "    Added connect cut row!" << endl;
+  cout << "\n    "
+       << "Added connect cut row for primal-inseparable integral subtour...";
 
-  rval = dual_pivot();
+  rval = nondegenerate_pivot();
   if(rval) goto CLEANUP;
-  
+
+  rval = set_edges();
+  if(rval) goto CLEANUP;
+
+  rval = is_integral();
+  PSEP_CHECK_RVAL(rval, "LP solution still integral! ");
+
+  frac_colstat.resize(numcols());
+  frac_rowstat.resize(numrows());
+  rval = PSEPlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
+  if(rval) goto CLEANUP;
 
  CLEANUP:
   if(rval){
@@ -208,7 +222,7 @@ int Core::del_connect_cut()
 
   rval = PSEPlp_delrows(&m_lp, connect_cut_delrow, connect_cut_delrow);
   PSEP_CHECK_RVAL(rval, "Couldn't delete subtour row, ");
-  cout << "    Deleted non-tight connect cut!" << endl;
+  cout << "    ...Deleted non-tight connect cut." << endl;
 
  CLEANUP:
   if(rval)
@@ -538,8 +552,9 @@ int Core::pivot_until_change(PivType &pivot_status){
 	pivot_status = PivType::FathomedTour;
       else
 	pivot_status = PivType::Tour;
-    } else
+    } else {
       pivot_status = PivType::Subtour;
+    }
     } else{
       pivot_status = PivType::Frac;
       frac_colstat.resize(PSEPlp_numcols(&m_lp));
