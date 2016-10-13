@@ -1,2 +1,0 @@
-./PSEP -Sc8 -s1476390663 problems/pr1002.tsp 10 trials
-./PSEP -Ss1476392022 problems/pr2392.tsp

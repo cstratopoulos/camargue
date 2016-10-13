@@ -1,8 +1,3 @@
 (all with 4 LK trials unless otherwise specified)
 
-./PSEP -Ss1476389587 problems/gr431.tsp
-./PSEP -Ss1476389678 problems/pcb442.tsp 
-./PSEP -Ss1476389742 problems/pcb442.tsp 
 ./PSEP -Ss1476389809 problems/pcb442.tsp
-./PSEP -Ss1476390377 problems/d198.tsp
-./PSEP -Ss1476390988 problems/d2103.tsp
