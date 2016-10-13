@@ -87,6 +87,9 @@ int CutControl::add_primal_cuts()
   double rhs;
   int rmatbeg = 0;
 
+  int numrows = PSEPlp_numrows(&m_lp);
+  bool loud = (numrows >= 3129 && numrows <= 3137);
+
   while(!segment_q.empty() && seg_added < prefs.max_per_round){
     rval = translator.get_sparse_row(segment_q.peek_front(),
 				     rmatind, rmatval, sense, rhs);
@@ -96,6 +99,8 @@ int CutControl::add_primal_cuts()
 			  &rmatind[0], &rmatval[0]);
     if(rval) goto CLEANUP;
 
+    if(loud) cout << "Added segment" << endl;
+    
     seg_added++;
     segment_q.pop_front();
   }
@@ -110,6 +115,8 @@ int CutControl::add_primal_cuts()
 			    &rmatind[0], &rmatval[0]);
       if(rval) goto CLEANUP;
 
+      if(loud) cout << "Added fresh blossom" << endl;
+      
       blossom_added++;
       blossom_q.pop_front();
     } 
@@ -126,6 +133,8 @@ int CutControl::add_primal_cuts()
 			      &rmatind[0], &rmatval[0]);
 	if(rval) goto CLEANUP;
 
+	if(loud) cout << "Added violated pool blossom" << endl;
+	
 	blossom_added++;
       }
       blossom_q.pop_front();

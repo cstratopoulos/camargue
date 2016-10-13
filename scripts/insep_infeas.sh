@@ -5,12 +5,14 @@
 #should be safe for running in batches on the same problem by use of process
 #id to protect filename
 
+
+sleep 2s
+
 PID=$$
 probname=$1
 rawdata="$probname"_"$PID"
 >"$rawdata".txt
 
-sleep 2s
 ../PSEP -Sc2 -u5 ../problems/"$probname".tsp >> "$rawdata".txt 2>&1
 
 insep=$(grep -il 'inseparable' "$rawdata".txt | wc -l)

@@ -521,7 +521,7 @@ int PSEPlp_getbase (PSEPlp *lp, int * colstat, int * rowstat){
   int rval = 0;
   if(!colstat && !rowstat){
     fprintf(stderr, "Passed two null arrays to getbase\n");
-    return rval;
+    return 1;
   }
   
   rval = CPXgetbase(lp->cplex_env, lp->cplex_lp, colstat, rowstat);

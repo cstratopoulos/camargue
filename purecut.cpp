@@ -36,6 +36,10 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     rounds++;
     augrounds++;
 
+    if(rounds > 374)
+      cout << "--------ROUND " << rounds << ", augrounds "
+	   << augrounds << "------------" << endl;
+
     if(rounds % 50 == 0){
       if(plan.perform_elim()){
 	cout << "Calling edge elimination again...\n\n  ";
@@ -52,6 +56,8 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       }
     }
 
+    if(rounds > 374)
+      cout << "Calling pivot until change" << endl;
     pivtime = zeit();
     rval = LPCore.pivot_until_change(piv_stat);
     if(rval) goto CLEANUP;
@@ -60,6 +66,9 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     if(pivtime > max_pivtime) max_pivtime = pivtime;
 
     piv_val = LPCore.get_obj_val();
+
+    if(rounds > 374)
+      cout << "Pivot objval " << piv_val << endl;
 
     if(piv_stat == LP::PivType::FathomedTour){
       cout << "\n\n    ROUND " << rounds << " -- ";
@@ -93,6 +102,9 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       continue;
     }
 
+    if(rounds > 374)
+      cout << "Calling primal sep, currently "
+	   << LPCore.numrows() << " rows in the LP" << endl;
     cut_rval = CutControl.primal_sep(augrounds, piv_stat);
     if(cut_rval == 1){
       rval = 1;
@@ -120,8 +132,14 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 	if(rval) goto CLEANUP;
       }
     } else { //TODO: this is a bit ungraceful
+
+      if(rounds > 374)
+	cout << "Now trying to pivot back.....";
       rval = LPCore.pivot_back();
       if(rval) goto CLEANUP;
+
+      if(rounds > 374)
+	cout << "Pivoted back w objval " << LPCore.get_obj_val() << endl;
     }
 
     rval = CutControl.add_primal_cuts(); //TODO: this should add the gomory cuts

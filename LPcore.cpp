@@ -99,7 +99,6 @@ int Core::primal_opt(){
 
 int Core::pivot_back(){
   bool tour_feas = false;
-  //int rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
   int rval = PSEPlp_copystart(&m_lp, &old_colstat[0], &old_rowstat[0],
 			      &best_tour_edges_lp[0], NULL, NULL, NULL);
   if(rval) goto CLEANUP;
@@ -113,6 +112,7 @@ int Core::pivot_back(){
   if(!tour_feas){
     cerr << "Best tour is infeasible after pivot back! "
 	 << numrows() << " rows in the LP\n";
+    cerr << "Pivot back objval: " << get_obj_val() << endl;
     rval = 1;
   }
 
@@ -486,6 +486,7 @@ bool Core::test_new_tour(){
 
 int Core::update_best_tour(){
   double objval = 0;
+  int rval = 0;
   
   for(int i = 0; i < m_graph.node_count; i++)
     best_tour_nodes[i] = island[i];
@@ -498,17 +499,23 @@ int Core::update_best_tour(){
       objval += m_graph.edges[i].len;
     }
 
-  if(objval > m_min_tour_value){
-    cerr << "New best tour is worse! objval " << objval << "\n";
-    return 1;
-  }
+  rval = (objval > m_min_tour_value);
+  PSEP_CHECK_RVAL(rval, "New best tour is worse! Objval " << objval << "\n");
 
   m_min_tour_value = objval;
 
   for(int i = 0; i < m_graph.node_count; i++)
     perm[best_tour_nodes[i]] = i;
 
-  return 0;
+  old_rowstat.resize(numrows());
+
+  rval = PSEPlp_getbase(&m_lp, &old_colstat[0], &old_rowstat[0]);
+  if(rval) goto CLEANUP;
+
+ CLEANUP:
+  if(rval)
+    cerr << "LP::Core::update_best_tour failed\n";
+  return rval;
 }
 
 int Core::pivot_until_change(PivType &pivot_status){
