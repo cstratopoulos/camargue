@@ -80,7 +80,9 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     plan.nearest = quadnearest;
 
     cout << plan.linkern.count << " LK tours, "
-	 << plan.nearest << "-nearest, seed " << edgegen_seed
+      // << plan.quadnearest << " quad-nearest, "
+	 << plan.nearest << "-nearest, "
+	 << "seed " << edgegen_seed
 	 << "\n";
 
     rval = CCedgegen_edges(&plan, m_graph.node_count, rawdat, NULL,
