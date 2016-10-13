@@ -30,7 +30,7 @@ public:
 	     SupportGroup.G_s,
 	     segment_q),
     blossoms(GraphGroup.delta, GraphGroup.edge_marks,
-	     GraphGroup.m_graph.edges, BestGroup.best_tour_edges,
+	     GraphGroup.m_graph, BestGroup.best_tour_edges,
 	     LPGroup.m_lp_edges, SupportGroup.support_indices,
 	     SupportGroup.support_elist, SupportGroup.support_ecap,
 	     blossom_q),

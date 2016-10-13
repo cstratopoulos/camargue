@@ -11,13 +11,14 @@ namespace PSEP{
 template<> class Cut<blossom> {
 public:
   Cut<blossom>(std::vector<int> &_delta, std::vector<int> &_edge_marks,
-	       std::vector<Edge> &_edges, std::vector<int> &_best_tour_edges,
+	       Graph &_m_graph,
+	       std::vector<int> &_best_tour_edges,
 	       std::vector<double> &_m_lp_edges,
 	       std::vector<int> &_support_indices,
 	       std::vector<int> &_support_elist,
 	       std::vector<double> &_support_ecap,
 	       CutQueue<HyperGraph> &blossom_queue):
-    deltacount(0), delta(_delta), edge_marks(_edge_marks), edges(_edges),
+  deltacount(0), delta(_delta), edge_marks(_edge_marks), m_graph(_m_graph),
     best_tour_edges(_best_tour_edges),
     m_lp_edges(_m_lp_edges),
     support_indices(_support_indices),
@@ -37,7 +38,7 @@ private:
   int deltacount;
   std::vector<int> &delta;
   std::vector<int> &edge_marks;
-  std::vector<Edge> &edges;
+  Graph &m_graph;
   std::vector<int> &best_tour_edges;
   std::vector<double> &m_lp_edges;
   std::vector<int> &support_indices;

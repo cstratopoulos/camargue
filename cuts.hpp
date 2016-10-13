@@ -19,6 +19,8 @@
 #include "datagroups.hpp"
 #include "Graph.hpp"
 
+extern int BLOSSOM_FLAG;
+
 namespace PSEP {
 /*
  * Structure for storing segment cuts: subtour inequalities arising from

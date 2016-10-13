@@ -10,10 +10,13 @@ int Cut<blossom>::separate(){
   int cut_edge_index;
   int end0, end1;
   int best_tour_entry;
-  int ncount = 2 * support_indices.size();
+  int ncount = m_graph.node_count;
   double orig_weight, changed_weight, cutval, min_cutval = 1.0;
   int *cut_nodes = (int *) NULL;
   int cutcount = 0;
+  vector<Edge> &edges(m_graph.edges);
+
+  if(BLOSSOM_FLAG) cout << "****Calling exact blossom sep" << endl;
 
   try { cut_ecap.resize(support_ecap.size()); } catch(...){
     rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize cut_ecap, ");
@@ -53,7 +56,8 @@ int Cut<blossom>::separate(){
       goto CLEANUP;
     }
 
-    if(cutval < 1 - LP::EPSILON){
+    if(cutval < 1 - LP::EPSILON && cutcount >= 3 &&
+       cutcount <= (ncount - 3)){
       if(cutval <= min_cutval)
 	min_cutval = cutval;
       
@@ -63,11 +67,61 @@ int Cut<blossom>::separate(){
       }
 
       blossom new_cut(handle, cut_edge_index, cutval);
+
+      if(BLOSSOM_FLAG){
+	cout << "Found blossom, cut edge: " << cut_edge_index
+	     << ", corresponding best tour entry: "
+	     << best_tour_edges[cut_edge_index] << endl;
+	cout << "Handle entries:" << endl;
+	print_vec(handle);
+	cout << "Getting handle delta: " << endl;
+	GraphUtils::get_delta(handle, edges, &deltacount, delta, edge_marks);
+	for(int j = 0; j < deltacount; j++){
+	  int edge_ind = delta[j];
+	  cout << "Edge " << edge_ind << ": ("
+	       << edges[edge_ind].end[0] << ", " << edges[edge_ind].end[1]
+	       << ") best tour: " << best_tour_edges[edge_ind]
+	       << ", lp: " << m_lp_edges[edge_ind] << endl;
+	}
+
+	vector<int> teeth_edges;
+
+	switch(best_tour_edges[cut_edge_index]){
+	case 0:
+	  for(int j = 0; j < deltacount; j++){
+	    int edge_ind = delta[j];
+	    if(m_lp_edges[edge_ind] > LP::EPSILON &&
+	       (best_tour_edges[edge_ind] == 1 || edge_ind == cut_edge_index)){
+	      teeth_edges.push_back(edge_ind);
+	      cout << "Edge " << edge_ind << " is a tooth" << endl;
+	    }
+	  }
+	  break;
+
+	case 1:
+	  for(int j = 0; j < deltacount; j++){
+	    int edge_ind = delta[j];
+	    if(m_lp_edges[edge_ind] > LP::EPSILON &&
+	       (best_tour_edges[edge_ind] == 1 && edge_ind != cut_edge_index)){
+	      teeth_edges.push_back(edge_ind);
+	      cout << "Edge " << edge_ind << " is a tooth" << endl;
+	    }
+	  }
+	}
+	
+      }
+      
       try { //if it is a better cut it goes to the front for immediate adding
-	if(cutval <= min_cutval)
+	if(cutval <= min_cutval){
 	  local_q.push_front(new_cut);
-	else //it goes to the back for use in the pool if applicable
+	  if(BLOSSOM_FLAG)
+	    cout << "Pushed to front of queue" << endl;
+	}
+	else { //it goes to the back for use in the pool if applicable
 	  local_q.push_back(new_cut);
+	  if(BLOSSOM_FLAG)
+	    cout << "Pushed to back of queue" << endl;
+	}
       } catch (...) {
 	rval = 1; PSEP_GOTO_CLEANUP("Problem pushing new cut to queue, ");
       }      
@@ -78,6 +132,9 @@ int Cut<blossom>::separate(){
   }
 
   if(local_q.empty()) rval = 2;
+
+  if(BLOSSOM_FLAG)
+    cout << "**** " << local_q.size() << " exact blossoms found" << endl;
 
  CLEANUP:
   CC_IFFREE(cut_nodes, int);
@@ -90,6 +147,8 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
   int cutedge = blossom_cut.cut_edge;
   deltacount = 0;
   vector<vector<int>> node_sets;
+  vector<Edge> &edges(m_graph.edges);
+
   
   try { node_sets.push_back(blossom_cut.handle); } catch (...) {
     rval = 1; PSEP_GOTO_CLEANUP("Problem pushing back node set, ");
@@ -128,6 +187,7 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
 	}
       }
   }
+
 
   try {
   HyperGraph newcut(node_sets, HyperGraph::CutType::Blossom);

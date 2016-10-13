@@ -557,8 +557,10 @@ int Core::pivot_until_change(PivType &pivot_status){
     if(integral && conn){
       if(dual_feas)
 	pivot_status = PivType::FathomedTour;
-      else
+      else {
 	pivot_status = PivType::Tour;
+	cout << "Pivoted to tour, icount: " << icount << endl;
+      }
     } else {
       pivot_status = PivType::Subtour;
     }
