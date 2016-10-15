@@ -1,1 +1,2 @@
 ./PSEP -Sc8 -s1476568710 problems/u724.tsp
+./PSEP -Sc8 -s1476570980 problems/pr1002.tsp
