@@ -203,7 +203,8 @@ int Core::add_connect_cut()
 
   cout << "\n    Added "
        << (connect_cut_range.second - connect_cut_range.first + 1)
-       << " connect cuts, integral: " << is_integral();
+       << " connect cuts, integral: " << is_integral()
+       << ", obj val " << get_obj_val();
 
   frac_colstat.resize(numcols());
   frac_rowstat.resize(numrows());
