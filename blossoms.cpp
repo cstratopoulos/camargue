@@ -14,7 +14,6 @@ int Cut<blossom>::separate(){
   double orig_weight, changed_weight, cutval, min_cutval = 1.0;
   int *cut_nodes = (int *) NULL;
   int cutcount = 0;
-  vector<Edge> &edges(m_graph.edges);
 
   try { cut_ecap.resize(support_ecap.size()); } catch(...){
     rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize cut_ecap, ");
