@@ -300,9 +300,7 @@ int Core::rebuild_basis(bool prune){
   rval = is_best_tour_feas(tour_feas);
   if(rval) goto CLEANUP;
 
-  if(tour_feas)
-    cout << "Best tour is still feasible\n";
-  else {
+  if(!tour_feas){
     cout << "Best tour is infeasible!\n";
     rval = 1; goto CLEANUP;
   }

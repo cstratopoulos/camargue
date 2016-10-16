@@ -11,7 +11,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
   double piv_val;
   int rounds = 0, augrounds = 0;
 
-  bool prune = !plan.is_branch();
+  bool prune = !plan.is_branch(), haveslack = false;
 
   double pivtime, total_pivtime = 0, max_pivtime = 0;
   int num_removed = 0;
@@ -131,11 +131,23 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       cout << "\n    Round " << rounds << ", calling safe GMI sep....";
       rval = CutControl.safe_gomory_sep();
       if(rval == 1) goto CLEANUP;
-      if(rval == 2) break;
+      if(rval == 2){ 
+	if(piv_stat == LP::PivType::Subtour){
+	  cout << "    Rebuilding basis to accomodate slack subtour\n";
+	  rval = LPCore.rebuild_basis(false);
+	  if(rval) goto CLEANUP;
 
-      if(piv_stat == LP::PivType::Subtour){
+	  haveslack = true;
+
+	  continue;
+	}
+	break;
+      }
+
+      if(piv_stat == LP::PivType::Subtour || haveslack){
 	rval = LPCore.del_connect_cut();
 	if(rval) goto CLEANUP;
+	haveslack = false;
       }
     } else { //TODO: this is a bit ungraceful
       rval = LPCore.pivot_back();
