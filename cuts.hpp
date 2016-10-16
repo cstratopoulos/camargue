@@ -27,15 +27,15 @@ namespace PSEP {
  *              indices for accessing the vector best_tour_nodes. 
  *              Thus the associated segment is best_tour_nodes[start] to
  *              best_tour_nodes[end]
- * viol - the amount by which the cut is violated
+ * viol - the value of the cut associated to the segment
  */
 struct seg {
-  seg(int _start, int _end, double _viol) :
-    start(_start), end(_end), viol(_viol) {}
+  seg(int _start, int _end, double _cutval) :
+    start(_start), end(_end), cutval(_cutval) {}
 
   int start;
   int end;
-  double viol;
+  double cutval;
 };
 
 /*

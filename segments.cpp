@@ -2,51 +2,54 @@
 
 #include "segments.hpp"
 
+extern "C" {
+#include <concorde/INCLUDE/cut.h>
+}
+
 using namespace std;
 using namespace PSEP;
 
-int Cut<seg>::separate(){
-  int ncount = G_s.node_count;
-  int current_start, current_end, current_size;
-  SNode current_snode;
-  double lhs, best_viol = 0;
+int Cut<seg>::linsub_callback(double cut_val, int cut_start, int cut_end,
+			      void *cb_data)
+{
+  Cut<seg> *this_p = (Cut<seg> *) cb_data;
+  CutQueue<seg> &lq = this_p->local_q;
 
-  for(int i = 0; i < ncount - 2; i++){
-    current_start = best_tour_nodes[i];
-    edge_marks[current_start] = 1;
-    current_size = 1;
-    lhs = 0;
-    int j;
-    
-    for(j = i + 1; (j < ncount - 1 && (++current_size) <= ncount / 2); j++){
-      current_end = best_tour_nodes[j];
-      edge_marks[current_end] = 1;
-      current_snode = G_s.nodelist[current_end];
-      
-      for(int k = 0; k < current_snode.s_degree; k++)
-	if(edge_marks[current_snode.adj_objs[k].other_end] == 1)
-	  lhs += current_snode.adj_objs[k].lp_weight;
-
-      double viol = fabs(lhs - (current_size - 1));
-      if(lhs > current_size - 1 && viol >= 0.002){
-	if(viol >= best_viol){
-	  best_viol = viol;
-	  seg newbest(i, j, viol);
-	  try { local_q.push_front(newbest); } catch(...) {
-	    cerr << "Problem pushing cut to local queue in Cut<seg>separate\n";
-	    return 1;
-	  }
-	}
-      }
+  if(lq.empty() || cut_val <= lq.peek_front().cutval){
+    try{ lq.push_front(seg(cut_start, cut_end, cut_val)); } catch(...){
+      cerr << "Couldn't push back new seg\n";
+      return 1;
     }
-    for(int l = i; l <= j; l++)
-      edge_marks[best_tour_nodes[l]] = 0;
   }
 
-  if(local_q.empty())
-    return 2;
-  
   return 0;
+}
+
+int Cut<seg>::separate()
+{
+  int rval = 0;
+  vector<int> endmark;
+
+  try { endmark = vector<int>(G_s.node_count, CC_LINSUB_BOTH_END); }
+  catch(...){
+    rval = 1; PSEP_GOTO_CLEANUP("Couldn't allocate endmark. ");
+  }
+
+  rval = CCcut_linsub_allcuts(G_s.node_count,
+			      G_s.edge_count,
+			      &best_tour_nodes[0], &endmark[0],
+			      &support_elist[0], &support_ecap[0], 1.999,
+			      (void *) this, linsub_callback);
+
+  PSEP_CHECK_RVAL(rval, "CCcut_linsub_allcuts failed. ");
+
+  if(local_q.empty())
+    rval = 2;
+
+ CLEANUP:
+  if(rval == 1)
+    cerr << "Problem in Cut<seg>::separate\n";
+  return rval;
 }
 
 int Cut<seg>::build_hypergraph(const seg& seg_cut){
