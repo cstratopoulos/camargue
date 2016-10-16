@@ -8,7 +8,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   int rval = 0;
   
   int segval = 2, matchval = 2, dpval = 2;
-  double segtime, matchtime, dptime;
+  double segtime, matchtime;//, dptime;
   bool pool_blossoms;
 
   segtime = zeit();
