@@ -1,3 +1,10 @@
+It should be possible to get rid of all instances of m_ prefix in class
+members
+
+Try to make it so constructors (eg of separators) use datagroups in the order
+they are defined and use their members in order as well. So GraphGroup first,
+then BestGroup, etc. And following internal member orders
+
 While re-reading and re-editing code, all vector allocations in constructors
 should be placed in appropriate try blocks. Previous approach of overloading
 an operator bool is the zombie struct solution which is not ideal. 
