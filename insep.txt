@@ -1,3 +1,1 @@
-(all with 4 LK trials unless otherwise specified)
-
-./PSEP -Ss1476389809 problems/pcb442.tsp
+./PSEP -Sc8 -s1476570980 problems/pr1002.tsp
