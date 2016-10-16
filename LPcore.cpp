@@ -161,7 +161,7 @@ int Core::dual_pivot()
   return rval;
 }
 
-int Core::add_connect_cut()
+int Core::add_connect_cuts(PivType &piv_stat)
 {
   int rval = 0, deltacount = 0;
   int rmatbeg = 0, newrows = 1;
@@ -203,13 +203,26 @@ int Core::add_connect_cut()
 
   cout << "\n    Added "
        << (connect_cut_range.second - connect_cut_range.first + 1)
-       << " connect cuts, integral: " << is_integral()
-       << ", obj val " << get_obj_val();
+       << " connect cuts...";
 
-  frac_colstat.resize(numcols());
-  frac_rowstat.resize(numrows());
-  rval = PSEPlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
-  if(rval) goto CLEANUP;
+  if(is_integral()){
+    piv_stat = PivType::Tour;
+    cout << "\n    !!!Pivoted to new tour!!! ";
+  } else {
+    piv_stat = PivType::Frac;
+    cout << "pivoted to connected fractional solution.";
+    try {
+      frac_colstat.resize(numcols());
+      frac_rowstat.resize(numrows());
+    } catch(...) {
+      rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize frac stats. ");
+    }
+    
+    rval = PSEPlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
+    if(rval) goto CLEANUP;
+  }
+
+
 
  CLEANUP:
   if(rval){

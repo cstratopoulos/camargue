@@ -104,8 +104,25 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     
     if(cut_rval == 2){
       if(piv_stat == LP::PivType::Subtour){
-	rval = LPCore.add_connect_cut();
+	LP::PivType connect_stat;
+	rval = LPCore.add_connect_cuts(connect_stat);
 	if(rval) goto CLEANUP;
+
+	if(connect_stat == LP::PivType::Tour){
+	  cout << "Round " << rounds << "\n";
+	  cout << "                Pivot objval: ";
+	  printf("%.6f\n", LPCore.get_obj_val());
+      
+	  rval = LPCore.update_best_tour();
+	  if(rval) goto CLEANUP;
+      
+	  rval = LPPrune.prune_cuts(num_removed);
+	  if(rval) goto CLEANUP;
+	  cout << "               Pruned " << num_removed << " non-tight cuts "
+	       << "from the LP\n";
+	  augrounds = 0;
+	  continue;
+	}
       }
 
       rval = LPCore.pivot_back();

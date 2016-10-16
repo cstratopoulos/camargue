@@ -49,7 +49,7 @@ namespace PSEP {
       int pivot_back();
       int primal_opt();
 
-      int add_connect_cut();
+      int add_connect_cuts(PivType &piv_stat);
       int del_connect_cut();
 
       int rebuild_basis(bool prune);
