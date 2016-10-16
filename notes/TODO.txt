@@ -1,3 +1,9 @@
+Column generation:
+       suppose we get a fathomed tour on a sparse edge set. This means we have
+       optimal primal/dual solutions and reduced costs. This could just mean
+       we need to price/add more edges, but for the existing edges, we could
+       use optimality to prune by reduced cost before scanning the edge set. 
+
 Add a 'picky' switch to the Gomory cuts which determines whether we insist on
 only adding a round of exact cuts
 
