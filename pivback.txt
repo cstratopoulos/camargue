@@ -1,2 +1,0 @@
-./PSEP -Sc2 -u10 -s1476328088 problems/d2103.tsp
-./PSEP -s1476330065 -Sc2 problems/pr2392.tsp
