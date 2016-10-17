@@ -13,7 +13,7 @@ PSEP
 
 #no softlink to problems folder or sloc script
 problems
-sloc.
+sloc
 
 #no tramp history from using local emacs to ssh
-tramp_history
+.tramp_history
