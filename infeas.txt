@@ -1,1 +1,0 @@
-./PSEP -Sc8 -s1476661490 problems/pr2392.tsp 
