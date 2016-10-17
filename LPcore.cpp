@@ -25,7 +25,7 @@ int Core::is_best_tour_feas(bool &result){
 
   if(best_tour_edges_lp.size() != best_tour_edges.size()){
       best_tour_edges_lp.resize(best_tour_edges.size());
-      for(const int i: best_tour_edges)
+      for(int i = 0; i < best_tour_edges.size(); i++)
 	best_tour_edges_lp[i] = best_tour_edges[i];
     }
 
@@ -38,7 +38,8 @@ int Core::is_best_tour_feas(bool &result){
   if(rval) goto CLEANUP;
 
   for(int i = 0; i < feas_stat.size(); i++)
-    if(feas_stat[i] != 0.0){
+    //    if(feas_stat[i] != 0.0){
+    if(fabs(feas_stat[i]) >= EPSILON){
       cout << "Row " << i << " infeasible, feas_stat: "
 	   << feas_stat[i] << "\n";
       result = false;
@@ -276,6 +277,7 @@ int Core::rebuild_basis(bool prune){
   int ecount = m_lp_edges.size();
   int num_removed = 0;
   bool tour_feas;
+  double objval;
   
   old_colstat.resize(ecount);
   best_tour_edges_lp.resize(ecount);
@@ -286,7 +288,7 @@ int Core::rebuild_basis(bool prune){
 
   rval = PSEPlp_copystart(&m_lp,
 			  NULL, NULL,
-			  &m_lp_edges[0], NULL,
+			  &best_tour_edges_lp[0], NULL,
 			  NULL, NULL);
   if(rval) goto CLEANUP;
 
@@ -295,6 +297,14 @@ int Core::rebuild_basis(bool prune){
   
   rval = set_edges();
   if(rval) goto CLEANUP;
+
+  objval = get_obj_val();
+  if(fabs(objval - m_min_tour_value) >= EPSILON){
+    rval = 1; PSEP_GOTO_CLEANUP("Rebuilt basis and got objval " << objval
+				<< ". ");
+  }
+
+  cout << "    Got correct objval from basis rebuild" << endl;
 
   tour_feas = false;
   rval = is_best_tour_feas(tour_feas);
@@ -505,6 +515,7 @@ bool Core::test_new_tour(){
 int Core::update_best_tour(){
   double objval = 0;
   int rval = 0;
+  bool newbest_feas = false;
   
   for(int i = 0; i < m_graph.node_count; i++)
     best_tour_nodes[i] = island[i];
@@ -529,6 +540,14 @@ int Core::update_best_tour(){
 
   rval = PSEPlp_getbase(&m_lp, &old_colstat[0], &old_rowstat[0]);
   if(rval) goto CLEANUP;
+
+  rval = is_best_tour_feas(newbest_feas);
+  if(rval) goto CLEANUP;
+
+  rval = !newbest_feas;
+  if(rval) goto CLEANUP;
+
+  cout << "    Verified new tour is a feasible augmentation\n";
 
  CLEANUP:
   if(rval)
