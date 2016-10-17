@@ -82,6 +82,8 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       print.pivot(piv_stat);
       cout << "                Pivot objval: ";
       printf("%.6f\n", LPCore.get_obj_val());
+
+      haveslack = false;
       
       rval = LPCore.update_best_tour();
       if(rval) goto CLEANUP;
