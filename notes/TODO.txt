@@ -1,3 +1,6 @@
+If augrounds is zero, need to add a switch to test if pool cuts are
+still tight....
+
 Column generation:
        suppose we get a fathomed tour on a sparse edge set. This means we have
        optimal primal/dual solutions and reduced costs. This could just mean
