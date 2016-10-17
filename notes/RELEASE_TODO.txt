@@ -1,3 +1,5 @@
+after each update, best tour should be written to file
+
 It should be possible to get rid of all instances of m_ prefix in class
 members
 
@@ -30,11 +32,3 @@ like that. BUT instead take an initializer list of strings which will
 be the lookup key for a map to int or double...or map to int/double
 and string where string can be the lookup key for total or average,
 etc. 
-
-Possibly get rid of all instances of m_ prefix...should not be
-necessary
-
-Make it so that all cut constructors and such initialze members from
-datagroups in the same order as the members appear in the datagroup,
-and with the same order as datagroups are declared. Thus graph first,
-then best, etc.
