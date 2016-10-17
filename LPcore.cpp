@@ -304,8 +304,6 @@ int Core::rebuild_basis(bool prune){
 				<< ". ");
   }
 
-  cout << "    Got correct objval from basis rebuild" << endl;
-
   tour_feas = false;
   rval = is_best_tour_feas(tour_feas);
   if(rval) goto CLEANUP;
