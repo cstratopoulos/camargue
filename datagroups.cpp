@@ -77,11 +77,11 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     plan.linkern.quadnearest = 5;
     plan.linkern.greedy_start = 0;
     plan.linkern.nkicks = (m_graph.node_count / 100) + 1;
-    plan.nearest = quadnearest;
+    plan.quadnearest = quadnearest;
 
     cout << plan.linkern.count << " LK tours, "
-      // << plan.quadnearest << " quad-nearest, "
-	 << plan.nearest << "-nearest, "
+	 << plan.quadnearest << " quad-nearest, "
+      //	 << plan.nearest << "-nearest, "
 	 << "seed " << edgegen_seed
 	 << "\n";
 
@@ -137,7 +137,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   int *tlist = (int *) NULL;
   int *cyc = (int *) NULL;
   double bestval, val;
-  int trials = 4;// (user_seed == 0) ? 10 : 0;
+  int trials = 10;
   int silent = 1;
   int kicks = 1000;
   int istour;
