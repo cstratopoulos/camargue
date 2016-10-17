@@ -13,4 +13,4 @@ PSEP
 
 #no softlink to problems folder or sloc script
 problems
-sloc
+sloc.tramp_history
