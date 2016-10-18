@@ -1,3 +1,17 @@
+CUTS TO IMPLEMENT
+     -GH fastblossoms
+     -Some type of block comb heuristic
+     -Padberg-Hong comb/generalized comb/chain heuristics for subtours
+
+Make more generalized use of build_s_graph for support graphs? It can
+be used by just specifying support indices and an LP solution, so this
+could be used to construct fractional, epsilon, etc. support graphs
+
+Consider implementing non-degenerate pivot through an optimization
+callback that terminates optimization when objval changes. Could also
+record itcount. Also, could use to get the tour row and colstat
+more often. Experiment with every round, every certain number, etc. 
+
 If augrounds is zero, need to add a switch to test if pool cuts are
 still tight....
 
@@ -6,9 +20,6 @@ Column generation:
        optimal primal/dual solutions and reduced costs. This could just mean
        we need to price/add more edges, but for the existing edges, we could
        use optimality to prune by reduced cost before scanning the edge set. 
-
-Add a 'picky' switch to the Gomory cuts which determines whether we insist on
-only adding a round of exact cuts
 
 There may be no need to specialize the CutQueue template class. Once an 
 ExternalCut rep class is created, we will simply move HyperGraphs to the
@@ -37,10 +48,6 @@ template class....
 In preparation for column generation approach, (and also for portability?)
 cut classes should not get the LP itself. They should just store a best cut
 or coefficients or something and have CutControl manage the addition of cuts
-
-With blossoms and dominos, it may make sense to store a list/pool of violated
-cuts and check those before generating new ones.
-Probably shouldn't bother with segments though
 
 learn to call CPXaddrowS for multiple cuts
 
@@ -96,9 +103,3 @@ rounds
 current approach is sloppy, could use a big overhaul. Ideas:
 -now that no_opt/basis refactor works, could be possible to skip
 re-optimizing LP
-
-MIP CUT DENSITIES
-do some experiments reporting number of nonzeros in segment and
-blossom cuts, hence try to determine a reasonable number or ratio
-of nonzeros and only terminate CPLEX cutting with a tight,
-sufficiently sparse cut
