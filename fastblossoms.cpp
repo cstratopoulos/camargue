@@ -181,7 +181,7 @@ int Cut<fastblossom>::oc_sep()
 
 int Cut<fastblossom>::GH_sep()
 {
-  cout << "Calling GH sep-------" << endl;
+  cout << "Calling GH sep-------, local q size" << local_q.size()  << endl;
   int rval = 0;
   int ncount = m_graph.node_count;
   int component_count = 0;
@@ -236,13 +236,16 @@ int Cut<fastblossom>::GH_sep()
       cout << "Nontrivial component of size" << component_sizes[i] << endl;
 
       vector<int> handle_nodes;
+      set<int> handle_set;
       vector<int> teeth;
+      set<int> teeth_set;
       int deltacount = 0;
       bool has_intersection = true;
 
       try {
 	for(int k = 0; k < component_sizes[i]; k++){
 	  handle_nodes.push_back(component_nodes[j]);
+	  handle_set.insert(component_nodes[j]);
 	  j++;
 	}
       } catch(...){
@@ -251,93 +254,149 @@ int Cut<fastblossom>::GH_sep()
 
       cout << "Got " << handle_nodes.size() << " handle nodes" << endl;
 
-      do {
-	cout << "Pass of do while loop" << endl;
-	teeth.clear();
-	GraphUtils::get_delta(handle_nodes.size(), &handle_nodes[0],
-			      support_indices.size(), &support_elist[0],
-			      &deltacount, &delta[0], &edge_marks[0]);
-	cout << "Got delta" << endl;
+      GraphUtils::get_delta(handle_nodes.size(), &handle_nodes[0],
+			    support_indices.size(), &support_elist[0],
+			    &deltacount, &delta[0], &edge_marks[0]);
+      cout << "Got delta, count" << deltacount << endl;
+      if(deltacount < 2) continue;
 
-	try {
-	  for(int k = 0; k < deltacount; k++){
-	    int sup_ind = delta[k];
-	    int edge_ind = support_indices[sup_ind];
+      try {
+	for(int k = 0; k < deltacount; k++){
+	  int sup_ind = delta[k];
+	  int edge_ind = support_indices[sup_ind];
 
-	    if(support_ecap[sup_ind] > 1 - GH_eps){
-	      edge_marks[support_elist[2 * sup_ind]] += 1;
-	      edge_marks[support_elist[(2 * sup_ind) + 1]] += 1;
-	      teeth.push_back(edge_ind);
-	    }
+	  if(support_ecap[sup_ind] > 1 - GH_eps){
+	    edge_marks[support_elist[2 * sup_ind]] += 1;
+	    edge_marks[support_elist[(2 * sup_ind) + 1]] += 1;
+	    teeth_set.insert(edge_ind);
 	  }
-	} catch(...){ rval = 1; PSEP_GOTO_CLEANUP("Couldn't get teeth. "); }
+	}
+      } catch(...){ rval = 1; PSEP_GOTO_CLEANUP("Couldn't get teeth. "); }
 
-	cout << "Got " << teeth.size() << " teeth" << endl;
+      cout << "Got " << teeth_set.size() << " teeth" << endl;
 
-	if(teeth.size() % 2 == 0){
-	  int best_edge_ind = -1, best_sup_ind = -1;
-	  double max_little = -1.0;
+      if(teeth_set.size() % 2 == 0){
+	int best_edge_ind = -1, best_sup_ind = -1;
+	double max_little = -1.0;
 
-	  for(int k = 0; k < deltacount; k++){
-	    int sup_ind = delta[k];
-	    int edge_ind = support_indices[sup_ind];
+	for(int k = 0; k < deltacount; k++){
+	  int sup_ind = delta[k];
+	  int edge_ind = support_indices[sup_ind];
 
-	    if(support_ecap[sup_ind] < GH_eps &&
-	       support_ecap[sup_ind] > max_little){
-	      best_edge_ind = edge_ind;
-	      best_sup_ind = sup_ind;
-	      max_little = support_ecap[sup_ind];
-	    }
-	  }
-
-	  if(best_edge_ind >= 0){
-	    edge_marks[support_elist[2 * best_sup_ind]] += 1;
-	    edge_marks[support_elist[(2 * best_sup_ind) + 1]] += 1;
-	    teeth.push_back(best_edge_ind);
-	    cout << "Now have " << teeth.size() << " teeth" << endl;
-	  } else {
-	    break;
-	    cout << "Couldn't fix teeth size!" << endl;
+	  if(support_ecap[sup_ind] < GH_eps &&
+	     support_ecap[sup_ind] > max_little){
+	    best_edge_ind = edge_ind;
+	    best_sup_ind = sup_ind;
+	    max_little = support_ecap[sup_ind];
 	  }
 	}
 
+	if(best_edge_ind >= 0){
+	  edge_marks[support_elist[2 * best_sup_ind]] += 1;
+	  edge_marks[support_elist[(2 * best_sup_ind) + 1]] += 1;
+	  teeth_set.insert(best_edge_ind);
+	  cout << "Now have " << teeth_set.size() << " teeth" << endl;
+	} else {
+	  cout << "Couldn't fix teeth size!" << endl;
+	  for(int l = 0; l < edge_marks.size(); l++)
+	    edge_marks[l] = 0;
+	  continue;
+	}
+      }
+
+      for(int k = 0; k < handle_nodes.size(); k++)
+	edge_marks[handle_nodes[k]] *= -1;
+
+      while(true){
+	cout << "Pass of the intersection loop" << endl;
 	has_intersection = false;
 
-	for(int k = 0; k < handle_nodes.size(); k++)
-	  edge_marks[handle_nodes[k]] *= -1;
+	for(set<int>::iterator it = teeth_set.begin();
+	    it != teeth_set.end(); ){
+	  int edge_ind = *it;
+	  Edge e = m_graph.edges[edge_ind];
+	  int end0 = e.end[0], end1 = e.end[1];
+	  int markstat0 = edge_marks[end0], markstat1 = edge_marks[end1];
 
-	for(int k = 0; k < edge_marks.size(); k++){
-	  if(edge_marks[k] > 1){
-	    try { handle_nodes.push_back(k); } catch(...){
-	      rval = 1; PSEP_GOTO_CLEANUP("Couldn't grow handle. ");
-	    }
-
-	    cout << "Added node " << k << ", meets out of handle" << endl;
+	  if(fabs(markstat0) > 1 || fabs(markstat1) > 1){
+	    cout << "Erasing edge ";
+	    m_graph.print_edge(edge_ind);
 	    has_intersection = true;
+	    it = teeth_set.erase(it);
+	  }
+	  else {
+	    ++it;
 	    continue;
 	  }
 
-	  if(edge_marks[k] < -1){
-	    handle_nodes.erase(remove(handle_nodes.begin(),
-				      handle_nodes.end(), k),
-			       handle_nodes.end());
-	    cout << "Removed " << k << ", intersection in handle" << endl;
-	    has_intersection = true;
-	    continue;
-	  }	  
+	  if(markstat0 < -1){
+	    handle_set.erase(end0);
+	    cout << "Removing " << end0 << " from handle" << endl;
+	  } else if (markstat0 > 1) {
+	    handle_set.insert(end0);
+	    cout << "Adding " << end0 << " to handle" << endl;
+	  }
+
+	  if(markstat1 < -1){
+	    handle_set.erase(end1);
+	    cout << "Removing " << end1 << " from handle" << endl;
+	  } else if (markstat1 > 1) {
+	    handle_set.insert(end1);
+	    cout << "Adding " << end1 << " to handle" << endl;
+	  }
 	}
 
+	
 	for(int k = 0; k < edge_marks.size(); k++)
 	  edge_marks[k] = 0;
-      
-      } while(has_intersection);
 
-      cout << "Out of do while loop, checking for even number of teeth or "
+	cout << "Re-zeroed edge marks" << endl;
+
+	if(!has_intersection) break;
+
+	for(set<int>::iterator it = teeth_set.begin();
+	    it != teeth_set.end(); it++){
+	  Edge e = m_graph.edges[*it];
+	  edge_marks[e.end[0]] += 1;
+	  edge_marks[e.end[1]] += 1;
+	}
+
+	for(set<int>::iterator it = handle_set.begin();
+	    it != handle_set.end(); it++)
+	  edge_marks[*it] *= -1;
+
+	cout << "Updated edge marks for new handle/teeth" << endl;
+      }
+
+      cout << "Out  while loop, checking for even number of teeth or "
 	   << "less than 3" << endl;
-      if(teeth.size() % 2 == 0 || teeth.size() < 3){
+      if(teeth_set.size() % 2 == 0 || teeth_set.size() < 3){
 	cout << "Bad teeth size, continuing" << endl;
 	continue;
       }
+    
+
+      try {
+	handle_nodes.resize(handle_set.size());
+	teeth.resize(teeth_set.size());
+      } catch(...){
+	rval = 1;
+	PSEP_GOTO_CLEANUP("Couldn't copy tooth/handle sets to vec. ");
+      }
+
+      { int l = 0;
+	for(set<int>::iterator it = handle_set.begin();
+	    it != handle_set.end(); it++)
+	  handle_nodes[l++] = *it;	
+      }
+
+      { int l = 0;
+	for(set<int>::iterator it = teeth_set.begin();
+	    it != teeth_set.end(); it++)
+	  teeth[l++] = *it;
+      }
+
+      cout << "Copied sets back to vectors" << endl;
       
       
       sort(teeth.begin(), teeth.end(),
@@ -404,7 +463,7 @@ int Cut<fastblossom>::GH_sep()
 	} catch(...){
 	  rval = 1; PSEP_GOTO_CLEANUP("Couldn't push to local queue. ");
 	}
-	cout << "Pushed to local q" << endl;
+	cout << "!!!!!Pushed to local q!!!!!" << endl;
       }      
     }
     }
@@ -451,7 +510,7 @@ int Cut<fastblossom>::build_hypergraph(const fastblossom &blossom_cut)
 
 int Cut<fastblossom>::separate()
 {
-  int rval = 0, oc_rval = 0, gh_rval = 2;
+  int rval = 0, oc_rval = 2, gh_rval = 2;
 
   oc_rval = oc_sep();
   if(oc_rval == 1) { rval = 1; goto CLEANUP; }
@@ -460,12 +519,12 @@ int Cut<fastblossom>::separate()
     cout << "No odd cut blossoms found, calling GH" << endl;
     gh_rval = GH_sep();
     if(gh_rval == 1) { rval = 1; goto CLEANUP; }
+    cout << "Done gh sep with rval " << gh_rval << endl;
   }
 
   if(gh_rval == 2 && oc_rval == 2) rval = 2;
 
-  if(gh_rval == 1) rval = 1;
-
+  
  CLEANUP:
   if(rval == 1)
     cerr << "Cut<fastblossom>::separate failed\n";
