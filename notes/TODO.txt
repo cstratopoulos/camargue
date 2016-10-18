@@ -6,11 +6,15 @@ CUTS TO IMPLEMENT
 Make more generalized use of build_s_graph for support graphs? It can
 be used by just specifying support indices and an LP solution, so this
 could be used to construct fractional, epsilon, etc. support graphs
+Idea: pass predicate function as an argument, if true then the edge is
+added to the graph
 
 Consider implementing non-degenerate pivot through an optimization
 callback that terminates optimization when objval changes. Could also
 record itcount. Also, could use to get the tour row and colstat
-more often. Experiment with every round, every certain number, etc. 
+more often. Experiment with every round, every certain number, etc.
+In this way, basis copying could be fully managed by the callback
+function, possibly giving better encapsulation
 
 If augrounds is zero, need to add a switch to test if pool cuts are
 still tight....
