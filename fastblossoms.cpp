@@ -3,14 +3,19 @@
 
 #include <concorde/INCLUDE/cut.h>
 
+#include <algorithm>
 #include <iostream>
+#include <set>
+#include <iterator>
+
+#include <cmath>
 
 using namespace std;
 using namespace PSEP;
 
-int Cut<fastblossom>::separate()
+int Cut<fastblossom>::oc_sep()
 {
-  int rval = 1;
+  int rval = 0;
   int ncount = m_graph.node_count;
   int component_count = 0;
 
@@ -20,6 +25,10 @@ int Cut<fastblossom>::separate()
   //array of length ncount storing component nodelists consecutively
   //the first component_sizes[0] elements making up the first component, etc
   int *component_nodes = (int *) NULL;
+
+  vector<int> frac_indices;
+  vector<int> frac_elist;
+  vector<double> frac_ecap;
 
   try {
     for(int i = 0; i < support_indices.size(); i++){
@@ -155,8 +164,6 @@ int Cut<fastblossom>::separate()
 	local_q.push_front(newcut);
 	//cout << "    Pushed blossom to local queue" << endl;
       }
-    } else {
-      //cout << "Not a fast blossom : (" << endl;
     }
   }
   }
@@ -166,9 +173,250 @@ int Cut<fastblossom>::separate()
 
  CLEANUP:
   if(rval == 1)
-    cerr << "Problem in Cut<fastblossom>::separate\n";
+    cerr << "Problem in Cut<fastblossom>::oc_sep\n";
   if(component_nodes) free(component_nodes);
   if(component_sizes) free(component_sizes);
+  return rval;
+}
+
+int Cut<fastblossom>::GH_sep()
+{
+  cout << "Calling GH sep-------" << endl;
+  int rval = 0;
+  int ncount = m_graph.node_count;
+  int component_count = 0;
+
+  //array of length component_count containing sizes of components
+  int *component_sizes = (int *) NULL;
+
+  //array of length ncount storing component nodelists consecutively
+  //the first component_sizes[0] elements making up the first component, etc
+  int *component_nodes = (int *) NULL;
+
+  vector<int> eps_indices;
+  vector<int> eps_elist;
+  vector<double> eps_ecap;
+
+  try {
+    for(int i = 0; i < support_indices.size(); i++){
+      int edge_index = support_indices[i];
+      if(support_ecap[i] >= GH_eps && support_ecap[i] <= 1 - GH_eps){
+	eps_indices.push_back(edge_index);
+	eps_ecap.push_back(support_ecap[i]);
+	eps_elist.push_back(support_elist[2 * i]);
+	eps_elist.push_back(support_elist[(2 * i) + 1]);
+      }
+    }
+  } catch(...){ rval = 1; PSEP_GOTO_CLEANUP("Couldn't set eps edges. "); }
+
+  if(eps_indices.empty()) {
+    rval = 2;
+    cout << "No eps edges!" << endl;
+    goto CLEANUP;
+  }
+
+  cout << "Got nonempty collection of epsilon edges" << endl;
+
+  rval = CCcut_connect_components(ncount, eps_indices.size(),
+				  &eps_elist[0], &eps_ecap[0],
+				  &component_count,
+				  &component_sizes,
+				  &component_nodes);
+  PSEP_CHECK_RVAL(rval, "CCcut_connect_components failed. ");
+
+  cout << "Got components of gh cutgraph" << endl;
+
+  {int j = 0; //scoped index for traversing component nodes
+    for(int i = 0; i < component_count; i++){
+      if(component_sizes[i] == 1){
+	j++;
+	continue;
+      }
+
+      cout << "Nontrivial component of size" << component_sizes[i] << endl;
+
+      vector<int> handle_nodes;
+      vector<int> teeth;
+      int deltacount = 0;
+      bool has_intersection = true;
+
+      try {
+	for(int k = 0; k < component_sizes[i]; k++){
+	  handle_nodes.push_back(component_nodes[j]);
+	  j++;
+	}
+      } catch(...){
+	rval = 1; PSEP_GOTO_CLEANUP("Couldn't get handle nodes. ");
+      }
+
+      cout << "Got " << handle_nodes.size() << " handle nodes" << endl;
+
+      do {
+	cout << "Pass of do while loop" << endl;
+	teeth.clear();
+	GraphUtils::get_delta(handle_nodes.size(), &handle_nodes[0],
+			      support_indices.size(), &support_elist[0],
+			      &deltacount, &delta[0], &edge_marks[0]);
+	cout << "Got delta" << endl;
+
+	try {
+	  for(int k = 0; k < deltacount; k++){
+	    int sup_ind = delta[k];
+	    int edge_ind = support_indices[sup_ind];
+
+	    if(support_ecap[sup_ind] > 1 - GH_eps){
+	      edge_marks[support_elist[2 * sup_ind]] += 1;
+	      edge_marks[support_elist[(2 * sup_ind) + 1]] += 1;
+	      teeth.push_back(edge_ind);
+	    }
+	  }
+	} catch(...){ rval = 1; PSEP_GOTO_CLEANUP("Couldn't get teeth. "); }
+
+	cout << "Got " << teeth.size() << " teeth" << endl;
+
+	if(teeth.size() % 2 == 0){
+	  int best_edge_ind = -1, best_sup_ind = -1;
+	  double max_little = -1.0;
+
+	  for(int k = 0; k < deltacount; k++){
+	    int sup_ind = delta[k];
+	    int edge_ind = support_indices[sup_ind];
+
+	    if(support_ecap[sup_ind] < GH_eps &&
+	       support_ecap[sup_ind] > max_little){
+	      best_edge_ind = edge_ind;
+	      best_sup_ind = sup_ind;
+	      max_little = support_ecap[sup_ind];
+	    }
+	  }
+
+	  if(best_edge_ind >= 0){
+	    edge_marks[support_elist[2 * best_sup_ind]] += 1;
+	    edge_marks[support_elist[(2 * best_sup_ind) + 1]] += 1;
+	    teeth.push_back(best_edge_ind);
+	    cout << "Now have " << teeth.size() << " teeth" << endl;
+	  } else {
+	    break;
+	    cout << "Couldn't fix teeth size!" << endl;
+	  }
+	}
+
+	has_intersection = false;
+
+	for(int k = 0; k < handle_nodes.size(); k++)
+	  edge_marks[handle_nodes[k]] *= -1;
+
+	for(int k = 0; k < edge_marks.size(); k++){
+	  if(edge_marks[k] > 1){
+	    try { handle_nodes.push_back(k); } catch(...){
+	      rval = 1; PSEP_GOTO_CLEANUP("Couldn't grow handle. ");
+	    }
+
+	    cout << "Added node " << k << ", meets out of handle" << endl;
+	    has_intersection = true;
+	    continue;
+	  }
+
+	  if(edge_marks[k] < -1){
+	    handle_nodes.erase(remove(handle_nodes.begin(),
+				      handle_nodes.end(), k),
+			       handle_nodes.end());
+	    cout << "Removed " << k << ", intersection in handle" << endl;
+	    has_intersection = true;
+	    continue;
+	  }	  
+	}
+
+	for(int k = 0; k < edge_marks.size(); k++)
+	  edge_marks[k] = 0;
+      
+      } while(has_intersection);
+
+      cout << "Out of do while loop, checking for even number of teeth or "
+	   << "less than 3" << endl;
+      if(teeth.size() % 2 == 0 || teeth.size() < 3){
+	cout << "Bad teeth size, continuing" << endl;
+	continue;
+      }
+      
+      
+      sort(teeth.begin(), teeth.end(),
+	   [this](const int &e1, const int &e2) -> bool
+	   { return m_lp_edges[e1] > m_lp_edges[e2]; });
+
+      cout << "Sorted teeth by lpweight" << endl;
+
+      int k_upper = teeth.size();
+      int k_lower = (k_upper == 3) ? k_upper : k_upper - 2;
+
+      GraphUtils::get_delta(handle_nodes, m_graph.edges, &deltacount, delta,
+			    edge_marks);
+
+      cout << "Got handle delta, k lower/upper: "
+	   << k_lower << ", " << k_upper << endl;
+
+      for(int k = k_lower; k <= k_upper; k += 2){
+	bool tight = false, violated = false;
+	int num_teeth = k;
+	cout << "Num teeth (k) = " << k << endl;
+
+	int sum_e_F = 0, sum_handle_minus_F = 0;
+
+	double lp_e_F = 0.0, lp_handle_minus_F = 0.0;
+	double rhs = 1 - num_teeth, lhs;
+
+	for(int l = 0; l < num_teeth; l++){
+	  sum_e_F += best_tour_edges[teeth[l]];
+	  lp_e_F += m_lp_edges[teeth[l]];
+
+	  sum_handle_minus_F -= best_tour_edges[teeth[l]];
+	  lp_handle_minus_F -= m_lp_edges[teeth[l]];
+	}
+
+	cout << "x(F) tour/lp: " << sum_e_F << ", " << lp_e_F << endl;
+
+	for(int l = 0; l < deltacount; l++){
+	  sum_handle_minus_F += best_tour_edges[delta[l]];
+	  lp_handle_minus_F += m_lp_edges[delta[l]];
+	}
+
+	cout << "x(d(H)\\F) tour/lp: " << sum_handle_minus_F
+	     << ", " << lp_handle_minus_F << endl;
+
+	tight = ((sum_e_F == num_teeth && sum_handle_minus_F == 1) ||
+		 (sum_e_F == num_teeth - 1 && sum_handle_minus_F == 0));
+
+	lhs = lp_handle_minus_F - lp_e_F;
+	violated = (lhs < rhs);
+
+	cout << "tight/viol " << tight << "/" << violated << endl;
+
+	if(!(tight && violated)) continue;
+
+	try {
+	  if(num_teeth == teeth.size()){
+	    local_q.push_front(fastblossom(handle_nodes, teeth));
+	  } else {
+	    vector<int> partial_teeth(teeth.begin(),
+				      teeth.begin() + num_teeth);
+	    local_q.push_front(fastblossom(handle_nodes, partial_teeth));
+	  }
+	} catch(...){
+	  rval = 1; PSEP_GOTO_CLEANUP("Couldn't push to local queue. ");
+	}
+	cout << "Pushed to local q" << endl;
+      }      
+    }
+    }
+
+  if(local_q.size() == 0) rval = 2;
+
+ CLEANUP:
+  if(rval == 1)
+    cerr << "Cut<fastblossom>::GH_sep failed.\n";
+  if(component_nodes) free(component_nodes);
+  if(component_sizes) free(component_sizes);
+
   return rval;
 }
 
@@ -198,6 +446,29 @@ int Cut<fastblossom>::build_hypergraph(const fastblossom &blossom_cut)
  CLEANUP:
   if(rval)
     cerr << "Cut<fastblossom>::build_hypergraph failed\n";
+  return rval;
+}
+
+int Cut<fastblossom>::separate()
+{
+  int rval = 0, oc_rval = 0, gh_rval = 2;
+
+  oc_rval = oc_sep();
+  if(oc_rval == 1) { rval = 1; goto CLEANUP; }
+
+  if(oc_rval == 2){
+    cout << "No odd cut blossoms found, calling GH" << endl;
+    gh_rval = GH_sep();
+    if(gh_rval == 1) { rval = 1; goto CLEANUP; }
+  }
+
+  if(gh_rval == 2 && oc_rval == 2) rval = 2;
+
+  if(gh_rval == 1) rval = 1;
+
+ CLEANUP:
+  if(rval == 1)
+    cerr << "Cut<fastblossom>::separate failed\n";
   return rval;
 }
 
@@ -233,8 +504,5 @@ int Cut<fastblossom>::cutcall()
  CLEANUP:
   if(rval == 1)
     cerr << "Problem in Cuts<fastblossom>::cutcall\n";
-  frac_indices.clear();
-  frac_elist.clear();
-  frac_ecap.clear();
   return rval;
 }
