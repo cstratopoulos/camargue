@@ -125,27 +125,27 @@ int CandidateTeeth::get_distant_teeth(const int root)
 
     for(int j = i; j < ncount - 1; j++){
       int body_end = (root + j) % ncount;
-      SimpleTooth::Ptr cand(new SimpleTooth(root, body_start, body_end));
+      SimpleTooth cand(root, body_start, body_end);
       int new_vx = best_tour_nodes[body_end];
 
-      increment_slack(*cand, new_vx, lhs, rhs);
+      increment_slack(cand, new_vx, lhs, rhs);
 
-      if(cand->slack >= 0.5 - LP::EPSILON || cand->slack < 0)
+      if(cand.slack >= 0.5 - LP::EPSILON || cand.slack < 0)
 	continue;
 
-      if(body_size(*cand) > (ncount - 2) / 2)
-	complement(*cand);
+      if(body_size(cand) > (ncount - 2) / 2)
+	complement(cand);
 
-      if(body_size(*cand) == 1){
-	if(cand->root > cand->body_start &&
-	   !light_teeth[cand->body_start].empty()){
+      if(body_size(cand) == 1){
+	if(cand.root > cand.body_start &&
+	   !light_teeth[cand.body_start].empty()){
 	  bool found_dup = false;
-	  for(auto orig = light_teeth[cand->body_start].rbegin();
-	      orig != light_teeth[cand->body_start].rend(); orig++){
+	  for(auto orig = light_teeth[cand.body_start].rbegin();
+	      orig != light_teeth[cand.body_start].rend(); orig++){
 	    if(body_size(**orig) > 1) break;
 
-	    if((*orig)->body_start == cand->root &&
-	       cand->body_start == (*orig)->root){
+	    if((*orig)->body_start == cand.root &&
+	       cand.body_start == (*orig)->root){
 	      found_dup = true;
 	      break;
 	    }
@@ -155,7 +155,9 @@ int CandidateTeeth::get_distant_teeth(const int root)
 	}
       }
 
-      try { light_teeth[root].push_back(move(cand)); } catch(...){
+      try {
+	light_teeth[root].emplace_back(SimpleTooth::Ptr(new SimpleTooth(cand)));
+      } catch(...){
 	PSEP_SET_GOTO(rval, "Couldn't push back light tooth. ");
       }
 			    
