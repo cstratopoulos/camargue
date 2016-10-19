@@ -10,7 +10,6 @@
 #include "segments.hpp"
 #include "blossoms.hpp"
 #include "fastblossoms.hpp"
-#include "dominos.hpp"
 #include "safegmi.hpp"
 #include "cuts.hpp"
 #include "PSEP_util.hpp"
@@ -41,11 +40,6 @@ public:
 		 SupportGroup.support_indices,
 		 SupportGroup.support_elist, SupportGroup.support_ecap,
 		 blossom_q),
-    dominos(GraphGroup.edge_marks,
-	    GraphGroup.m_graph.edge_lookup,
-	    BestGroup.best_tour_nodes, BestGroup.perm, LPGroup.m_lp,
-	    LPGroup.m_lp_edges, SupportGroup.G_s, SupportGroup.support_elist,
-	    SupportGroup.support_ecap),
     safe_gomory(BestGroup.best_tour_edges,
 		LPGroup.m_lp, LPGroup.m_lp_edges, LPGroup.frac_colstat,
 		LPGroup.frac_rowstat,
@@ -76,7 +70,6 @@ private:
   PSEP::Cut<PSEP::seg> segments;
   PSEP::Cut<PSEP::blossom> blossoms;
   PSEP::Cut<PSEP::fastblossom> fastblossoms;
-  PSEP::Cut<PSEP::domino> dominos;
 
   PSEP::Cut<PSEP::safeGMI> safe_gomory;
 

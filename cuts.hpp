@@ -71,17 +71,6 @@ struct fastblossom {
 
 /* The cuts below are dummy structures which are not actually used at the
  * moment but may be useful if cut pools or column gen are implemented */
-  
-/* Struct for storing simple DP inequalities */
-struct domino {
-  domino(){}
-  domino(std::vector<int> &_handle,
-	 std::vector<std::shared_ptr<CandTooth::SimpleTooth>> _teeth) :
-    handle(_handle), used_teeth(_teeth) {}
-
-  std::vector<int> handle;
-  std::vector<std::shared_ptr<CandTooth::SimpleTooth>> used_teeth;
-};
 
 /* cut mimicking the parameters used to add a row in CPLEX; used for safe
  * Gomory cut separation
