@@ -1,5 +1,7 @@
+In addition to LP prefs and randprob, there should be bestprefs and
+graphprefs for LK trials, quad-nearest, etc. 
+
 CUTS TO IMPLEMENT
-     -GH fastblossoms
      -Some type of block comb heuristic
      -Padberg-Hong comb/generalized comb/chain heuristics for subtours
 
