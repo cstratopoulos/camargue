@@ -19,20 +19,37 @@ int CandidateTeeth::get_light_teeth()
   int rval = 0;
   clear_collection();
 
+  double ft = 0, ft_d = 0, st = 0;
+
   for(int i = 0; i < G_s.node_count; i++){
+    //    cout << "=== ROOT " << i << ", ";
+      
+    double ft_i = zeit();
     rval = get_adjacent_teeth(i);
     if(rval) goto CLEANUP;
-    
+    ft += zeit() - ft_i;
+
+    //    cout << light_teeth[i].size() << " adj teeth, ";
+
+    double ft_d_i = zeit();
     rval = get_distant_teeth(i);
     if(rval) goto CLEANUP;
+    ft_d += zeit() - ft_d_i;
 
+    //    cout << light_teeth[i].size() << " total after dist\n";// << endl;
+
+    double st_i = zeit();
     if(!light_teeth[i].empty()) //lambda to sort by decreasing body size
       sort(light_teeth[i].begin(), light_teeth[i].end(),
 	   [this](const SimpleTooth::Ptr &T,
 		  const SimpleTooth::Ptr &R) -> bool {
 	     return body_size(*T) > body_size(*R);
 	   });
+    st += zeit() - st_i;
   }
+
+  cout << ft << "s finding adjacent teeth, " << ft_d
+       << "s finding distant teeth, " << st << "s sorting" << endl;
 
  CLEANUP:
   if(rval == 1){
@@ -88,6 +105,8 @@ int CandidateTeeth::get_adjacent_teeth(const int root)
     }
   }
 
+  for(int k = 0; k < edge_marks.size(); k++) edge_marks[k] = 0;
+
  CLEANUP:
   if(rval)
     cerr << "CandidateTeeth::get_adjacent_teeth failed\n";
@@ -97,7 +116,56 @@ int CandidateTeeth::get_adjacent_teeth(const int root)
 int CandidateTeeth::get_distant_teeth(const int root)
 {
   int rval = 0;
+  int ncount = G_s.node_count;
 
+  for(int i = 2; i < ncount - 1; i++){
+    int body_start = (root + i) % ncount;
+    double lhs = 0.0;
+    int rhs = -1;
+
+    for(int j = i; j < ncount - 1; j++){
+      int body_end = (root + j) % ncount;
+      SimpleTooth::Ptr cand(new SimpleTooth(root, body_start, body_end));
+      int new_vx = best_tour_nodes[body_end];
+
+      increment_slack(*cand, new_vx, lhs, rhs);
+
+      if(cand->slack >= 0.5 - LP::EPSILON || cand->slack < 0)
+	continue;
+
+      if(body_size(*cand) > (ncount - 2) / 2)
+	complement(*cand);
+
+      if(body_size(*cand) == 1){
+	if(cand->root > cand->body_start &&
+	   !light_teeth[cand->body_start].empty()){
+	  bool found_dup = false;
+	  for(auto orig = light_teeth[cand->body_start].rbegin();
+	      orig != light_teeth[cand->body_start].rend(); orig++){
+	    if(body_size(**orig) > 1) break;
+
+	    if((*orig)->body_start == cand->root &&
+	       cand->body_start == (*orig)->root){
+	      found_dup = true;
+	      break;
+	    }
+	  }
+	  if(found_dup)
+	    continue;
+	}
+      }
+
+      try { light_teeth[root].push_back(move(cand)); } catch(...){
+	PSEP_SET_GOTO(rval, "Couldn't push back light tooth. ");
+      }
+			    
+    }
+    for(int k = 0; k < edge_marks.size(); k++) edge_marks[k] = 0;
+  }
+
+ CLEANUP:
+  if(rval)
+    cerr << "CandidateTeeth::get_distant_teeth failed\n";
   return rval;
 }
 
@@ -194,8 +262,9 @@ void CandidateTeeth::increment_slack(SimpleTooth &T, const int new_vx,
       continue;
     }
 
-    if(other_end == best_tour_nodes[T.root])
+    if(other_end == best_tour_nodes[T.root]){
       lhs += lp_weight;
+    }
   }
 
   T.slack = rhs - lhs;
@@ -222,10 +291,10 @@ void CandidateTeeth::print_tooth(const SimpleTooth &T)
 void CandidateTeeth::print_collection()
 {
   for(int i = 0; i < G_s.node_count; i++){
-    cout << "===PRINTING LIGHT TEETH WITH ROOT "
+    cout << "=== LIGHT TEETH WITH ROOT "
 	 << best_tour_nodes[i] << ", " << light_teeth[i].size() << " TOTAL==="
 	 << endl;
-    for(SimpleTooth::Ptr &T : light_teeth[i])
-      print_tooth(*T);
+    // for(SimpleTooth::Ptr &T : light_teeth[i])
+    //   print_tooth(*T);
   }
 }

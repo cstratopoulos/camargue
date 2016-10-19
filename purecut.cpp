@@ -36,7 +36,6 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
     rounds++;
     augrounds++;
 
-
     if(rounds % 50 == 0){
       if(plan.perform_elim()){
 	cout << "Calling edge elimination again...\n\n  ";
@@ -95,6 +94,11 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       augrounds = 0;
       continue;
     }
+
+    // if(augrounds == 5){
+    //   print.lp_edges();
+    //   print.best_tour_nodes();
+    // }
 
     cut_rval = CutControl.primal_sep(augrounds, piv_stat);
     if(cut_rval == 1){
