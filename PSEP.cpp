@@ -26,15 +26,11 @@ int main(int argc, char* argv[]){
   PSEP::LP::Prefs prefs;
   PSEP::RandProb randprob;
   unique_ptr<CCdatagroup> dat(new CCdatagroup);
+  //TODO: make this a regular ptr bc it confuses valgrind maybe
   string probfile;
   bool do_sparse = false;
   int qnearest = 0;
   //TODO: probably put this somewhere else
-
-  cout << "Size of simple tooth: " << sizeof(PSEP::SimpleTooth) << endl
-       << "      ptr: " << sizeof(PSEP::SimpleTooth *) << endl
-       << "    unique ptr: " << sizeof(std::unique_ptr<PSEP::SimpleTooth>)
-       << endl;
 
   if(initial_parse(argc, argv, probfile, randprob, prefs, do_sparse, qnearest)){
     cerr << "Problem parsing arguments" << endl;

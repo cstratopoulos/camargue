@@ -38,13 +38,19 @@
  * to stderr, as well as similar error messages possibly embedded in 
  * helper_task, hopefully giving a clean description of the source of error
  */
-#define PSEP_GOTO_CLEANUP(message) {std::cerr << message; goto CLEANUP;}
+#define PSEP_GOTO_CLEANUP(message) { std::cerr << message; goto CLEANUP; }
+
 #define PSEP_CHECK_RVAL(rval, message) {                                       \
   if ((rval)) {                                                                \
     std::cerr << message;						\
     goto CLEANUP;							\
   }									\
   }
+
+#define PSEP_SET_GOTO(rval, message) { \
+  rval = 1; \
+  std::cerr << message; \
+  goto CLEANUP; }
 
 namespace PSEP {
   /*

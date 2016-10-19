@@ -16,9 +16,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   if(segval == 1){
     rval = 1;
     goto CLEANUP;
-  }
-
-  
+  }  
   segtime = zeit() - segtime;
   total_segtime += segtime;
   total_segcalls++;
@@ -47,6 +45,25 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   matchtime = zeit() - matchtime;
   total_2mtime += matchtime;
   total_2mcalls++;
+
+  if(segval == 2 && stat != LP::PivType::Subtour){
+    bool in_sub = false;
+    rval = in_subtour_poly(in_sub);
+    if(rval) goto CLEANUP;
+
+    if(in_sub){
+      cout << "Augrounds " << augrounds << ", solution is in subtour polytope, "
+	   << "testing candidate teeth!" << endl;
+
+      rval = candidates.get_light_teeth();
+      if(rval) goto CLEANUP;
+
+      cout << "Got collection of light candidate teeth" << endl;
+      candidates.print_collection();
+
+      rval = 1; goto CLEANUP;
+    }
+  }
 
   // if(prefs.dp_threshold >= 0 && augrounds > 0 &&
   //    (augrounds % prefs.dp_threshold == 0)){
@@ -168,8 +185,7 @@ void CutControl::profile(const double total_time)
 	    << std::setprecision(6);
 }
 
-int CutControl::q_has_viol(bool &result,
-				CutQueue<HyperGraph> &pool_q)
+int CutControl::q_has_viol(bool &result, CutQueue<HyperGraph> &pool_q)
 {
   int rval = 0;
   result = false;
@@ -189,4 +205,26 @@ int CutControl::q_has_viol(bool &result,
   if(rval)
     cerr << "CutControl::q_contains_viol failed\n";
   return rval;
+}
+
+int CutControl::in_subtour_poly(bool &result)
+{
+  int ecount = support_ecap.size(), ncount = G_s.node_count;
+  int end0 = 0;
+  double cutval = 2;
+  result = false;
+
+  for(int end1 = 1; end1 < ncount; end1++){
+    if(CCcut_mincut_st(ncount, ecount, &support_elist[0], &support_ecap[0],
+		       end0, end1, &cutval, (int **) NULL, (int *) NULL)){
+      cerr << "CutControl::in_subtour_poly call to Concorde st-cut failed\n";
+      return 1;
+    }
+
+    if(cutval < 2)
+      return 0;
+  }
+
+  result = true;
+  return 0;
 }
