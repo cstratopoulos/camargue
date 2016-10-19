@@ -1,100 +1,118 @@
-#ifndef PSEP_TOOTH_H
-#define PSEP_TOOTH_H
-
-#include<memory>
-#include<list>
-#include<algorithm>
+#ifndef PSEP_TOOTH_HPP
+#define PSEP_TOOTH_HPP
 
 #include "Graph.hpp"
 
+#include <memory>
+#include <vector>
+
+#define PSEP_TOOTH_UNIQ
+
+
 namespace PSEP {
-  class SimpleDP;
-  
-class CandTooth {
- public:
- CandTooth(std::vector<int> & _tour_nodes, SupportGraph & _G,
-		std::vector<int> & _marks) :
-  best_tour_nodes(_tour_nodes), edge_marks(_marks) {
-    SimpleTooth::ncount = _tour_nodes.size();
-    SimpleTooth::G_s = &_G;
-    SimpleTooth::best_tour_nodes = &_tour_nodes[0];
 
-    light_teeth.resize(_tour_nodes.size());
-    heavy_teeth.resize(_tour_nodes.size());
-  }
+/*
+ * Structure for storing the simple teeth which may comprise simple domino
+ * parity inequalities. A simple tooth is a root node and a segment of a
+ * best known tour, stored as best tour node indices. Hence the root 
+ * node is best_tour_nodes[root], and the segment is
+ * best_tour_nodes[body_start], best_tour_nodes[body_start + 1], ...
+ *                                best_tour_nodes[body_end],
+ * incrementing indices mod ncount. 
+ * A SimpleTooth is meaningless without management by its CandidateTooth
+ * class, which is responsible for all nontrivial operations on the tooth. 
+ */
 
-  void build_collection();
-  void find_root_adjacent_teeth(const int root);
-  void find_root_distant_teeth(const int root);
-
-  class SimpleTooth{
-  public:
-  SimpleTooth() : root(-1), body_start(-1), body_end(-1), node_index(-1){}
-  SimpleTooth(const int _root, const int _body_start, const int _body_end) :
+struct SimpleTooth {
+  SimpleTooth(int _root, int _body_start, int _body_end) :
     root(_root), body_start(_body_start), body_end(_body_end),
-      node_index(-1){
-      if(body_start <= body_end) // [____<---*--->__] gives sandwich
-	sandwich = (body_start <= root && root <= body_end);
-      else //        [--->____<--*--]  OR [--*->____<--] gives sandwich
-	sandwich = (body_start <= root || root <= body_end);
+    slack(INFINITY) {}
 
-      int add_one = (int) (!sandwich);
-      body_size = (body_start <= body_end) ?
-	(body_end - body_start + add_one) :
-	((ncount - body_start) + body_end + add_one);
-    }
+  #ifdef PSEP_TOOTH_UNIQ
+  typedef std::unique_ptr<SimpleTooth> Ptr;
+  #else
+  typedef SimpleTooth* Ptr;
+  #endif
 
-    void parse(std::vector<double> &agg_coeffs, double *rhs_p);
-    static void parse_handle(const std::vector<int> &handle_nodes,
-			     std::vector<double> &agg_coeffs, double *rhs_p);
-    
-    bool body_contains(const int node_perm);
-    static bool C_body_subset(const SimpleTooth &T, const SimpleTooth &R);
-    void complement();
-    void increment_slack(const int new_vx, double *lhs_p, int *rhs_p);
-    
-    bool operator>(const SimpleTooth& T) const {
-      return body_size > T.body_size;
-    }
+  int root;
+  int body_start;
+  int body_end;
 
-    static bool p_greater(const std::shared_ptr<SimpleTooth>  &T,
-			  const std::shared_ptr<SimpleTooth> &R){
-      return *T > *R;
-    }
+  double slack;
 
-    void print();
+  //returns true iff root lies in the middle of the segment from body_start
+  // to body_end
+  bool sandwich() const;
+};
+
+/*
+ * This class generates and manages a collection of candidate teeth to be 
+ * included in a simple domino parity inequality. It is also responsible for
+ * nontrivial operations on teeth which require knowledge of the best tour
+ * and perm and underlying graph used to define them. 
+ */
+
+class CandidateTeeth {
+public:
+  CandidateTeeth(std::vector<int> &_edge_marks,
+		 std::vector<int> &_best_tour_nodes,
+		 SupportGraph &_G_s) :
+    light_teeth(std::vector<std::vector<SimpleTooth::Ptr>>(_G_s.node_count)),
+    //TODO: this may throw
+    edge_marks(_edge_marks), best_tour_nodes(_best_tour_nodes), G_s(_G_s) {}
+
+  int body_size(const SimpleTooth &T);
+
+  //if T has root i, body S, T complement has root i, body V\(Su{i})
+  void complement(SimpleTooth &T);
+
+  /*
+   * For teeth T, R with the same root, returns whether the body of T is a
+   * subset of the body of R, storing the result in result.
+   * TODO: generalize to arbitrary teeth
+   */
+  int body_subset(const SimpleTooth &T, const SimpleTooth &R, bool &result);
+
+
+  /*
+   * This function is used to incrementally compute the slack on a collection
+   * of SimpleTooth structs with the same root. 
+   * Given a root i, we first construct the tooth T with trivial body equal
+   * to a single edge from the current best tour.
+   * lhs is initialized to zero, rhs is initialized to -1
+   * The assumption is that T will be `incremented' to a tooth with the same
+   * root, and body equal to the next node, new_vx, in the tour. Note that
+   * new_vx is some actual node index, NOT best_tour_nodes[new_vx].
+   * This routine will mark a single node in edge_marks, and it is the 
+   * responsibility of the calling routine to zero it out appropriately
+   * before and after.
+   */
+  void increment_slack(SimpleTooth &T, const int new_vx,
+		       double &lhs, int &rhs);
+
+  /*
+   * Build a collection of light teeth: teeth for which the slack of the 
+   * associated simple tooth inequality is less than 1/2
+   */
+  int get_light_teeth();
+
+  void print_tooth(const SimpleTooth &T);
+  void print_collection();
+  
+  std::vector<std::vector<SimpleTooth::Ptr>> light_teeth;
 
   
-    //private:
-    int root;
-    int body_start;
-    int body_end;
-    int body_size;
-    double slack;
-    bool sandwich;
-
-    int node_index;
-
-    friend class PSEP::CandTooth;
-    friend class PSEP::SimpleDP;
-
-    //int node_index;
-    static int ncount;
-    static SupportGraph *G_s;
-    static int *edge_marks;
-    static int *best_tour_nodes;
-  };
-
-  friend class PSEP::SimpleDP;
-
- private:
-  std::vector<std::list<std::shared_ptr<SimpleTooth> > > light_teeth;
-  std::vector<std::list<std::shared_ptr<SimpleTooth> > > heavy_teeth;
-
-  std::vector<int> &best_tour_nodes;
+private:
+  void clear_collection();
+  int get_adjacent_teeth(const int root);
+  int get_distant_teeth(const int root);
+  
   std::vector<int> &edge_marks;
-
+  std::vector<int> &best_tour_nodes;
+  SupportGraph &G_s;
 };
+
 }
+
 
 #endif

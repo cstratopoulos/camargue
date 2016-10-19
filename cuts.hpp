@@ -15,7 +15,6 @@
 
 #include "PSEP_util.hpp"
 #include "setbank.hpp"
-#include "tooth.hpp"
 #include "datagroups.hpp"
 #include "Graph.hpp"
 
@@ -27,7 +26,7 @@ namespace PSEP {
  *              indices for accessing the vector best_tour_nodes. 
  *              Thus the associated segment is best_tour_nodes[start] to
  *              best_tour_nodes[end]
- * viol - the value of the cut associated to the segment
+ * cutval - the value of the cut associated to the segment
  */
 struct seg {
   seg(int _start, int _end, double _cutval) :
@@ -71,17 +70,6 @@ struct fastblossom {
 
 /* The cuts below are dummy structures which are not actually used at the
  * moment but may be useful if cut pools or column gen are implemented */
-  
-/* Struct for storing simple DP inequalities */
-struct domino {
-  domino(){}
-  domino(std::vector<int> &_handle,
-	 std::vector<std::shared_ptr<CandTooth::SimpleTooth>> _teeth) :
-    handle(_handle), used_teeth(_teeth) {}
-
-  std::vector<int> handle;
-  std::vector<std::shared_ptr<CandTooth::SimpleTooth>> used_teeth;
-};
 
 /* cut mimicking the parameters used to add a row in CPLEX; used for safe
  * Gomory cut separation

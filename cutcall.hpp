@@ -10,8 +10,8 @@
 #include "segments.hpp"
 #include "blossoms.hpp"
 #include "fastblossoms.hpp"
-#include "dominos.hpp"
 #include "safegmi.hpp"
+#include "tooth.hpp"
 #include "cuts.hpp"
 #include "PSEP_util.hpp"
 
@@ -41,17 +41,16 @@ public:
 		 SupportGroup.support_indices,
 		 SupportGroup.support_elist, SupportGroup.support_ecap,
 		 blossom_q),
-    dominos(GraphGroup.edge_marks,
-	    GraphGroup.m_graph.edge_lookup,
-	    BestGroup.best_tour_nodes, BestGroup.perm, LPGroup.m_lp,
-	    LPGroup.m_lp_edges, SupportGroup.G_s, SupportGroup.support_elist,
-	    SupportGroup.support_ecap),
     safe_gomory(BestGroup.best_tour_edges,
 		LPGroup.m_lp, LPGroup.m_lp_edges, LPGroup.frac_colstat,
 		LPGroup.frac_rowstat,
 		SupportGroup.support_indices,
 		LPGroup.prefs.max_per_round),
+    candidates(GraphGroup.edge_marks, BestGroup.best_tour_nodes,
+	       SupportGroup.G_s),
     prefs(LPGroup.prefs), m_lp(LPGroup.m_lp), m_lp_edges(LPGroup.m_lp_edges),
+    G_s(SupportGroup.G_s), support_elist(SupportGroup.support_elist),
+    support_ecap(SupportGroup.support_ecap),
     total_segtime(0), total_2mtime(0), total_dptime(0), total_gentime(0),
     total_segcalls(0), total_2mcalls(0), total_gencalls(0){}
 
@@ -66,6 +65,7 @@ public:
 
 private:
   int q_has_viol(bool &result, CutQueue<HyperGraph> &pool_q);
+  int in_subtour_poly(bool &result);
   
   SetBank set_repo;
   CutTranslate translator;
@@ -76,13 +76,18 @@ private:
   PSEP::Cut<PSEP::seg> segments;
   PSEP::Cut<PSEP::blossom> blossoms;
   PSEP::Cut<PSEP::fastblossom> fastblossoms;
-  PSEP::Cut<PSEP::domino> dominos;
 
   PSEP::Cut<PSEP::safeGMI> safe_gomory;
+
+  PSEP::CandidateTeeth candidates;
 
   PSEP::LP::Prefs &prefs;
   PSEPlp &m_lp;
   std::vector<double> &m_lp_edges;
+
+  PSEP::SupportGraph &G_s;
+  std::vector<int> &support_elist;
+  std::vector<double> &support_ecap;
 
   double total_segtime, total_2mtime, total_dptime, total_gentime;
   int total_segcalls, total_2mcalls, total_gencalls;

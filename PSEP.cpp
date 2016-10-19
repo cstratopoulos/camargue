@@ -10,8 +10,8 @@
 #include<getopt.h>
 
 #include "tsp_solver.hpp"
-#include "setbank.hpp"
 #include "PSEP_util.hpp"
+#include "tooth.hpp"
 
 
 using namespace std;
@@ -26,6 +26,7 @@ int main(int argc, char* argv[]){
   PSEP::LP::Prefs prefs;
   PSEP::RandProb randprob;
   unique_ptr<CCdatagroup> dat(new CCdatagroup);
+  //TODO: make this a regular ptr bc it confuses valgrind maybe
   string probfile;
   bool do_sparse = false;
   int qnearest = 0;
