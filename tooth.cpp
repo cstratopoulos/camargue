@@ -6,6 +6,14 @@
 using namespace PSEP;
 using namespace std;
 
+CandidateTeeth::CandidateTeeth(vector<int> &_edge_marks,
+			       vector<int> &_best_tour_nodes,
+			       SupportGraph &_G_s) :
+    edge_marks(_edge_marks), best_tour_nodes(_best_tour_nodes), G_s(_G_s)
+{
+  light_teeth.resize(best_tour_nodes.size());
+}
+
 int CandidateTeeth::get_light_teeth()
 {
   int rval = 0;
@@ -20,7 +28,8 @@ int CandidateTeeth::get_light_teeth()
 
     if(!light_teeth[i].empty()) //lambda to sort by decreasing body size
       sort(light_teeth[i].begin(), light_teeth[i].end(),
-	   [this](SimpleTooth::Ptr &T, SimpleTooth::Ptr &R) -> bool {
+	   [this](const SimpleTooth::Ptr &T,
+		  const SimpleTooth::Ptr &R) -> bool {
 	     return body_size(*T) > body_size(*R);
 	   });
   }
@@ -198,12 +207,14 @@ void CandidateTeeth::print_tooth(const SimpleTooth &T)
   int current_node = T.body_start;
   int upper_limit = body_size(T) + T.sandwich();
 
-  cout << "Root: " << best_tour_nodes[T.root];
-  cout << ", Body: " << best_tour_nodes[T.body_start] << "\n";
+  cout << "Root: " << best_tour_nodes[T.root] << ", body size: "
+       << body_size(T) 
+       << ", Body: \n"
+       << best_tour_nodes[T.body_start] << "\n";
   for(int i = 1; i < upper_limit; i++){
     current_node = best_tour_nodes[(T.body_start + i) % ncount];
     if(current_node != best_tour_nodes[T.root])
-      cout << "        " << current_node << "\n";
+      cout <<current_node << "\n";
   }
   cout << "Slack: " << T.slack << "\n";
 }

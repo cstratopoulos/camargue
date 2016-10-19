@@ -56,10 +56,7 @@ class CandidateTeeth {
 public:
   CandidateTeeth(std::vector<int> &_edge_marks,
 		 std::vector<int> &_best_tour_nodes,
-		 SupportGraph &_G_s) :
-    light_teeth(std::vector<std::vector<SimpleTooth::Ptr>>(_G_s.node_count)),
-    //TODO: this may throw
-    edge_marks(_edge_marks), best_tour_nodes(_best_tour_nodes), G_s(_G_s) {}
+		 SupportGraph &_G_s);
 
   int body_size(const SimpleTooth &T);
 
