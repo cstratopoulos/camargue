@@ -1,3 +1,5 @@
+Fullest possible namespacing should be used in header files
+
 after each update, best tour should be written to file
 
 It should be possible to get rid of all instances of m_ prefix in class
