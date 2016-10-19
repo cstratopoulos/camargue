@@ -472,7 +472,7 @@ int Core::basis_init(){
   return rval;
 }
 
-double Core::set_support_graph(){
+int Core::set_support_graph(){
   int rval = 0;
   
   support_indices.clear();
