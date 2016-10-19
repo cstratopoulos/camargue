@@ -10,8 +10,8 @@
 #include<getopt.h>
 
 #include "tsp_solver.hpp"
-#include "setbank.hpp"
 #include "PSEP_util.hpp"
+#include "tooth.hpp"
 
 
 using namespace std;
@@ -30,6 +30,11 @@ int main(int argc, char* argv[]){
   bool do_sparse = false;
   int qnearest = 0;
   //TODO: probably put this somewhere else
+
+  cout << "Size of simple tooth: " << sizeof(PSEP::SimpleTooth) << endl
+       << "      ptr: " << sizeof(PSEP::SimpleTooth *) << endl
+       << "    unique ptr: " << sizeof(std::unique_ptr<PSEP::SimpleTooth>)
+       << endl;
 
   if(initial_parse(argc, argv, probfile, randprob, prefs, do_sparse, qnearest)){
     cerr << "Problem parsing arguments" << endl;

@@ -15,7 +15,6 @@
 
 #include "PSEP_util.hpp"
 #include "setbank.hpp"
-#include "tooth.hpp"
 #include "datagroups.hpp"
 #include "Graph.hpp"
 
