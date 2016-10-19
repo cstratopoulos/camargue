@@ -62,7 +62,7 @@ namespace PSEP {
 
       double get_obj_val();
       double set_edges();
-      double set_support_graph();
+      int set_support_graph();
 
       int update_best_tour();
       bool test_new_tour();
