@@ -1,15 +1,46 @@
 #include "tooth.hpp"
 
+extern "C" {
+#include <concorde/INCLUDE/cut.h>
+}
+
 #include <iostream>
 #include <algorithm>
 
 using namespace PSEP;
 using namespace std;
 
+int CandidateTeeth::dump_cut(double cut_val, int cut_start, int cut_end,
+			     void *u_data)
+{
+  linsub_cb_data *cb_data = (linsub_cb_data *) u_data;
+  seg *old_cut = cb_data->old_cut;
+  vector<vector<SimpleTooth::Ptr>> &lite_t = cb_data->cb_lite_teeth;
+  double slack = ((double) cut_val - 2.0)/2.0;
+
+  // for(int i = cut_start; i <= cut_end; i++)
+  //   cout << cb_data->cb_tour_nodes[i] << ", ";
+  // cout << "\n";
+
+  if(cut_start == old_cut->start && cut_end == old_cut->end + 1 &&
+     slack + old_cut->cutval < .4999){
+    lite_t[cut_end].emplace_back(SimpleTooth::Ptr(new SimpleTooth(cut_end, cut_start, old_cut->end, slack + old_cut->cutval)));
+  }
+
+  old_cut->start = cut_start;
+  old_cut->end = cut_end;
+  old_cut->cutval = slack;
+
+  return 0;
+}
+
 CandidateTeeth::CandidateTeeth(vector<int> &_edge_marks,
 			       vector<int> &_best_tour_nodes,
-			       SupportGraph &_G_s) :
-    edge_marks(_edge_marks), best_tour_nodes(_best_tour_nodes), G_s(_G_s)
+			       SupportGraph &_G_s,
+			       vector<int> &_support_elist,
+			       vector<double> &_support_ecap) :
+  edge_marks(_edge_marks), best_tour_nodes(_best_tour_nodes), G_s(_G_s),
+  support_elist(_support_elist), support_ecap(_support_ecap)
 {
   light_teeth.resize(best_tour_nodes.size());
 }
@@ -17,39 +48,28 @@ CandidateTeeth::CandidateTeeth(vector<int> &_edge_marks,
 int CandidateTeeth::get_light_teeth()
 {
   int rval = 0;
+
+  vector<int> endmark(G_s.node_count, CC_LINSUB_BOTH_END);
+  seg lin_seg(G_s.node_count -1, G_s.node_count - 1, 0);
+
+  linsub_cb_data cb_data = {light_teeth, best_tour_nodes, &lin_seg};
+
   clear_collection();
 
-  double ft = 0, ft_d = 0, st = 0;
+  //  print_vec(best_tour_nodes);
+  
+  cout << "Getting root adjacent light teeth via linsub...." << endl;
+  double st = zeit();
+  rval = CCcut_linsub_allcuts(G_s.node_count,
+			      G_s.edge_count,
+			      &best_tour_nodes[0], &endmark[0],
+			      &support_elist[0], &support_ecap[0], 2.999,
+			      &cb_data, dump_cut);
+  if(rval) goto CLEANUP;
+  st = zeit() - st;
 
-  for(int i = 0; i < G_s.node_count; i++){
-    //    cout << "=== ROOT " << i << ", ";
-      
-    double ft_i = zeit();
-    rval = get_adjacent_teeth(i);
-    if(rval) goto CLEANUP;
-    ft += zeit() - ft_i;
+  cout << st << "s total\n";
 
-    //    cout << light_teeth[i].size() << " adj teeth, ";
-
-    double ft_d_i = zeit();
-    rval = get_distant_teeth(i);
-    if(rval) goto CLEANUP;
-    ft_d += zeit() - ft_d_i;
-
-    //    cout << light_teeth[i].size() << " total after dist\n";// << endl;
-
-    double st_i = zeit();
-    if(!light_teeth[i].empty()) //lambda to sort by decreasing body size
-      sort(light_teeth[i].begin(), light_teeth[i].end(),
-	   [this](const SimpleTooth::Ptr &T,
-		  const SimpleTooth::Ptr &R) -> bool {
-	     return body_size(*T) > body_size(*R);
-	   });
-    st += zeit() - st_i;
-  }
-
-  cout << ft << "s finding adjacent teeth, " << ft_d
-       << "s finding distant teeth, " << st << "s sorting" << endl;
 
  CLEANUP:
   if(rval == 1){

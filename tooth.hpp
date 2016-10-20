@@ -2,6 +2,7 @@
 #define PSEP_TOOTH_HPP
 
 #include "Graph.hpp"
+#include "cuts.hpp"
 
 #include <memory>
 #include <vector>
@@ -27,6 +28,11 @@ struct SimpleTooth {
   SimpleTooth(int _root, int _body_start, int _body_end) :
     root(_root), body_start(_body_start), body_end(_body_end),
     slack(INFINITY) {}
+
+  SimpleTooth(int _root, int _body_start, int _body_end, double _slack) :
+    root(_root), body_start(_body_start), body_end(_body_end),
+    slack(_slack) {}
+
 
   #ifdef PSEP_TOOTH_UNIQ
   typedef std::unique_ptr<SimpleTooth> Ptr;
@@ -56,7 +62,9 @@ class CandidateTeeth {
 public:
   CandidateTeeth(std::vector<int> &_edge_marks,
 		 std::vector<int> &_best_tour_nodes,
-		 SupportGraph &_G_s);
+		 SupportGraph &_G_s,
+		 std::vector<int> &_support_elist,
+		 std::vector<double> &_support_ecap);
 
   int body_size(const SimpleTooth &T);
 
@@ -103,10 +111,21 @@ private:
   void clear_collection();
   int get_adjacent_teeth(const int root);
   int get_distant_teeth(const int root);
+
+  static int dump_cut(double cut_val, int cut_start, int cut_end, void *u_data);
   
   std::vector<int> &edge_marks;
   std::vector<int> &best_tour_nodes;
+  
   SupportGraph &G_s;
+  std::vector<int> &support_elist;
+  std::vector<double> &support_ecap;
+
+  struct linsub_cb_data {
+    std::vector<std::vector<SimpleTooth::Ptr>> &cb_lite_teeth;
+    std::vector<int> &cb_tour_nodes;
+    PSEP::seg *old_cut;
+  };
 };
 
 }

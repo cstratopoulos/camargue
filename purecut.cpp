@@ -13,10 +13,13 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 
   bool prune = !plan.is_branch(), haveslack = false;
 
+  
   double pivtime, total_pivtime = 0, max_pivtime = 0;
   int num_removed = 0;
   double routine_start, fixing_start, routine_total;
   double fixtime = 0;
+
+  //  print.best_tour_nodes();
 
   // if(plan.perform_elim()){
   //   fixing_start = zeit();
