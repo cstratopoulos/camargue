@@ -1,7 +1,10 @@
 Simple DP candidates: root distant teeth is an extreme bottleneck, and
 also tends to return zero teeth? Do bug testing with small examples +
 try to performance tune bigger examples. There is a considerable space
-requirement to store all of them. 
+requirement to store all of them.
+Maybe there is no need to distinguish between adjacent/distant search
+procedures?
+Could linsub be used somehow?
 
 In addition to LP prefs and randprob, there should be bestprefs and
 graphprefs for LK trials, quad-nearest, etc. 
