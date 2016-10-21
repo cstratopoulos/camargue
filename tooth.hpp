@@ -60,9 +60,11 @@ struct SimpleTooth {
 
 class CandidateTeeth {
 public:
-  CandidateTeeth(std::vector<int> &_edge_marks,
+  CandidateTeeth(std::vector<int> &_delta, std::vector<int> &_edge_marks,
 		 std::vector<int> &_best_tour_nodes,
+		 std::vector<int> &_perm,
 		 SupportGraph &_G_s,
+		 std::vector<int> &_support_indices,
 		 std::vector<int> &_support_elist,
 		 std::vector<double> &_support_ecap);
 
@@ -112,7 +114,8 @@ private:
   int get_adjacent_teeth(const int root);
   int get_distant_teeth(const int root);
 
-  static int dump_cut(double cut_val, int cut_start, int cut_end, void *u_data);
+  static int get_teeth(double cut_val, int cut_start, int cut_end,
+		       void *u_data);
   
   std::vector<int> &edge_marks;
   std::vector<int> &best_tour_nodes;
@@ -121,11 +124,40 @@ private:
   std::vector<int> &support_elist;
   std::vector<double> &support_ecap;
 
-  struct linsub_cb_data {
-    std::vector<std::vector<SimpleTooth::Ptr>> &cb_lite_teeth;
+
+  struct LinsubCBData {
+    LinsubCBData(std::vector<std::vector<SimpleTooth::Ptr>> &_cb_teeth,
+		 std::vector<int> &_cb_delta,
+		 std::vector<int> &_cb_edge_marks,
+		 std::vector<int> &_cb_tour_nodes,
+		 std::vector<int> &_cb_perm,
+		 std::vector<int> &_cb_sup_indices,
+		 std::vector<int> &_cb_sup_elist,
+		 std::vector<double> &_cb_sup_ecap) :
+      cb_teeth(_cb_teeth),
+      cb_delta(_cb_delta), cb_edge_marks(_cb_edge_marks),
+      cb_tour_nodes(_cb_tour_nodes), cb_perm(_cb_perm),
+      cb_sup_indices(_cb_sup_indices), cb_sup_elist(_cb_sup_elist),
+      cb_sup_ecap(_cb_sup_ecap) {}
+
+    void refresh(PSEP::seg *new_old_seg);
+
+    std::vector<std::vector<SimpleTooth::Ptr>> &cb_teeth;
+
+    std::vector<int> &cb_delta;
+    std::vector<int> &cb_edge_marks;
+    
     std::vector<int> &cb_tour_nodes;
-    PSEP::seg *old_cut;
+    std::vector<int> &cb_perm;
+    
+    std::vector<int> &cb_sup_indices;
+    std::vector<int> &cb_sup_elist;
+    std::vector<double> &cb_sup_ecap;
+
+    PSEP::seg *old_seg;    
   };
+
+  LinsubCBData cb_data;
 };
 
 }
