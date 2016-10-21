@@ -7,9 +7,9 @@
 #include <memory>
 #include <vector>
 #include <map>
+#include <unordered_map>
 
 #define PSEP_TOOTH_UNIQ
-
 
 namespace PSEP {
 
@@ -113,8 +113,9 @@ public:
 private:
   void clear_collection();
 
-  int add_tooth(const int root, const int body_start, const int body_end,
-		const double slack);
+  static int add_tooth(std::vector<std::vector<SimpleTooth::Ptr>> &teeth,
+		       const int root, const int body_start,
+		       const int body_end, const double slack);
 
   static int get_teeth(double cut_val, int cut_start, int cut_end,
 		       void *u_data);
@@ -160,7 +161,8 @@ private:
     std::vector<double> &cb_sup_ecap;
 
     PSEP::seg *old_seg;
-    std::map<int, double> root_bod_sums;
+
+    std::unordered_map<int, double> root_bod_sums;
   };
 
   LinsubCBData cb_data;

@@ -6,12 +6,11 @@ extern "C" {
 
 #include <iostream>
 #include <algorithm>
-#include <map>
 
 using namespace PSEP;
 using namespace std;
 
-static int num_adjacent = 0, num_distant = 0, dist_calls = 0;
+static int num_adjacent = 0, num_distant = 0;
 
 CandidateTeeth::CandidateTeeth(vector<int> &_delta, vector<int> &_edge_marks,
 			       vector<int> &_best_tour_nodes,
@@ -35,30 +34,66 @@ CandidateTeeth::CandidateTeeth(vector<int> &_delta, vector<int> &_edge_marks,
 int CandidateTeeth::get_light_teeth()
 {
   int rval = 0;
+  int notsort = 0;
   seg lin_seg(G_s.node_count - 1, G_s.node_count - 1, 0);
   vector<int> endmark;
-  double st;
+  double ft, st;
+  int max_deg = 0;
 
   try { endmark.resize(G_s.node_count, CC_LINSUB_BOTH_END); } catch(...) {
     PSEP_SET_GOTO(rval, "Couldn't set endmark. ");
   }
+
+  for(int i = 0; i < G_s.node_count; i++)
+    if(G_s.nodelist[i].s_degree > max_deg)
+      max_deg = G_s.nodelist[i].s_degree;
+
+  cout << "Support graph has max degree " << max_deg << "\n";
 
   cb_data.old_seg = &lin_seg;
   cb_data.cb_edge_marks[best_tour_nodes[lin_seg.start]] = 1;
   clear_collection();
   
   cout << "Getting light teeth via linsub...." << endl;
-  st = zeit();
+  ft = zeit();
+  
   rval = CCcut_linsub_allcuts(G_s.node_count,
 			      G_s.edge_count,
 			      &best_tour_nodes[0], &endmark[0],
 			      &support_elist[0], &support_ecap[0], 2.999,
 			      &cb_data, get_teeth);
   if(rval) goto CLEANUP;
+  ft = zeit() - ft;
+
+  cout << ft << "s total, " << num_adjacent << " adjacent teeth, "
+       << num_distant << " distant teeth\n";
+
+  st = zeit();
+  for(vector<SimpleTooth::Ptr> &t_vec : light_teeth){
+    bool is_s = std::is_sorted(t_vec.begin(), t_vec.end(),
+			       [this](const SimpleTooth::Ptr &T,
+				      const SimpleTooth::Ptr &R) -> bool {
+				 return body_size(*T) < body_size(*R);
+			       });
+    if(!is_s){
+      notsort++;
+      cout << "List of teeth with root "
+	   << t_vec.front()->root << " is not sorted\n";
+    }
+  }
+
+  if(notsort == 0)
+    cout << "All vectors sorted by increasing body size\n";
+  else
+    cout << notsort << " vectors not sorted\n";
+    // std::sort(t_vec.begin(), t_vec.end(),
+    // 	      [this](const SimpleTooth::Ptr &T,
+    // 		     const SimpleTooth::Ptr &R) -> bool {
+    // 		return body_size(*T) < body_size(*R);
+    // 	      });
   st = zeit() - st;
 
-  cout << st << "s total, " << num_adjacent << " adjacent teeth, "
-       << num_distant << " distant teeth, " << dist_calls << " dist calls\n";
+  cout << "Sorted collection in " << st << "s\n";
 
 
  CLEANUP:
@@ -86,9 +121,10 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
   vector<int> &perm = arg->cb_perm;
 
   SupportGraph &G = arg->cb_G_s;
-  
-  map<int, double> &rb_sums = arg->root_body_sums;
 
+  unordered_map<int, double> &rb_sums = arg->root_bod_sums;
+
+  int ncount = best_nodes.size();
   double slack = (cut_val - 2.0) / 2.0;
   int set_size = cut_end - cut_start + 1;
   int rhs = (2 * set_size) - 1;
@@ -98,9 +134,10 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
 
   if(cut_start == old_cut->start){//if the current seg contains previous
     if(cut_end == old_cut->end + 1 && slack + old_cut->cutval < 0.4999){
-      rval = add_tooth(cut_end, cut_start, old_cut->end,
+      rval = add_tooth(teeth, cut_end, cut_start, old_cut->end,
 		       old_cut->cutval + slack);
       PSEP_CHECK_RVAL(rval, "Problem with adjacent teeth. ");
+      num_adjacent++;
     }
     
     for(int i = old_cut->end + 1; i <= cut_end; i++){
@@ -108,20 +145,50 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
       rb_sums.erase(i);
     }
     rb_sums.erase((cut_end + 1) % ncount);
-    rb_sums.erase((cut_end + 2) % ncount);
+    marks[best_nodes[(cut_end + 1) % ncount]] = 1;
+    
+	  
 
     for(int i = old_cut->end + 1; i <= cut_end; i++){
-      
+      SNode current_node = G.nodelist[best_nodes[i]];
+
+      for(int k = 0; k < current_node.s_degree; k++){
+    	int other_end = current_node.adj_objs[k].other_end;
+    	int root_perm = perm[other_end];
+
+    	if(marks[other_end] == 0)//if not in or adjacent to body
+    	  rb_sums[root_perm] += current_node.adj_objs[k].lp_weight;
+      }
     }
     
   } else { //if we are on a new start (degree eqn "segment")
     for(int i = old_cut->end + 1; i <= cut_end; i++)
       marks[best_nodes[i]] = 0;
-    marks[best_nodes[cut_start]] = 1;    
+    marks[best_nodes[cut_start]] = 1;
+    marks[best_nodes[(cut_start + 1) % ncount]] = 1;
+    marks[best_nodes[(cut_start + ncount - 1) % ncount]] = 1;
 
     rb_sums.clear();
-    //rb_sums.reserve(best_nodes.size() - 1); when using hash map
+
+    SNode current_node = G.nodelist[best_nodes[cut_start]];
+    
+    for(int k = 0; k < current_node.s_degree; k++){
+      int other_end = current_node.adj_objs[k].other_end;
+      int root_perm = perm[other_end];
+
+      if(marks[other_end] == 0)//if not in or adjacent to body
+  	rb_sums[root_perm] += current_node.adj_objs[k].lp_weight;
+    }
   }
+
+  for(auto &kv : rb_sums)
+    if(kv.second > root_bod_lb){
+      rval = add_tooth(teeth, kv.first, cut_start, cut_end,
+  		       rhs - partial_lhs - kv.second);
+      PSEP_CHECK_RVAL(rval, "Problem with distant teeth. ");
+      cout << "Added distant tooth with root " << kv.first << "\n";
+      num_distant++;
+    }
   
 
 
@@ -145,23 +212,21 @@ inline void CandidateTeeth::clear_collection()
   }
 }
 
-inline int CandidateTeeth::add_tooth(const int root, const int body_start,
+inline int CandidateTeeth::add_tooth(vector<vector<SimpleTooth::Ptr>> &teeth,
+				     const int root, const int body_start,
 				     const int body_end, const double slack)
 {
   int rval = 0;
 
   try {
-    light_teeth[root].emplace_back(SimpleTooth::Ptr(new SimpleTooth(root,
-								    body_start,
-								    body_end,
-								    slack)));
+    teeth[root].emplace_back(SimpleTooth::Ptr(new SimpleTooth(root,
+							      body_start,
+							      body_end,
+							      slack)));
   } catch(...) { rval = 1; }
 
- CLEANUP:
-  if(rval){
+  if(rval)
     cerr << "Couldn't push back light tooth\n";
-    clear_collection();
-  }
   return rval;
 }
 
