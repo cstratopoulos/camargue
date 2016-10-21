@@ -11,7 +11,7 @@ extern "C" {
 using namespace PSEP;
 using namespace std;
 
-static int num_adjacent = 0, num_distant = 0;
+static int num_adjacent = 0, num_distant = 0, dist_calls = 0;
 
 CandidateTeeth::CandidateTeeth(vector<int> &_delta, vector<int> &_edge_marks,
 			       vector<int> &_best_tour_nodes,
@@ -57,7 +57,7 @@ int CandidateTeeth::get_light_teeth()
   st = zeit() - st;
 
   cout << st << "s total, " << num_adjacent << " adjacent teeth, "
-       << num_distant << " distant teeth\n";
+       << num_distant << " distant teeth, " << dist_calls << " dist calls\n";
 
 
  CLEANUP:
@@ -103,7 +103,10 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
 							       slack)));
       num_adjacent++;
     } catch(...) { PSEP_SET_GOTO(rval, "Couldn't push adjacent tooth. "); }
+    goto CLEANUP;
   }
+
+  dist_calls++;
 
   GraphUtils::get_delta(cut_start, cut_end, arg->cb_tour_nodes,
 			arg->cb_sup_elist, deltacount,
@@ -138,13 +141,12 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
     }
   }
 
-  old_cut->start = cut_start;
-  old_cut->end = cut_end;
-  old_cut->cutval = slack;
-
  CLEANUP:
   if(rval)
     cerr << "Linsub callback failed\n";
+  old_cut->start = cut_start;
+  old_cut->end = cut_end;
+  old_cut->cutval = slack;
   return rval;
 }
 
