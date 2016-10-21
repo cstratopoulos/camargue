@@ -26,7 +26,7 @@ CandidateTeeth::CandidateTeeth(vector<int> &_delta, vector<int> &_edge_marks,
   cb_data(light_teeth,
 	  _delta, _edge_marks,
 	  _best_tour_nodes, _perm,
-	  _support_indices, _support_elist, _support_ecap)
+	  _G_s, _support_indices, _support_elist, _support_ecap)
 {
   light_teeth.resize(best_tour_nodes.size());
 }
@@ -44,6 +44,7 @@ int CandidateTeeth::get_light_teeth()
   }
 
   cb_data.old_seg = &lin_seg;
+  cb_data.cb_edge_marks[best_tour_nodes[lin_seg.start]] = 1;
   clear_collection();
   
   cout << "Getting light teeth via linsub...." << endl;
@@ -73,73 +74,56 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
 {
   int rval = 0;
 
-
-
-  
   LinsubCBData *arg = (LinsubCBData *) u_data;
+  
   seg *old_cut = arg->old_seg;
   vector<vector<SimpleTooth::Ptr>> &teeth = arg->cb_teeth;
+  
   vector<int> &delta = arg->cb_delta;
+  vector<int> &marks = arg->cb_edge_marks;
+
+  vector<int> &best_nodes = arg->cb_tour_nodes;
   vector<int> &perm = arg->cb_perm;
+
+  SupportGraph &G = arg->cb_G_s;
+  
+  map<int, double> &rb_sums = arg->root_body_sums;
 
   double slack = (cut_val - 2.0) / 2.0;
   int set_size = cut_end - cut_start + 1;
   int rhs = (2 * set_size) - 1;
   double partial_lhs = (2 * set_size) - cut_val;
-  double root_bod_lb = rhs - partial_lhs - 0.5;
+  double root_bod_lb = rhs - partial_lhs - 0.4999;
   int deltacount = 0;
 
-
-  map<int, double> root_body_sums;
-
-  if(cut_start == old_cut->start && cut_end == old_cut->end + 1 &&
-     slack + old_cut->cutval < .4999){
-    try {
-      teeth[cut_end].emplace_back(SimpleTooth::Ptr(new // : - ( indenting
-						   SimpleTooth(cut_end,
-							       cut_start,
-							       old_cut->end,
-							       old_cut->cutval +
-							       slack)));
-      num_adjacent++;
-    } catch(...) { PSEP_SET_GOTO(rval, "Couldn't push adjacent tooth. "); }
-    goto CLEANUP;
-  }
-
-  dist_calls++;
-
-  GraphUtils::get_delta(cut_start, cut_end, arg->cb_tour_nodes,
-			arg->cb_sup_elist, deltacount,
-			delta, arg->cb_edge_marks);
-
-  for(int i = 0; i < deltacount; i++){
-    int end0 = arg->cb_sup_elist[2 * delta[i]];
-    int end1 = arg->cb_sup_elist[(2 * delta[i]) + 1];
-
-    int cand_root = ((cut_start < arg->cb_perm[end0])
-		     && (arg->cb_perm[end0] < cut_end)) ? perm[end1] :
-      perm[end0];
-    if(((cut_end + 1) % arg->cb_tour_nodes.size()) == cand_root ||
-       ((cand_root + 1) % arg->cb_tour_nodes.size()) == cut_start)
-      continue;
-
-    root_body_sums[cand_root] += arg->cb_sup_ecap[delta[i]];
-  }
-
-  for(auto &kv : root_body_sums){
-    if(kv.second > root_bod_lb){
-      try {
-	teeth[kv.first].emplace_back(SimpleTooth::Ptr(new // : - ((((
-						      SimpleTooth(kv.first,
-								  cut_start,
-								  cut_end,
-								  rhs -
-								  partial_lhs -
-								  kv.second)));
-	num_distant++;
-      } catch(...) { PSEP_SET_GOTO(rval, "Couldn't push distant tooth. "); }
+  if(cut_start == old_cut->start){//if the current seg contains previous
+    if(cut_end == old_cut->end + 1 && slack + old_cut->cutval < 0.4999){
+      rval = add_tooth(cut_end, cut_start, old_cut->end,
+		       old_cut->cutval + slack);
+      PSEP_CHECK_RVAL(rval, "Problem with adjacent teeth. ");
     }
+    
+    for(int i = old_cut->end + 1; i <= cut_end; i++){
+      marks[best_nodes[i]] = 1;
+      rb_sums.erase(i);
+    }
+    rb_sums.erase((cut_end + 1) % ncount);
+    rb_sums.erase((cut_end + 2) % ncount);
+
+    for(int i = old_cut->end + 1; i <= cut_end; i++){
+      
+    }
+    
+  } else { //if we are on a new start (degree eqn "segment")
+    for(int i = old_cut->end + 1; i <= cut_end; i++)
+      marks[best_nodes[i]] = 0;
+    marks[best_nodes[cut_start]] = 1;    
+
+    rb_sums.clear();
+    //rb_sums.reserve(best_nodes.size() - 1); when using hash map
   }
+  
+
 
  CLEANUP:
   if(rval)
@@ -159,6 +143,26 @@ inline void CandidateTeeth::clear_collection()
 #endif
     vec.clear();
   }
+}
+
+inline int CandidateTeeth::add_tooth(const int root, const int body_start,
+				     const int body_end, const double slack)
+{
+  int rval = 0;
+
+  try {
+    light_teeth[root].emplace_back(SimpleTooth::Ptr(new SimpleTooth(root,
+								    body_start,
+								    body_end,
+								    slack)));
+  } catch(...) { rval = 1; }
+
+ CLEANUP:
+  if(rval){
+    cerr << "Couldn't push back light tooth\n";
+    clear_collection();
+  }
+  return rval;
 }
 
 inline bool SimpleTooth::sandwich() const

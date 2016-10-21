@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <vector>
+#include <map>
 
 #define PSEP_TOOTH_UNIQ
 
@@ -111,8 +112,9 @@ public:
   
 private:
   void clear_collection();
-  int get_adjacent_teeth(const int root);
-  int get_distant_teeth(const int root);
+
+  int add_tooth(const int root, const int body_start, const int body_end,
+		const double slack);
 
   static int get_teeth(double cut_val, int cut_start, int cut_end,
 		       void *u_data);
@@ -131,14 +133,15 @@ private:
 		 std::vector<int> &_cb_edge_marks,
 		 std::vector<int> &_cb_tour_nodes,
 		 std::vector<int> &_cb_perm,
+		 SupportGraph &_cb_G_s,
 		 std::vector<int> &_cb_sup_indices,
 		 std::vector<int> &_cb_sup_elist,
 		 std::vector<double> &_cb_sup_ecap) :
       cb_teeth(_cb_teeth),
       cb_delta(_cb_delta), cb_edge_marks(_cb_edge_marks),
       cb_tour_nodes(_cb_tour_nodes), cb_perm(_cb_perm),
-      cb_sup_indices(_cb_sup_indices), cb_sup_elist(_cb_sup_elist),
-      cb_sup_ecap(_cb_sup_ecap) {}
+      cb_G_s(_cb_G_s), cb_sup_indices(_cb_sup_indices),
+      cb_sup_elist(_cb_sup_elist), cb_sup_ecap(_cb_sup_ecap) {}
 
     void refresh(PSEP::seg *new_old_seg);
 
@@ -149,12 +152,15 @@ private:
     
     std::vector<int> &cb_tour_nodes;
     std::vector<int> &cb_perm;
+
+    SupportGraph &cb_G_s;
     
     std::vector<int> &cb_sup_indices;
     std::vector<int> &cb_sup_elist;
     std::vector<double> &cb_sup_ecap;
 
-    PSEP::seg *old_seg;    
+    PSEP::seg *old_seg;
+    std::map<int, double> root_bod_sums;
   };
 
   LinsubCBData cb_data;
