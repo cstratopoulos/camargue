@@ -59,7 +59,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
       if(rval) goto CLEANUP;
 
       cout << "Got collection of light candidate teeth" << endl;
-      candidates.print_collection();
+      //candidates.print_collection();
 
       rval = 1; goto CLEANUP;
     }

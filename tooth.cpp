@@ -56,7 +56,7 @@ int CandidateTeeth::get_light_teeth()
   if(rval) goto CLEANUP;
   st = zeit() - st;
 
-  cout << st << "s total, " << num_adjacent << "adjacent teeth, "
+  cout << st << "s total, " << num_adjacent << " adjacent teeth, "
        << num_distant << " distant teeth\n";
 
 
@@ -77,7 +77,7 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
 
   
   LinsubCBData *arg = (LinsubCBData *) u_data;
-  seg old_cut = *(arg->old_seg);
+  seg *old_cut = arg->old_seg;
   vector<vector<SimpleTooth::Ptr>> &teeth = arg->cb_teeth;
   vector<int> &delta = arg->cb_delta;
   vector<int> &perm = arg->cb_perm;
@@ -92,14 +92,14 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
 
   map<int, double> root_body_sums;
 
-  if(cut_start == old_cut.start && cut_end == old_cut.end + 1 &&
-     slack + old_cut.cutval < .4999){
+  if(cut_start == old_cut->start && cut_end == old_cut->end + 1 &&
+     slack + old_cut->cutval < .4999){
     try {
       teeth[cut_end].emplace_back(SimpleTooth::Ptr(new // : - ( indenting
 						   SimpleTooth(cut_end,
 							       cut_start,
-							       old_cut.end,
-							       old_cut.cutval +
+							       old_cut->end,
+							       old_cut->cutval +
 							       slack)));
       num_adjacent++;
     } catch(...) { PSEP_SET_GOTO(rval, "Couldn't push adjacent tooth. "); }
@@ -137,6 +137,10 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
       } catch(...) { PSEP_SET_GOTO(rval, "Couldn't push distant tooth. "); }
     }
   }
+
+  old_cut->start = cut_start;
+  old_cut->end = cut_end;
+  old_cut->cutval = slack;
 
  CLEANUP:
   if(rval)
