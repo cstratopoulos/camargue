@@ -47,7 +47,8 @@ int CandidateTeeth::get_light_teeth()
     if(G_s.nodelist[i].s_degree > max_deg)
       max_deg = G_s.nodelist[i].s_degree;
 
-  cout << "Support graph has max degree " << max_deg << "\n";
+  cout << "Support graph has max degree " << max_deg << ", ecount "
+       << G_s.edge_count << "\n";
 
   cb_data.old_seg = &lin_seg;
   cb_data.cb_edge_marks[best_tour_nodes[lin_seg.start]] = 1;
