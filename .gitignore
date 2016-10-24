@@ -17,3 +17,6 @@ sloc
 
 #no tramp history from using local emacs to ssh
 .tramp_history
+
+#no compile commands
+compile_commands.json
