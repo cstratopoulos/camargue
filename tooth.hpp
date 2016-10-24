@@ -130,7 +130,6 @@ private:
 
   struct LinsubCBData {
     LinsubCBData(std::vector<std::vector<SimpleTooth::Ptr>> &_cb_teeth,
-		 std::vector<int> &_cb_delta,
 		 std::vector<int> &_cb_edge_marks,
 		 std::vector<int> &_cb_tour_nodes,
 		 std::vector<int> &_cb_perm,
@@ -139,7 +138,7 @@ private:
 		 std::vector<int> &_cb_sup_elist,
 		 std::vector<double> &_cb_sup_ecap) :
       cb_teeth(_cb_teeth),
-      cb_delta(_cb_delta), cb_edge_marks(_cb_edge_marks),
+      cb_edge_marks(_cb_edge_marks),
       cb_tour_nodes(_cb_tour_nodes), cb_perm(_cb_perm),
       cb_G_s(_cb_G_s), cb_sup_indices(_cb_sup_indices),
       cb_sup_elist(_cb_sup_elist), cb_sup_ecap(_cb_sup_ecap) {}
@@ -148,7 +147,6 @@ private:
 
     std::vector<std::vector<SimpleTooth::Ptr>> &cb_teeth;
 
-    std::vector<int> &cb_delta;
     std::vector<int> &cb_edge_marks;
     
     std::vector<int> &cb_tour_nodes;
@@ -163,6 +161,7 @@ private:
     PSEP::seg *old_seg;
 
     std::unordered_map<int, double> root_bod_sums;
+    std::vector<int> unsorted_roots;
   };
 
   LinsubCBData cb_data;

@@ -23,7 +23,7 @@ CandidateTeeth::CandidateTeeth(vector<int> &_delta, vector<int> &_edge_marks,
   best_tour_nodes(_best_tour_nodes),
   G_s(_G_s), support_elist(_support_elist), support_ecap(_support_ecap),
   cb_data(light_teeth,
-	  _delta, _edge_marks,
+	  _edge_marks,
 	  _best_tour_nodes, _perm,
 	  _G_s, _support_indices, _support_elist, _support_ecap)
 {
@@ -40,6 +40,7 @@ int CandidateTeeth::get_light_teeth()
   double ft, st;
   int max_deg = 0;
 
+  
   try { endmark.resize(G_s.node_count, CC_LINSUB_BOTH_END); } catch(...) {
     PSEP_SET_GOTO(rval, "Couldn't set endmark. ");
   }
@@ -52,6 +53,7 @@ int CandidateTeeth::get_light_teeth()
 
   cb_data.old_seg = &lin_seg;
   cb_data.cb_edge_marks[best_tour_nodes[lin_seg.start]] = 1;
+  cb_data.unsorted_roots.clear();
   clear_collection();
   
   cout << "Getting light teeth via linsub...." << endl;
@@ -69,6 +71,21 @@ int CandidateTeeth::get_light_teeth()
        << num_distant << " distant teeth\n";
 
   st = zeit();
+  for(int i = 0; i < cb_data.unsorted_roots.size(); i++){
+    int root = cb_data.unsorted_roots[i];
+    std::sort(light_teeth[root].begin(), light_teeth[root].end(),
+	      [this](const SimpleTooth::Ptr &T,
+		     const SimpleTooth::Ptr &R) -> bool {
+		return body_size(*T) < body_size(*R);
+	      });
+  }
+  st = zeit() - st;
+
+  cout << "Sorted only " << cb_data.unsorted_roots.size() << " lists in "
+       << st << "s\n";
+
+
+  cout << "Checking sorted status....";
   for(vector<SimpleTooth::Ptr> &t_vec : light_teeth){
     bool is_s = std::is_sorted(t_vec.begin(), t_vec.end(),
 			       [this](const SimpleTooth::Ptr &T,
@@ -86,15 +103,6 @@ int CandidateTeeth::get_light_teeth()
     cout << "All vectors sorted by increasing body size\n";
   else
     cout << notsort << " vectors not sorted\n";
-    // std::sort(t_vec.begin(), t_vec.end(),
-    // 	      [this](const SimpleTooth::Ptr &T,
-    // 		     const SimpleTooth::Ptr &R) -> bool {
-    // 		return body_size(*T) < body_size(*R);
-    // 	      });
-  st = zeit() - st;
-
-  cout << "Sorted collection in " << st << "s\n";
-
 
  CLEANUP:
   if(rval == 1){
@@ -114,7 +122,6 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
   seg *old_cut = arg->old_seg;
   vector<vector<SimpleTooth::Ptr>> &teeth = arg->cb_teeth;
   
-  vector<int> &delta = arg->cb_delta;
   vector<int> &marks = arg->cb_edge_marks;
 
   vector<int> &best_nodes = arg->cb_tour_nodes;
@@ -130,7 +137,6 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
   int rhs = (2 * set_size) - 1;
   double partial_lhs = (2 * set_size) - cut_val;
   double root_bod_lb = rhs - partial_lhs - 0.4999;
-  int deltacount = 0;
 
   if(cut_start == old_cut->start){//if the current seg contains previous
     if(cut_end == old_cut->end + 1 && slack + old_cut->cutval < 0.4999){
@@ -186,7 +192,9 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
       rval = add_tooth(teeth, kv.first, cut_start, cut_end,
   		       rhs - partial_lhs - kv.second);
       PSEP_CHECK_RVAL(rval, "Problem with distant teeth. ");
-      cout << "Added distant tooth with root " << kv.first << "\n";
+      
+      if(arg->unsorted_roots.empty() || arg->unsorted_roots.back() != kv.first)
+	arg->unsorted_roots.push_back(kv.first);
       num_distant++;
     }
   
