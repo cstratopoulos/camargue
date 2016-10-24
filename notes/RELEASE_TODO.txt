@@ -1,4 +1,5 @@
-Fullest possible namespacing should be used in header files
+Fullest possible namespacing should be used in header files.....maybe
+just get rid of using namespace entirely
 
 after each update, best tour should be written to file
 
