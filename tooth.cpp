@@ -72,7 +72,6 @@ int CandidateTeeth::get_light_teeth()
   st = zeit();
   for(int i = 0; i < cb_data.unsorted_roots.size(); i++){
     int root = cb_data.unsorted_roots[i];
-    cout << "Sorting root " << root << "\n";
     std::sort(light_teeth[root].begin(), light_teeth[root].end(),
 	      [this](const SimpleTooth::Ptr &T,
 		     const SimpleTooth::Ptr &R) -> bool {
