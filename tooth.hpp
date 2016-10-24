@@ -165,6 +165,7 @@ private:
   };
 
   LinsubCBData cb_data;
+  std::vector<int> endmark;
 };
 
 }

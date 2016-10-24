@@ -28,6 +28,7 @@ CandidateTeeth::CandidateTeeth(vector<int> &_delta, vector<int> &_edge_marks,
 	  _G_s, _support_indices, _support_elist, _support_ecap)
 {
   light_teeth.resize(best_tour_nodes.size());
+  endmark.resize(best_tour_nodes.size(), CC_LINSUB_BOTH_END);
 }
 
 
@@ -36,14 +37,8 @@ int CandidateTeeth::get_light_teeth()
   int rval = 0;
   int notsort = 0;
   seg lin_seg(G_s.node_count - 1, G_s.node_count - 1, 0);
-  vector<int> endmark;
   double ft, st;
   int max_deg = 0;
-
-  
-  try { endmark.resize(G_s.node_count, CC_LINSUB_BOTH_END); } catch(...) {
-    PSEP_SET_GOTO(rval, "Couldn't set endmark. ");
-  }
 
   for(int i = 0; i < G_s.node_count; i++)
     if(G_s.nodelist[i].s_degree > max_deg)
