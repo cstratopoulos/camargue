@@ -1,10 +1,7 @@
-Simple DP candidates: root distant teeth is an extreme bottleneck, and
-also tends to return zero teeth? Do bug testing with small examples +
-try to performance tune bigger examples. There is a considerable space
-requirement to store all of them.
-Maybe there is no need to distinguish between adjacent/distant search
-procedures?
-Could linsub be used somehow?
+COLUMN GEN!!!! Expanding a vector can invalidate references!!!!! Thus
+we cannot rely on references to lp edges and edge marks, etc. All of
+the constructors/use of classes should be changed to reflect
+this. Maybe every fresh cutcall should grab the new edges and stuff.
 
 In addition to LP prefs and randprob, there should be bestprefs and
 graphprefs for LK trials, quad-nearest, etc. 
@@ -56,9 +53,6 @@ Approach: Make the main objects of LPCore protected instead of private, then
 	  need, plus a reference to LPCore from which they can construct
 	  a copy of it. 
 
-Instead of a Cut template, we should have a CutCall<typename cut_t> abstract
-template class....
-
 In preparation for column generation approach, (and also for portability?)
 cut classes should not get the LP itself. They should just store a best cut
 or coefficients or something and have CutControl manage the addition of cuts
@@ -70,11 +64,6 @@ create a map of type <Int, Double> mapping edges to their coeff
 to be aggregated. With some checking: can call increment/decrement
 even if the entries have not yet been initialized; they should
 default to zero.
-
-Light SimpleDP sep is a huge bottleneck at the moment, will probably
-have to implement light tooth reduction for it to be viable,
-especially since there are some examples where it allows cut
-generation to proceed for longer
 
 should store reduced costs obtained from the root node. in branch &
 cut, if an augmentation takes place, we can fix edges using reduced
