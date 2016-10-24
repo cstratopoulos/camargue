@@ -1,10 +1,6 @@
-#no .o files
 *.o
 
-#no TSPlib problems
 *.tsp
-
-#no dSYM
 
 *.dSYM
 
@@ -19,4 +15,4 @@ sloc
 .tramp_history
 
 #no compile commands
-compile_commands.json
+.clang_complete
