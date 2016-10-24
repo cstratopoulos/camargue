@@ -2,11 +2,11 @@
 #define PSEP_GRAPH_H
 
 #include <vector>
-#include<queue>
+#include <queue>
 #include <iostream>
-#include<memory>
+#include <memory>
 
-#include<math.h>
+#include <math.h>
 
 #include "PSEP_util.hpp"
 
