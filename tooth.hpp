@@ -35,11 +35,11 @@ struct SimpleTooth {
     slack(_slack) {}
 
 
-  #ifdef PSEP_TOOTH_UNIQ
+#ifdef PSEP_TOOTH_UNIQ
   typedef std::unique_ptr<SimpleTooth> Ptr;
-  #else
+#else
   typedef SimpleTooth* Ptr;
-  #endif
+#endif
 
   int root;
   int body_start;
@@ -81,23 +81,6 @@ public:
    */
   int body_subset(const SimpleTooth &T, const SimpleTooth &R, bool &result);
 
-
-  /*
-   * This function is used to incrementally compute the slack on a collection
-   * of SimpleTooth structs with the same root. 
-   * Given a root i, we first construct the tooth T with trivial body equal
-   * to a single edge from the current best tour.
-   * lhs is initialized to zero, rhs is initialized to -1
-   * The assumption is that T will be `incremented' to a tooth with the same
-   * root, and body equal to the next node, new_vx, in the tour. Note that
-   * new_vx is some actual node index, NOT best_tour_nodes[new_vx].
-   * This routine will mark a single node in edge_marks, and it is the 
-   * responsibility of the calling routine to zero it out appropriately
-   * before and after.
-   */
-  void increment_slack(SimpleTooth &T, const int new_vx,
-		       double &lhs, int &rhs);
-
   /*
    * Build a collection of light teeth: teeth for which the slack of the 
    * associated simple tooth inequality is less than 1/2
@@ -112,6 +95,7 @@ public:
   
 private:
   void clear_collection();
+  void weak_elim();
 
   static int add_tooth(std::vector<std::vector<SimpleTooth::Ptr>> &teeth,
 		       const int root, const int body_start,

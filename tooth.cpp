@@ -12,6 +12,8 @@ using namespace std;
 
 static int num_adjacent = 0, num_distant = 0;
 
+#define TOOTH_GET_DIST
+
 CandidateTeeth::CandidateTeeth(vector<int> &_delta, vector<int> &_edge_marks,
 			       vector<int> &_best_tour_nodes,
 			       vector<int> &_perm,
@@ -37,7 +39,8 @@ int CandidateTeeth::get_light_teeth()
   int rval = 0;
   int notsort = 0;
   seg lin_seg(G_s.node_count - 1, G_s.node_count - 1, 0);
-  double ft, st;
+  double ft, st, we_t;
+  int numremain = 0;
   int max_deg = 0;
 
   for(int i = 0; i < G_s.node_count; i++)
@@ -68,6 +71,7 @@ int CandidateTeeth::get_light_teeth()
   st = zeit();
   for(int i = 0; i < cb_data.unsorted_roots.size(); i++){
     int root = cb_data.unsorted_roots[i];
+    cout << "Sorting root " << root << "\n";
     std::sort(light_teeth[root].begin(), light_teeth[root].end(),
 	      [this](const SimpleTooth::Ptr &T,
 		     const SimpleTooth::Ptr &R) -> bool {
@@ -99,12 +103,89 @@ int CandidateTeeth::get_light_teeth()
   else
     cout << notsort << " vectors not sorted\n";
 
+  we_t = zeit();
+  weak_elim();
+  we_t = zeit() - we_t;
+
+  for(const vector<SimpleTooth::Ptr> &vec : light_teeth)
+    numremain += vec.size();
+
+  cout << "Performed weak elimination in " << we_t << "s, "
+       << numremain << " teeth remain\n";
+
  CLEANUP:
   if(rval == 1){
     cerr << "CandidateTeeth::get_light_teeth failed\n";
     clear_collection();
   }
   return rval;
+}
+
+void CandidateTeeth::weak_elim()
+{
+  for(vector<SimpleTooth::Ptr> &t_list : light_teeth){
+    if(t_list.empty()) continue;
+    // cout << "----Considering root " << t_list.front()->root << ", "
+    // 	 << t_list.size() << " teeth.......\n";
+    int improvecount = 0;
+    int root_node = best_tour_nodes[t_list.front()->root];
+    SNode current_node = G_s.nodelist[root_node];
+
+    // cout << "Root node " << root_node << " is adjacent to....\n";
+    for(int k = 0; k < current_node.s_degree; k++){
+      edge_marks[current_node.adj_objs[k].other_end] = 1;
+      // cout << current_node.adj_objs[k].other_end << " (perm index "
+      // 	   << cb_data.cb_perm[current_node.adj_objs[k].other_end] << " )\n";
+    }
+
+    vector<SimpleTooth::Ptr>::iterator it = t_list.begin();
+    while(it + 1 != t_list.end()){
+      vector<SimpleTooth::Ptr>::iterator cur = it;
+      vector<SimpleTooth::Ptr>::iterator next = cur + 1;
+      // cout << "cur is " << (*cur)->body_start << ", " << (*cur)->body_end
+      // 	   << ", slack " << (*cur)->slack
+      // 	   << " next is "
+      // 	   << (*next)->body_start << ", " << (*next)->body_end
+      // 	   << ", slack " << (*next)->slack << "\n";
+      it++;
+      bool found_new_edge = false;
+
+      for(int i = (*next)->body_start; i <= (*next)->body_end; i++){
+	if(i >= (*cur)->body_start && i <= (*cur)->body_end) break;
+
+	if(edge_marks[best_tour_nodes[i]] == 1){
+	  found_new_edge = true;
+	  break;
+	}	
+      }
+      
+      // for(int i = (*next)->body_start; i < (*cur)->body_start; i++)
+      // 	if(edge_marks[best_tour_nodes[i]] == 1){
+      // 	  found_new_edge = true;
+      // 	  break;
+      // 	}
+
+      if(found_new_edge) continue;
+
+      if((*next)->slack <= (*cur)->slack){
+	//	cout << "Next improves current\n";
+	(*cur)->slack = -1.0;
+	improvecount++;
+      }
+
+    }  
+
+    for(int k = 0; k < current_node.s_degree; k++)
+      edge_marks[current_node.adj_objs[k].other_end] = 0;
+    //    cout << improvecount << " improving teeth found\n";
+  }
+
+  for(vector<SimpleTooth::Ptr> &t_list : light_teeth)
+    t_list.erase(std::remove_if(t_list.begin(), t_list.end(),
+				[](const SimpleTooth::Ptr &T) -> bool {
+				  return T->slack == -1.0;
+				}),
+		 t_list.end());
 }
 
 int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
@@ -116,7 +197,8 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
   
   seg *old_cut = arg->old_seg;
   vector<vector<SimpleTooth::Ptr>> &teeth = arg->cb_teeth;
-  
+
+#ifdef TOOTH_GET_DIST
   vector<int> &marks = arg->cb_edge_marks;
 
   vector<int> &best_nodes = arg->cb_tour_nodes;
@@ -127,11 +209,13 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
   unordered_map<int, double> &rb_sums = arg->root_bod_sums;
 
   int ncount = best_nodes.size();
-  double slack = (cut_val - 2.0) / 2.0;
   int set_size = cut_end - cut_start + 1;
   int rhs = (2 * set_size) - 1;
   double partial_lhs = (2 * set_size) - cut_val;
   double root_bod_lb = rhs - partial_lhs - 0.4999;
+#endif
+
+  double slack = (cut_val - 2.0) / 2.0;
 
   if(cut_start == old_cut->start){//if the current seg contains previous
     if(cut_end == old_cut->end + 1 && slack + old_cut->cutval < 0.4999){
@@ -140,7 +224,8 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
       PSEP_CHECK_RVAL(rval, "Problem with adjacent teeth. ");
       num_adjacent++;
     }
-    
+
+#ifdef TOOTH_GET_DIST
     for(int i = old_cut->end + 1; i <= cut_end; i++){
       marks[best_nodes[i]] = 1;
       rb_sums.erase(i);
@@ -161,8 +246,10 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
     	  rb_sums[root_perm] += current_node.adj_objs[k].lp_weight;
       }
     }
-    
-  } else { //if we are on a new start (degree eqn "segment")
+#endif
+  }
+#ifdef TOOTH_GET_DIST
+  else { //if we are on a new start (degree eqn "segment")
     for(int i = old_cut->end + 1; i <= cut_end; i++)
       marks[best_nodes[i]] = 0;
     marks[best_nodes[cut_start]] = 1;
@@ -192,7 +279,7 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
 	arg->unsorted_roots.push_back(kv.first);
       num_distant++;
     }
-  
+#endif  
 
 
  CLEANUP:
@@ -294,33 +381,6 @@ int CandidateTeeth::body_subset(const SimpleTooth &T, const SimpleTooth &R,
   }
 
   return 0;
-}
-
-//TODO/NOTES: it may be possible to speed this up somewhat with the edge
-//indices hash map rather than the support graph
-void CandidateTeeth::increment_slack(SimpleTooth &T, const int new_vx,
-				     double &lhs, int &rhs)
-{
-  SNode *current_node = &(G_s.nodelist[new_vx]);
-
-  rhs += 2;
-  edge_marks[new_vx] = 1;
-
-  for(int i = 0; i < current_node->s_degree; i++){
-    int other_end = current_node->adj_objs[i].other_end;
-    double lp_weight = current_node->adj_objs[i].lp_weight;
-
-    if(edge_marks[other_end] == 1){
-      lhs += (2 * lp_weight);
-      continue;
-    }
-
-    if(other_end == best_tour_nodes[T.root]){
-      lhs += lp_weight;
-    }
-  }
-
-  T.slack = rhs - lhs;
 }
 
 inline void CandidateTeeth::LinsubCBData::refresh(seg *new_old_seg)
