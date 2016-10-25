@@ -3,12 +3,14 @@
 using namespace std;
 using namespace PSEP;
 
+#define PSEP_TEST_TOOTH
+
 int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
 {
   int rval = 0;
   
   int segval = 2, matchval = 2, dpval = 2;
-  double segtime, matchtime;//, dptime;
+  double segtime, matchtime;
   bool pool_blossoms;
 
   segtime = zeit();
@@ -46,6 +48,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   total_2mtime += matchtime;
   total_2mcalls++;
 
+#ifdef PSEP_TEST_TOOTH
   if(segval == 2 && stat != LP::PivType::Subtour){
     bool in_sub = false;
     rval = in_subtour_poly(in_sub);
@@ -64,20 +67,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
       rval = 1; goto CLEANUP;
     }
   }
-
-  // if(prefs.dp_threshold >= 0 && augrounds > 0 &&
-  //    (augrounds % prefs.dp_threshold == 0)){
-  //   if(segval == 2 && matchval == 2 && stat != LP::PivType::Subtour){
-  //     dptime = zeit();
-  //     dpval = dominos.cutcall();
-  //     if(dpval == 1){
-  // 	rval = 1;
-  // 	goto CLEANUP;
-  //     }
-  //     dptime = zeit() - dptime;
-  //     total_dptime += dptime;	
-  //   }
-  // }
+#endif
 
   if(segval == 2 && matchval == 2 && dpval == 2)
     rval = 2;
@@ -210,21 +200,17 @@ int CutControl::q_has_viol(bool &result, CutQueue<HyperGraph> &pool_q)
 int CutControl::in_subtour_poly(bool &result)
 {
   int ecount = support_ecap.size(), ncount = G_s.node_count;
-  int end0 = 0;
   double cutval = 2;
   result = false;
 
-  for(int end1 = 1; end1 < ncount; end1++){
-    if(CCcut_mincut_st(ncount, ecount, &support_elist[0], &support_ecap[0],
-		       end0, end1, &cutval, (int **) NULL, (int *) NULL)){
-      cerr << "CutControl::in_subtour_poly call to Concorde st-cut failed\n";
-      return 1;
-    }
-
-    if(cutval < 2)
-      return 0;
+  if(CCcut_mincut(ncount, ecount, &support_elist[0], &support_ecap[0],
+		  &cutval, NULL, NULL)){
+    std::cerr << "Problem in CutControl::in_subtour_poly with CCcut_mincut\n";
+    return 1;
   }
-
-  result = true;
+    
+  if(cutval >= 2)
+    result = true;
+  
   return 0;
 }
