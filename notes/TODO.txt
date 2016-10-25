@@ -1,3 +1,5 @@
+Replace the n-1 minimum cut computations with a global mincut!!!
+
 COLUMN GEN!!!! Expanding a vector can invalidate references!!!!! Thus
 we cannot rely on references to lp edges and edge marks, etc. All of
 the constructors/use of classes should be changed to reflect
