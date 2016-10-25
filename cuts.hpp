@@ -17,6 +17,7 @@
 #include "setbank.hpp"
 #include "datagroups.hpp"
 #include "Graph.hpp"
+#include "tooth.hpp"
 
 namespace PSEP {
 /*
@@ -66,6 +67,18 @@ struct fastblossom {
 
   std::vector<int> handle;
   std::vector<int> edge_indices;
+};
+
+struct simpleDP {
+  simpleDP() = default;
+  simpleDP(std::vector<PSEP::SimpleTooth*> &_used_teeth,
+	   std::vector<int> &_degree_nodes, std::vector<int> &_nonneg_edges) :
+    used_teeth(_used_teeth), degree_nodes(_degree_nodes),
+    nonneg_edges(_nonneg_edges) {}
+  
+  std::vector<PSEP::SimpleTooth*> used_teeth;
+  std::vector<int> degree_nodes;
+  std::vector<int> nonneg_edges;
 };
 
 /* The cuts below are dummy structures which are not actually used at the

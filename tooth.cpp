@@ -38,7 +38,7 @@ int CandidateTeeth::get_light_teeth()
 {
   int rval = 0;
   int notsort = 0;
-  seg lin_seg(G_s.node_count - 1, G_s.node_count - 1, 0);
+  tooth_seg lin_seg(G_s.node_count - 1, G_s.node_count - 1, 0);
   double ft, st, we_t;
   int numremain = 0;
   int max_deg = 0;
@@ -195,7 +195,7 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
 
   LinsubCBData *arg = (LinsubCBData *) u_data;
   
-  seg *old_cut = arg->old_seg;
+  tooth_seg *old_cut = arg->old_seg;
   vector<vector<SimpleTooth::Ptr>> &teeth = arg->cb_teeth;
 
 #ifdef TOOTH_GET_DIST
@@ -218,9 +218,9 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
   double slack = (cut_val - 2.0) / 2.0;
 
   if(cut_start == old_cut->start){//if the current seg contains previous
-    if(cut_end == old_cut->end + 1 && slack + old_cut->cutval < 0.4999){
+    if(cut_end == old_cut->end + 1 && slack + old_cut->slack < 0.4999){
       rval = add_tooth(teeth, cut_end, cut_start, old_cut->end,
-		       old_cut->cutval + slack);
+		       old_cut->slack + slack);
       PSEP_CHECK_RVAL(rval, "Problem with adjacent teeth. ");
       num_adjacent++;
     }
@@ -287,7 +287,7 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
     cerr << "Linsub callback failed\n";
   old_cut->start = cut_start;
   old_cut->end = cut_end;
-  old_cut->cutval = slack;
+  old_cut->slack = slack;
   return rval;
 }
 
@@ -383,11 +383,11 @@ int CandidateTeeth::body_subset(const SimpleTooth &T, const SimpleTooth &R,
   return 0;
 }
 
-inline void CandidateTeeth::LinsubCBData::refresh(seg *new_old_seg)
+inline void CandidateTeeth::LinsubCBData::refresh(tooth_seg *new_old_seg)
 {
   new_old_seg->start = cb_tour_nodes.size() - 1;
   new_old_seg->end = new_old_seg->start;
-  new_old_seg->cutval = 0;
+  new_old_seg->slack = 0;
   old_seg = new_old_seg;
 }
 

@@ -2,7 +2,6 @@
 #define PSEP_TOOTH_HPP
 
 #include "Graph.hpp"
-#include "cuts.hpp"
 
 #include <memory>
 #include <vector>
@@ -50,6 +49,22 @@ struct SimpleTooth {
   //returns true iff root lies in the middle of the segment from body_start
   // to body_end
   bool sandwich() const;
+};
+
+/*
+ * Structure for representing bodies of simple teeth.
+ * start/end are specified relative to a vector of tour nodes, so the segment
+ * is
+ * tour_nodes[cut_start], tour_nodes[cut_start + 1], ... , tour_nodes[cut_end]
+ * slack is the slack of the SEC associated to the segment
+ */
+struct tooth_seg {
+  tooth_seg(int _start, int _end, double _slack) :
+    start(_start), end(_end), slack(_slack) {}
+
+  int start;
+  int end;
+  double slack;
 };
 
 /*
@@ -127,7 +142,7 @@ private:
       cb_G_s(_cb_G_s), cb_sup_indices(_cb_sup_indices),
       cb_sup_elist(_cb_sup_elist), cb_sup_ecap(_cb_sup_ecap) {}
 
-    void refresh(PSEP::seg *new_old_seg);
+    void refresh(PSEP::tooth_seg *new_old_seg);
 
     std::vector<std::vector<SimpleTooth::Ptr>> &cb_teeth;
 
@@ -142,7 +157,7 @@ private:
     std::vector<int> &cb_sup_elist;
     std::vector<double> &cb_sup_ecap;
 
-    PSEP::seg *old_seg;
+    PSEP::tooth_seg *old_seg;
 
     std::unordered_map<int, double> root_bod_sums;
     std::vector<int> unsorted_roots;
