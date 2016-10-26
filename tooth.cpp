@@ -7,12 +7,16 @@ extern "C" {
 #include <iostream>
 #include <algorithm>
 
-using namespace PSEP;
-using namespace std;
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
 
 static int num_adjacent = 0, num_distant = 0;
 
 #define TOOTH_GET_DIST
+
+namespace PSEP {
 
 CandidateTeeth::CandidateTeeth(vector<int> &_delta, vector<int> &_edge_marks,
 			       vector<int> &_best_tour_nodes,
@@ -192,7 +196,7 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
 
   SupportGraph &G = arg->cb_G_s;
 
-  unordered_map<int, double> &rb_sums = arg->root_bod_sums;
+  std::unordered_map<int, double> &rb_sums = arg->root_bod_sums;
 
   int ncount = best_nodes.size();
   int set_size = cut_end - cut_start + 1;
@@ -396,4 +400,6 @@ void CandidateTeeth::print_collection()
     // for(SimpleTooth::Ptr &T : light_teeth[i])
     //   print_tooth(*T);
   }
+}
+
 }
