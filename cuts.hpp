@@ -70,9 +70,9 @@ struct fastblossom {
   std::vector<int> edge_indices;
 };
 
-struct simpleDP {
-  simpleDP() = default;
-  simpleDP(std::vector<PSEP::SimpleTooth*> &_used_teeth,
+struct dominoparity {
+  dominoparity() = default;
+  dominoparity(std::vector<PSEP::SimpleTooth*> &_used_teeth,
 	   std::vector<int> &_degree_nodes, std::vector<int> &_nonneg_edges) :
     used_teeth(_used_teeth), degree_nodes(_degree_nodes),
     nonneg_edges(_nonneg_edges) {}

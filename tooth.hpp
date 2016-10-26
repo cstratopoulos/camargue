@@ -61,9 +61,18 @@ struct SimpleTooth {
 
   double slack;
 
+  int cutgraph_index;
+
   //returns true iff root lies in the middle of the segment from body_start
   // to body_end
   bool sandwich() const;
+
+  //returns true iff the body segment of the tooth contains node_index
+  bool body_contains(const int node_index) const;
+
+  //returns true iff R has the same root as this tooth, and this tooth's
+  //body is a subset of R's body
+  bool is_subset_of(const SimpleTooth &R) const;
 };
 
 /*
