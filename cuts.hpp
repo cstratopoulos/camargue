@@ -30,6 +30,7 @@ namespace PSEP {
  * cutval - the value of the cut associated to the segment
  */
 struct seg {
+  seg() = default;
   seg(int _start, int _end, double _cutval) :
     start(_start), end(_end), cutval(_cutval) {}
 
