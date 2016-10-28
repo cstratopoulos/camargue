@@ -17,7 +17,7 @@ public:
   DPCutGraph(const std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &_teeth);
   ~DPCutGraph();
 
-  int grab_cuts(PSEP::CutQueue<PSEP::simpleDP> &domino_q);
+  int grab_cuts(PSEP::CutQueue<PSEP::dominoparity> &domino_q);
 
 private:
   int build_light_tree();
