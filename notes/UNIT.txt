@@ -16,6 +16,11 @@ APPROACH: create a new constructor for each Cut<> class, which takes
 	  capacity so that every cut found can be carefully
 	  examined. Then iterate over the queue verbosely printing
 	  each cut.
+	  -It should also be possible to test hypergraph/extract cuts
+	  routine to be sure exactly the right cut is being generated
+	  and added to CPLEX
+	  -Especially test hypergraph routines in cases where the
+	  source tour is different, i.e., augmentation has taken place
 
 AUXILIARY TASKS: -write a shell script to get node coordinates from
 	  	 TSPLIB files
