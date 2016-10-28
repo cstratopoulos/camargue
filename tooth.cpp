@@ -7,12 +7,13 @@ extern "C" {
 #include <iostream>
 #include <algorithm>
 
-using namespace PSEP;
-using namespace std;
+using std::vector;
 
 static int num_adjacent = 0, num_distant = 0;
 
 #define TOOTH_GET_DIST
+
+namespace PSEP {
 
 CandidateTeeth::CandidateTeeth(vector<int> &_delta, vector<int> &_edge_marks,
 			       vector<int> &_best_tour_nodes,
@@ -27,7 +28,7 @@ CandidateTeeth::CandidateTeeth(vector<int> &_delta, vector<int> &_edge_marks,
   cb_data(light_teeth,
 	  _edge_marks,
 	  _best_tour_nodes, _perm,
-	  _G_s, _support_indices, _support_elist, _support_ecap)
+	  _G_s)
 {
   light_teeth.resize(best_tour_nodes.size());
   endmark.resize(best_tour_nodes.size(), CC_LINSUB_BOTH_END);
@@ -38,7 +39,7 @@ int CandidateTeeth::get_light_teeth()
 {
   int rval = 0;
   int notsort = 0;
-  seg lin_seg(G_s.node_count - 1, G_s.node_count - 1, 0);
+  tooth_seg lin_seg(G_s.node_count - 1, G_s.node_count - 1, 0);
   double ft, st, we_t;
   int numremain = 0;
   int max_deg = 0;
@@ -47,15 +48,17 @@ int CandidateTeeth::get_light_teeth()
     if(G_s.nodelist[i].s_degree > max_deg)
       max_deg = G_s.nodelist[i].s_degree;
 
-  cout << "Support graph has max degree " << max_deg << ", ecount "
+  std::cout << "Support graph has max degree " << max_deg << ", ecount "
        << G_s.edge_count << "\n";
 
+  //TODO: this should be a method in LinsubCBdata
   cb_data.old_seg = &lin_seg;
   cb_data.cb_edge_marks[best_tour_nodes[lin_seg.start]] = 1;
   cb_data.unsorted_roots.clear();
+  
   clear_collection();
   
-  cout << "Getting light teeth via linsub...." << endl;
+  std::cout << "Getting light teeth via linsub...." << std::endl;
   ft = zeit();
   
   rval = CCcut_linsub_allcuts(G_s.node_count,
@@ -66,7 +69,7 @@ int CandidateTeeth::get_light_teeth()
   if(rval) goto CLEANUP;
   ft = zeit() - ft;
 
-  cout << ft << "s total, " << num_adjacent << " adjacent teeth, "
+  std::cout << ft << "s total, " << num_adjacent << " adjacent teeth, "
        << num_distant << " distant teeth\n";
 
   st = zeit();
@@ -80,11 +83,11 @@ int CandidateTeeth::get_light_teeth()
   }
   st = zeit() - st;
 
-  cout << "Sorted only " << cb_data.unsorted_roots.size() << " lists in "
+  std::cout << "Sorted only " << cb_data.unsorted_roots.size() << " lists in "
        << st << "s\n";
 
 
-  cout << "Checking sorted status....";
+  std::cout << "Checking sorted status....";
   for(vector<SimpleTooth::Ptr> &t_vec : light_teeth){
     bool is_s = std::is_sorted(t_vec.begin(), t_vec.end(),
 			       [this](const SimpleTooth::Ptr &T,
@@ -93,15 +96,15 @@ int CandidateTeeth::get_light_teeth()
 			       });
     if(!is_s){
       notsort++;
-      cout << "List of teeth with root "
+      std::cout << "List of teeth with root "
 	   << t_vec.front()->root << " is not sorted\n";
     }
   }
 
   if(notsort == 0)
-    cout << "All vectors sorted by increasing body size\n";
+    std::cout << "All vectors sorted by increasing body size\n";
   else
-    cout << notsort << " vectors not sorted\n";
+    std::cout << notsort << " vectors not sorted\n";
 
   we_t = zeit();
   weak_elim();
@@ -110,12 +113,12 @@ int CandidateTeeth::get_light_teeth()
   for(const vector<SimpleTooth::Ptr> &vec : light_teeth)
     numremain += vec.size();
 
-  cout << "Performed weak elimination in " << we_t << "s, "
+  std::cout << "Performed weak elimination in " << we_t << "s, "
        << numremain << " teeth remain\n";
 
  CLEANUP:
   if(rval == 1){
-    cerr << "CandidateTeeth::get_light_teeth failed\n";
+    std::cerr << "CandidateTeeth::get_light_teeth failed\n";
     clear_collection();
   }
   return rval;
@@ -125,30 +128,22 @@ void CandidateTeeth::weak_elim()
 {
   for(vector<SimpleTooth::Ptr> &t_list : light_teeth){
     if(t_list.empty()) continue;
-    // cout << "----Considering root " << t_list.front()->root << ", "
-    // 	 << t_list.size() << " teeth.......\n";
+
     int improvecount = 0;
     int root_node = best_tour_nodes[t_list.front()->root];
     SNode current_node = G_s.nodelist[root_node];
 
-    // cout << "Root node " << root_node << " is adjacent to....\n";
     for(int k = 0; k < current_node.s_degree; k++){
       edge_marks[current_node.adj_objs[k].other_end] = 1;
-      // cout << current_node.adj_objs[k].other_end << " (perm index "
-      // 	   << cb_data.cb_perm[current_node.adj_objs[k].other_end] << " )\n";
     }
 
     vector<SimpleTooth::Ptr>::iterator it = t_list.begin();
     while(it + 1 != t_list.end()){
       vector<SimpleTooth::Ptr>::iterator cur = it;
       vector<SimpleTooth::Ptr>::iterator next = cur + 1;
-      // cout << "cur is " << (*cur)->body_start << ", " << (*cur)->body_end
-      // 	   << ", slack " << (*cur)->slack
-      // 	   << " next is "
-      // 	   << (*next)->body_start << ", " << (*next)->body_end
-      // 	   << ", slack " << (*next)->slack << "\n";
-      it++;
       bool found_new_edge = false;
+      
+      it++;
 
       for(int i = (*next)->body_start; i <= (*next)->body_end; i++){
 	if(i >= (*cur)->body_start && i <= (*cur)->body_end) break;
@@ -159,16 +154,9 @@ void CandidateTeeth::weak_elim()
 	}	
       }
       
-      // for(int i = (*next)->body_start; i < (*cur)->body_start; i++)
-      // 	if(edge_marks[best_tour_nodes[i]] == 1){
-      // 	  found_new_edge = true;
-      // 	  break;
-      // 	}
-
       if(found_new_edge) continue;
 
       if((*next)->slack <= (*cur)->slack){
-	//	cout << "Next improves current\n";
 	(*cur)->slack = -1.0;
 	improvecount++;
       }
@@ -177,7 +165,6 @@ void CandidateTeeth::weak_elim()
 
     for(int k = 0; k < current_node.s_degree; k++)
       edge_marks[current_node.adj_objs[k].other_end] = 0;
-    //    cout << improvecount << " improving teeth found\n";
   }
 
   for(vector<SimpleTooth::Ptr> &t_list : light_teeth)
@@ -195,7 +182,7 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
 
   LinsubCBData *arg = (LinsubCBData *) u_data;
   
-  seg *old_cut = arg->old_seg;
+  tooth_seg *old_cut = arg->old_seg;
   vector<vector<SimpleTooth::Ptr>> &teeth = arg->cb_teeth;
 
 #ifdef TOOTH_GET_DIST
@@ -206,7 +193,7 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
 
   SupportGraph &G = arg->cb_G_s;
 
-  unordered_map<int, double> &rb_sums = arg->root_bod_sums;
+  std::unordered_map<int, double> &rb_sums = arg->root_bod_sums;
 
   int ncount = best_nodes.size();
   int set_size = cut_end - cut_start + 1;
@@ -218,9 +205,9 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
   double slack = (cut_val - 2.0) / 2.0;
 
   if(cut_start == old_cut->start){//if the current seg contains previous
-    if(cut_end == old_cut->end + 1 && slack + old_cut->cutval < 0.4999){
+    if(cut_end == old_cut->end + 1 && slack + old_cut->slack < 0.4999){
       rval = add_tooth(teeth, cut_end, cut_start, old_cut->end,
-		       old_cut->cutval + slack);
+		       old_cut->slack + slack);
       PSEP_CHECK_RVAL(rval, "Problem with adjacent teeth. ");
       num_adjacent++;
     }
@@ -284,10 +271,10 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
 
  CLEANUP:
   if(rval)
-    cerr << "Linsub callback failed\n";
+    std::cerr << "Linsub callback failed\n";
   old_cut->start = cut_start;
   old_cut->end = cut_end;
-  old_cut->cutval = slack;
+  old_cut->slack = slack;
   return rval;
 }
 
@@ -316,7 +303,7 @@ inline int CandidateTeeth::add_tooth(vector<vector<SimpleTooth::Ptr>> &teeth,
   } catch(...) { rval = 1; }
 
   if(rval)
-    cerr << "Couldn't push back light tooth\n";
+    std::cerr << "Couldn't push back light tooth\n";
   return rval;
 }
 
@@ -326,6 +313,32 @@ inline bool SimpleTooth::sandwich() const
     (body_start <= body_end) ?
     (body_start <= root && root <= body_end) : //[___<----*--->__]
     (body_start <= root || root <= body_end); // [-->__<--*--] OR [-*->__<--]
+}
+
+bool SimpleTooth::body_contains(const int node_index) const
+{
+  if(node_index == root)
+    return false;
+
+  return (body_start <= body_end) ?
+    (body_start <= node_index && node_index <= body_end) :
+    (body_start <= node_index || node_index <= body_end);
+}
+
+bool SimpleTooth::is_subset_of(const SimpleTooth &R) const
+{
+  if(root != R.root)
+    return false;
+
+  if(R.body_start <= R.body_end){
+    if(body_start > body_end)
+      return false;
+    else
+      return (R.body_start <= body_start && body_end <= R.body_end);
+  } else
+    return ( (R.body_start <= body_start &&
+	      (R.body_start <= body_end || body_end <= R.body_end)) ||
+	     (body_start <= R.body_end && body_end <= R.body_end));
 }
 
 inline int CandidateTeeth::body_size(const SimpleTooth &T)
@@ -364,7 +377,7 @@ int CandidateTeeth::body_subset(const SimpleTooth &T, const SimpleTooth &R,
 				bool &result)
 {
   if(T.root != R.root){
-    cerr << "Cannot currently test body subset with different roots\n";
+    std::cerr << "Cannot currently test body subset with different roots\n";
     return 1;
   }
 
@@ -383,39 +396,33 @@ int CandidateTeeth::body_subset(const SimpleTooth &T, const SimpleTooth &R,
   return 0;
 }
 
-inline void CandidateTeeth::LinsubCBData::refresh(seg *new_old_seg)
-{
-  new_old_seg->start = cb_tour_nodes.size() - 1;
-  new_old_seg->end = new_old_seg->start;
-  new_old_seg->cutval = 0;
-  old_seg = new_old_seg;
-}
-
 void CandidateTeeth::print_tooth(const SimpleTooth &T)
 {
   int ncount = G_s.node_count;
   int current_node = T.body_start;
   int upper_limit = body_size(T) + T.sandwich();
 
-  cout << "Root: " << best_tour_nodes[T.root] << ", body size: "
+  std::cout << "Root: " << best_tour_nodes[T.root] << ", body size: "
        << body_size(T) 
        << ", Body: \n"
        << best_tour_nodes[T.body_start] << "\n";
   for(int i = 1; i < upper_limit; i++){
     current_node = best_tour_nodes[(T.body_start + i) % ncount];
     if(current_node != best_tour_nodes[T.root])
-      cout <<current_node << "\n";
+      std::cout <<current_node << "\n";
   }
-  cout << "Slack: " << T.slack << "\n";
+  std::cout << "Slack: " << T.slack << "\n";
 }
 
 void CandidateTeeth::print_collection()
 {
   for(int i = 0; i < G_s.node_count; i++){
-    cout << "=== LIGHT TEETH WITH ROOT "
+    std::cout << "=== LIGHT TEETH WITH ROOT "
 	 << best_tour_nodes[i] << ", " << light_teeth[i].size() << " TOTAL==="
-	 << endl;
+	 << std::endl;
     // for(SimpleTooth::Ptr &T : light_teeth[i])
     //   print_tooth(*T);
   }
+}
+
 }

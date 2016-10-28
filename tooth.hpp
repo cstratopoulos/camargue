@@ -1,14 +1,26 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
+ *
+ *                BUILDING COLLECTIONS OF CANDIDATE TEETH
+ *
+ * This file contains structures and classes used to build a collection of 
+ * candidate teeth for primal separation of simple domino parity inequalities
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef PSEP_TOOTH_HPP
 #define PSEP_TOOTH_HPP
 
 #include "Graph.hpp"
-#include "cuts.hpp"
 
 #include <memory>
 #include <vector>
 #include <map>
 #include <unordered_map>
 
+/*
+ * If defined, lists of simple teeth will be implemented as unique pointers,
+ * else they will be raw pointers.
+ */
 #define PSEP_TOOTH_UNIQ
 
 namespace PSEP {
@@ -26,6 +38,8 @@ namespace PSEP {
  */
 
 struct SimpleTooth {
+  SimpleTooth() = default;
+  
   SimpleTooth(int _root, int _body_start, int _body_end) :
     root(_root), body_start(_body_start), body_end(_body_end),
     slack(INFINITY) {}
@@ -47,9 +61,34 @@ struct SimpleTooth {
 
   double slack;
 
+  int cutgraph_index;
+
   //returns true iff root lies in the middle of the segment from body_start
   // to body_end
   bool sandwich() const;
+
+  //returns true iff the body segment of the tooth contains node_index
+  bool body_contains(const int node_index) const;
+
+  //returns true iff R has the same root as this tooth, and this tooth's
+  //body is a subset of R's body
+  bool is_subset_of(const SimpleTooth &R) const;
+};
+
+/*
+ * Structure for representing bodies of simple teeth.
+ * start/end are specified relative to a vector of tour nodes, so the segment
+ * is
+ * tour_nodes[cut_start], tour_nodes[cut_start + 1], ... , tour_nodes[cut_end]
+ * slack is the slack of the SEC associated to the segment
+ */
+struct tooth_seg {
+  tooth_seg(int _start, int _end, double _slack) :
+    start(_start), end(_end), slack(_slack) {}
+
+  int start;
+  int end;
+  double slack;
 };
 
 /*
@@ -61,6 +100,7 @@ struct SimpleTooth {
 
 class CandidateTeeth {
 public:
+  CandidateTeeth() = default;
   CandidateTeeth(std::vector<int> &_delta, std::vector<int> &_edge_marks,
 		 std::vector<int> &_best_tour_nodes,
 		 std::vector<int> &_perm,
@@ -95,12 +135,23 @@ public:
   
 private:
   void clear_collection();
+
+  /*
+   * Reduces the size of the collection of light teeth using the elimination
+   * criterion of Lemma 5.5 in Fleischer et al (2006). This reduces the 
+   * collection to one of size at most 4m - 2n, without any uncrossing 
+   * arguments
+   */
   void weak_elim();
 
   static int add_tooth(std::vector<std::vector<SimpleTooth::Ptr>> &teeth,
 		       const int root, const int body_start,
 		       const int body_end, const double slack);
 
+  /*
+   * this is a callback function to CCcut_linsub_allcuts, u_data should
+   * be the LinsubCBData structure below
+   */
   static int get_teeth(double cut_val, int cut_start, int cut_end,
 		       void *u_data);
   
@@ -111,23 +162,21 @@ private:
   std::vector<int> &support_elist;
   std::vector<double> &support_ecap;
 
-
+  /*
+   * This is the callback handle for CCcut_linsub_allcuts, a pointer to 
+   * this should be void-cast and passed to the function along w the callback.
+   */
   struct LinsubCBData {
     LinsubCBData(std::vector<std::vector<SimpleTooth::Ptr>> &_cb_teeth,
 		 std::vector<int> &_cb_edge_marks,
 		 std::vector<int> &_cb_tour_nodes,
 		 std::vector<int> &_cb_perm,
-		 SupportGraph &_cb_G_s,
-		 std::vector<int> &_cb_sup_indices,
-		 std::vector<int> &_cb_sup_elist,
-		 std::vector<double> &_cb_sup_ecap) :
+		 SupportGraph &_cb_G_s) :
       cb_teeth(_cb_teeth),
       cb_edge_marks(_cb_edge_marks),
       cb_tour_nodes(_cb_tour_nodes), cb_perm(_cb_perm),
-      cb_G_s(_cb_G_s), cb_sup_indices(_cb_sup_indices),
-      cb_sup_elist(_cb_sup_elist), cb_sup_ecap(_cb_sup_ecap) {}
+      cb_G_s(_cb_G_s) {}
 
-    void refresh(PSEP::seg *new_old_seg);
 
     std::vector<std::vector<SimpleTooth::Ptr>> &cb_teeth;
 
@@ -137,12 +186,8 @@ private:
     std::vector<int> &cb_perm;
 
     SupportGraph &cb_G_s;
-    
-    std::vector<int> &cb_sup_indices;
-    std::vector<int> &cb_sup_elist;
-    std::vector<double> &cb_sup_ecap;
 
-    PSEP::seg *old_seg;
+    PSEP::tooth_seg *old_seg;
 
     std::unordered_map<int, double> root_bod_sums;
     std::vector<int> unsorted_roots;

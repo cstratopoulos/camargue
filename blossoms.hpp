@@ -6,7 +6,7 @@
 #include "cuts.hpp"
 #include "Graph.hpp"
 
-namespace PSEP{
+namespace PSEP {
 
 template<> class Cut<blossom> {
 public:

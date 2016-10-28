@@ -1,9 +1,12 @@
 #include "cutcall.hpp"
+#include "DPgraph.hpp"
 
 using namespace std;
-using namespace PSEP;
+
 
 #define PSEP_TEST_TOOTH
+
+namespace PSEP {
 
 int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
 {
@@ -62,7 +65,8 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
       if(rval) goto CLEANUP;
 
       cout << "Got collection of light candidate teeth" << endl;
-      //candidates.print_collection();
+
+      DPCutGraph cutgraph(candidates.light_teeth);
 
       rval = 1; goto CLEANUP;
     }
@@ -213,4 +217,6 @@ int CutControl::in_subtour_poly(bool &result)
     result = true;
   
   return 0;
+}
+
 }

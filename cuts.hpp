@@ -17,6 +17,7 @@
 #include "setbank.hpp"
 #include "datagroups.hpp"
 #include "Graph.hpp"
+#include "tooth.hpp"
 
 namespace PSEP {
 /*
@@ -29,6 +30,7 @@ namespace PSEP {
  * cutval - the value of the cut associated to the segment
  */
 struct seg {
+  seg() = default;
   seg(int _start, int _end, double _cutval) :
     start(_start), end(_end), cutval(_cutval) {}
 
@@ -66,6 +68,18 @@ struct fastblossom {
 
   std::vector<int> handle;
   std::vector<int> edge_indices;
+};
+
+struct dominoparity {
+  dominoparity() = default;
+  dominoparity(std::vector<PSEP::SimpleTooth*> &_used_teeth,
+	   std::vector<int> &_degree_nodes, std::vector<int> &_nonneg_edges) :
+    used_teeth(_used_teeth), degree_nodes(_degree_nodes),
+    nonneg_edges(_nonneg_edges) {}
+  
+  std::vector<PSEP::SimpleTooth*> used_teeth;
+  std::vector<int> degree_nodes;
+  std::vector<int> nonneg_edges;
 };
 
 /* The cuts below are dummy structures which are not actually used at the
