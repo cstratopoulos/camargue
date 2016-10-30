@@ -45,8 +45,6 @@ int main(int argc, char* argv[]){
 			 dat, do_sparse, qnearest);
   dat.reset();
 
-  return 1;
-
   if(solver.call(PSEP::SolutionProtocol::PURECUT, do_sparse))
     exit(1);
   cout << "                    everything: "
