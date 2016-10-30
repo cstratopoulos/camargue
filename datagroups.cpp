@@ -23,7 +23,8 @@ using namespace PSEP::Data;
 GraphGroup::GraphGroup(const string &fname, string &probname,
 		       RandProb &randprob,
 		       unique_ptr<CCdatagroup> &dat,
-		       const bool sparse, const int quadnearest){
+		       const bool sparse, const int quadnearest,
+		       const bool dump_xy){
   int rval = 0;
   CCdatagroup *rawdat = dat.get();
   char *filestring = const_cast<char *>(fname.data());
@@ -125,13 +126,16 @@ GraphGroup::GraphGroup(const string &fname, string &probname,
     rval = 1; PSEP_GOTO_CLEANUP("Out of memory for dfs vectors, ");
   }
 
-  if(dat->x && dat->y){
-    std::string xyfile = probname + ".xy";
-    rval = write_xy_coords(dat->x, dat->y, m_graph.node_count,
-			   xyfile);
-    PSEP_CHECK_RVAL(rval, "Couldn't dump xy coords to file. ");
+  if(dump_xy){
+    if(dat->x && dat->y){
+      std::string xyfile = probname + ".xy";
+      rval = write_xy_coords(dat->x, dat->y, m_graph.node_count,
+			     xyfile);
+      PSEP_CHECK_RVAL(rval, "Couldn't dump xy coords to file. ");
 
-    std::cout << "Dumped xy coords to " << xyfile << "\n";
+      std::cout << "Dumped xy coords to " << xyfile << "\n";
+    } else
+      std::cout << "Problem type does not permit xy coord dump\n";
   }
 
 
@@ -146,7 +150,8 @@ GraphGroup::GraphGroup(const string &fname, string &probname,
 BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
 		     unique_ptr<CCdatagroup> &dat,
 		     const std::string &probname,
-		     const int user_seed){
+		     const int user_seed,
+		     const bool save_tour, const bool save_tour_edges){
   int rval = 0;
   CCrandstate rand_state;
   CCedgegengroup plan;
@@ -164,8 +169,6 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   int istour;
   int seed = (user_seed == 0) ? ((int) real_zeit()) : user_seed;
   bool sparse = (m_graph.edge_count < (ncount * (ncount - 1)) / 2);
-
-  cout << "LK seed: " << seed << ", " << trials << " trials\n";
 
   bestval = INFINITY;
 
@@ -232,7 +235,12 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   if(rval) PSEP_GOTO_CLEANUP("CClinkern_tour failed, ");
   
   //end of copied code (from find_tour)
-  cout << "LK initial run: " << bestval << endl;
+  std::cout << "LK initial run: " << bestval << ". ";
+
+  if(trials > 0){
+    std::cout << "Performing " << trials << " more trials. (";
+    std::cout.flush();
+  }
 
   //begin copied code from find_good_tour in tsp_call.c  
   for(int i = 0; i < trials; i++){
@@ -241,13 +249,21 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
 			  (char *) NULL, CC_LK_GEOMETRIC_KICK, &rand_state);
   if(rval) PSEP_GOTO_CLEANUP("CClinkern_tour failed, ");
   
-    cout << "LK run " << i << ": " << val << "\n";
-    if(val < bestval){
-      for(int j = 0; j < ncount; j++)
-	best_tour_nodes[j] = cyc[j];
-      bestval = val;
-    }
+  if(val < bestval){
+    for(int j = 0; j < ncount; j++)
+      best_tour_nodes[j] = cyc[j];
+    bestval = val;
+    std::cout << "!";
+    std::cout.flush();
+  } else {
+    std::cout << ".";
+    std::cout.flush();
   }
+  }
+
+  if(trials > 0)
+    std::cout << ")";
+  std::cout << "\n";
   
   if (trials > 0){
     rval = CClinkern_tour(ncount, rawdat, ecount, elist, ncount, 2 * kicks,
@@ -311,19 +327,22 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   }
   cout << "\n";
 
-  {
-  std::string solfile = probname + ".sol";
-  std::string edgefile = probname + "_tour.x";
-  rval = write_tour_nodes(best_tour_nodes,
-			  solfile);
-  PSEP_CHECK_RVAL(rval, "Couldn't write initial tour to file. ");
+  if(save_tour){
+    std::string solfile = probname + ".sol";
+    rval = write_tour_nodes(best_tour_nodes,
+			    solfile);
+    PSEP_CHECK_RVAL(rval, "Couldn't write initial tour to file. ");
 
+    std::cout << "Wrote initial tour to " << solfile << ".\n";
+  }
+  
+  if(save_tour_edges) {
+  std::string edgefile = probname + "_tour.x";
   rval = write_tour_edges(best_tour_edges, m_graph.edges, m_graph.node_count,
 			  edgefile);
   PSEP_CHECK_RVAL(rval, "Couldn't write initial tour edges to file. ");
   
-  std::cout << "Wrote initial LK tour to " << solfile << ", and tour edges to "
-	    << edgefile << "\n";
+  std::cout << "Wrote initial tour edges to " << edgefile << ".\n";
   }
 
  CLEANUP:

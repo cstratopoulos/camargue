@@ -4,31 +4,34 @@
 #include "lp.hpp"
 #include "PSEP_util.hpp"
 
-using namespace std;
-using namespace PSEP;
+using std::vector;
+using std::unique_ptr;
 
-TSPSolver::TSPSolver(const string &fname, RandProb &randprob, LP::Prefs _prefs,
+namespace PSEP {
+
+TSPSolver::TSPSolver(const std::string &fname, RandProb &randprob,
+		     OutPrefs _outprefs, LP::Prefs _prefs,
 		     unique_ptr<CCdatagroup> &dat,
 		     const bool sparse, const int quadnearest) :
-  probname(),
-  GraphGroup(fname, probname, randprob, dat, sparse, quadnearest),
-  BestGroup(GraphGroup.m_graph, GraphGroup.delta, dat, probname,
-	    randprob.seed),
+  outprefs(_outprefs), //TODO: for good const form this should be constructed
+  //differently maybe, maybe in parse_args by passing pointer
+  GraphGroup(fname, outprefs.probname, randprob, dat, sparse, quadnearest,
+	     outprefs.dump_xy),
+  BestGroup(GraphGroup.m_graph, GraphGroup.delta, dat, outprefs.probname,
+	    randprob.seed, outprefs.save_tour, outprefs.save_tour_edges),
   LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm){
 
-  std::cout << "Problem name is: " << probname << "\n";
-
   if(!GraphGroup || !BestGroup || !LPGroup){
-    cerr << "Bad DataGroup, PureCut will not be constructed\n";
+    std::cerr << "Bad DataGroup, PureCut will not be constructed\n";
     PureCut.reset(NULL);
     return;
   }
 
   try{
     PureCut.reset(new PSEP::PureCut(GraphGroup, BestGroup, LPGroup,
-				    SupportGroup));
+				    SupportGroup, outprefs));
   } catch (const std::bad_alloc &){
-    cerr << "TSPSolver constructor failed to construct PureCut\n";
+    std::cerr << "TSPSolver constructor failed to construct PureCut\n";
     PureCut.reset(NULL);
   }
 }
@@ -46,7 +49,7 @@ int TSPSolver::call(SolutionProtocol solmeth, const bool sparse){
       plan = PivotPlan(GraphGroup.m_graph.node_count, PivPresets::SPARSE);      
    
     if(PureCut->solve(plan, piv_status)){
-      cerr << "TSPSolver.call(PURECUT) failed\n";
+      std::cerr << "TSPSolver.call(PURECUT) failed\n";
       return 1;
     }
     
@@ -55,13 +58,13 @@ int TSPSolver::call(SolutionProtocol solmeth, const bool sparse){
   } else {
     PivotPlan plan(GraphGroup.m_graph.node_count, PivPresets::ROOT);
     if(PureCut->solve(plan, piv_status)){
-      cerr << "TSPSolver.call(ABC) failed to call PureCut at root\n";
+      std::cerr << "TSPSolver.call(ABC) failed to call PureCut at root\n";
       return 1;
     }
 
     if(piv_status == LP::PivType::FathomedTour) return 0;
     if(piv_status == LP::PivType::Subtour){
-      cerr << "Terminated with inseparable subtour inequality\n";
+      std::cerr << "Terminated with inseparable subtour inequality\n";
       return 1;
     }
 
@@ -73,7 +76,7 @@ int TSPSolver::call(SolutionProtocol solmeth, const bool sparse){
     }
 
     if(PSEPlp_getlb(&(LPGroup.m_lp), &lower_bounds[0], 0, ecount - 1)){
-      cerr << "TSPSolver.call(ABC) failed to get lower bounds\n";
+      std::cerr << "TSPSolver.call(ABC) failed to get lower bounds\n";
       return 1;
     }
 
@@ -86,7 +89,8 @@ int TSPSolver::call(SolutionProtocol solmeth, const bool sparse){
 
  CLEANUP:
   if(rval)
-    cerr << "TSPSolver.call failed\n";
+    std::cerr << "TSPSolver.call failed\n";
   return rval;
 }
   
+}

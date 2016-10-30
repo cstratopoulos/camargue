@@ -39,13 +39,14 @@ namespace PSEP {
      * These are needed to initiate all its private member classes
      */
   PureCut(Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
-	  Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup):
+	  Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup,
+	  PSEP::OutPrefs &_outprefs):
     print(BestGroup.best_tour_nodes, BestGroup.best_tour_edges,
 	  LPGroup.m_lp_edges, GraphGroup.m_graph.edges),
-      CutControl(GraphGroup, BestGroup, LPGroup, SupportGroup),
-      LPPrune(GraphGroup, LPGroup),
-      LPCore(LPGroup, GraphGroup, SupportGroup, BestGroup, LPPrune),
-      LPFix(BestGroup, GraphGroup, LPGroup){}
+    CutControl(GraphGroup, BestGroup, LPGroup, SupportGroup),
+    LPPrune(GraphGroup, LPGroup),
+    LPCore(LPGroup, GraphGroup, SupportGroup, BestGroup, LPPrune, _outprefs),
+    LPFix(BestGroup, GraphGroup, LPGroup){}
 
 
     /*

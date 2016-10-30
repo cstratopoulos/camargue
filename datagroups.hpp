@@ -44,7 +44,8 @@ namespace Data {
     GraphGroup(const std::string &fname, std::string &probname,
 	       PSEP::RandProb &randprob,
 	       std::unique_ptr<CCdatagroup> &dat,
-	       const bool sparse, const int quadnearest);
+	       const bool sparse, const int quadnearest,
+	       const bool dump_xy);
 
     explicit operator bool() const { return m_graph; }
 
@@ -73,7 +74,8 @@ namespace Data {
     /* The constructor takes graph and dat initialized by GraphGroup */
     BestGroup(Graph &graph, std::vector<int> &delta,
 	      std::unique_ptr<CCdatagroup> &dat, const std::string &probname,
-	      const int user_seed);
+	      const int user_seed, const bool write_tour,
+	      const bool write_tour_edges);
 
     explicit operator bool() const { return !best_tour_nodes.empty(); }
 

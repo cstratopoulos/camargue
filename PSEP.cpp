@@ -18,12 +18,14 @@ using namespace std;
 
 static int initial_parse(int ac, char **av, string &fname,
 			 PSEP::RandProb &randprob, PSEP::LP::Prefs &prefs,
+			 PSEP::OutPrefs &o_prefs,
 			 bool &sparseflag, int &qnearest);
 
 static void usage(const string &fname);
 
 int main(int argc, char* argv[]){  
   PSEP::LP::Prefs prefs;
+  PSEP::OutPrefs o_prefs;
   PSEP::RandProb randprob;
   unique_ptr<CCdatagroup> dat(new CCdatagroup);
   //TODO: make this a regular ptr bc it confuses valgrind maybe
@@ -32,14 +34,18 @@ int main(int argc, char* argv[]){
   int qnearest = 0;
   //TODO: probably put this somewhere else
 
-  if(initial_parse(argc, argv, probfile, randprob, prefs, do_sparse, qnearest)){
+  if(initial_parse(argc, argv, probfile, randprob, prefs, o_prefs,
+		   do_sparse, qnearest)){
     cerr << "Problem parsing arguments" << endl;
     exit(1);
   }
 
   double overall = PSEP::zeit();
-  PSEP::TSPSolver solver(probfile, randprob, prefs, dat, do_sparse, qnearest);
+  PSEP::TSPSolver solver(probfile, randprob, o_prefs, prefs,
+			 dat, do_sparse, qnearest);
   dat.reset();
+
+  return 1;
 
   if(solver.call(PSEP::SolutionProtocol::PURECUT, do_sparse))
     exit(1);
@@ -49,7 +55,8 @@ int main(int argc, char* argv[]){
 
 static int initial_parse(int ac, char **av, string &fname,
 			 PSEP::RandProb &randprob,
-			 PSEP::LP::Prefs &prefs, bool &sparseflag,
+			 PSEP::LP::Prefs &prefs, PSEP::OutPrefs &o_prefs,
+			 bool &sparseflag,
 			 int &qnearest){
   bool rand = false;
   int pricing_choice = 0;
@@ -59,6 +66,7 @@ static int initial_parse(int ac, char **av, string &fname,
   int seed = 0;
   int ncount = 0;
   int gridsize = 100;
+  int tourprefs = 0;
   qnearest = 0;
 
   int c;
@@ -68,9 +76,9 @@ static int initial_parse(int ac, char **av, string &fname,
     return 1;
   }
 
-  while((c = getopt(ac, av, "aD:c:q:p:RSg:n:s:u:")) != EOF) {
+  while((c = getopt(ac, av, "ad:c:q:p:RSXg:n:s:u:t:")) != EOF) {
     switch(c) {
-    case 'D':
+    case 'd':
       dp_factor = atoi(optarg);
       break;
     case 'c':
@@ -88,6 +96,9 @@ static int initial_parse(int ac, char **av, string &fname,
     case 'S':
       sparseflag = true;
       break;
+    case 'X':
+      o_prefs.dump_xy = true;
+      break;
     case 'g':
       gridsize = atoi(optarg);
       break;
@@ -99,6 +110,9 @@ static int initial_parse(int ac, char **av, string &fname,
       break;
     case 'u':
       qnearest = atoi(optarg);
+      break;
+    case 't':
+      tourprefs = atoi(optarg);
       break;
     case '?':
     default:
@@ -166,6 +180,24 @@ static int initial_parse(int ac, char **av, string &fname,
     return 1;
   }
 
+  switch(tourprefs) {
+  case 3:
+    o_prefs.save_tour = false;
+    o_prefs.save_tour_edges = false;
+    break;
+  case 1:
+    o_prefs.save_tour = false;
+    o_prefs.save_tour_edges = true;
+    break;
+  case 2:
+    o_prefs.save_tour = true;
+    o_prefs.save_tour_edges = true;
+    break;
+  case 0: default:
+    o_prefs.save_tour = true;
+    break;
+  }
+
   return 0;
 }
 
@@ -175,12 +207,13 @@ static void usage(const string &fname){
   fprintf(stderr, "-R    generate random problem\n");
   fprintf(stderr, "-S    only solve sparse instance with edge set from \n");
   fprintf(stderr,"       10 Lin-Kernighan tours\n");
+  fprintf(stderr, "-X    dump xy-coords to file, if possible \n");
   fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ------------------\n");
   fprintf(stderr, "-c    add at most x cuts per round (default 2)\n");
   fprintf(stderr, "-q    keep a queue of at most x blossom cuts to \n");
   fprintf(stderr, "      be checked before calling the blossom separation \n");
   fprintf(stderr, "      all over again (default 15)\n");
-  fprintf(stderr, "-D    only call simpleDP sep after 5x rounds of cuts \n");
+  fprintf(stderr, "-d    only call simpleDP sep after 5x rounds of cuts \n");
   fprintf(stderr, "      with no augmentation. (disabled by default)\n");
   fprintf(stderr, "-p    set primal pricing protocol to:\n");
   fprintf(stderr, "    0 (default) devex\n");
@@ -196,4 +229,10 @@ static void usage(const string &fname){
   fprintf(stderr, "      trials), to allow reproducibility.\n");
   fprintf(stderr, "-u    initial edge set will be union of 10 LK tours plus\n");
   fprintf(stderr, "      quad x-nearest edges (0 default).\n");
+  fprintf(stderr, "-t    amount of info about current best tour that will \n");
+  fprintf(stderr, "      be printed to file. \n");
+  fprintf(stderr, "    0 (default) only nodes of best tour\n");
+  fprintf(stderr, "    1 only edges of best tour, node node format\n");
+  fprintf(stderr, "    2 both nodes and edges of best tour\n");
+  fprintf(stderr, "    3 nothing about best tour\n");
 }

@@ -37,6 +37,7 @@ public:
    * dat: a unique pointer to an uninitialized CCdatagroup object
    */
   TSPSolver(const std::string &fname, PSEP::RandProb &randprob,
+	    PSEP::OutPrefs _out_prefs,
 	    PSEP::LP::Prefs _prefs,
 	    std::unique_ptr<CCdatagroup> &dat,
 	    const bool sparse, const int quadnearest);
@@ -48,7 +49,7 @@ public:
   int call(PSEP::SolutionProtocol solmeth, const bool sparse);
   
 private:
-  std::string probname;
+  PSEP::OutPrefs outprefs;
   
   /*
    * These are the data categories used by various aspects of the solver,
