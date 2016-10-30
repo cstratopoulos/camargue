@@ -118,7 +118,7 @@ int DPCutGraph::add_web_edges()
 {
   int rval = 0;
 
- CLEANUP:
+  //CLEANUP:
   if(rval)
     std::cerr << "DPCutGraph::add_web_edges failed\n";
   return rval;
