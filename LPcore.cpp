@@ -1,6 +1,7 @@
 #include "LPcore.hpp"
+#include "graph_io.hpp"
 
-#include <math.h>
+#include <cmath>
 #include <iomanip>
 
 using namespace std;
@@ -587,7 +588,7 @@ int Core::pivot_until_change(PivType &pivot_status){
   if(rval) goto CLEANUP;
 
   integral = is_integral();
-    if(integral){
+  if(integral){
     conn = GraphUtils::connected(&G_s, &icount, island, 0);
     if(integral && conn){
       if(dual_feas)
@@ -598,12 +599,12 @@ int Core::pivot_until_change(PivType &pivot_status){
     } else {
       pivot_status = PivType::Subtour;
     }
-    } else{
-      pivot_status = PivType::Frac;
-      frac_colstat.resize(PSEPlp_numcols(&m_lp));
-      frac_rowstat.resize(rowcount);
-      rval = PSEPlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
-    }
+  } else{
+    pivot_status = PivType::Frac;
+    frac_colstat.resize(PSEPlp_numcols(&m_lp));
+    frac_rowstat.resize(rowcount);
+    rval = PSEPlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
+  }
 
  CLEANUP:
     if(rval)
