@@ -68,8 +68,8 @@ enum class SolutionProtocol {
 };
 
 /*
- * A very simple structure for creating a randomly generated euclidean TSP
- * instance.
+
+ * A POD struct for creating a randomly generated euclidean TSP instance.
  *
  * nodecount - number of cities. a value of zero shall be considered an empty
  *    or 'null' problem
@@ -86,6 +86,35 @@ struct RandProb {
 };
 
 /*
+ * A POD struct for preferences related to file output which will take place
+ * during the construction and solution process. For all output related to 
+ * a tour, updates to the tour will overwrite pre-existing files. 
+ *
+ * save_tour determines if the sequence of nodes in the tour will be saved
+ *         to file, in which case it will be saved to probname.sol
+ * save_tour_edges determines if the edges in the tour will be saved to file,
+ *         probname_tour.x
+ * dump_xy determines if the x-y coordinates of the instance will, if possible,
+ *         be saved to file, probname.xy
+ */
+struct OutPrefs {
+  OutPrefs() : save_tour(true),
+	       dump_xy(false),
+	       save_tour_edges(false),
+	       probname() {}
+  OutPrefs(const bool _save_tour, const bool _dump_xy,
+	   const bool _save_tour_edges) :
+    save_tour(_save_tour),
+    dump_xy(_dump_xy),
+    save_tour_edges(_save_tour_edges),
+    probname() {}
+  
+  bool save_tour, dump_xy, save_tour_edges;
+  std::string probname;
+};
+
+/*
+
  * The LP namespace here 
  * contains constants, enum classes, and stuctures related 
  * to the LP solver/solutions/relaxations. 

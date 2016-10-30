@@ -20,23 +20,25 @@ namespace PSEP {
     public:
     Core(Data::LPGroup &LPGroup, Data::GraphGroup &GraphGroup,
 	 Data::SupportGroup &SupportGroup, Data::BestGroup &BestGroup,
-	 PSEP::LP::CutPrune &_LPPrune) :
+	 PSEP::LP::CutPrune &_LPPrune, PSEP::OutPrefs &_outprefs) :
       LPPrune(_LPPrune),
-	m_lp(LPGroup.m_lp), m_graph(GraphGroup.m_graph), prefs(LPGroup.prefs),
-	old_colstat(LPGroup.old_colstat), old_rowstat(LPGroup.old_rowstat),
-	frac_colstat(LPGroup.frac_colstat), frac_rowstat(LPGroup.frac_rowstat),
-	m_lp_edges(LPGroup.m_lp_edges), G_s(SupportGroup.G_s),
-	support_indices(SupportGroup.support_indices),
-	support_elist(SupportGroup.support_elist),
-	support_ecap(SupportGroup.support_ecap),
-	best_tour_edges(BestGroup.best_tour_edges),
-	best_tour_nodes(BestGroup.best_tour_nodes), perm(BestGroup.perm),
-	m_min_tour_value(BestGroup.min_tour_value),
-	island(GraphGroup.island), delta(GraphGroup.delta),
-	edge_marks(GraphGroup.edge_marks){
-	basis_init();
-	change_pricing();
-      }
+      m_lp(LPGroup.m_lp), m_graph(GraphGroup.m_graph), prefs(LPGroup.prefs),
+      outprefs(_outprefs),
+      old_colstat(LPGroup.old_colstat), old_rowstat(LPGroup.old_rowstat),
+      frac_colstat(LPGroup.frac_colstat), frac_rowstat(LPGroup.frac_rowstat),
+      m_lp_edges(LPGroup.m_lp_edges), G_s(SupportGroup.G_s),
+      support_indices(SupportGroup.support_indices),
+      support_elist(SupportGroup.support_elist),
+      support_ecap(SupportGroup.support_ecap),
+      best_tour_edges(BestGroup.best_tour_edges),
+      best_tour_nodes(BestGroup.best_tour_nodes), perm(BestGroup.perm),
+      m_min_tour_value(BestGroup.min_tour_value),
+      island(GraphGroup.island), delta(GraphGroup.delta),
+      edge_marks(GraphGroup.edge_marks){
+      basis_init(); //TODO: maybe make a basis structure to better enforce
+      //encapsulation
+      change_pricing();
+    }
     
       bool is_dual_feas();
       bool is_integral();
@@ -80,6 +82,7 @@ namespace PSEP {
       Graph &m_graph;
 
       PSEP::LP::Prefs prefs;
+      PSEP::OutPrefs &outprefs;
 
       friend class TSP_Solver;
       friend class PSEP::PureCut;

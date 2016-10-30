@@ -1,6 +1,7 @@
 #include "LPcore.hpp"
+#include "graph_io.hpp"
 
-#include <math.h>
+#include <cmath>
 #include <iomanip>
 
 using namespace std;
@@ -547,6 +548,25 @@ int Core::update_best_tour(){
 
   cout << "    Verified new tour is a feasible augmentation\n";
 
+  if(outprefs.save_tour){
+    std::string tour_fname = outprefs.probname + ".sol";
+
+    rval = write_tour_nodes(best_tour_nodes, tour_fname);
+    if(rval) goto CLEANUP;
+
+    std::cout << "    Wrote new best tour to " << tour_fname << "\n";
+  }
+
+  if(outprefs.save_tour_edges){
+    std::string tour_e_fname = outprefs.probname + "_tour.x";
+
+    rval = write_tour_edges(best_tour_edges, m_graph.edges,
+			    m_graph.node_count, tour_e_fname);
+    if(rval) goto CLEANUP;
+
+    std::cout << "    Wrote new best tour edges to " << tour_e_fname << "\n";
+  }
+
  CLEANUP:
   if(rval)
     cerr << "LP::Core::update_best_tour failed\n";
@@ -587,7 +607,7 @@ int Core::pivot_until_change(PivType &pivot_status){
   if(rval) goto CLEANUP;
 
   integral = is_integral();
-    if(integral){
+  if(integral){
     conn = GraphUtils::connected(&G_s, &icount, island, 0);
     if(integral && conn){
       if(dual_feas)
@@ -598,12 +618,12 @@ int Core::pivot_until_change(PivType &pivot_status){
     } else {
       pivot_status = PivType::Subtour;
     }
-    } else{
-      pivot_status = PivType::Frac;
-      frac_colstat.resize(PSEPlp_numcols(&m_lp));
-      frac_rowstat.resize(rowcount);
-      rval = PSEPlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
-    }
+  } else{
+    pivot_status = PivType::Frac;
+    frac_colstat.resize(PSEPlp_numcols(&m_lp));
+    frac_rowstat.resize(rowcount);
+    rval = PSEPlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
+  }
 
  CLEANUP:
     if(rval)

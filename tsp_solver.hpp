@@ -37,6 +37,7 @@ public:
    * dat: a unique pointer to an uninitialized CCdatagroup object
    */
   TSPSolver(const std::string &fname, PSEP::RandProb &randprob,
+	    PSEP::OutPrefs _out_prefs,
 	    PSEP::LP::Prefs _prefs,
 	    std::unique_ptr<CCdatagroup> &dat,
 	    const bool sparse, const int quadnearest);
@@ -48,9 +49,11 @@ public:
   int call(PSEP::SolutionProtocol solmeth, const bool sparse);
   
 private:
+  PSEP::OutPrefs outprefs;
+  
   /*
    * These are the data categories used by various aspects of the solver,
-   * see datagroups.h for more info.
+   * see datagroups.hpp for more info.
    */
   Data::GraphGroup GraphGroup;
   Data::BestGroup BestGroup;
@@ -58,7 +61,7 @@ private:
   Data::LPGroup LPGroup;
 
   /* These are pointers to solution protocol classes
-   * See purecut.h and ABC.h for info
+   * See purecut.hpp and ABC.hpp for info
    */
   std::unique_ptr<PSEP::PureCut> PureCut;
   std::unique_ptr<PSEP::ABC> ABC;
