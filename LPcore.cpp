@@ -554,7 +554,7 @@ int Core::update_best_tour(){
     rval = write_tour_nodes(best_tour_nodes, tour_fname);
     if(rval) goto CLEANUP;
 
-    std::cout << "Wrote new best tour to " << tour_fname << "\n";
+    std::cout << "    Wrote new best tour to " << tour_fname << "\n";
   }
 
   if(outprefs.save_tour_edges){
@@ -564,7 +564,7 @@ int Core::update_best_tour(){
 			    m_graph.node_count, tour_e_fname);
     if(rval) goto CLEANUP;
 
-    std::cout << "Wrote new best tour edges to " << tour_e_fname << "\n";
+    std::cout << "    Wrote new best tour edges to " << tour_e_fname << "\n";
   }
 
  CLEANUP:
