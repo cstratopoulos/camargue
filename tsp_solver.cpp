@@ -10,9 +10,13 @@ using namespace PSEP;
 TSPSolver::TSPSolver(const string &fname, RandProb &randprob, LP::Prefs _prefs,
 		     unique_ptr<CCdatagroup> &dat,
 		     const bool sparse, const int quadnearest) :
-  GraphGroup(fname, randprob, dat, sparse, quadnearest),
-  BestGroup(GraphGroup.m_graph, GraphGroup.delta, dat, randprob.seed),
+  probname(),
+  GraphGroup(fname, probname, randprob, dat, sparse, quadnearest),
+  BestGroup(GraphGroup.m_graph, GraphGroup.delta, dat, probname,
+	    randprob.seed),
   LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm){
+
+  std::cout << "Problem name is: " << probname << "\n";
 
   if(!GraphGroup || !BestGroup || !LPGroup){
     cerr << "Bad DataGroup, PureCut will not be constructed\n";

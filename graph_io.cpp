@@ -44,7 +44,7 @@ int write_tour_nodes(const std::vector<int> &tour_nodes,
  CLEANUP:
   tour_out.close();
   if(rval){
-    std::cerr << "write_tour_nodes failed.\n";
+    std::cerr << "PSEP::write_tour_nodes failed.\n";
     std::remove(tour_nodes_fname.c_str());
   }
   return rval;
@@ -91,8 +91,93 @@ int write_tour_edges(const std::vector<int> &tour_edges,
  CLEANUP:
   tour_out.close();
   if(rval){
-    std::cerr << "write_tour_edges failed.\n";
+    std::cerr << "PSEP::write_tour_edges failed.\n";
     std::remove(tour_edges_fname.c_str());
+  }
+  return rval;
+}
+
+int write_lp_edges(const std::vector<int> &lp_elist,
+		   const std::vector<double> &lp_ecap,
+		   const int node_count,
+		   const std::string &lp_edges_fname)
+{
+  int rval = 0;
+  std::ofstream lp_out;
+
+  if(node_count <= 0)
+    PSEP_SET_GOTO(rval, "Passed bad value of node count. ");
+
+  if(lp_elist.empty() || lp_ecap.empty())
+    PSEP_SET_GOTO(rval, "Passed empty lp solution. ");
+
+  if(lp_edges_fname.empty())
+    PSEP_SET_GOTO(rval, "Tried to write to empty filename. ");
+
+  if(lp_elist.size() != 2 * lp_ecap.size())
+    PSEP_SET_GOTO(rval, "Incompatible elist and ecap. ");
+
+  try {
+    lp_out.open(lp_edges_fname);
+  } catch(std::ios_base::failure &e) {
+    PSEP_SET_GOTO(rval, "Couldn't open outfile stream. ");
+  }
+
+  try {
+    lp_out << node_count << " " << lp_ecap.size() << "\n";
+
+    for(int i = 0; i < lp_ecap.size(); ++i){
+      lp_out << lp_elist[2 * i] << " " << lp_elist[(2 * i) + 1] << " "
+	     << lp_ecap[i] << "\n";
+    }
+  } catch(std::ios_base::failure &e) {
+    PSEP_SET_GOTO(rval, "Couldn't write LP solution to file. ");
+  }
+
+ CLEANUP:
+  lp_out.close();
+  if(rval){
+    std::cerr << "PSEP::write_lp_edges failed\n";
+    std::remove(lp_edges_fname.c_str());
+  }
+  return rval;
+}
+
+int write_xy_coords(const double *x, const double *y, const int node_count,
+		    const std::string &xy_coords_fname)
+{
+  int rval = 0;
+  std::ofstream xy_out;
+
+  if(node_count <= 0)
+    PSEP_SET_GOTO(rval, "Passed bad value of ncount. ");
+
+  if(!x || !y)
+    PSEP_SET_GOTO(rval, "Passed null x or y coords. ");
+
+  if(xy_coords_fname.empty())
+    PSEP_SET_GOTO(rval, "Tried to specify empty filename. ");
+
+  try {
+    xy_out.open(xy_coords_fname);
+  } catch(std::ios_base::failure &e) {
+    PSEP_SET_GOTO(rval, "Couldn't open outfile stream. ");
+  }
+
+  try {
+    xy_out << node_count << "\n";
+
+    for(int i = 0; i < node_count; ++i)
+      xy_out << x[i] << " " << y[i] << "\n";
+  } catch(std::ios_base::failure &e) {
+    PSEP_SET_GOTO(rval, "Couldn't write xy coords. ");
+  }
+
+ CLEANUP:
+  xy_out.close();
+  if(rval){
+    std::cerr << "PSEP::write_xy_coords failed\n";
+    std::remove(xy_coords_fname.c_str());
   }
   return rval;
 }

@@ -48,9 +48,11 @@ public:
   int call(PSEP::SolutionProtocol solmeth, const bool sparse);
   
 private:
+  std::string probname;
+  
   /*
    * These are the data categories used by various aspects of the solver,
-   * see datagroups.h for more info.
+   * see datagroups.hpp for more info.
    */
   Data::GraphGroup GraphGroup;
   Data::BestGroup BestGroup;
@@ -58,7 +60,7 @@ private:
   Data::LPGroup LPGroup;
 
   /* These are pointers to solution protocol classes
-   * See purecut.h and ABC.h for info
+   * See purecut.hpp and ABC.hpp for info
    */
   std::unique_ptr<PSEP::PureCut> PureCut;
   std::unique_ptr<PSEP::ABC> ABC;

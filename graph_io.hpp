@@ -71,8 +71,12 @@ int write_tour_edges(const std::vector<int> &tour_edges,
  * returns 0 if successful, 1 if error
  */
 int write_lp_edges(const std::vector<int> &lp_elist,
-		     const std::vector<double> &lp_ecap,
-		     const std::string &lp_edges_fname);
+		   const std::vector<double> &lp_ecap,
+		   const int node_count,
+		   const std::string &lp_edges_fname);
+
+int write_xy_coords(const double *x, const double *y, const int ncount,
+		    const std::string &xy_coords_fname);
 
 /*
  * Stores the tour specified in tour_nodes_fname to the vector tour_nodes

@@ -1,4 +1,5 @@
 #include "datagroups.hpp"
+#include "graph_io.hpp"
 
 #include<algorithm>
 #include<unordered_map>
@@ -19,7 +20,8 @@ extern "C" {
 using namespace std;
 using namespace PSEP::Data;
 
-GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
+GraphGroup::GraphGroup(const string &fname, string &probname,
+		       RandProb &randprob,
 		       unique_ptr<CCdatagroup> &dat,
 		       const bool sparse, const int quadnearest){
   int rval = 0;
@@ -33,6 +35,9 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
   if(!fname.empty()){
     rval = CCutil_gettsplib(filestring, &(m_graph.node_count), rawdat);
     if (rval) PSEP_GOTO_CLEANUP("CCutil_gettsplib failed, ");
+
+    probname = fname.substr(fname.find_last_of("/") + 1);
+    probname = probname.substr(0, probname.find_last_of("."));
   }
   else {
     m_graph.node_count = randprob.nodecount;
@@ -46,6 +51,10 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
 			  &(m_graph.node_count),
 			  rawdat, use_gridsize, allow_dups, &rstate);
     if(rval) PSEP_GOTO_CLEANUP("CCutil_getdata randprob failed, ");
+
+    probname = "r" + std::to_string(randprob.nodecount) + "-g"
+      + std::to_string(randprob.gridsize) + "-s"
+      + std::to_string(randprob.seed);
   }
 
   if(!sparse){  
@@ -116,6 +125,16 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
     rval = 1; PSEP_GOTO_CLEANUP("Out of memory for dfs vectors, ");
   }
 
+  if(dat->x && dat->y){
+    std::string xyfile = probname + ".xy";
+    rval = write_xy_coords(dat->x, dat->y, m_graph.node_count,
+			   xyfile);
+    PSEP_CHECK_RVAL(rval, "Couldn't dump xy coords to file. ");
+
+    std::cout << "Dumped xy coords to " << xyfile << "\n";
+  }
+
+
  CLEANUP:
   if(elist) free(elist);
   if(rval){
@@ -125,7 +144,9 @@ GraphGroup::GraphGroup(const string &fname, RandProb &randprob,
 }
 
 BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
-		     unique_ptr<CCdatagroup> &dat, const int user_seed){
+		     unique_ptr<CCdatagroup> &dat,
+		     const std::string &probname,
+		     const int user_seed){
   int rval = 0;
   CCrandstate rand_state;
   CCedgegengroup plan;
@@ -289,6 +310,21 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
     }    
   }
   cout << "\n";
+
+  {
+  std::string solfile = probname + ".sol";
+  std::string edgefile = probname + "_tour.x";
+  rval = write_tour_nodes(best_tour_nodes,
+			  solfile);
+  PSEP_CHECK_RVAL(rval, "Couldn't write initial tour to file. ");
+
+  rval = write_tour_edges(best_tour_edges, m_graph.edges, m_graph.node_count,
+			  edgefile);
+  PSEP_CHECK_RVAL(rval, "Couldn't write initial tour edges to file. ");
+  
+  std::cout << "Wrote initial LK tour to " << solfile << ", and tour edges to "
+	    << edgefile << "\n";
+  }
 
  CLEANUP:
   CC_IFFREE (cyc, int);

@@ -13,14 +13,15 @@
 #ifndef PSEP_DATAGROUP_H
 #define PSEP_DATAGROUP_H
 
-#include<vector>
-#include<memory>
-
-#include<math.h>
-
 #include "PSEP_util.hpp"
 #include "lp.hpp"
 #include "Graph.hpp"
+
+#include <vector>
+#include <memory>
+#include <string>
+
+#include <cmath>
 
 namespace PSEP {
 namespace Data {
@@ -39,8 +40,9 @@ namespace Data {
   
   /* GraphGroup stores pure combinatorial information about the problem */
   struct GraphGroup : DataGroup {
-    /* constructor parameters are exactly as in tsp_solver.h */
-    GraphGroup(const std::string &fname, PSEP::RandProb &randprob,
+    /* constructor parameters are exactly as in tsp_solver.hpp */
+    GraphGroup(const std::string &fname, std::string &probname,
+	       PSEP::RandProb &randprob,
 	       std::unique_ptr<CCdatagroup> &dat,
 	       const bool sparse, const int quadnearest);
 
@@ -70,7 +72,8 @@ namespace Data {
   struct BestGroup : DataGroup {
     /* The constructor takes graph and dat initialized by GraphGroup */
     BestGroup(Graph &graph, std::vector<int> &delta,
-	      std::unique_ptr<CCdatagroup> &dat, const int user_seed);
+	      std::unique_ptr<CCdatagroup> &dat, const std::string &probname,
+	      const int user_seed);
 
     explicit operator bool() const { return !best_tour_nodes.empty(); }
 

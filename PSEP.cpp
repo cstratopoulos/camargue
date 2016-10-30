@@ -40,7 +40,7 @@ int main(int argc, char* argv[]){
   double overall = PSEP::zeit();
   PSEP::TSPSolver solver(probfile, randprob, prefs, dat, do_sparse, qnearest);
   dat.reset();
-  
+
   if(solver.call(PSEP::SolutionProtocol::PURECUT, do_sparse))
     exit(1);
   cout << "                    everything: "
