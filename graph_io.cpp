@@ -1,11 +1,8 @@
 #include "graph_io.hpp"
+#include "PSEP_util.hpp"
 
 #include <cstdio>
 
-#define PSEP_SET_GOTO(rval, message) {		\
-    rval = 1;					\
-    std::cerr << message;			\
-    goto CLEANUP; }
 
 
 namespace PSEP {
@@ -101,11 +98,4 @@ int write_tour_edges(const std::vector<int> &tour_edges,
 }
 
 
-}
-
-int main()
-{
-  
-  
-  return 0;
 }

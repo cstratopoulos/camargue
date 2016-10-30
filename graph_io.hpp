@@ -10,17 +10,14 @@
 #ifndef PSEP_GRAPH_IO_HPP
 #define PSEP_GRAPH_IO_HPP
 
+#include "Graph.hpp"
+
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
 
 namespace PSEP {
-
-struct Edge {
-  int end[2];
-};
-
 /*
  * Writes the tour specified by tour_nodes to the file named tour_nodes_fname
  * PRE:
