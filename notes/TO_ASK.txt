@@ -18,3 +18,4 @@ Branching
     simply performed by changing the sign of these inequalities. But what if
     the right branch is fathomed, and we have to perform another right branch
     closer to the root?
+    Is it possible to branch by objective function?
