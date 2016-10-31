@@ -7,6 +7,12 @@
 using namespace std;
 using namespace PSEP::LP;
 
+#define PRINT_EACH_AUG
+
+#ifdef PRINT_EACH_AUG
+static int numaug = 0;
+#endif
+
 bool Core::is_dual_feas(){
   return PSEPlp_dualfeas(&m_lp);
 }
@@ -515,6 +521,10 @@ int Core::update_best_tour(){
   double objval = 0;
   int rval = 0;
   bool newbest_feas = false;
+
+#ifdef PRINT_EACH_AUG
+  numaug++;
+#endif
   
   for(int i = 0; i < m_graph.node_count; i++)
     best_tour_nodes[i] = island[i];
@@ -558,7 +568,12 @@ int Core::update_best_tour(){
   }
 
   if(outprefs.save_tour_edges){
+#ifndef PRINT_EACH_AUG
     std::string tour_e_fname = outprefs.probname + "_tour.x";
+#else
+    std::string tour_e_fname = outprefs.probname + "_tour" +
+      std::to_string(numaug) + ".x";
+#endif
 
     rval = write_tour_edges(best_tour_edges, m_graph.edges,
 			    m_graph.node_count, tour_e_fname);
