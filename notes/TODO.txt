@@ -1,3 +1,15 @@
+Get rid of LP and Data namespaces
+Add Epsilon scoped enum with members zero = 0.00001, viol = 0.001,
+gh2match = 0.3, etc. 
+
+Put odd sep and gh sep in separate implementation files for
+fastblossoms
+Add loud/silent switches to separators a la concorde
+Templatize cutcalls add_cuts, etc. 
+
+Integral subtour protocol should just be to add connect cuts and pivot
+until connected, don't bother with gomory thing. 
+
 Create an encapsulated basis structure for storing row and column
 status of all variables. This should have methods like
 get - query CPXgetbase for resident basis and use this
