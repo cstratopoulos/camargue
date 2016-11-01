@@ -12,36 +12,26 @@ namespace PSEP {
 TSPSolver::TSPSolver(const std::string &fname, RandProb &randprob,
 		     OutPrefs _outprefs, LP::Prefs _prefs,
 		     unique_ptr<CCdatagroup> &dat,
-		     const bool sparse, const int quadnearest) :
+		     const bool sparse, const int quadnearest) try :
   outprefs(_outprefs), //TODO: for good const form this should be constructed
   //differently maybe, maybe in parse_args by passing pointer
   GraphGroup(fname, outprefs.probname, randprob, dat, sparse, quadnearest,
 	     outprefs.dump_xy),
   BestGroup(GraphGroup.m_graph, GraphGroup.delta, dat, outprefs.probname,
 	    randprob.seed, outprefs.save_tour, outprefs.save_tour_edges),
-  LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm){
-
-  if(!GraphGroup || !BestGroup || !LPGroup){
-    std::cerr << "Bad DataGroup, PureCut will not be constructed\n";
-    PureCut.reset(NULL);
-    return;
-  }
-
-  try{
-    PureCut.reset(new PSEP::PureCut(GraphGroup, BestGroup, LPGroup,
-				    SupportGroup, outprefs));
-  } catch (const std::bad_alloc &){
-    std::cerr << "TSPSolver constructor failed to construct PureCut\n";
-    PureCut.reset(NULL);
-  }
+  LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm),
+  PureCut(PSEP::make_unique<PSEP::PureCut>(GraphGroup, BestGroup, LPGroup,
+					   SupportGroup, outprefs))
+{
 }
+catch (...) {
+  std::cerr << "Failure in TSPSolver constructor\n";
+  throw 1;
+ }
 
 int TSPSolver::call(SolutionProtocol solmeth, const bool sparse){
   LP::PivType piv_status;
   int rval = 0;
-
-  rval = !PureCut;
-  PSEP_CHECK_RVAL(rval, "PureCut is NULL, ");
   
   if(solmeth == SolutionProtocol::PURECUT){
     PivotPlan plan;

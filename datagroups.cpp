@@ -1,5 +1,6 @@
 #include "datagroups.hpp"
 #include "graph_io.hpp"
+#include "PSEP_util.hpp"
 
 #include<algorithm>
 #include<unordered_map>
@@ -14,8 +15,6 @@ extern "C" {
 #include <concorde/INCLUDE/util.h>
 #include <concorde/INCLUDE/edgegen.h>
 }
-
-#include "PSEP_util.hpp"
 
 using namespace std;
 using namespace PSEP::Data;
@@ -144,6 +143,7 @@ GraphGroup::GraphGroup(const string &fname, string &probname,
   if(rval){
     cerr << "Problem in GraphGroup constructor\n";
     m_graph.node_count = 0;
+    throw 1;
   }
 }
 
@@ -352,9 +352,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   CCutil_freedatagroup(rawdat);
   if(rval){
     cerr << "Problem in BestGroup constructor\n";
-    best_tour_edges.clear();
-    best_tour_nodes.clear();
-    perm.clear();
+    throw 1;
   }
 }
 
@@ -410,10 +408,6 @@ LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
  CLEANUP:
   if(rval){
     cerr << "LPGroup constructor failed\n";
-    m_lp_edges.clear();
-    old_colstat.clear();
-    old_rowstat.clear();
-    frac_colstat.clear();
-    frac_rowstat.clear();
+    throw 1;
   }
 }

@@ -24,31 +24,15 @@
 #include <cmath>
 
 namespace PSEP {
-namespace Data {
-  /* 
-   *DataGroup is the pure abstract class from which (almost) all of the
-   * other structs are derived. 
-   */
-  struct DataGroup {
-    /*
-     * All DataGroups must provide an operator bool overload which will
-     * return false if the constructor failed
-     */
-    //TODO: replace this with try catch in constructors
-    virtual explicit operator bool() const = 0;
-  };
-  
+namespace Data {  
   /* GraphGroup stores pure combinatorial information about the problem */
-  struct GraphGroup : DataGroup {
+  struct GraphGroup {
     /* constructor parameters are exactly as in tsp_solver.hpp */
     GraphGroup(const std::string &fname, std::string &probname,
 	       PSEP::RandProb &randprob,
 	       std::unique_ptr<CCdatagroup> &dat,
 	       const bool sparse, const int quadnearest,
 	       const bool dump_xy);
-
-    explicit operator bool() const { return m_graph; }
-
     /*
      * m_graph: A Graph object describing the TSP instance, see Graph.h for 
      *    information
@@ -70,14 +54,12 @@ namespace Data {
   };
 
   /* Stores information about the current best tour */
-  struct BestGroup : DataGroup {
+  struct BestGroup {
     /* The constructor takes graph and dat initialized by GraphGroup */
     BestGroup(Graph &graph, std::vector<int> &delta,
 	      std::unique_ptr<CCdatagroup> &dat, const std::string &probname,
 	      const int user_seed, const bool write_tour,
 	      const bool write_tour_edges);
-
-    explicit operator bool() const { return !best_tour_nodes.empty(); }
 
     /*
      * best_tour_edges - a binary vector of length graph.edge_count indicating
@@ -97,12 +79,10 @@ namespace Data {
   };
 
   /* This group stores objects related to the LP solver/LP relaxation */
-  struct LPGroup : DataGroup {
+  struct LPGroup {
     LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
 	    const std::vector<int> &perm);
     ~LPGroup(){PSEPlp_free(&m_lp);}
-
-    explicit operator bool() const { return !m_lp_edges.empty(); }
 
     /*
      * m_lp - the LP environment/problem object for use with the routines 
@@ -129,7 +109,6 @@ namespace Data {
    * SupportGroup is the structure responsible for managing a support graph
    * and the information about the associated LP solution
    */
-  //TODO: make this a derived class as well
   struct SupportGroup  {
     /*
      * G_s - a graph whose edges are the edges from GraphGroup::m_graph

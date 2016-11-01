@@ -1,67 +1,55 @@
-#include<iostream>
-#include<string>
-#include<iomanip>
-#include<memory>
-#include<vector>
-
-#include<cstdio>
-#include<cstdlib>
-#include<cstring>
-#include<getopt.h>
-
 #include "tsp_solver.hpp"
 #include "PSEP_util.hpp"
 #include "graph_io.hpp"
 
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <memory>
+#include <utility>
+#include <vector>
 
-using namespace std;
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <getopt.h>
 
-static int initial_parse(int ac, char **av, string &fname,
+static int initial_parse(int ac, char **av, std::string &fname,
 			 PSEP::RandProb &randprob, PSEP::LP::Prefs &prefs,
 			 PSEP::OutPrefs &o_prefs,
 			 bool &sparseflag, int &qnearest);
 
-static void usage(const string &fname);
+static void usage(const std::string &fname);
 
 int main(int argc, char* argv[]){
-  int ncount = 25;
-  vector<int> tnodes;
+  PSEP::LP::Prefs prefs;
+  PSEP::OutPrefs o_prefs;
+  PSEP::RandProb randprob;
+  std::unique_ptr<CCdatagroup> dat(new CCdatagroup);
+  //  TODO: make this a regular ptr bc it confuses valgrind maybe
+  std::string probfile;
+  bool do_sparse = false;
+  int qnearest = 0;
+  //TODO: probably put this somewhere else
 
-  if( PSEP::get_tour_nodes(ncount, tnodes, "25tour.sol") )
-    cout << "!!!Execution problem\n";
-  cout << "Size of tnodes: " << tnodes.size() << "\n";
+  if(initial_parse(argc, argv, probfile, randprob, prefs, o_prefs,
+  		   do_sparse, qnearest)){
+    std::cerr << "Problem parsing arguments\n";
+    exit(1);
+  }
 
-  for(int i : tnodes) cout << i << "\n";
+  double overall = PSEP::zeit();
+  PSEP::TSPSolver solver(probfile, randprob, o_prefs, prefs,
+  			 dat, do_sparse, qnearest);
+  dat.reset();
 
-  
-  // PSEP::LP::Prefs prefs;
-  // PSEP::OutPrefs o_prefs;
-  // PSEP::RandProb randprob;
-  // unique_ptr<CCdatagroup> dat(new CCdatagroup);
-  // //TODO: make this a regular ptr bc it confuses valgrind maybe
-  // string probfile;
-  // bool do_sparse = false;
-  // int qnearest = 0;
-  // //TODO: probably put this somewhere else
-
-  // if(initial_parse(argc, argv, probfile, randprob, prefs, o_prefs,
-  // 		   do_sparse, qnearest)){
-  //   cerr << "Problem parsing arguments" << endl;
-  //   exit(1);
-  // }
-
-  // double overall = PSEP::zeit();
-  // PSEP::TSPSolver solver(probfile, randprob, o_prefs, prefs,
-  // 			 dat, do_sparse, qnearest);
-  // dat.reset();
-
-  // if(solver.call(PSEP::SolutionProtocol::PURECUT, do_sparse))
-  //   exit(1);
-  // cout << "                    everything: "
-  //      << PSEP::zeit() - overall << "\n";
+  if(solver.call(PSEP::SolutionProtocol::PURECUT, do_sparse))
+    exit(1);
+  std::cout << "                    everything: "
+       << PSEP::zeit() - overall << "\n";
 }
 
-static int initial_parse(int ac, char **av, string &fname,
+static int initial_parse(int ac, char **av, std::string &fname,
 			 PSEP::RandProb &randprob,
 			 PSEP::LP::Prefs &prefs, PSEP::OutPrefs &o_prefs,
 			 bool &sparseflag,
@@ -153,29 +141,29 @@ static int initial_parse(int ac, char **av, string &fname,
   switch(pricing_choice){
   case 0:
     prefs.price_method = PSEP::LP::Pricing::Devex;
-    cout << "Devex pricing\n";
+    std::cout << "Devex pricing\n";
     break;
   case 1:
     prefs.price_method = PSEP::LP::Pricing::SlackSteepest;
-    cout << "Steepest edge w slack initial norms\n";
+    std::cout << "Steepest edge w slack initial norms\n";
     break;
   case 2:
     prefs.price_method = PSEP::LP::Pricing::Steepest;
-    cout << "True steepest edge\n";
+    std::cout << "True steepest edge\n";
     break;
   default:
-    cout << "Pricing method " << pricing_choice << " out of range\n";
+    std::cout << "Pricing method " << pricing_choice << " out of range\n";
     usage(av[0]);
     return 1;
   }
 
   prefs.dp_threshold = 5 * dp_factor;
   if(dp_factor >= 0)
-    cout << "DP separation will be tried every "
+    std::cout << "DP separation will be tried every "
 	 << prefs.dp_threshold << " non-degenerate pivots w no augmentation\n";
 
   if(cuts_per_round < 1 || max_q_size < 1 || max_q_size < cuts_per_round){
-    cerr << "Invalid cuts per round or queue capacity\n";
+    std::cerr << "Invalid cuts per round or queue capacity\n";
     usage(av[0]);
     return 1;
   }
@@ -183,7 +171,7 @@ static int initial_parse(int ac, char **av, string &fname,
   prefs.q_max_size = max_q_size;
 
   if(qnearest < 0 || qnearest > 10){
-    cerr << "Invalid choice of quad-nearest density\n";
+    std::cerr << "Invalid choice of quad-nearest density\n";
     usage(av[0]);
     return 1;
   }
@@ -209,7 +197,7 @@ static int initial_parse(int ac, char **av, string &fname,
   return 0;
 }
 
-static void usage(const string &fname){
+static void usage(const std::string &fname){
   fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", fname.data());
   fprintf(stderr, "-------FLAG OPTIONS ------------------------------------\n");
   fprintf(stderr, "-R    generate random problem\n");

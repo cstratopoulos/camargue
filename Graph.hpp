@@ -31,8 +31,6 @@ struct Edge {
 
 struct Graph {
   Graph() : node_count(0), edge_count(0) {}
-
-  operator bool() const { return node_count > 0; }
     
   void print_edges();
 

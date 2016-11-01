@@ -200,6 +200,13 @@ void print_vec_nonzero(std::vector<entry_t> const &vec){
     if(vec[i] != 0)
       std::cout << "Entry " << i << ": " << vec[i] << "\n";
 }
+
+//copied from Herb Sutter's implementation of make_unique
+template<typename T, typename ...Args>
+std::unique_ptr<T> make_unique( Args&& ...args )
+{
+    return std::unique_ptr<T>( new T( std::forward<Args>(args)... ) );
+}
     
 }
 
