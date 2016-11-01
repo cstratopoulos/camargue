@@ -29,6 +29,28 @@ catch (...) {
   throw 1;
  }
 
+//ugly temporary workaround, should fix later
+static PSEP::RandProb dummy;
+
+TSPSolver::TSPSolver(const std::string &fname, const std::string &tourname,
+		     PSEP::OutPrefs _outprefs, PSEP::LP::Prefs _prefs,
+		     std::unique_ptr<CCdatagroup> &dat,
+		     const bool sparse, const int quadnearest) try :
+  outprefs(_outprefs),
+  GraphGroup(fname, outprefs.probname, dummy, dat, sparse,
+	     quadnearest, outprefs.dump_xy),
+  BestGroup(tourname, GraphGroup.m_graph, GraphGroup.delta, dat,
+	    outprefs.probname, outprefs.save_tour, outprefs.save_tour_edges),
+  LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm),
+  PureCut(PSEP::make_unique<PSEP::PureCut>(GraphGroup, BestGroup, LPGroup,
+					   SupportGroup, outprefs))
+{
+}
+catch (...) {
+  std::cerr << "Failure in TSPSolver constructor\n";
+  throw 1;
+ }  
+
 int TSPSolver::call(SolutionProtocol solmeth, const bool sparse){
   LP::PivType piv_status;
   int rval = 0;

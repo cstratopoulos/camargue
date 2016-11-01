@@ -15,6 +15,7 @@
 #include <getopt.h>
 
 static int initial_parse(int ac, char **av, std::string &fname,
+			 std::string &tour_fname,
 			 PSEP::RandProb &randprob, PSEP::LP::Prefs &prefs,
 			 PSEP::OutPrefs &o_prefs,
 			 bool &sparseflag, int &qnearest);
@@ -27,29 +28,42 @@ int main(int argc, char* argv[]){
   PSEP::RandProb randprob;
   std::unique_ptr<CCdatagroup> dat(new CCdatagroup);
   //  TODO: make this a regular ptr bc it confuses valgrind maybe
-  std::string probfile;
+  std::string probfile, tourfile;
   bool do_sparse = false;
   int qnearest = 0;
   //TODO: probably put this somewhere else
 
-  if(initial_parse(argc, argv, probfile, randprob, prefs, o_prefs,
+  if(initial_parse(argc, argv, probfile, tourfile, randprob, prefs, o_prefs,
   		   do_sparse, qnearest)){
     std::cerr << "Problem parsing arguments\n";
     exit(1);
   }
 
   double overall = PSEP::zeit();
-  PSEP::TSPSolver solver(probfile, randprob, o_prefs, prefs,
-  			 dat, do_sparse, qnearest);
-  dat.reset();
+  std::unique_ptr<PSEP::TSPSolver> solver;
 
-  if(solver.call(PSEP::SolutionProtocol::PURECUT, do_sparse))
-    exit(1);
+  try {
+    if(tourfile.empty())
+      solver = PSEP::make_unique<PSEP::TSPSolver>(probfile, randprob,
+						      o_prefs, prefs, dat,
+						      do_sparse, qnearest);
+    else
+      solver = PSEP::make_unique<PSEP::TSPSolver>(probfile, tourfile,
+						  o_prefs, prefs, dat,
+						  do_sparse, qnearest);
+  } catch(...) {
+    return 1;
+  }
+      
+  int rval = solver->call(PSEP::SolutionProtocol::PURECUT, do_sparse);
+
   std::cout << "                    everything: "
-       << PSEP::zeit() - overall << "\n";
+	    << PSEP::zeit() - overall << "\n";
+  return rval;
 }
 
 static int initial_parse(int ac, char **av, std::string &fname,
+			 std::string &tourfname,
 			 PSEP::RandProb &randprob,
 			 PSEP::LP::Prefs &prefs, PSEP::OutPrefs &o_prefs,
 			 bool &sparseflag,
@@ -72,7 +86,7 @@ static int initial_parse(int ac, char **av, std::string &fname,
     return 1;
   }
 
-  while((c = getopt(ac, av, "ad:c:q:p:RSXg:n:s:u:t:")) != EOF) {
+  while((c = getopt(ac, av, "ad:c:q:p:RSXg:n:s:t:u:o:")) != EOF) {
     switch(c) {
     case 'd':
       dp_factor = atoi(optarg);
@@ -107,8 +121,11 @@ static int initial_parse(int ac, char **av, std::string &fname,
     case 'u':
       qnearest = atoi(optarg);
       break;
-    case 't':
+    case 'o':
       tourprefs = atoi(optarg);
+      break;
+    case 't':
+      tourfname = optarg;
       break;
     case '?':
     default:
@@ -206,29 +223,26 @@ static void usage(const std::string &fname){
   fprintf(stderr, "-X    dump xy-coords to file, if possible \n");
   fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ------------------\n");
   fprintf(stderr, "-c    add at most x cuts per round (default 2)\n");
-  fprintf(stderr, "-q    keep a queue of at most x blossom cuts to \n");
-  fprintf(stderr, "      be checked before calling the blossom separation \n");
-  fprintf(stderr, "      all over again (default 15)\n");
   fprintf(stderr, "-d    only call simpleDP sep after 5x rounds of cuts \n");
   fprintf(stderr, "      with no augmentation. (disabled by default)\n");
-  fprintf(stderr, "-p    set primal pricing protocol to:\n");
-  fprintf(stderr, "    0 (default) devex\n");
-  fprintf(stderr, "    1 steepest edge with slack initial norms\n");
-  fprintf(stderr, "    2 true steepest edge.\n");
   fprintf(stderr, "-g    gridsize for random problem (100 default)\n");
   fprintf(stderr, "-n    nodecount for random problem (must be nonzero if\n");
   fprintf(stderr, "      -R is used\n");
-  fprintf(stderr, "-s    random seed for random problem and Lin-Kernighan.\n");
-  fprintf(stderr, "      If not set, current time will be used.\n");
-  fprintf(stderr, "      If set, initial tour will be constructed from only\n");
-  fprintf(stderr, "      one run of Lin-Kernighan (rather than independent \n");
-  fprintf(stderr, "      trials), to allow reproducibility.\n");
-  fprintf(stderr, "-u    initial edge set will be union of 10 LK tours plus\n");
-  fprintf(stderr, "      quad x-nearest edges (0 default).\n");
-  fprintf(stderr, "-t    amount of info about current best tour that will \n");
-  fprintf(stderr, "      be printed to file. \n");
+  fprintf(stderr, "-o    tour file output level \n");
   fprintf(stderr, "    0 (default) only nodes of best tour\n");
   fprintf(stderr, "    1 only edges of best tour, node node format\n");
   fprintf(stderr, "    2 both nodes and edges of best tour\n");
   fprintf(stderr, "    3 nothing about best tour\n");
+  fprintf(stderr, "-p    set primal pricing protocol to:\n");
+  fprintf(stderr, "    0 (default) devex\n");
+  fprintf(stderr, "    1 steepest edge with slack initial norms\n");
+  fprintf(stderr, "    2 true steepest edge.\n");
+  fprintf(stderr, "-q    keep a queue of at most x blossom cuts to \n");
+  fprintf(stderr, "      be checked before calling the blossom separation \n");
+  fprintf(stderr, "      all over again (default 15)\n");
+  fprintf(stderr, "-s    random seed for random problem and Lin-Kernighan.\n");
+  fprintf(stderr, "      If not set, current time will be used.\n");
+  fprintf(stderr, "-t    load initial tour in filename x.\n");
+  fprintf(stderr, "-u    initial edge set will be union of 10 LK tours plus\n");
+  fprintf(stderr, "      quad x-nearest edges (0 default).\n");
 }

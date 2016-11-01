@@ -283,7 +283,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   min_tour_value = bestval;
 
   { int missing = 0;
-  for(int i = 0; i < ncount; i++){
+  for(int i = 0; i < ncount; ++i){
     int end0 = fmin(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
     int end1 = fmax(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
     IntPairMap::const_iterator edge_it =
@@ -305,7 +305,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
     int edge_index = edge_it->second;    
     best_tour_edges[edge_index] = 1;
   }
-  cout << "Added " << missing << " additional edges. ";
+  std::cout << "Added " << missing << " additional edges. ";
   }
 
   if((ncount % 2) == 0){
@@ -315,7 +315,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
       m_graph.edge_lookup.find(IntPair(end0, end1));
 
     if(edge_it == m_graph.edge_lookup.end()){
-      cout << "Adding extra edge just for basis.";
+      std::cout << "Adding extra edge just for basis.";
       Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, rawdat));
 
       m_graph.edges.push_back(e);
@@ -325,7 +325,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
       delta.push_back(0);
     }    
   }
-  cout << "\n";
+  std::cout << "\n";
 
   if(save_tour){
     std::string solfile = probname + ".sol";
@@ -351,7 +351,107 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   CC_IFFREE (tlist, int);
   CCutil_freedatagroup(rawdat);
   if(rval){
-    cerr << "Problem in BestGroup constructor\n";
+    cerr << "PSEP::BestGroup (LK) constructor failed.\n";
+    throw 1;
+  }
+}
+
+BestGroup::BestGroup(const std::string &tourfile,
+		     PSEP::Graph &graph, vector<int> &delta,
+		     std::unique_ptr<CCdatagroup> &dat,
+		     const std::string &probname,
+		     const bool save_tour, const bool save_tour_edges)
+{
+  int rval = 0;
+  int ncount = graph.node_count;
+  
+  rval = get_tour_nodes(ncount, best_tour_nodes, tourfile);
+  if (rval) goto CLEANUP;
+
+  try {
+    perm.resize(ncount);
+    best_tour_edges.resize(graph.edge_count, 0);
+  } catch (const std::bad_alloc &) {
+    PSEP_SET_GOTO(rval, "Out of memory for BestGroup vectors. ");
+  }
+
+  for (int i = 0; i < ncount; ++i) perm[best_tour_nodes[i]] = i;
+
+  { int missing = 0;
+    for(int i = 0; i < ncount; ++i){
+      int end0 = fmin(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
+      int end1 = fmax(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
+      IntPairMap::const_iterator edge_it =
+	graph.edge_lookup.find(IntPair(end0, end1));
+    
+      if(edge_it == graph.edge_lookup.end()){
+	missing++;
+
+	Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, dat.get()));
+
+	graph.edges.push_back(e);
+	graph.edge_lookup[IntPair(end0, end1)] = graph.edges.size() - 1;
+	graph.edge_count += 1;
+	best_tour_edges.push_back(0);
+	delta.push_back(0);
+	edge_it = graph.edge_lookup.find(IntPair(end0, end1));
+      }
+
+      int edge_index = edge_it->second;    
+      best_tour_edges[edge_index] = 1;
+    }
+    std::cout << "Added " << missing << " additional edges. ";
+  }
+
+  if((ncount % 2) == 0){
+    int end0 = fmin(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
+    int end1 = fmax(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
+    IntPairMap::const_iterator edge_it =
+      graph.edge_lookup.find(IntPair(end0, end1));
+
+    if(edge_it == graph.edge_lookup.end()){
+      std::cout << "Adding extra edge just for basis.";
+      Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, dat.get()));
+
+      graph.edges.push_back(e);
+      graph.edge_lookup[IntPair(end0, end1)] = graph.edges.size() - 1;
+      graph.edge_count += 1;
+      best_tour_edges.push_back(0);
+      delta.push_back(0);
+    }    
+  }
+  std::cout << "\n";
+
+  min_tour_value = 0;
+
+  for(int i = 0; i < best_tour_edges.size(); i++)
+    if(best_tour_edges[i] == 1)
+      min_tour_value += graph.edges[i].len;
+
+  std::cout << "Intialized best tour from file, length " << min_tour_value
+	    << "\n";
+
+  // if(save_tour){
+  //   std::string solfile = probname + ".sol";
+  //   rval = write_tour_nodes(best_tour_nodes,
+  // 			    solfile);
+  //   PSEP_CHECK_RVAL(rval, "Couldn't write initial tour to file. ");
+
+  //   std::cout << "Wrote initial tour to " << solfile << ".\n";
+  // }
+  
+  if(save_tour_edges) {
+    std::string edgefile = probname + "_tour.x";
+    rval = write_tour_edges(best_tour_edges, graph.edges, graph.node_count,
+			    edgefile);
+    PSEP_CHECK_RVAL(rval, "Couldn't write initial tour edges to file. ");
+  
+    std::cout << "Wrote initial tour edges to " << edgefile << ".\n";
+  }
+
+ CLEANUP:
+  if(rval){
+    std::cerr << "PSEP::BestGroup (file) constructor failed.\n";
     throw 1;
   }
 }

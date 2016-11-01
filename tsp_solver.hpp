@@ -37,8 +37,16 @@ public:
    * dat: a unique pointer to an uninitialized CCdatagroup object
    */
   TSPSolver(const std::string &fname, PSEP::RandProb &randprob,
-	    PSEP::OutPrefs _out_prefs,
-	    PSEP::LP::Prefs _prefs,
+	    PSEP::OutPrefs _out_prefs, PSEP::LP::Prefs _prefs,
+	    std::unique_ptr<CCdatagroup> &dat,
+	    const bool sparse, const int quadnearest);
+  
+  /*
+   * As above, but witha  starting tour specified in the file tourname.
+   * Currently no support for specifying starting tour with random problems.
+   */
+  TSPSolver(const std::string &fname, const std::string &tourname,
+	    PSEP::OutPrefs _out_prefs, PSEP::LP::Prefs _prefs,
 	    std::unique_ptr<CCdatagroup> &dat,
 	    const bool sparse, const int quadnearest);
 

@@ -55,11 +55,22 @@ namespace Data {
 
   /* Stores information about the current best tour */
   struct BestGroup {
-    /* The constructor takes graph and dat initialized by GraphGroup */
-    BestGroup(Graph &graph, std::vector<int> &delta,
+    /*
+     * Takes graph and dat initialized by GraphGroup to construct a starting
+     * tour via Lin-Kernighan
+     */
+    BestGroup(PSEP::Graph &graph, std::vector<int> &delta,
 	      std::unique_ptr<CCdatagroup> &dat, const std::string &probname,
 	      const int user_seed, const bool write_tour,
 	      const bool write_tour_edges);
+    /*
+     * Takes graph and dat initialized by GraphGroup to construct a starting
+     * tour from the file specified by tourfile
+     */
+    BestGroup(const std::string &tourfile,
+	      PSEP::Graph &graph, std::vector<int> &delta,
+	      std::unique_ptr<CCdatagroup> &dat, const std::string &probname,
+	      const bool write_tour, const bool write_tour_edges);
 
     /*
      * best_tour_edges - a binary vector of length graph.edge_count indicating
