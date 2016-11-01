@@ -143,11 +143,13 @@ static int initial_parse(int ac, char **av, std::string &fname,
 
   if(fname.empty() && ncount == 0){
     printf("Must specify a problem file or nodecount for random prob\n");
+    usage(av[0]);
     return 1;
   }
 
   if(!fname.empty() && rand){
     printf("Cannot specify both filename and random problem\n");
+    usage(av[0]);
     return 1;
   }
 
