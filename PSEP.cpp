@@ -11,7 +11,7 @@
 
 #include "tsp_solver.hpp"
 #include "PSEP_util.hpp"
-#include "tooth.hpp"
+#include "graph_io.hpp"
 
 
 using namespace std;
@@ -23,32 +23,42 @@ static int initial_parse(int ac, char **av, string &fname,
 
 static void usage(const string &fname);
 
-int main(int argc, char* argv[]){  
-  PSEP::LP::Prefs prefs;
-  PSEP::OutPrefs o_prefs;
-  PSEP::RandProb randprob;
-  unique_ptr<CCdatagroup> dat(new CCdatagroup);
-  //TODO: make this a regular ptr bc it confuses valgrind maybe
-  string probfile;
-  bool do_sparse = false;
-  int qnearest = 0;
-  //TODO: probably put this somewhere else
+int main(int argc, char* argv[]){
+  int ncount = 25;
+  vector<int> tnodes;
 
-  if(initial_parse(argc, argv, probfile, randprob, prefs, o_prefs,
-		   do_sparse, qnearest)){
-    cerr << "Problem parsing arguments" << endl;
-    exit(1);
-  }
+  if( PSEP::get_tour_nodes(ncount, tnodes, "25tour.sol") )
+    cout << "!!!Execution problem\n";
+  cout << "Size of tnodes: " << tnodes.size() << "\n";
 
-  double overall = PSEP::zeit();
-  PSEP::TSPSolver solver(probfile, randprob, o_prefs, prefs,
-			 dat, do_sparse, qnearest);
-  dat.reset();
+  for(int i : tnodes) cout << i << "\n";
 
-  if(solver.call(PSEP::SolutionProtocol::PURECUT, do_sparse))
-    exit(1);
-  cout << "                    everything: "
-       << PSEP::zeit() - overall << "\n";
+  
+  // PSEP::LP::Prefs prefs;
+  // PSEP::OutPrefs o_prefs;
+  // PSEP::RandProb randprob;
+  // unique_ptr<CCdatagroup> dat(new CCdatagroup);
+  // //TODO: make this a regular ptr bc it confuses valgrind maybe
+  // string probfile;
+  // bool do_sparse = false;
+  // int qnearest = 0;
+  // //TODO: probably put this somewhere else
+
+  // if(initial_parse(argc, argv, probfile, randprob, prefs, o_prefs,
+  // 		   do_sparse, qnearest)){
+  //   cerr << "Problem parsing arguments" << endl;
+  //   exit(1);
+  // }
+
+  // double overall = PSEP::zeit();
+  // PSEP::TSPSolver solver(probfile, randprob, o_prefs, prefs,
+  // 			 dat, do_sparse, qnearest);
+  // dat.reset();
+
+  // if(solver.call(PSEP::SolutionProtocol::PURECUT, do_sparse))
+  //   exit(1);
+  // cout << "                    everything: "
+  //      << PSEP::zeit() - overall << "\n";
 }
 
 static int initial_parse(int ac, char **av, string &fname,

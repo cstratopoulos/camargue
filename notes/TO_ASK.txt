@@ -19,3 +19,20 @@ Branching
     the right branch is fathomed, and we have to perform another right branch
     closer to the root?
     Is it possible to branch by objective function?
+
+
+Notes:
+-'main branching' may well not be feasible for the TSP, objective
+function branching worth a shot
+-Should be able to use dual solution from a given primal vertex to
+price edges, or use optimality on current edge set as a pricing event
+-no idea about cut pruning heuristics
+-template-safe shrinking should (in theory) adapt the same to primal
+case, worth checking
+-branching edges are chosen by the heuristic fixing rule from the
+primcut paper. this is like least-infeasible branching, except
+least-infeasibility is measured by proximity to current tour. as per
+achterberg, least-infeasible is bad, but this is a modification which
+takes the tour into account. in general, it may be a good idea to see
+if there are obvious adaptations to standard branching rules that take
+the current tour into account. 

@@ -1,6 +1,9 @@
 #include "graph_io.hpp"
 #include "PSEP_util.hpp"
 
+#include<algorithm>
+#include <sstream>
+
 #include <cstdio>
 
 
@@ -178,6 +181,77 @@ int write_xy_coords(const double *x, const double *y, const int node_count,
   if(rval){
     std::cerr << "PSEP::write_xy_coords failed\n";
     std::remove(xy_coords_fname.c_str());
+  }
+  return rval;
+}
+
+int get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
+		   const std::string &tour_nodes_fname)
+{
+  int rval = 0;
+  std::ifstream tour_in;
+  std::string current_line;
+  std::vector<int> uniq_vec;
+  int file_ncount;
+
+  if(node_count == 0)
+    PSEP_SET_GOTO(rval, "Specified zero nodes. ");
+
+  if(tour_nodes_fname.empty())
+    PSEP_SET_GOTO(rval, "Specified empty filename. ");
+
+  try { tour_in.open(tour_nodes_fname); } catch (std::ios_base::failure &e) {
+    PSEP_SET_GOTO(rval, "Couldn't open infile stream. ");
+  }
+
+  if(!tour_in.good())
+    PSEP_SET_GOTO(rval, "Bad infile. ");
+
+  try { tour_in >> file_ncount; } catch(std::ios_base::failure &e) {
+    PSEP_SET_GOTO(rval, "Couldn't read in file nodecount. ");
+  }
+
+  if(file_ncount != node_count)
+    PSEP_SET_GOTO(rval, "File node count does not match specified count. ");
+
+  try {
+    tour_nodes.reserve(node_count);
+    uniq_vec.reserve(node_count);
+  } catch(std::bad_alloc &e) {
+    PSEP_SET_GOTO(rval, "Couldn't reserve tour nodes or uniq vec. ");
+  }
+
+  try {
+    while(std::getline(tour_in, current_line)){
+      std::stringstream line_stream(current_line);
+      int current_node;
+
+      while(line_stream >> current_node)
+	tour_nodes.push_back(current_node);
+    }
+  } catch(std::ios_base::failure &e) {
+    PSEP_SET_GOTO(rval, "Couldn't read in tour nodes. ");
+  }
+
+  if(tour_nodes.size() != node_count)
+    PSEP_SET_GOTO(rval, "File contains wrong number of nodes. ");
+
+  uniq_vec = tour_nodes;
+
+  std::sort(uniq_vec.begin(), uniq_vec.end());
+
+  if (std::unique(uniq_vec.begin(), uniq_vec.end()) != uniq_vec.end())
+    PSEP_SET_GOTO(rval, "Tour input file contains duplicate nodes. ");
+
+  if(uniq_vec.front() != 0 || uniq_vec.back() != node_count - 1)
+    PSEP_SET_GOTO(rval, "Tour input file contains nodes out of range. ");
+  
+
+ CLEANUP:
+  tour_in.close();
+  if(rval){
+    std::cerr << "PSEP::get_tour_nodes failed\n";
+    tour_nodes.clear();
   }
   return rval;
 }

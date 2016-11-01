@@ -79,17 +79,18 @@ int write_xy_coords(const double *x, const double *y, const int ncount,
 		    const std::string &xy_coords_fname);
 
 /*
- * Stores the tour specified in tour_nodes_fname to the vector tour_nodes
+ * Stores the tour specified in tour_nodes_fname to the vector tour_nodes for 
+ * a TSP instance on node_count cities
  * PRE: 
- * tour_nodes_fname names an existant, nonempty file with a node count at 
- * the top, followed by a cyclic permutation of the numbers from 0 to that 
- * node_count
+ * tour_nodes_fname names an existant file whose first line is node_count
+ * and whose following entries are a cyclic permutation of the numbers
+ * 0, ..., node_count
  * POST:
- * tour_nodes has length specified by the first line of tour_nodes_fname,
+ * tour_nodes has length node_count,
  * and stores its subsequent entries in the same order
  * returns 0 if successful, 1 if error
  */
-int get_tour_nodes(std::vector<int> &tour_nodes,
+int get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
 		   const std::string &tour_nodes_fname);
 		     
 }

@@ -1,3 +1,15 @@
+Create an encapsulated basis structure for storing row and column
+status of all variables. This should have methods like
+get - query CPXgetbase for resident basis and use this
+make_resident - makes it so that the basis is the resident basis in
+the LP problem object, hence calls to getobjval or getx will
+correspond to the solution associated to this basis, etc.
+init(tour) - initializes the basis for a degree LP with the current
+tour
+
+These operations could be de-coupled from LPCore....could also try
+similar for support structures like support graph/indices, etc. 
+
 Add switch for printing sequence of tour edge files in a gif-like
 manner, e.g., ./PSEP -Sc8 -s1477932024 problems/pr2392.tsp
 
@@ -51,17 +63,6 @@ problems. There should be an external_rep class with a delete_cut member
 function that calls erase on the vector of cuts and calls delete_refs on
 the cut being deleted
 
-I think LPfixing should be a derived class of LPCore? Because maybe LPCore
-should be called LPManip, hence LPFixing is a type of LPManip...maybe 
-LPPrune as well....
-
-Approach: Make the main objects of LPCore protected instead of private, then
-	  derived classes can access them.
-	  Moreover, add a reference copy constructor to LPCore.
-	  Derived classes should be constructed with any additional info they
-	  need, plus a reference to LPCore from which they can construct
-	  a copy of it. 
-
 In preparation for column generation approach, (and also for portability?)
 cut classes should not get the LP itself. They should just store a best cut
 or coefficients or something and have CutControl manage the addition of cuts
@@ -99,7 +100,20 @@ Ideal situation: have template classes
       rightbranch
       edgestats
 with function implementations specialized based on an enum class BranchPlan,
-which is either main or naive. 
+which is either main or naive.
+
+OBJECTIVE BRANCHING
+This may be a way to emulate clamp branching in the primal case, on an
+up-branch, encourage the complementary choice of variable by an
+extreme perturbation of the objective function entry for that
+variable. this may require updates to the LPCore to put it in a
+'modified' state, wherein get_obj_val adjusts for the perturbed
+objective function.
+
+Also we may just be able to use CPXstrongbranch to help choose
+branching variables. First perform one dual simplex pivot on every
+fractional variable subproblem pair, then 100 on 5, then 500 on 2,
+using the ranking metric in tspbook. 
 
 CUT PRUNING
 the pruning mechanism of 'tight at current tour' is clearly FAR too lenient,

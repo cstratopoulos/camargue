@@ -1,7 +1,12 @@
-Fullest possible namespacing should be used in header files.....maybe
-just get rid of using namespace entirely
+Fullest possible namespacing should be used in header files.
+Get rid of all instances of using namespace std and using namespace
+PSEP. all cpp files should be in namespace PSEP { } with using
+std::vector, using std::unique_ptr, etc. where appropriate. The
+additional namespacing for Data, LP, etc. is either not worth it or
+poorly thought out at the moment.
 
-after each update, best tour should be written to file
+Maybe use legacy parameter names in lp implementation to preserve
+compatibility with old versions of CPLEX?
 
 It should be possible to get rid of all instances of m_ prefix in class
 members
