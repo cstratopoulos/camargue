@@ -1,29 +1,78 @@
-TARGET = PSEP
-INCLUDES = -I /software/cplex-12.6/distribution/cplex/include/ilcplex/\
- -I /u2/castratopoulos/MyDocuments/Applications/ \
- -I /u2/castratopoulos/MyDocuments/Applications/boost_1_61_0
-LIBS = /software/cplex-12.6/distribution/cplex/lib/x86-64_linux/static_pic/libcplex.a 
-CONCORDE_LIBS = /u2/castratopoulos/MyDocuments/Applications/concorde/concorde.a
-CC = /opt/centos/devtoolset-1.1/root/usr/bin/c++
-CFLAGS =  -O3 -Wall -pedantic -Wno-missing-braces -Wno-long-long \
+# Adapted from http://stackoverflow.com/a/27794283/6516346
+#Compiler and Linker
+CC          := /opt/centos/devtoolset-1.1/root/usr/bin/c++
+
+#The Target Binary Program
+TARGET      := PSEP
+
+#The Directories, Source, Includes, Objects, Binary and Resources
+SRCDIR      := source
+INCDIR      := includes
+BOOSTDIR    := /u2/castratopoulos/MyDocuments/Applications/boost_1_61_0
+CPXDIR      := /software/cplex-12.6/distribution/cplex/include/ilcplex/
+PROGDIR     := /u2/castratopoulos/MyDocuments/Applications/
+BUILDDIR    := objects
+TARGETDIR   := .
+#RESDIR      := 
+SRCEXT      := cpp
+DEPEXT      := d
+OBJEXT      := o
+
+#Flags, Libraries and Includes
+CFLAGS      := -O3 -Wall -pedantic -Wno-missing-braces -Wno-long-long \
 -Wno-variadic-macros -Wno-sign-compare -Wno-format \
 -Wno-maybe-uninitialized -std=c++11
-.PHONY: default all clean
+LIB         := \
+/software/cplex-12.6/distribution/cplex/lib/x86-64_linux/static_pic/libcplex.a \
+/u2/castratopoulos/MyDocuments/Applications/concorde/concorde.a -lm -lpthread
+INC         := -I$(INCDIR) -I$(BOOSTDIR) -I$(CPXDIR) -I$(PROGDIR)
+INCDEP      := -I$(INCDIR) -I$(BOOSTDIR) -I$(CPXDIR) -I$(PROGDIR)
 
-default: $(TARGET)
-all: default
+#---------------------------------------------------------------------------------
+#DO NOT EDIT BELOW THIS LINE
+#---------------------------------------------------------------------------------
+SOURCES     := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.$(OBJEXT)))
 
-OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
-HEADERS = $(wildcard *.hpp)
+#Defauilt Make
+all: resources $(TARGET)
 
-%.o: %.cpp $(HEADERS) 
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+#Remake
+remake: cleaner all
 
-.PRECIOUS: $(TARGET) $(OBJECTS)
+#Copy Resources from Resources Directory to Target Directory
+#resources: directories
+#    @cp $(RESDIR)/* $(TARGETDIR)/
 
-$(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -Wall $(LIBS) -lm -lpthread  $(CONCORDE_LIBS) -o $@
+#Make the Directories
+directories:
+	@mkdir -p $(TARGETDIR)
+	@mkdir -p $(BUILDDIR)
 
+#Clean only Objecst
 clean:
-	-rm -f *.o
-	-rm -f $(TARGET)
+	@$(RM) -rf $(BUILDDIR)
+
+#Full Clean, Objects and Binaries
+cleaner: clean
+	@$(RM) -rf $(TARGETDIR)
+
+#Pull in dependency info for *existing* .o files
+-include $(OBJECTS:.$(OBJEXT)=.$(DEPEXT))
+
+#Link
+$(TARGET): $(OBJECTS)
+	$(CC) -o $(TARGETDIR)/$(TARGET) $^ $(LIB)
+
+#Compile
+$(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
+	@$(CC) $(CFLAGS) $(INCDEP) -MM $(SRCDIR)/$*.$(SRCEXT) > $(BUILDDIR)/$*.$(DEPEXT)
+	@cp -f $(BUILDDIR)/$*.$(DEPEXT) $(BUILDDIR)/$*.$(DEPEXT).tmp
+	@sed -e 's|.*:|$(BUILDDIR)/$*.$(OBJEXT):|' < $(BUILDDIR)/$*.$(DEPEXT).tmp > $(BUILDDIR)/$*.$(DEPEXT)
+	@sed -e 's/.*://' -e 's/\\$$//' < $(BUILDDIR)/$*.$(DEPEXT).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(BUILDDIR)/$*.$(DEPEXT)
+	@rm -f $(BUILDDIR)/$*.$(DEPEXT).tmp
+
+#Non-File Targets
+.PHONY: all remake clean cleaner resources
