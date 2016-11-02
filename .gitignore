@@ -1,4 +1,5 @@
 *.o
+objects
 
 #ignore tsplib files and printed outputs from solutions
 *.tsp
