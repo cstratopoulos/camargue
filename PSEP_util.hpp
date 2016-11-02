@@ -52,6 +52,7 @@
     std::cerr << message;			\
     goto CLEANUP; }
 
+/** The namespace for this project. */
 namespace PSEP {
 /*
  * SolutionProtocol is an enum class for one of the two arguments that may

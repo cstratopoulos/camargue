@@ -18,77 +18,79 @@
 #include <string>
 
 namespace PSEP {
-/*
- * Writes the tour specified by tour_nodes to the file named tour_nodes_fname
- * PRE:
- * tour_nodes should be nonempty, a cyclic permutation of the numbers 0 to 
- *            tour_nodes.size()
- * tour_nodes_fname should be a nonempty string
- * POST:
- * tour_nodes_fname will be the name of a file with tour_nodes.size() at the
- *            top, followed by the entries of tour_nodes
- * returns 0 if successful, 1 if error
+
+/** Writes a tour to file.
+ * Writes the tour specified by \p tour_nodes to the file named 
+ * \p tour_nodes_fname
+ * @pre \p tour_nodes is nonempty, containing a cyclic permutation of the 
+ * numbers from 0 to \p tour_nodes.size()
+ * @pre \p tour_nodes_fname is a nonempty filename
+ * @post \p tour_nodes_fname will be the name of a file with 
+ * tour_nodes.size() at the top, followed by the entries of tour_nodes
+ * \return 0 if successful, 1 if error
  */
 int write_tour_nodes(const std::vector<int> &tour_nodes,
 		     const std::string &tour_nodes_fname);
 
-/*
- * Writes the edges in edges specified by tour_edges to the file named
- * tour_edges_fname, assuming the graph has node_count nodes
- * PRE:
- * tour_edges and edges are nonempty, of the same size
- * tour_edges is binary, and the collection of edges[i] for which 
- * tour_edges[i] == 1 gives a connected cyclical graph
- * edges is a list of edges in a graph with node_count nodes
- * tour_edges_fname is a nonempty string
- * POST:
- * tour_edges_fname will be the name of a file with
- * node_count edges.size()
- * at the top, followed by
- * edges[i].end[0] edges[i].end[1] 1.0
- * for each i such that tour_edges[i] = 1.0
- * returns 0 if successful, 1 if error
+/** Writes tour edges to file.
+ * Writes the edges in edges specified by \p tour_edges to the file named
+ * \p tour_edges_fname, assuming the graph has \p node_count nodes.
+ * @param[in] edges a vector of Edge structs indicating edge endpoints
+ * @pre \p tour_edges and \p edges are nonempty, of the same size
+ * @pre \p tour_edges is binary, and the collection of \p edges[i] for which 
+ * \p tour_edges`[i] == 1` gives a connected cyclical graph
+ * @pre \p edges is a list of edges in a graph with \p node_count nodes
+ * @pre \p tour_edges_fname is a nonempty string
+ * @post \p tour_edges_fname will be the name of a file with \p node_count
+ * and  `edges.size()` on the top line, followed by \p edges`[i].end[0]`
+ * \p edges`[i].end[1]` `1.0` for each i such that \p tour_edges`[i] == 1`
+ * \return 0 if successful, 1 if error
  */
 int write_tour_edges(const std::vector<int> &tour_edges,
 		     const std::vector<PSEP::Edge> &edges,
 		     const int node_count,
 		     const std::string &tour_edges_fname);
 
-/*
- * Writes the tour specified by lp_elist and lp_ecap to the file named
- * lp_edges_fname
- * PRE:
- * lp_elist and lp_ecap nonempty,
- * lp_elist.size() is twice lp_ecap.size()
- * lp_ecap[i] is the weight on the edge lp_elist[2i], lp_elist[2i + 1]
- * lp_edges_fname is a nonempty string
- * POST:
- * lp_edges_fname will be the name of a file with 
- * node_count lp_ecap.size() 
- * at the top, followed by 
- * support_elist[2i] support_elist[2i + 1] support_ecap[2i]
- * for all i from 0 to lp_ecap.size()
- * returns 0 if successful, 1 if error
+/** Writes LP edges to file.
+ * Writes the tour specified by \p lp_elist and \p lp_ecap to the file named
+ * \p lp_edges_fname
+ * @param[in] lp_elist the edges in an LP solution in node node format
+ * @param[in] lp_ecap the value assigned to each edge in the LP solution
+ * @pre \p lp_elist and \p lp_ecap nonempty
+ * @pre `lp_elist.size()` is twice `lp_ecap.size()`
+ * @pre `lp_ecap[i]` is the weight on the edge `lp_elist[2i]` , 
+ *  `lp_elist[2i + 1]`
+ * @pre \p lp_edges_fname is a nonempty string
+ * @post \p lp_edges_fname will be the name of a file with
+ *  \p node_count `lp_ecap.size()` on the first line, followed by
+ * `support_elist[2i] support_elist[2i + 1] support_ecap[2i]`
+ * for all `i` from 0 to  `lp_ecap.size()`
+ * \return 0 if successful, 1 if error
  */
 int write_lp_edges(const std::vector<int> &lp_elist,
 		   const std::vector<double> &lp_ecap,
 		   const int node_count,
 		   const std::string &lp_edges_fname);
 
+/** Dumps the xy-coordinates for nodes in a graph.
+ * Populates \p xy_coords_fname with the xy-coords specified by \p x, \p y
+ * for a graph with \p ncount edges
+ * @pre \p x and \p y are non-null double arrays of length \p ncount
+ * @post \p xy_coords_fname has \p ncount on its first line, followed by
+ * \p x`[i]` \p y`[i]` on all the following lines. 
+ */
 int write_xy_coords(const double *x, const double *y, const int ncount,
 		    const std::string &xy_coords_fname);
 
-/*
- * Stores the tour specified in tour_nodes_fname to the vector tour_nodes for 
- * a TSP instance on node_count cities
- * PRE: 
- * tour_nodes_fname names an existant file whose first line is node_count
- * and whose following entries are a cyclic permutation of the numbers
- * 0, ..., node_count
- * POST:
- * tour_nodes has length node_count,
- * and stores its subsequent entries in the same order
- * returns 0 if successful, 1 if error
+/** Loads a tour from file.
+ * Stores the tour specified in \p tour_nodes_fname to the vector
+ * \p tour_nodes for a TSP instance on \p node_count cities
+ * @pre \p tour_nodes_fname names an existant file whose first line is
+ * \p node_count and whose following entries are a cyclic permutation of the 
+ * numbers 0, ..., \p node_count
+ * @post \p tour_nodes has length \p node_count and its entries are the nodes
+ * from \p tour_nodes_fname in the same order
+ * \returns 0 if successful, 1 if error
  */
 int get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
 		   const std::string &tour_nodes_fname);
