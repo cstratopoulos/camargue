@@ -20,3 +20,9 @@ sloc
 
 #no compile commands
 .clang_complete
+
+#no temporary files created by emacs
+*~
+
+#none of the doxygen output
+doc
