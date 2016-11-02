@@ -5,7 +5,7 @@ CC          := /opt/centos/devtoolset-1.1/root/usr/bin/c++
 #The Target Binary Program
 TARGET      := PSEP
 
-#The Directories, Source, Includes, Objects, Binary and Resources
+#The Directories, Source, Includes, Objects, Binary
 SRCDIR      := source
 INCDIR      := includes
 BOOSTDIR    := /u2/castratopoulos/MyDocuments/Applications/boost_1_61_0
@@ -13,7 +13,6 @@ CPXDIR      := /software/cplex-12.6/distribution/cplex/include/ilcplex/
 PROGDIR     := /u2/castratopoulos/MyDocuments/Applications/
 BUILDDIR    := objects
 TARGETDIR   := .
-#RESDIR      := 
 SRCEXT      := cpp
 DEPEXT      := d
 OBJEXT      := o
@@ -38,11 +37,7 @@ OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.$(OBJE
 all: resources $(TARGET)
 
 #Remake
-remake: cleaner all
-
-#Copy Resources from Resources Directory to Target Directory
-#resources: directories
-#    @cp $(RESDIR)/* $(TARGETDIR)/
+remake: clean all
 
 #Make the Directories
 directories:
@@ -51,11 +46,8 @@ directories:
 
 #Clean only Objecst
 clean:
-	@$(RM) -rf $(BUILDDIR)
-
-#Full Clean, Objects and Binaries
-cleaner: clean
-	@$(RM) -rf $(TARGETDIR)
+	@$(RM) -f $(BUILDDIR)/*
+	@$(RM) -f $(TARGET)
 
 #Pull in dependency info for *existing* .o files
 -include $(OBJECTS:.$(OBJEXT)=.$(DEPEXT))
@@ -75,4 +67,4 @@ $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	@rm -f $(BUILDDIR)/$*.$(DEPEXT).tmp
 
 #Non-File Targets
-.PHONY: all remake clean cleaner resources
+.PHONY: all remake clean resources

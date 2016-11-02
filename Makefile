@@ -5,7 +5,7 @@ CC          := g++
 #The Target Binary Program
 TARGET      := PSEP
 
-#The Directories, Source, Includes, Objects, Binary and Resources
+#The Directories, Source, Includes, Objects, Binary
 SRCDIR      := source
 INCDIR      := includes
 BOOSTDIR    := /usr/local/boost_1_61_0
@@ -14,7 +14,6 @@ CPXDIR      := \
 PROGDIR     := /Users/christos/Dropbox/school/research/programs/
 BUILDDIR    := objects
 TARGETDIR   := .
-#RESDIR      := 
 SRCEXT      := cpp
 DEPEXT      := d
 OBJEXT      := o
@@ -36,14 +35,10 @@ SOURCES     := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.$(OBJEXT)))
 
 #Defauilt Make
-all: resources $(TARGET)
+all: $(TARGET)
 
 #Remake
-remake: cleaner all
-
-#Copy Resources from Resources Directory to Target Directory
-#resources: directories
-#    @cp $(RESDIR)/* $(TARGETDIR)/
+remake: clean all
 
 #Make the Directories
 directories:
@@ -52,11 +47,8 @@ directories:
 
 #Clean only Objecst
 clean:
-	@$(RM) -rf $(BUILDDIR)
-
-#Full Clean, Objects and Binaries
-cleaner: clean
-	@$(RM) -rf $(TARGETDIR)
+	@$(RM) -f $(BUILDDIR)/*
+	@$(RM) -f $(TARGET)
 
 #Pull in dependency info for *existing* .o files
 -include $(OBJECTS:.$(OBJEXT)=.$(DEPEXT))
@@ -76,4 +68,4 @@ $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	@rm -f $(BUILDDIR)/$*.$(DEPEXT).tmp
 
 #Non-File Targets
-.PHONY: all remake clean cleaner resources
+.PHONY: all remake clean
