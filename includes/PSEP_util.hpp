@@ -54,49 +54,38 @@
 
 /** The namespace for this project. */
 namespace PSEP {
-/*
- * SolutionProtocol is an enum class for one of the two arguments that may
- * be passed to the TSPSolver constructor
- * See pivplan.h for tuning the parameters of each of these protocols
- *
- * PURECUT - Attempts to solve the instance by adding only primal cutting
- *    planes
- * ABC - Runs PURECUT protocol until some specified termination condition,
- *    then embeds it in an Augment-Branch-Cut solver
- */
+
+/** Choices for the execution behavior of PureCut. */
 enum class SolutionProtocol {
-  PURECUT, ABC
+
+  /** Pure cutting plane solution
+   * Indicates attempt to solve solely by pivoting and adding primal cutting
+   * planes, continuing until optimality or failure. 
+   */
+  PURECUT,
+
+  /** Augment-Branch-Cut solution
+   * Indicates that `PureCut.solve` will run until some specified threshold of
+   * time or cuts, and then will be embedded in an Augment-and-Branch-and-Cut
+   * solution process if optimality has not been attained.
+   */
+  ABC
 };
 
-/*
-
- * A POD struct for creating a randomly generated euclidean TSP instance.
- *
- * nodecount - number of cities. a value of zero shall be considered an empty
- *    or 'null' problem
- * gridsize - specifies the range of coordinates possible
- * seed - the random seed. if set to zero, problem will be generated 
- *    randomly using the current time as seed. Nonzero values will reliably
- *    generate the same problem.
- */
+/** A POD struct for creating a randomly generated euclidean TSP instance. */
 struct RandProb {
   RandProb() : nodecount(0), gridsize(100), seed(0) {}
-  int nodecount;
-  int gridsize;
-  int seed;
+  int nodecount; /**< Number of cities in the problem. */
+  int gridsize; /**< Size of grid from which coordinates will be drawn. */
+  int seed; /**<Random seed for generation of points. */
 };
 
-/*
- * A POD struct for preferences related to file output which will take place
- * during the construction and solution process. For all output related to 
- * a tour, updates to the tour will overwrite pre-existing files. 
- *
- * save_tour determines if the sequence of nodes in the tour will be saved
- *         to file, in which case it will be saved to probname.sol
- * save_tour_edges determines if the edges in the tour will be saved to file,
- *         probname_tour.x
- * dump_xy determines if the x-y coordinates of the instance will, if possible,
- *         be saved to file, probname.xy
+/** A POD struct for preferences related to tour file output.
+ * This structure stores preferences about the types of files (if any) that
+ * will be saved to disk during the solution process. Existing files will
+ * be overwritten; it is the responsibility of the calling routine to make
+ * sure that they are hopefully only overwritten by better tours than before!
+ * @todo Add a make GIF type parameter. 
  */
 struct OutPrefs {
   OutPrefs() : save_tour(true),
@@ -110,56 +99,43 @@ struct OutPrefs {
     save_tour_edges(_save_tour_edges),
     probname() {}
   
-  bool save_tour, dump_xy, save_tour_edges;
-  std::string probname;
+  bool save_tour, /**< Save tour nodes to `probname.sol`. */
+    dump_xy, /**< If possible, dump xy-coords to `probname.xy` */
+    save_tour_edges; /**< Save tour edges to `probname_tour.x`. */
+  std::string probname; /**< The name of the problem. */
 };
 
-/*
-
- * The LP namespace here 
- * contains constants, enum classes, and stuctures related 
- * to the LP solver/solutions/relaxations. 
- */
+/** Namespace for classes, constants, and enums related to %LP relaxations. */
 namespace LP {
 
-/* Tolerance by which two doubles are considered equal, or a number is
- * considered equal to zero
- */
+/** Tolerance under which a number is considered equal to zero. */
 constexpr double EPSILON = 0.000001;
 
-/* The CPLEX default iteration limit for simplex optimizers */
+/** The CPLEX default iteration limit for simplex optimizers */
 constexpr long long DEFAULT_ITLIM = 9223372036800000000;
 
-/*
+/** Enum class for primal pricing protocols. 
  * Pricing is an enum class for methods by which pivot variables may be
  * selected in the primal simplex method. See CPLEX documentation for more
- * info
- *
- * Devex
- * SlackSteepest is steepest edge with slack initial norms
- * Steepest is true steepest edge
+ * info. These appear in order of least to most computationally intensive and,
+ * theoretically, least to most effective at identifying non-degenerate pivots.
  */
 enum class Pricing {
-  Devex, SlackSteepest, Steepest
+  Devex, /**< Devex pricing. */
+  SlackSteepest, /**< Steepest edge with slack initial norms. */
+  Steepest /**< True steepest edge. */
 };
 
-/*
- * PivType is how we categorize LP solutions 
- *
- * Frac - fractional solution
- * Subtour - integral subtour
- * Tour - an augmented integral tour
- * FathomedTour - an integral tour that is dual feasible, i.e., optimal
- *    for the current LP relaxation. 
- *    With PURECUT solution method, fathomed is synonymous with optimality
- *    With ABC, this only means optimal at the current branching node
- */
+/** Enum class for categorizing %LP solutions. */
 enum class PivType {
-  Frac, Subtour, Tour, FathomedTour
+  Frac, /**< Fractional solution. */
+  Subtour, /**< Integral subtour. */
+  Tour, /**< A new or augmented tour. */
+  FathomedTour /**< A Tour with a dual feasible basis in the current %LP. */
 };
 
 /*
- * Prefs is a simple struct to store preferences for the LP solver.
+ * Prefs is a simple struct to store preferences for the %LP solver.
  *
  * price_method is one of the Pricing types indicated above
  * dp_threshold - controls when simple domino parity inequality separation
@@ -181,20 +157,20 @@ struct Prefs {
 }
 
 
-/*
- * Some timing functions: zeit for CPU time, real_zeit for wall clock time
- */
+/** CPU time function. */
 double zeit (void);
+
+/** Wall-clock time function. */
 double real_zeit (void);
 
-//utility function to print every entry of a vector
+/** Prints every entry of a vector */
 template<typename entry_t>
 void print_vec(std::vector<entry_t> const &vec){
   for(int i = 0; i < vec.size(); i++)
     std::cout << "Entry " << i << ": " << vec[i] << "\n";
 }
 
-//utility function to print nonzero entries of a numeric vector
+/** Prints nonzero entries of a vector. */
 template<typename entry_t >
 void print_vec_nonzero(std::vector<entry_t> const &vec){
   for(int i = 0; i < vec.size(); i++)
@@ -202,7 +178,10 @@ void print_vec_nonzero(std::vector<entry_t> const &vec){
       std::cout << "Entry " << i << ": " << vec[i] << "\n";
 }
 
-//copied from Herb Sutter's implementation of make_unique
+/** Exception-safe creation of a unique_ptr, from Herb Sutter.
+ * This is a c++14 feature which is ported to c++11 under the PSEP namespace,
+ * since it exists as std::make_unique in c++14 and onwards.
+ */
 template<typename T, typename ...Args>
 std::unique_ptr<T> make_unique( Args&& ...args )
 {

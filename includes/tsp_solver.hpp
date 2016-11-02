@@ -2,9 +2,6 @@
  *
  *                MAIN TSP SOLVER CLASS DEFINITION
  *
- * This is the overarching class responsible for managing problem data and 
- * executing different solution protocols. 
- *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef TSP_SOLVER_H
@@ -21,56 +18,59 @@
 
 
 namespace PSEP{
+
+/** The master class for controlling and invoking solution protocols.
+ * TSPSolver is the controller object for this project. It is responsible 
+ * for initializing Data objects and then using them to construct a solution
+ * protocol class, either Purecut or ABC. 
+ */
 class TSPSolver {
 public:
-  /*  The default constructor for the TSPSolver class.
-   * ONE OF fname or randprob may be used to initialize the problem
-   * fname.empty() implies use of randprob, randprob.nodecount of zero
-   * implies use of fname. The command line argument parser is responsible
-   * for giving precisely one valid argument. (PSEP.cpp in this case).
-   * If both are somehow nonempty, the filename will be chosen
-   *
-   * fname: a TSP instance with .tsp suffix using TSPLIB format
-   * ranndprob: parameters for generating a random problem; see
+  /**  TSPSolver constructor using filename or random problem.
+   * ONE OF \p fname or \p randprob may be used to initialize the problem.
+   * `if (fname.empty())` then \p randprob will be used, and
+   * `if randprob.nodecount == 0` then \p fname will be used. The command line
+   *  argument parser is responsible for giving precisely one valid argument.
+   * @param[in] fname a TSP instance with `.tsp` suffix using TSPLIB format
+   * @param[in] randprob: parameters for generating a random problem; see
    *    PSEP_util.h for information
-   * prefs: LP solution preferences, see PSEP_util.h for info
-   * dat: a unique pointer to an uninitialized CCdatagroup object
+   * @param[in] _outprefs a PSEP::OutPrefs structure, governing the amount
+   * of information to be written to file. 
+   * @param[in] prefs a PSEP::LP::Prefs structure, for parameters related to
+   * the LP solver and the addition of cuts.
+   * @param[in] dat pointer to an uninitialized `CCdatagroup` object
+   * @todo put \p sparse and \p quadnearest in an initial prefs struct
    */
   TSPSolver(const std::string &fname, PSEP::RandProb &randprob,
-	    PSEP::OutPrefs _out_prefs, PSEP::LP::Prefs _prefs,
+	    PSEP::OutPrefs _outprefs, PSEP::LP::Prefs _prefs,
 	    std::unique_ptr<CCdatagroup> &dat,
 	    const bool sparse, const int quadnearest);
   
-  /*
-   * As above, but witha  starting tour specified in the file tourname.
-   * Currently no support for specifying starting tour with random problems.
+  /** TSPSolver constructor with starting tour from file
+   * This constructor works just like the other one, but with an initial tour
+   * given by the file \p tourname. There is no support for initializing a tour
+   * from file and using a random problem. 
    */
   TSPSolver(const std::string &fname, const std::string &tourname,
 	    PSEP::OutPrefs _out_prefs, PSEP::LP::Prefs _prefs,
 	    std::unique_ptr<CCdatagroup> &dat,
 	    const bool sparse, const int quadnearest);
 
-  /*
-   * The function to invoke the TSP solver with solution protocol specified
-   * by  solmeth. See PSEP_util.h and below for info
+  /** Invoke the solution process.
+   * This function invokes the solution process using the SolutionProtocol
+   * specified by \p solmeth.
+   * @returns 0 if success, 1 if failure
    */
   int call(PSEP::SolutionProtocol solmeth, const bool sparse);
   
 private:
   PSEP::OutPrefs outprefs;
   
-  /*
-   * These are the data categories used by various aspects of the solver,
-   * see datagroups.hpp for more info.
-   */
   Data::GraphGroup GraphGroup;
   Data::BestGroup BestGroup;
   Data::SupportGroup SupportGroup;
   Data::LPGroup LPGroup;
 
-  /* These are pointers to solution protocol classes
-   * See purecut.hpp and ABC.hpp for info
-   */
   std::unique_ptr<PSEP::PureCut> PureCut;
   std::unique_ptr<PSEP::ABC> ABC;
 };

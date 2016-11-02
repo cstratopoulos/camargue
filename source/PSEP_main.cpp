@@ -1,3 +1,20 @@
+/** \mainpage
+ * This is the documentation mainpage for PSEPtsp, a TSP solver based on 
+ * primal cutting plane methods. 
+ *
+ *
+ * See @ref TSPSolver for information on the main solver class.
+ *
+ * See the Data namespace for information on internal data structures 
+ * maintained and updated in the solution process
+ *
+ * See the  LP namespace for classes, constants, and structs related to 
+ * managing the %LP relaxations in the solution process.
+ *
+ * See PureCut or ABC for overviews of the two main solution protocols. 
+ *
+ */
+
 #include "tsp_solver.hpp"
 #include "PSEP_util.hpp"
 #include "graph_io.hpp"
@@ -27,11 +44,11 @@ int main(int argc, char* argv[]){
   PSEP::OutPrefs o_prefs;
   PSEP::RandProb randprob;
   std::unique_ptr<CCdatagroup> dat(new CCdatagroup);
-  //  TODO: make this a regular ptr bc it confuses valgrind maybe
+  /**@todo make this a regular ptr bc it confuses valgrind maybe */
   std::string probfile, tourfile;
   bool do_sparse = false;
   int qnearest = 0;
-  //TODO: probably put this somewhere else
+  /**@todo probably put this somewhere else */
 
   if(initial_parse(argc, argv, probfile, tourfile, randprob, prefs, o_prefs,
   		   do_sparse, qnearest)){

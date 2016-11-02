@@ -158,12 +158,12 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 	if(rval) goto CLEANUP;
 	haveslack = false;
       }
-    } else { //TODO: this is a bit ungraceful
+    } else { /** @todo this is ungraceful, get rid of the GMI subtour thing. */
       rval = LPCore.pivot_back();
       if(rval) goto CLEANUP;
     }
 
-    rval = CutControl.add_primal_cuts(); //TODO: this should add the gomory cuts
+    rval = CutControl.add_primal_cuts(); /** @todo should add gomory cuts */
     if(rval) goto CLEANUP;
 
     if(rounds % 50 == 0 && !plan.is_branch()){
