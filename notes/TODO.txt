@@ -24,6 +24,8 @@ similar for support structures like support graph/indices, etc.
 
 Add switch for printing sequence of tour edge files in a gif-like
 manner, e.g., ./PSEP -Sc8 -s1477932024 problems/pr2392.tsp
+Best way to do this may just be to save the objval in the filename?
+This would give convenient automatic sorting. 
 
 ./PSEP -c8 -Su1 -s1477602901 problems/lin318.tsp adds exactly 2 cuts per
 round and stagnates for hundreds and hundreds of rounds unchanged
