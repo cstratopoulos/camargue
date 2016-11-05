@@ -1,13 +1,37 @@
-#include<iostream>
-
 #include "segments.hpp"
+#include "PSEP_util.hpp"
+
+#include<iostream>
 
 extern "C" {
 #include <concorde/INCLUDE/cut.h>
 }
 
-using namespace std;
-using namespace PSEP;
+using std::vector;
+using std::cout;
+using std::cerr;
+
+//this should be defined to use linsub to make a more efficient choice of cuts
+//rather than linsub_allcuts which may add more than needed
+#define PSEP_SEG_LINSUB
+
+namespace PSEP {
+
+int Cut<seg>::linsub_all_callback(double cut_val, int cut_start, int cut_end,
+				  void *cb_data)
+{
+  Cut<seg> *this_p = (Cut<seg> *) cb_data;
+  CutQueue<seg> &lq = this_p->local_q;
+
+  if(lq.empty() || cut_val <= lq.peek_front().cutval){
+    try{ lq.push_front(seg(cut_start, cut_end, cut_val)); } catch(...){
+      cerr << "Couldn't push back new seg\n";
+      return 1;
+    }
+  }
+
+  return 0;
+}
 
 int Cut<seg>::linsub_callback(double cut_val, int cut_start, int cut_end,
 			      void *cb_data)
@@ -30,21 +54,40 @@ int Cut<seg>::separate()
   int rval = 0;
   vector<int> endmark;
 
+#ifdef PSEP_SEG_LINSUB
+  vector<int> cut_elist;
+
+  try { cut_elist.resize(support_elist.size()); } catch(std::bad_alloc &) {
+    PSEP_SET_GOTO(rval, "Out of space for cut elist. ");
+  }
+
+  for(int i = 0; i < cut_elist.size(); i++)
+    cut_elist[i] = perm[support_elist[i]];
+#endif
+
+
   try { endmark = vector<int>(G_s.node_count, CC_LINSUB_BOTH_END); }
   catch(...){
     rval = 1; PSEP_GOTO_CLEANUP("Couldn't allocate endmark. ");
   }
 
+#ifdef PSEP_SEG_LINSUB
+  rval = CCcut_linsub(G_s.node_count, G_s.edge_count, &endmark[0],
+		      &cut_elist[0], &support_ecap[0], 1.999, (void *) this,
+		      linsub_callback);
+  PSEP_CHECK_RVAL(rval, "CCcut_linsub failed. ");
+#else
   rval = CCcut_linsub_allcuts(G_s.node_count,
 			      G_s.edge_count,
 			      &best_tour_nodes[0], &endmark[0],
 			      &support_elist[0], &support_ecap[0], 1.999,
-			      (void *) this, linsub_callback);
-
+			      (void *) this, linsub_all_callback);
   PSEP_CHECK_RVAL(rval, "CCcut_linsub_allcuts failed. ");
+#endif
 
   if(local_q.empty())
     rval = 2;
+  
 
  CLEANUP:
   if(rval == 1)
@@ -110,4 +153,6 @@ int Cut<seg>::cutcall(){
   if(rval == 1)
     cerr << "Problem in Cuts<seg>::cutcall()\n";
   return rval;
+}
+
 }

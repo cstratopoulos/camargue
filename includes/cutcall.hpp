@@ -26,7 +26,7 @@ public:
     translator(GraphGroup),
     segment_q(LPGroup.prefs.max_per_round),
     blossom_q(LPGroup.prefs.q_max_size),
-    segments(BestGroup.best_tour_nodes,
+    segments(BestGroup.best_tour_nodes, BestGroup.perm,
 	     SupportGroup.G_s, SupportGroup.support_elist,
 	     SupportGroup.support_ecap,
 	     segment_q),
