@@ -30,6 +30,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <getopt.h>
+#include <omp.h>
 
 static int initial_parse(int ac, char **av, std::string &fname,
 			 std::string &tour_fname,

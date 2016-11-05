@@ -1,6 +1,6 @@
 # Adapted from http://stackoverflow.com/a/27794283/6516346
 #Compiler and Linker
-CC          := g++
+CC          := /usr/local/Cellar/gcc49/4.9.3/bin/g++-4.9
 
 #The Target Binary Program
 TARGET      := PSEP
@@ -19,12 +19,13 @@ DEPEXT      := d
 OBJEXT      := o
 
 #Flags, Libraries and Includes
-CFLAGS      := -Wall -O3 -pedantic -Wno-missing-braces -Wno-long-long\
--Wno-variadic-macros -Wno-gnu-zero-variadic-macro-arguments\
--Wno-gnu-statement-expression -std=c++11
+CFLAGS      := -Wall -O3 -pedantic -fopenmp \
+-Wno-missing-braces -Wno-sign-compare  -Wno-long-long\
+-Wno-variadic-macros\
+-std=c++11
 LIB         := /Users/christos/Applications/IBM/ILOG/CPLEX_Studio1261/cplex/lib/x86-64_osx/static_pic/libcplex.a \
 /Users/christos/Dropbox/school/research/programs/concorde/concorde.a \
--lm -lpthread
+-lm -lpthread -fopenmp 
 INC         := -I$(INCDIR) -I$(BOOSTDIR) -I$(CPXDIR) -I$(PROGDIR)
 INCDEP      := -I$(INCDIR) -I$(BOOSTDIR) -I$(CPXDIR) -I$(PROGDIR)
 
@@ -45,9 +46,8 @@ directories:
 	@mkdir -p $(TARGETDIR)
 	@mkdir -p $(BUILDDIR)
 
-#Clean only Objecst
 clean:
-	@$(RM) -f $(BUILDDIR)/*
+	@$(RM) -f $(BUILDDIR)/*.o
 	@$(RM) -f $(TARGET)
 
 #Pull in dependency info for *existing* .o files
