@@ -1,7 +1,11 @@
 #include "cutcall.hpp"
 #include "DPgraph.hpp"
 
-using namespace std;
+#include <chrono>
+
+using std::vector;
+using std::cout;
+using std::cerr;
 
 
 //#define PSEP_TEST_TOOTH
@@ -16,6 +20,9 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   double segtime, matchtime;
   bool pool_blossoms;
 
+  std::chrono::time_point<std::chrono::system_clock> match_start, match_end;
+  std::chrono::duration<double> match_elapsed;
+
   segtime = zeit();
   segval = segments.cutcall();
   if(segval == 1){
@@ -27,7 +34,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   total_segcalls++;
 
 
-  matchtime = zeit();
+  match_start = std::chrono::system_clock::now();
 
   rval = q_has_viol(pool_blossoms, blossom_q);
   if(rval) goto CLEANUP;
@@ -48,7 +55,10 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     blossom_q.q_fresh = true;
   }
 
-  matchtime = zeit() - matchtime;
+  match_end = std::chrono::system_clock::now();
+  match_elapsed = match_end - match_start;
+  matchtime = match_elapsed.count();
+  
   total_2mtime += matchtime;
   total_2mcalls++;
 
