@@ -40,7 +40,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     if(matchval == 1){ rval = 1; goto CLEANUP; }
 
     /**@todo old version was matchval == 2. maybe should be a switch? */
-    if(matchval == 2 && (augrounds % 3 == 0 || segval == 2)){
+    if(matchval == 2 /*&& (augrounds % 3 == 0 || segval == 2)*/){
       matchval = blossoms.cutcall();
       if(matchval == 1){ rval = 1; goto CLEANUP; }
     }
