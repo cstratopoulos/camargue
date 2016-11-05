@@ -18,12 +18,14 @@ DEPEXT      := d
 OBJEXT      := o
 
 #Flags, Libraries and Includes
-CFLAGS      := -O3 -Wall -pedantic -Wno-missing-braces -Wno-long-long \
+CFLAGS      := -O3 -Wall -pedantic -fopenmp \
+-Wno-missing-braces -Wno-long-long \
 -Wno-variadic-macros -Wno-sign-compare -Wno-format \
 -Wno-maybe-uninitialized -std=c++11
 LIB         := \
 /software/cplex-12.6/distribution/cplex/lib/x86-64_linux/static_pic/libcplex.a \
-/u2/castratopoulos/MyDocuments/Applications/concorde/concorde.a -lm -lpthread
+/u2/castratopoulos/MyDocuments/Applications/concorde/concorde.a -lm -lpthread \
+-fopenmp
 INC         := -I$(INCDIR) -I$(BOOSTDIR) -I$(CPXDIR) -I$(PROGDIR)
 INCDEP      := -I$(INCDIR) -I$(BOOSTDIR) -I$(CPXDIR) -I$(PROGDIR)
 
