@@ -26,6 +26,11 @@ public:
   void report(bool show_cpu);
 
 private:
+
+  /** The name of the Timer.
+   * timer_name will be used by @ref report to identify the time(s) printed. 
+   * For most nicely formatted output, keep timer_name at 20 chars or less.
+   */
   std::string timer_name;
   
   std::chrono::duration<double> wall_elapsed;

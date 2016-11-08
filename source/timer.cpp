@@ -3,7 +3,10 @@
 #include <iostream>
 #include <iomanip>
 
+#include <cstdio>
+
 using std::cout;
+using std::setw;
 using std::setprecision;
 using std::string;
 using std::chrono::system_clock;
@@ -46,10 +49,10 @@ void Timer::resume()
 
 void Timer::report(bool show_cpu)
 {
-
-  cout << "    "  << timer_name << ": ";
+  string name_pad(20 - timer_name.length(), ' ');
+  cout << name_pad << timer_name << ": ";
   
-  cout << wall_elapsed.count() << "s wall ";
+  printf("%.6fs wall \t", wall_elapsed.count());
   if(ratio_timer)
     cout << "("
 	 << setprecision(2)
@@ -59,8 +62,9 @@ void Timer::report(bool show_cpu)
   cout << "\n";
 
   if(show_cpu){
-    for(int i = 0; i < timer_name.length(); ++i) cout << " ";
-    cout << "      " << cpu_elapsed << "s CPU ";
+    string cpu_pad(22, ' ');
+    cout << cpu_pad;
+    printf("%.6fs CPU \t", cpu_elapsed);
     if(ratio_timer)
       cout << "("
 	   << setprecision(2)
