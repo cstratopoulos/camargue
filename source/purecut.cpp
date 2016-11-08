@@ -18,16 +18,15 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 
   bool prune = !plan.is_branch(), haveslack = false;
 
-  
-  double pivtime, total_pivtime = 0, max_pivtime = 0;
+  Timer pivtimer("Pivot time", &pctime);
   int num_removed = 0;
-  double routine_start, fixing_start, routine_total;
+  double fixing_start;
   double fixtime = 0;
   
   if(!plan.is_branch())
     cout << "Pivoting until optimality or no more cuts" << endl;
 
-  routine_start = zeit();
+  pctime.start();
   plan.start_timer();
   
   while(plan.condition(augrounds)){
@@ -50,12 +49,10 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       }
     }
 
-    pivtime = zeit();
+    pivtimer.resume();
     rval = LPCore.pivot_until_change(piv_stat);
     if(rval) goto CLEANUP;
-    pivtime = zeit() - pivtime;
-    total_pivtime += pivtime;
-    if(pivtime > max_pivtime) max_pivtime = pivtime;
+    pivtimer.stop();
 
     piv_val = LPCore.get_obj_val();
 
@@ -168,14 +165,10 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
       cout << "   ";
       print.pivot(piv_stat);
       cout << "   Pivot objval: " << piv_val << "\n";
-      cout << "   Avg piv time: " << setprecision(2)
-	   << ((double) (total_pivtime / rounds)) <<"s, (longest "
-	   << max_pivtime << "s)\n" << setprecision(6);
-      max_pivtime = 0;	   
     }
   }
 
-  routine_total = zeit() - routine_start;
+  pctime.stop();
 
   if(plan.is_branch() && piv_stat == LP::PivType::Tour){
     cout << "   Terminated due to augmented tour in branch solve ("
@@ -200,15 +193,11 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 	 << rounds << " rounds of separation" << endl;
 
   if(!plan.is_branch())
-    CutControl.profile(routine_total);
+    CutControl.profile();
 
-  cout << "             Total time (s) pivoting: " << total_pivtime
-       << ", ratio: "
-       << (total_pivtime / routine_total) << "\n";
-
-    
-  cout << "\n Total time (s) for Purecut::solve: "
-       << (routine_total) << "\n";
+  pivtimer.report(false);
+  pctime.report(true);
+  
   if(plan.perform_elim())
     cout <<"         LPFix::redcost_fixing: "
 	 << fixtime << "s\n";

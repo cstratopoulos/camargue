@@ -14,6 +14,7 @@
 #include "tooth.hpp"
 #include "cuts.hpp"
 #include "PSEP_util.hpp"
+#include "timer.hpp"
 
 
 namespace PSEP{
@@ -21,7 +22,8 @@ namespace PSEP{
 class CutControl {
 public:
   CutControl(Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
-	     Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup):
+	     Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup,
+	     const PSEP::Timer *purecut_timer_p):
     set_repo(BestGroup.best_tour_nodes, BestGroup.perm),
     translator(GraphGroup),
     segment_q(LPGroup.prefs.max_per_round),
@@ -53,7 +55,10 @@ public:
     prefs(LPGroup.prefs), m_lp(LPGroup.m_lp), m_lp_edges(LPGroup.m_lp_edges),
     G_s(SupportGroup.G_s), support_elist(SupportGroup.support_elist),
     support_ecap(SupportGroup.support_ecap),
-    total_segtime(0), total_2mtime(0), total_dptime(0), total_gentime(0),
+    segtime("Segment sep", purecut_timer_p),
+    matchtime("2match sep", purecut_timer_p),
+    dptime("Simple DP sep", purecut_timer_p),
+    gmitime("Safe GMI sep", purecut_timer_p),
     total_segcalls(0), total_2mcalls(0), total_gencalls(0){}
 
     
@@ -63,7 +68,7 @@ public:
   
   int safe_gomory_sep();
     
-  void profile(const double total_time);
+  void profile();
 
 private:
   int q_has_viol(bool &result, CutQueue<HyperGraph> &pool_q);
@@ -91,7 +96,7 @@ private:
   std::vector<int> &support_elist;
   std::vector<double> &support_ecap;
 
-  double total_segtime, total_2mtime, total_dptime, total_gentime;
+  PSEP::Timer segtime, matchtime, dptime, gmitime;
   int total_segcalls, total_2mcalls, total_gencalls;
 };
 

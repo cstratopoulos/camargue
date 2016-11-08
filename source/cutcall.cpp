@@ -18,25 +18,22 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   int rval = 0;
   
   int segval = 2, matchval = 2, dpval = 2;
-  double segtime, matchtime;
   bool pool_blossoms;
 
   std::chrono::time_point<std::chrono::system_clock> match_start, match_end;
   std::chrono::duration<double> match_elapsed;
 
-  segtime = zeit();
+  segtime.resume();
   segval = segments.cutcall();
   if(segval == 1){
     rval = 1;
     goto CLEANUP;
   }  
-  segtime = zeit() - segtime;
-  total_segtime += segtime;
+  segtime.stop();
+  
   total_segcalls++;
 
-
-  match_start = std::chrono::system_clock::now();
-
+  matchtime.resume();
   rval = q_has_viol(pool_blossoms, blossom_q);
   if(rval) goto CLEANUP;
 
@@ -56,11 +53,8 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     blossom_q.q_fresh = true;
   }
 
-  match_end = std::chrono::system_clock::now();
-  match_elapsed = match_end - match_start;
-  matchtime = match_elapsed.count();
+  matchtime.stop();
   
-  total_2mtime += matchtime;
   total_2mcalls++;
 
 #ifdef PSEP_TEST_TOOTH
@@ -164,31 +158,22 @@ int CutControl::add_primal_cuts()
 }
 
 int CutControl::safe_gomory_sep(){
-  double gentime = zeit();
+  gmitime.resume();
   int rval = safe_gomory.cutcall();
-  gentime = zeit() - gentime;
-  total_gentime += gentime;
+  gmitime.stop();
+
   total_gencalls++;
   if(rval == 1)
     cerr << "Problem in CutControl::safe_gomory_sep\n";
   return rval;
 }
 
-void CutControl::profile(const double total_time)
+void CutControl::profile()
 {
-  std::cout << "   Total time during lightDP sep: " << std::setprecision(4)
-	    << total_dptime << ", ratio: "
-	    << (total_dptime / total_time) << "\n"
-	    << "                     segment sep: "
-	    << total_segtime << ", ratio: "
-	    << (total_segtime / total_time) << "\n"
-	    << "                     blossom sep: "
-	    << total_2mtime << ", ratio: "
-	    << (total_2mtime / total_time) << "\n"		 
-	    << "                    safe GMI sep: "
-	    << total_gentime << ", ratio: "
-	    << (total_gentime / total_time) << "\n"
-	    << std::setprecision(6);
+  segtime.report(false);
+  matchtime.report(true);
+  dptime.report(false);
+  gmitime.report(false);
 }
 
 int CutControl::q_has_viol(bool &result, CutQueue<HyperGraph> &pool_q)

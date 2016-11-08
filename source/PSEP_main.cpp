@@ -83,8 +83,8 @@ int main(int argc, char* argv[]){
   int rval = solver->call(PSEP::SolutionProtocol::PURECUT, do_sparse);
 
   t.stop();
-  c.report();
-  t.report();
+  c.report(false);
+  t.report(true);
 
   return rval;
 }

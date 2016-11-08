@@ -19,6 +19,7 @@
 #include "LPcore.hpp"
 #include "LPfixing.hpp"
 #include "printer.hpp"
+#include "timer.hpp"
 
 namespace PSEP {
 /* Some forward declarations to allow for friend classes to be declared */
@@ -46,7 +47,8 @@ public:
 	  PSEP::OutPrefs &_outprefs):
     print(BestGroup.best_tour_nodes, BestGroup.best_tour_edges,
 	  LPGroup.m_lp_edges, GraphGroup.m_graph.edges),
-    CutControl(GraphGroup, BestGroup, LPGroup, SupportGroup),
+    pctime("PureCut::solve"),
+    CutControl(GraphGroup, BestGroup, LPGroup, SupportGroup, &pctime),
     LPPrune(GraphGroup, LPGroup),
     LPCore(LPGroup, GraphGroup, SupportGroup, BestGroup, LPPrune, _outprefs),
     LPFix(BestGroup, GraphGroup, LPGroup){}
@@ -65,6 +67,8 @@ public:
 private:
   friend class PSEP::BB::Visitor;
   friend class PSEP::ABC;
+
+  PSEP::Timer pctime;
 
   PSEP::CutControl CutControl; /**< Manages separation routines/cut adding. */
   PSEP::LP::CutPrune LPPrune; /**< Manages the pruning of cuts from the LP */
