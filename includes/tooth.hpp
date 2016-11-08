@@ -123,7 +123,7 @@ public:
 
   /** The relative complement of a SimpleTooth.
    * If \p T has root \f$ i \f$ and body \f$ S \f$, then `complement(T)` has
-   * root \f$ i \f$ and body \f$ V \setminus (S cup \left{ i \right}) \f$.
+   * root \f$ i \f$ and body \f$ V \setminus (S cup \left\{ i \right\}) \f$.
    */
   void complement(SimpleTooth &T);
 
