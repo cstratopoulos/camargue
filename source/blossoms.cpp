@@ -34,6 +34,8 @@ int Cut<blossom>::separate(){
 
   #pragma omp parallel for
   for(int i = 0; i < support_indices.size(); i++){
+    if(rval) continue;
+    
     int cut_edge_index = support_indices[i];
     int best_tour_entry = best_tour_edges[cut_edge_index];
     int end0 = support_elist[2 * i];
@@ -55,54 +57,64 @@ int Cut<blossom>::separate(){
 
     cut_ecap[i] = changed_weight;
 
-    rval = CCcut_mincut_st(ncount, support_indices.size(),
-			   &support_elist[0], &cut_ecap[0], end0, end1,
-			   &cutval, &cut_nodes, &cutcount);
-    if(rval){
-      cerr << "Problem in blossom::separate w st-cut\n";
-      i = support_indices.size();
+    int cc_rval = CCcut_mincut_st(ncount, support_indices.size(),
+				  &support_elist[0], &cut_ecap[0], end0, end1,
+				  &cutval, &cut_nodes, &cutcount);
+    if(cc_rval){
+      cerr << "Problem in blossom::separate w CCcut_mincut_st\n";
       cutval = 1.0;
+
+      #pragma omp critical
+      { rval = 1; }
     }
 
     if(cutval < 1 - LP::EPSILON && cutcount >= 3 &&
        cutcount <= (ncount - 3)){
       
       vector<int> handle;
-      for(int j = 0; j < cutcount; j++){
-	handle.push_back(cut_nodes[j]);
+      int handle_rval;
+
+      try {
+	for(int j = 0; j < cutcount; j++)
+	  handle.push_back(cut_nodes[j]);
+	
+      } catch(...) {
+	handle_rval = 1;
+        #pragma omp critical
+	{ rval = 1; }	
       }
 
-      blossom new_cut(handle, cut_edge_index, cutval);
+      if(!handle_rval) {
+	blossom new_cut(handle, cut_edge_index, cutval);
 
-      #pragma omp critical
-      {
-      try { //if it is a better cut it goes to the front for immediate adding
-	if(local_q.empty() || cutval <= local_q.peek_front().cut_val){
-	  local_q.push_front(new_cut);
+        #pragma omp critical
+	{
+	try { //if it is a better cut it goes to the front for immediate adding
+	  if(local_q.empty() || cutval <= local_q.peek_front().cut_val){
+	    local_q.push_front(new_cut);
+	  }
+	  else { //it goes to the back for use in the pool if applicable
+	    local_q.push_back(new_cut);
+	  }
+	} catch (...) {
+	  rval = 1;
+	  cerr << "Problem pushing new cut to queue. ";
 	}
-	else { //it goes to the back for use in the pool if applicable
-	  local_q.push_back(new_cut);
 	}
-      } catch (...) {
-	rval = 1; //PSEP_GOTO_CLEANUP("Problem pushing new cut to queue, ");
       }
-      }
-      
-    }
-
-    if(rval){
-      cerr << "Problem pushing new cut to queue. ";
-      i = support_indices.size();
     }
 
     cut_ecap[i] = orig_weight;
     CC_IFFREE(cut_nodes, int);
   }
 
+  if(rval) goto CLEANUP;
   if(local_q.empty()) rval = 2;
 
 
  CLEANUP:
+  if(rval)
+    cerr << "Problem in Cuts<blossom>::separate.\n";
   return rval;
 }
 
