@@ -197,6 +197,7 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
 
   pivtimer.report(false);
   pctime.report(true);
+  cout << "\n";
   
   if(plan.perform_elim())
     cout <<"         LPFix::redcost_fixing: "

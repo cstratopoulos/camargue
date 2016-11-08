@@ -174,6 +174,7 @@ void CutControl::profile()
   matchtime.report(true);
   dptime.report(false);
   gmitime.report(false);
+  cout << "\n";
 }
 
 int CutControl::q_has_viol(bool &result, CutQueue<HyperGraph> &pool_q)
