@@ -2,8 +2,13 @@
 
 #include<iomanip>
 
-using namespace std;
-using namespace PSEP;
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::setprecision;
+
+namespace PSEP {
 
 int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
   int rval = 0, cut_rval;
@@ -18,16 +23,6 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
   int num_removed = 0;
   double routine_start, fixing_start, routine_total;
   double fixtime = 0;
-
-  //  print.best_tour_nodes();
-
-  // if(plan.perform_elim()){
-  //   fixing_start = zeit();
-  //   rval = LPFix.redcost_fixing();
-  //   if(rval) goto CLEANUP;
-  //   fixing_start = zeit() - fixing_start;
-  //   fixtime += fixing_start;
-  // }
   
   if(!plan.is_branch())
     cout << "Pivoting until optimality or no more cuts" << endl;
@@ -228,4 +223,6 @@ int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
   if(rval)
     cerr << "Error entry point: PureCut::solve()\n";
   return rval;
+}
+
 }
