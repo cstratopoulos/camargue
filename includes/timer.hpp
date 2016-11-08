@@ -23,7 +23,7 @@ public:
   void resume();
 
   /** Reports the elapsed times and ratios if applicable. */
-  void report();
+  void report(bool show_cpu);
 
 private:
   std::string timer_name;

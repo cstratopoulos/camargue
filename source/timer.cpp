@@ -1,15 +1,18 @@
 #include "timer.hpp"
 
 #include <iostream>
+#include <iomanip>
 
 using std::cout;
+using std::setprecision;
 using std::string;
 using std::chrono::system_clock;
 
 namespace PSEP {
 
 Timer::Timer() :
-  wall_elapsed(0), cpu_elapsed(0), ratio_timer(nullptr) {}
+  timer_name("UNNAMED"),  wall_elapsed(0), cpu_elapsed(0),
+  ratio_timer(nullptr) {}
 
 Timer::Timer(const string &tname) :
   timer_name(tname), wall_elapsed(0), cpu_elapsed(0), ratio_timer(nullptr) {}
@@ -41,30 +44,31 @@ void Timer::resume()
   wall_start = system_clock::now();
 }
 
-void Timer::report()
+void Timer::report(bool show_cpu)
 {
 
-  cout << "    ";
-  if(!timer_name.empty())
-    cout << timer_name;
-  if(ratio_timer)
-    cout << " (part of " << ratio_timer->timer_name << ")";
-  if(!timer_name.empty());
-  cout << ":\n";
+  cout << "    "  << timer_name << ": ";
   
-  cout << "        " << wall_elapsed.count() << "s wall ";
+  cout << wall_elapsed.count() << "s wall ";
   if(ratio_timer)
-    cout << "(ratio "
-	 << (wall_elapsed.count() / ratio_timer->wall_elapsed.count())
-	 <<  ")";
+    cout << "("
+	 << setprecision(2)
+	 << (100 * (wall_elapsed.count() / ratio_timer->wall_elapsed.count()))
+	 << setprecision(6)
+	 <<  "% of " << ratio_timer->timer_name << ")";
   cout << "\n";
 
-  cout << "        " << cpu_elapsed << "s CPU ";
-  if(ratio_timer)
-    cout << "(ratio "
-	 << (cpu_elapsed / ratio_timer->cpu_elapsed)
-	 << ")";
-  cout << "\n";
+  if(show_cpu){
+    for(int i = 0; i < timer_name.length(); ++i) cout << " ";
+    cout << "      " << cpu_elapsed << "s CPU ";
+    if(ratio_timer)
+      cout << "("
+	   << setprecision(2)
+	   << (100 * (cpu_elapsed / ratio_timer->cpu_elapsed))
+	   << setprecision(6)
+	   <<  "% of " << ratio_timer->timer_name << ")";
+    cout << "\n";
+  }
 }
 
 }
