@@ -18,6 +18,7 @@
 #include "tsp_solver.hpp"
 #include "PSEP_util.hpp"
 #include "graph_io.hpp"
+#include "timer.hpp"
 
 #include <iostream>
 #include <string>
@@ -30,7 +31,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <getopt.h>
-#include <omp.h>
 
 static int initial_parse(int ac, char **av, std::string &fname,
 			 std::string &tour_fname,
@@ -57,8 +57,13 @@ int main(int argc, char* argv[]){
     exit(1);
   }
 
-  double overall = PSEP::zeit();
   std::unique_ptr<PSEP::TSPSolver> solver;
+
+  PSEP::Timer t("Overall");
+  PSEP::Timer c("Constructors", &t);
+  t.start();
+  c.start();
+  
 
   try {
     if(tourfile.empty())
@@ -72,11 +77,15 @@ int main(int argc, char* argv[]){
   } catch(...) {
     return 1;
   }
+
+  c.stop();
       
   int rval = solver->call(PSEP::SolutionProtocol::PURECUT, do_sparse);
 
-  std::cout << "                    everything: "
-	    << PSEP::zeit() - overall << "\n";
+  t.stop();
+  c.report();
+  t.report();
+
   return rval;
 }
 
