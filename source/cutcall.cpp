@@ -10,6 +10,7 @@ using std::endl;
 
 
 #define PSEP_TEST_TOOTH
+#define PSEP_INSUB_OMP
 
 namespace PSEP {
 
@@ -243,11 +244,39 @@ int CutControl::in_subtour_poly(bool &result)
 
   int ecount = support_ecap.size(), ncount = supp_data.G_s.node_count;
   int end0 = 0;
-  double cutval = 2;
   
-  result = false;
+#ifdef PSEP_INSUB_OMP
+    int rval = 0;
+    result = true;
+    
+    #pragma omp parallel for
+    for(int end1 = 1; end1 < ncount; ++end1){
+      if(rval || !result) continue;
 
+      double cutval = 2;
+      
+      if(CCcut_mincut_st(ncount, ecount, &support_elist[0], &support_ecap[0],
+			 end0, end1, &cutval, nullptr, nullptr)){
+	#pragma omp critical
+	{
+	cerr << "Problem in CutControl::in_subtour_poly with CCcut_mincut_st\n";
+	rval = 1;
+	}
+      }
+
+      if(cutval < 2){
+	#pragma omp critical
+	{ result = false; }
+      }   
+    }
+
+    return rval;
+#else
+    
+  result = false;
   for(int end1 = 1; end1 < ncount; ++end1){
+    double cutval = 2;
+
     if(CCcut_mincut_st(ncount, ecount, &support_elist[0], &support_ecap[0],
 		       end0, end1, &cutval, nullptr, nullptr)){
       cerr << "Problem in CutControl::in_subtour_poly with CCcut_mincut_st\n";
@@ -259,6 +288,7 @@ int CutControl::in_subtour_poly(bool &result)
 
   result = true;  
   return 0;
+#endif
 }
 
 }
