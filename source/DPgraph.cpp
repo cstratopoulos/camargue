@@ -3,12 +3,15 @@
 #include <iostream>
 
 using std::vector;
+using std::cout;
+using std::cerr;
 
 namespace PSEP {
 
 DPCutGraph::DPCutGraph(const vector<vector<SimpleTooth::Ptr>> &_teeth,
+		       const vector<int> &_perm,
 		       const SupportGraph &_G_s) :
-  light_teeth(_teeth), G_s(_G_s) { CCcut_GHtreeinit(&gh_tree); }
+  light_teeth(_teeth), G_s(_G_s), perm(_perm) { CCcut_GHtreeinit(&gh_tree); }
 
 DPCutGraph::~DPCutGraph(){ CCcut_GHtreefree(&gh_tree); }
 
@@ -109,9 +112,13 @@ int DPCutGraph::build_light_tree()
 	odd_nodes_list.push_back(i);
   } catch(...){ PSEP_SET_GOTO(rval, "Couldn't set gomoryhu marked nodes. "); }
 
+  cout << "After building light tree, num cutgraph nodes: "
+       << cutgraph_nodes.size() << "\n"
+       << "num cutgraph edges: " << cut_ecap.size() << "\n";
+  
  CLEANUP:
   if(rval)
-    std::cerr << "DPCutGraph::build_light_tree failed\n";
+    cerr << "DPCutGraph::build_light_tree failed\n";
   return rval;
 }
 
@@ -129,19 +136,57 @@ int DPCutGraph::add_web_edges()
       double lp_weight = G_s.nodelist[end0].adj_objs[j].lp_weight;
       //search for smallest body with root end0 containing end1
       if(!light_teeth[end0].empty()){
-	for(auto root_end0 = light_teeth[end0].begin(); //reverse iterator
+	for(auto root_end0 = light_teeth[end0].begin(); //iterator
 	    root_end0 != light_teeth[end0].end();
 	    ++root_end0){
-	  end1_in = 0; //////////
-
+	  end1_in = (*root_end0)->body_contains(perm[end1]);
+	  if(end1_in){
+	    try { cut_elist.push_back((*root_end0)->cutgraph_index); }
+	    catch (...) {
+	      PSEP_SET_GOTO(rval, "Couldn't push back web edge. ");
+	    }
+	    break;
+	  }
 	}
+      }
+      if(!end1_in){ //none found, take degree eqn end0
+	try { cut_elist.push_back(end0); } catch(...) {
+	  PSEP_SET_GOTO(rval, "Couldn't push back web edge. ");
+	}
+      }
+
+      if(!light_teeth[end1].empty()){
+	for(auto root_end1 = light_teeth[end1].begin(); //iterator
+	    root_end1 != light_teeth[end1].end();
+	    ++root_end1){
+	  end0_in = (*root_end1)->body_contains(perm[end0]);
+	  if(end0_in){
+	    try { cut_elist.push_back((*root_end1)->cutgraph_index); }
+	    catch (...) {
+	      PSEP_SET_GOTO(rval, "Couldn't push back web edge. ");
+	    }
+	    break;
+	  }
+	}
+      }
+      
+      if(!end0_in){ //none found, take degree eqn end1
+	try{ cut_elist.push_back(end1); } catch (...) {
+	  PSEP_SET_GOTO(rval, "Couldn't push back web edge. ");
+	}
+      }
+
+      try{ cut_ecap.push_back(lp_weight); } catch (...) {
+	PSEP_SET_GOTO(rval, "Couldn't push back edge cap. ");
       }
     }
   }
 
-  //CLEANUP:
+  cout << "After adding web edges, num edges: " << cut_ecap.size() << "\n";
+
+ CLEANUP:
   if(rval)
-    std::cerr << "DPCutGraph::add_web_edges failed\n";
+    cerr << "DPCutGraph::add_web_edges failed\n";
   return rval;
 }
 

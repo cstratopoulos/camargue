@@ -9,7 +9,7 @@ using std::cerr;
 using std::endl;
 
 
-//#define PSEP_TEST_TOOTH
+#define PSEP_TEST_TOOTH
 
 namespace PSEP {
 
@@ -20,8 +20,10 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   int segval = 2, matchval = 2, dpval = 2;
   bool pool_blossoms;
 
-  std::chrono::time_point<std::chrono::system_clock> match_start, match_end;
-  std::chrono::duration<double> match_elapsed;
+  Timer insubtime("Test subtour poly", &dptime),
+    getlight_time("Get light teeth", &dptime),
+    buildtree_time("Build light tree", &dptime),
+    addweb_time("add web edges", &dptime);
 
   segtime.resume();
   segval = segments.cutcall();
@@ -59,20 +61,40 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
 
 #ifdef PSEP_TEST_TOOTH
   if(segval == 2 && stat != LP::PivType::Subtour){
+    dptime.start();
+    
     bool in_sub = false;
+    
+    insubtime.start();
     rval = in_subtour_poly(in_sub);
     if(rval) goto CLEANUP;
+    insubtime.stop();
 
     if(in_sub){
       cout << "Augrounds " << augrounds << ", solution is in subtour polytope, "
 	   << "testing candidate teeth!" << endl;
 
+      getlight_time.start();
       rval = candidates.get_light_teeth();
       if(rval) goto CLEANUP;
+      getlight_time.stop();
 
       cout << "Got collection of light candidate teeth" << endl;
 
-      DPCutGraph cutgraph(candidates.light_teeth, G_s);
+      DPCutGraph cutgraph(candidates.light_teeth, best_data.perm,
+			  supp_data.G_s);
+
+      buildtree_time.start();
+      rval = cutgraph.build_light_tree();
+      if(rval) goto CLEANUP;
+      buildtree_time.stop();
+
+      addweb_time.start();
+      rval = cutgraph.add_web_edges();
+      if(rval) goto CLEANUP;
+      addweb_time.stop();
+
+      dptime.stop();
 
       rval = 1; goto CLEANUP;
     }
@@ -86,11 +108,21 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   if(rval == 1)
     cerr << "Problem in CutControl::primal_sep: ";
   if(segval == 1)
-    cerr << "Cuts<seg>::cutcall\n";
+    cerr << "Cuts<seg>::cutcall";
   if(matchval == 1)
-    cerr << "Cuts<blossom>::cutcall\n";
+    cerr << "Cuts<blossom>::cutcall";
   if(dpval == 1)
-    cerr << "Cuts<domino>::cutcall\n";
+    cerr << "Cuts<domino>::cutcall";
+  cerr << "\n";
+
+#ifdef PSEP_TEST_TOOTH
+  insubtime.report(false);
+  getlight_time.report(false);
+  buildtree_time.report(false);
+  addweb_time.report(false);
+  dptime.report(false);
+#endif
+  
   return rval;
 }
 
@@ -104,12 +136,16 @@ int CutControl::add_primal_cuts()
   double rhs;
   int rmatbeg = 0;
 
+  LP::Prefs &prefs = LP_data.prefs;
+  PSEPlp *m_lp = &LP_data.m_lp;
+  vector<double> &m_lp_edges = LP_data.m_lp_edges;
+
   while(!segment_q.empty() && seg_added < prefs.max_per_round){
     rval = translator.get_sparse_row(segment_q.peek_front(),
 				     rmatind, rmatval, sense, rhs);
     if(rval) goto CLEANUP;
 
-    rval = PSEPlp_addrows(&m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
+    rval = PSEPlp_addrows(m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
 			  &rmatind[0], &rmatval[0]);
     if(rval) goto CLEANUP;
 
@@ -123,7 +159,7 @@ int CutControl::add_primal_cuts()
 				       rmatind, rmatval, sense, rhs);
       if(rval) goto CLEANUP;
 
-      rval = PSEPlp_addrows(&m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
+      rval = PSEPlp_addrows(m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
 			    &rmatind[0], &rmatval[0]);
       if(rval) goto CLEANUP;
 
@@ -139,7 +175,7 @@ int CutControl::add_primal_cuts()
       if(rval) goto CLEANUP;
 
       if(is_violated){
-	rval = PSEPlp_addrows(&m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
+	rval = PSEPlp_addrows(m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
 			      &rmatind[0], &rmatval[0]);
 	if(rval) goto CLEANUP;
 
@@ -180,6 +216,7 @@ void CutControl::profile()
 int CutControl::q_has_viol(bool &result, CutQueue<HyperGraph> &pool_q)
 {
   int rval = 0;
+  vector<double> &m_lp_edges = LP_data.m_lp_edges;
   result = false;
 
   while(!pool_q.empty()){
@@ -201,19 +238,26 @@ int CutControl::q_has_viol(bool &result, CutQueue<HyperGraph> &pool_q)
 
 int CutControl::in_subtour_poly(bool &result)
 {
-  int ecount = support_ecap.size(), ncount = G_s.node_count;
+  vector<int> &support_elist = supp_data.support_elist;
+  vector<double> &support_ecap = supp_data.support_ecap;
+
+  int ecount = support_ecap.size(), ncount = supp_data.G_s.node_count;
+  int end0 = 0;
   double cutval = 2;
+  
   result = false;
 
-  if(CCcut_mincut(ncount, ecount, &support_elist[0], &support_ecap[0],
-		  &cutval, NULL, NULL)){
-    std::cerr << "Problem in CutControl::in_subtour_poly with CCcut_mincut\n";
-    return 1;
+  for(int end1 = 1; end1 < ncount; ++end1){
+    if(CCcut_mincut_st(ncount, ecount, &support_elist[0], &support_ecap[0],
+		       end0, end1, &cutval, nullptr, nullptr)){
+      cerr << "Problem in CutControl::in_subtour_poly with CCcut_mincut_st\n";
+      return 1;
+    }
+
+    if(cutval < 2) return 0;
   }
-    
-  if(cutval >= 2)
-    result = true;
-  
+
+  result = true;  
   return 0;
 }
 

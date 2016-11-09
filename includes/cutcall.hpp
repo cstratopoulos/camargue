@@ -52,9 +52,10 @@ public:
 	       BestGroup.best_tour_nodes, BestGroup.perm,
 	       SupportGroup.G_s, SupportGroup.support_indices,
 	       SupportGroup.support_elist, SupportGroup.support_ecap),
-    prefs(LPGroup.prefs), m_lp(LPGroup.m_lp), m_lp_edges(LPGroup.m_lp_edges),
-    G_s(SupportGroup.G_s), support_elist(SupportGroup.support_elist),
-    support_ecap(SupportGroup.support_ecap),
+    graph_data(GraphGroup),
+    LP_data(LPGroup),
+    supp_data(SupportGroup),
+    best_data(BestGroup),
     segtime("Segment sep", purecut_timer_p),
     matchtime("2match sep", purecut_timer_p),
     dptime("Simple DP sep", purecut_timer_p),
@@ -88,13 +89,10 @@ private:
 
   PSEP::CandidateTeeth candidates;
 
-  PSEP::LP::Prefs &prefs;
-  PSEPlp &m_lp;
-  std::vector<double> &m_lp_edges;
-
-  PSEP::SupportGraph &G_s;
-  std::vector<int> &support_elist;
-  std::vector<double> &support_ecap;
+  PSEP::Data::GraphGroup &graph_data;
+  PSEP::Data::LPGroup &LP_data;
+  PSEP::Data::SupportGroup &supp_data;
+  PSEP::Data::BestGroup &best_data;
 
   PSEP::Timer segtime, matchtime, dptime, gmitime;
   int total_segcalls, total_2mcalls, total_gencalls;

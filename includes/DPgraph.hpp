@@ -15,12 +15,13 @@ namespace PSEP {
 class DPCutGraph {
 public:
   DPCutGraph(const std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &_teeth,
+	     const std::vector<int> &_perm,
 	     const SupportGraph &_G_s);
   ~DPCutGraph();
 
   int grab_cuts(PSEP::CutQueue<PSEP::dominoparity> &domino_q);
 
-private:
+  //private:
   int build_light_tree();
   int add_web_edges();
   int call_concorde_gomoryhu();
@@ -28,6 +29,7 @@ private:
   const std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &light_teeth;
 
   const SupportGraph &G_s;
+  const std::vector<int> &perm;
   
   std::vector<PSEP::SimpleTooth*> cutgraph_nodes;
   
