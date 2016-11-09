@@ -74,7 +74,7 @@ int Cut<blossom>::separate(){
       }
     }
 
-    if(cutval < 1 - LP::EPSILON && cutcount >= 3 &&
+    if(cutval < 0.999 && cutcount >= 3 &&
        cutcount <= (ncount - 3)){
       
       vector<int> handle;
@@ -174,7 +174,7 @@ int Cut<blossom>::separate(){
       goto CLEANUP;
     }
 
-    if(cutval < 1 - LP::EPSILON && cutcount >= 3 &&
+    if(cutval < 0.999 && cutcount >= 3 &&
        cutcount <= (ncount - 3)){
       
       vector<int> handle;

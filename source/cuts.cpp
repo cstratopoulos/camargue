@@ -144,10 +144,10 @@ int CutTranslate::get_sparse_row_if(bool &violated, const HyperGraph &H,
 
   switch(sense){
   case 'G':
-    violated = (activity < rhs);
+    violated = (activity < rhs) && ((rhs - activity) >= 0.001);
     break;
   case 'L':
-    violated = (activity > rhs);
+    violated = (activity > rhs) && ((activity - rhs) >= 0.001);
     break;
   default:
     rval = 1;
