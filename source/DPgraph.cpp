@@ -6,8 +6,9 @@ using std::vector;
 
 namespace PSEP {
 
-DPCutGraph::DPCutGraph(const vector<vector<SimpleTooth::Ptr>> &_teeth) :
-  light_teeth(_teeth) { CCcut_GHtreeinit(&gh_tree); }
+DPCutGraph::DPCutGraph(const vector<vector<SimpleTooth::Ptr>> &_teeth,
+		       const SupportGraph &_G_s) :
+  light_teeth(_teeth), G_s(_G_s) { CCcut_GHtreeinit(&gh_tree); }
 
 DPCutGraph::~DPCutGraph(){ CCcut_GHtreefree(&gh_tree); }
 
@@ -117,6 +118,26 @@ int DPCutGraph::build_light_tree()
 int DPCutGraph::add_web_edges()
 {
   int rval = 0;
+
+  for(int end0 = 0; end0 < G_s.node_count; ++end0){
+    for(int j = 0; j < G_s.nodelist[end0].s_degree; ++j){
+      bool end0_in = false, end1_in = false;
+      int end1 = G_s.nodelist[end0].adj_objs[j].other_end;
+      
+      if(end0 > end1) continue;
+
+      double lp_weight = G_s.nodelist[end0].adj_objs[j].lp_weight;
+      //search for smallest body with root end0 containing end1
+      if(!light_teeth[end0].empty()){
+	for(auto root_end0 = light_teeth[end0].begin(); //reverse iterator
+	    root_end0 != light_teeth[end0].end();
+	    ++root_end0){
+	  end1_in = 0; //////////
+
+	}
+      }
+    }
+  }
 
   //CLEANUP:
   if(rval)

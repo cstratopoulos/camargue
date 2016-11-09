@@ -14,7 +14,8 @@ namespace PSEP {
 
 class DPCutGraph {
 public:
-  DPCutGraph(const std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &_teeth);
+  DPCutGraph(const std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &_teeth,
+	     const SupportGraph &_G_s);
   ~DPCutGraph();
 
   int grab_cuts(PSEP::CutQueue<PSEP::dominoparity> &domino_q);
@@ -25,6 +26,9 @@ private:
   int call_concorde_gomoryhu();
   
   const std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &light_teeth;
+
+  const SupportGraph &G_s;
+  
   std::vector<PSEP::SimpleTooth*> cutgraph_nodes;
   
   std::vector<int> cut_elist;

@@ -72,7 +72,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
 
       cout << "Got collection of light candidate teeth" << endl;
 
-      DPCutGraph cutgraph(candidates.light_teeth);
+      DPCutGraph cutgraph(candidates.light_teeth, G_s);
 
       rval = 1; goto CLEANUP;
     }
