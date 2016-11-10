@@ -3,6 +3,10 @@
 
 #include <chrono>
 
+extern "C" {
+ #include <concorde/INCLUDE/combs.h>
+}
+
 using std::vector;
 using std::cout;
 using std::cerr;
@@ -243,52 +247,19 @@ int CutControl::in_subtour_poly(bool &result)
   vector<double> &support_ecap = supp_data.support_ecap;
 
   int ecount = support_ecap.size(), ncount = supp_data.G_s.node_count;
-  int end0 = 0;
-  
-#ifdef PSEP_INSUB_OMP
-    int rval = 0;
-    result = true;
-    
-    #pragma omp parallel for
-    for(int end1 = 1; end1 < ncount; ++end1){
-      if(rval || !result) continue;
+  double cutval = 2;
 
-      double cutval = 2;
-      
-      if(CCcut_mincut_st(ncount, ecount, &support_elist[0], &support_ecap[0],
-			 end0, end1, &cutval, nullptr, nullptr)){
-	#pragma omp critical
-	{
-	cerr << "Problem in CutControl::in_subtour_poly with CCcut_mincut_st\n";
-	rval = 1;
-	}
-      }
-
-      if(cutval < 2){
-	#pragma omp critical
-	{ result = false; }
-      }   
-    }
-
-    return rval;
-#else
-    
   result = false;
-  for(int end1 = 1; end1 < ncount; ++end1){
-    double cutval = 2;
 
-    if(CCcut_mincut_st(ncount, ecount, &support_elist[0], &support_ecap[0],
-		       end0, end1, &cutval, nullptr, nullptr)){
-      cerr << "Problem in CutControl::in_subtour_poly with CCcut_mincut_st\n";
-      return 1;
-    }
-
-    if(cutval < 2) return 0;
+  if(CCcut_mincut(ncount, ecount, &support_elist[0], &support_ecap[0],
+		  &cutval, nullptr, nullptr)){
+    cerr << "Problem in CutControl::in_subtour_poly with CCcut_mincut.\n";
+    return 1;
   }
 
-  result = true;  
+  result = (cutval >= 2);
+
   return 0;
-#endif
 }
 
 }
