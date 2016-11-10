@@ -8,7 +8,7 @@ using std::cerr;
 
 namespace PSEP {
 
-DPCutGraph::DPCutGraph(const vector<vector<SimpleTooth::Ptr>> &_teeth,
+DPCutGraph::DPCutGraph(vector<vector<SimpleTooth::Ptr>> &_teeth,
 		       const vector<int> &_perm,
 		       const SupportGraph &_G_s) :
   light_teeth(_teeth), G_s(_G_s), perm(_perm) { CCcut_GHtreeinit(&gh_tree); }
@@ -112,9 +112,27 @@ int DPCutGraph::build_light_tree()
 	odd_nodes_list.push_back(i);
   } catch(...){ PSEP_SET_GOTO(rval, "Couldn't set gomoryhu marked nodes. "); }
 
-  cout << "After building light tree, num cutgraph nodes: "
-       << cutgraph_nodes.size() << "\n"
-       << "num cutgraph edges: " << cut_ecap.size() << "\n";
+  
+  {
+    int num_teeth = 0;
+    for(const vector<SimpleTooth::Ptr> &vec : light_teeth)
+      num_teeth += vec.size();
+    
+    if(cutgraph_nodes.size() != G_s.node_count + num_teeth + 1){
+      cerr << "\tWRONG LIGHT TREE NODE COUNT!!!\n";
+      rval = 1;
+    }
+
+    if(cut_ecap.size() != G_s.node_count + num_teeth){
+      cerr << "\tWRONG LIGHT TREE EDGE COUNT!!!\n";
+      rval = 1;
+    }
+
+    if(!rval)
+      cout << "\tCORRECT TREE DIMS!!!!!\n"
+	   << "\t ncount " << cutgraph_nodes.size() << ", ecount "
+	   << cut_ecap.size() << "\n";
+  }
   
  CLEANUP:
   if(rval)
@@ -125,6 +143,7 @@ int DPCutGraph::build_light_tree()
 int DPCutGraph::add_web_edges()
 {
   int rval = 0;
+  int start_ecount = cut_ecap.size();
 
   for(int end0 = 0; end0 < G_s.node_count; ++end0){
     for(int j = 0; j < G_s.nodelist[end0].s_degree; ++j){
@@ -182,7 +201,14 @@ int DPCutGraph::add_web_edges()
     }
   }
 
-  cout << "After adding web edges, num edges: " << cut_ecap.size() << "\n";
+  if(cut_ecap.size() != start_ecount + G_s.edge_count){
+    rval = 1;
+    cerr << "\t!!!WRONG WEB ECOUNT!!!!!\n";
+  } else
+    cout << "\t!!!CORRECT # WEB EDGES ADDED!!!!\n"
+	 << "\tnew ecount: " << cut_ecap.size() << "\n";
+
+  
 
  CLEANUP:
   if(rval)

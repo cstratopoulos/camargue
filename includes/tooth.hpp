@@ -114,7 +114,6 @@ public:
 		 std::vector<int> &_best_tour_nodes,
 		 std::vector<int> &_perm,
 		 SupportGraph &_G_s,
-		 std::vector<int> &_support_indices,
 		 std::vector<int> &_support_elist,
 		 std::vector<double> &_support_ecap);
 

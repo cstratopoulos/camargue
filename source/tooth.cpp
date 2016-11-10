@@ -19,7 +19,6 @@ CandidateTeeth::CandidateTeeth(vector<int> &_delta, vector<int> &_edge_marks,
 			       vector<int> &_best_tour_nodes,
 			       vector<int> &_perm,
 			       SupportGraph &_G_s,
-			       vector<int> &_support_indices,
 			       vector<int> &_support_elist,
 			       vector<double> &_support_ecap) :
   edge_marks(_edge_marks),
@@ -38,7 +37,6 @@ CandidateTeeth::CandidateTeeth(vector<int> &_delta, vector<int> &_edge_marks,
 int CandidateTeeth::get_light_teeth()
 {
   int rval = 0;
-  int notsort = 0;
   tooth_seg lin_seg(G_s.node_count - 1, G_s.node_count - 1, 0);
   double ft, st, we_t;
   int numremain = 0;
@@ -85,26 +83,6 @@ int CandidateTeeth::get_light_teeth()
 
   std::cout << "Sorted only " << cb_data.unsorted_roots.size() << " lists in "
        << st << "s\n";
-
-
-  std::cout << "Checking sorted status....";
-  for(vector<SimpleTooth::Ptr> &t_vec : light_teeth){
-    bool is_s = std::is_sorted(t_vec.begin(), t_vec.end(),
-			       [this](const SimpleTooth::Ptr &T,
-				      const SimpleTooth::Ptr &R) -> bool {
-				 return body_size(*T) < body_size(*R);
-			       });
-    if(!is_s){
-      notsort++;
-      std::cout << "List of teeth with root "
-	   << t_vec.front()->root << " is not sorted\n";
-    }
-  }
-
-  if(notsort == 0)
-    std::cout << "All vectors sorted by increasing body size\n";
-  else
-    std::cout << notsort << " vectors not sorted\n";
 
   we_t = zeit();
   weak_elim();

@@ -14,7 +14,7 @@ namespace PSEP {
 
 class DPCutGraph {
 public:
-  DPCutGraph(const std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &_teeth,
+  DPCutGraph(std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &_teeth,
 	     const std::vector<int> &_perm,
 	     const SupportGraph &_G_s);
   ~DPCutGraph();
