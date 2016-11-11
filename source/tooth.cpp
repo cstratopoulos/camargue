@@ -8,6 +8,7 @@ extern "C" {
 #include <algorithm>
 
 using std::vector;
+using std::cout;
 
 static int num_adjacent = 0, num_distant = 0;
 

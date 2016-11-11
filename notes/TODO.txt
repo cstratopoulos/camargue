@@ -1,3 +1,9 @@
+Is 2-connectivity of the support graph equivalent to membership in the
+subtour polytope?
+No: a graph with a cut vertex is not in the subtour polytope, but
+there is a 2-connected weighted graph on 6 vxs which a minimum cut of
+weight one. 
+
 Get rid of LP and Data namespaces
 Add Epsilon scoped enum with members zero = 0.00001, viol = 0.001,
 gh2match = 0.3, etc. 
