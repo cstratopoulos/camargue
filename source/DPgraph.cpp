@@ -216,4 +216,28 @@ int DPCutGraph::add_web_edges()
   return rval;
 }
 
+int DPCutGraph::call_concorde_gomoryhu()
+{
+  int rval = 0;
+  int ncount = cutgraph_nodes.size(), ecount = cut_ecap.size();
+  int markcount = odd_nodes_list.size();
+
+  CCrandstate rstate;
+
+  CCutil_sprand((int) real_zeit(), &rstate);
+
+  cout << "\tCalling CCcut_gh with ncount: " << ncount << "\n"
+       << "\tecount: " << ecount << "\n"
+       << "\tmarkcount: " << markcount << ".......";
+  rval = CCcut_gomory_hu(&gh_tree, ncount, ecount, &cut_elist[0], &cut_ecap[0],
+			 markcount, &odd_nodes_list[0], &rstate);
+  PSEP_CHECK_RVAL(rval, "CCcut_gomory_hu failed. ");
+  cout << "Done.\n";
+
+ CLEANUP:
+  if(rval)
+    cerr << "Problem in DPCutGraph::call_concorde_gomoryhu\n";
+  return rval;
+}
+
 }

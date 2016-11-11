@@ -27,7 +27,8 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   Timer insubtime("Test subtour poly", &dptime),
     getlight_time("Get light teeth", &dptime),
     buildtree_time("Build light tree", &dptime),
-    addweb_time("add web edges", &dptime);
+    addweb_time("add web edges", &dptime),
+    gh_time("CC gomoryhu", &dptime);
 
   segtime.resume();
   segval = segments.cutcall();
@@ -98,6 +99,11 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
       if(rval) goto CLEANUP;
       addweb_time.stop();
 
+      gh_time.start();
+      rval = cutgraph.call_concorde_gomoryhu();
+      if(rval) goto CLEANUP;
+      gh_time.stop();
+
       dptime.stop();
 
       rval = 1; goto CLEANUP;
@@ -124,6 +130,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   getlight_time.report(false);
   buildtree_time.report(false);
   addweb_time.report(false);
+  gh_time.report(false);
   dptime.report(false);
 #endif
   
