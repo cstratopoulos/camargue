@@ -222,6 +222,8 @@ int DPCutGraph::call_concorde_gomoryhu()
   int ncount = cutgraph_nodes.size(), ecount = cut_ecap.size();
   int markcount = odd_nodes_list.size();
 
+  int cutcount = 0;
+
   CCrandstate rstate;
 
   CCutil_sprand((int) real_zeit(), &rstate);
@@ -234,10 +236,26 @@ int DPCutGraph::call_concorde_gomoryhu()
   PSEP_CHECK_RVAL(rval, "CCcut_gomory_hu failed. ");
   cout << "Done.\n";
 
+  cout << "\tPerforming odd cut dfs.....";
+  dfs_odd_cuts(gh_tree.root, cutcount);
+  cout << "Done, found " << cutcount << " odd cuts\n";
+
+  
+
  CLEANUP:
   if(rval)
     cerr << "Problem in DPCutGraph::call_concorde_gomoryhu\n";
   return rval;
+}
+
+inline void DPCutGraph::dfs_odd_cuts(CC_GHnode *n, int &cutcount)
+{
+  if(n->parent)
+    if(n->ndescendants % 2 == 1 && n->ndescendants > 1 && n->cutval < 0.9)
+      ++cutcount;
+
+  for(n = n->child; n; n = n->sibling)
+    dfs_odd_cuts(n, cutcount);
 }
 
 }

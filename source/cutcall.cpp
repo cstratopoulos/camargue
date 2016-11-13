@@ -123,7 +123,8 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     cerr << "Cuts<blossom>::cutcall";
   if(dpval == 1)
     cerr << "Cuts<domino>::cutcall";
-  cerr << "\n";
+  if(rval == 1)
+    cerr << "\n";
 
 #ifdef PSEP_TEST_TOOTH
   insubtime.report(false);

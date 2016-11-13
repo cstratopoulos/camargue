@@ -25,6 +25,8 @@ public:
   int build_light_tree();
   int add_web_edges();
   int call_concorde_gomoryhu();
+
+  void dfs_odd_cuts(CC_GHnode *n, int &cutcount);
   
   const std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &light_teeth;
 
