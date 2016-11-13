@@ -13,7 +13,7 @@ using std::cerr;
 using std::endl;
 
 
-//#define PSEP_TEST_TOOTH
+#define PSEP_TEST_TOOTH
 
 namespace PSEP {
 
@@ -24,11 +24,13 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   int segval = 2, matchval = 2, dpval = 2;
   bool pool_blossoms;
 
-  Timer insubtime("Test subtour poly", &dptime),
+  Timer
+    insubtime("Test subtour poly", &dptime),
     getlight_time("Get light teeth", &dptime),
     buildtree_time("Build light tree", &dptime),
     addweb_time("add web edges", &dptime),
-    gh_time("CC gomoryhu", &dptime);
+    gh_time("CC gomoryhu", &dptime),
+    grab_time("Grabbing GH cuts", &dptime);
 
   segtime.resume();
   segval = segments.cutcall();
@@ -88,6 +90,8 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
 
       DPCutGraph cutgraph(candidates.light_teeth, best_data.perm,
 			  supp_data.G_s);
+      
+      CutQueue<dominoparity> domino_q(25);
 
       buildtree_time.start();
       rval = cutgraph.build_light_tree();
@@ -103,6 +107,11 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
       rval = cutgraph.call_concorde_gomoryhu();
       if(rval) goto CLEANUP;
       gh_time.stop();
+
+      grab_time.start();
+      rval = cutgraph.grab_cuts(domino_q);
+      if(rval) goto CLEANUP;
+      grab_time.stop();
 
       dptime.stop();
 
@@ -132,6 +141,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   buildtree_time.report(false);
   addweb_time.report(false);
   gh_time.report(false);
+  grab_time.report(false);
   dptime.report(false);
 #endif
   

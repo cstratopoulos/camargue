@@ -19,14 +19,17 @@ public:
 	     const SupportGraph &_G_s);
   ~DPCutGraph();
 
+  int simple_DP_sep(PSEP::CutQueue<PSEP::dominoparity> &domino_q);
+
+  //  private:
   int grab_cuts(PSEP::CutQueue<PSEP::dominoparity> &domino_q);
 
-  //private:
   int build_light_tree();
   int add_web_edges();
   int call_concorde_gomoryhu();
 
-  void dfs_odd_cuts(CC_GHnode *n, int &cutcount);
+  void dfs_odd_cuts(CC_GHnode *n);
+  void expand_cut(CC_GHnode *n, std::vector<int> &cut_shore_nodes);
   
   const std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &light_teeth;
 
@@ -39,6 +42,11 @@ public:
   std::vector<double> cut_ecap;
   std::vector<int> odd_nodes_list;
   std::vector<bool> node_marks;
+
+  std::vector<int> cutgraph_delta;
+  std::vector<int> cg_delta_marks;
+
+  PSEP::CutQueue<CC_GHnode *> CC_gh_q;
 
   CC_GHtree gh_tree;
 

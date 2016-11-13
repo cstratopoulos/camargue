@@ -20,14 +20,12 @@
 #include "tooth.hpp"
 
 namespace PSEP {
-/*
- * Structure for storing segment cuts: subtour inequalities arising from
- * segments of the current best tour.
- * start, end - the start and endpoints of the segment, indicated as 
- *              indices for accessing the vector best_tour_nodes. 
- *              Thus the associated segment is best_tour_nodes[start] to
- *              best_tour_nodes[end]
- * cutval - the value of the cut associated to the segment
+
+/** Structure for storing segment cuts.
+ * Segment cuts are subtour inequalities arising from segments of the current
+ *  best tour. If `tour` is a vector of tour nodes, the segment is given by
+ * `tour[start], tour[start + 1], ..., tour[end]`. If \f$ x^* \f$ is an lp 
+ * solution and \f$ S \f$ is the segment, \p cutval is \f$ x^*(\delta(S)) \f$ .
  */
 struct seg {
   seg() = default;
@@ -39,29 +37,24 @@ struct seg {
   double cutval;
 };
 
-/*
- * Structure for storing blossom inequalities, aka 2-matching inequalities.
- * These are simple comb inequalities where each tooth is an edge.
+/** Structure for storing blossom inequalities from exact primal separation.
+ * This structure stores blossom inequalities found by the exact primal
+ * separation algorithm of Letchford-Lodi in Primal Separation Algorithms
+ * Revisited. 
  */
 struct blossom {
   blossom(std::vector<int> &_handle, int _cut_edge, double _val) :
     handle(_handle), cut_edge(_cut_edge), cut_val(_val){}
 
+  
   std::vector<int> handle;
-
-  /* cut_edge represents the edge {u, v} for which a minimum uv-cut is 
-   * computed in the separation routine. From e, handle, and the 
-   * vector best_tour_edges it is possible to extract the blossom inequality
-   * See Letchford-Lodi Primal separation algorithms for details
-   */
+  
   int cut_edge;
+
   double cut_val;
 };
 
-/*
- * Structure for storing blossom inequalities obtained by Padberg-Hong
- * odd component heuristic
- */
+/** Structure for storing blossoms found by fast heuristics. */
 struct fastblossom {
   fastblossom(std::vector<int> &_handle, std::vector<int> &_edge_indices) :
     handle(_handle), edge_indices(_edge_indices) {}
@@ -70,20 +63,29 @@ struct fastblossom {
   std::vector<int> edge_indices;
 };
 
+/** Structure for storing simple DP inequalities.
+ * In all cases, all numbers and indices refer to position in some `tour_nodes`
+ * vector. They must be translated by deferencing, e.g., if `(i, j)` is an
+ * edge in \p nonneg_edges, it refers to the edge 
+ * `tour_nodes[i], tour_nodes[j]`.
+ */
 struct dominoparity {
   dominoparity() = default;
   dominoparity(std::vector<PSEP::SimpleTooth*> &_used_teeth,
-	   std::vector<int> &_degree_nodes, std::vector<int> &_nonneg_edges) :
+	       std::vector<int> &_degree_nodes,
+	       std::vector<IntPair> &_nonneg_edges) :
     used_teeth(_used_teeth), degree_nodes(_degree_nodes),
     nonneg_edges(_nonneg_edges) {}
-  
-  std::vector<PSEP::SimpleTooth*> used_teeth;
-  std::vector<int> degree_nodes;
-  std::vector<int> nonneg_edges;
-};
 
-/* The cuts below are dummy structures which are not actually used at the
- * moment but may be useful if cut pools or column gen are implemented */
+  /** Simple tooth inequalities to be aggregated to get the simple DP ineq. */
+  std::vector<PSEP::SimpleTooth*> used_teeth;
+
+  /** The handle of the inequality, nodes where the degree eqns are used. */
+  std::vector<int> degree_nodes;
+
+  /** Edges \f$ e \f$ for which \f$ x_e \ge 0 \f$ is used. */
+  std::vector<IntPair> nonneg_edges;
+};
 
 /* cut mimicking the parameters used to add a row in CPLEX; used for safe
  * Gomory cut separation

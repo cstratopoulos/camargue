@@ -1,4 +1,6 @@
 #include "DPgraph.hpp"
+#include "PSEP_util.hpp"
+#include "Graph.hpp"
 
 #include <iostream>
 
@@ -11,9 +13,37 @@ namespace PSEP {
 DPCutGraph::DPCutGraph(vector<vector<SimpleTooth::Ptr>> &_teeth,
 		       const vector<int> &_perm,
 		       const SupportGraph &_G_s) :
-  light_teeth(_teeth), G_s(_G_s), perm(_perm) { CCcut_GHtreeinit(&gh_tree); }
+  light_teeth(_teeth),
+  G_s(_G_s),
+  perm(_perm),
+  CC_gh_q(25)
+{
+  CCcut_GHtreeinit(&gh_tree);
+}
 
 DPCutGraph::~DPCutGraph(){ CCcut_GHtreefree(&gh_tree); }
+
+int DPCutGraph::simple_DP_sep(CutQueue<dominoparity> &domino_q)
+{
+  int rval = 0;
+
+  rval = build_light_tree();
+  if(rval) goto CLEANUP;
+
+  rval = add_web_edges();
+  if(rval) goto CLEANUP;
+
+  rval = call_concorde_gomoryhu();
+  if(rval) goto CLEANUP;
+
+  rval = grab_cuts(domino_q);
+  if(rval) goto CLEANUP;
+
+ CLEANUP:
+  if(rval == 1)
+    cerr << "Problem in DPCutGraph::simple_DP_sep.\n";
+  return rval;
+}
 
 int DPCutGraph::build_light_tree()
 {
@@ -133,6 +163,10 @@ int DPCutGraph::build_light_tree()
 	   << "\t ncount " << cutgraph_nodes.size() << ", ecount "
 	   << cut_ecap.size() << "\n";
   }
+
+  try { cg_delta_marks.resize(cutgraph_nodes.size(), 0); } catch (...) {
+    PSEP_SET_GOTO(rval, "Couldn't allocate delta node marks. ");
+  }
   
  CLEANUP:
   if(rval)
@@ -208,6 +242,10 @@ int DPCutGraph::add_web_edges()
     cout << "\t!!!CORRECT # WEB EDGES ADDED!!!!\n"
 	 << "\tnew ecount: " << cut_ecap.size() << "\n";
 
+  try { cutgraph_delta.resize(cut_ecap.size()); } catch (...) {
+    PSEP_SET_GOTO(rval, "Couldn't allocate cutgraph delta. ");
+  }
+
   
 
  CLEANUP:
@@ -222,8 +260,6 @@ int DPCutGraph::call_concorde_gomoryhu()
   int ncount = cutgraph_nodes.size(), ecount = cut_ecap.size();
   int markcount = odd_nodes_list.size();
 
-  int cutcount = 0;
-
   CCrandstate rstate;
 
   CCutil_sprand((int) real_zeit(), &rstate);
@@ -237,25 +273,130 @@ int DPCutGraph::call_concorde_gomoryhu()
   cout << "Done.\n";
 
   cout << "\tPerforming odd cut dfs.....";
-  dfs_odd_cuts(gh_tree.root, cutcount);
-  cout << "Done, found " << cutcount << " odd cuts\n";
+  
+  try { dfs_odd_cuts(gh_tree.root); } catch (...) {
+    PSEP_SET_GOTO(rval, "Problem dfsing tree for odd cuts. ");
+  }
+  
+  cout << "Done. " << CC_gh_q.size() << " cuts in queue. ";
+  if(CC_gh_q.size())
+    cout << "Best cutval: " << CC_gh_q.peek_front()->cutval;
+  cout << "\n";
+
+  if(CC_gh_q.empty()) rval = 2;
 
   
 
  CLEANUP:
-  if(rval)
+  if(rval == 1)
     cerr << "Problem in DPCutGraph::call_concorde_gomoryhu\n";
   return rval;
 }
 
-inline void DPCutGraph::dfs_odd_cuts(CC_GHnode *n, int &cutcount)
+inline void DPCutGraph::dfs_odd_cuts(CC_GHnode *n)
 {
   if(n->parent)
-    if(n->ndescendants % 2 == 1 && n->ndescendants > 1 && n->cutval < 0.9)
-      ++cutcount;
+    if(n->ndescendants % 2 == 1 && n->ndescendants > 1 && n->cutval < 0.9) {
+      if(CC_gh_q.empty() || n->cutval < CC_gh_q.peek_front()->cutval)
+	CC_gh_q.push_front(n);
+      else
+	CC_gh_q.push_back(n);
+    }
 
   for(n = n->child; n; n = n->sibling)
-    dfs_odd_cuts(n, cutcount);
+    dfs_odd_cuts(n);
 }
+
+inline void DPCutGraph::expand_cut(CC_GHnode *n, vector<int> &cut_nodes)
+{
+  for(int i = 0; i < n->listcount; ++i)
+    cut_nodes.push_back(n->nlist[i]);
+
+  for(n = n->child; n; n = n->sibling)
+    expand_cut(n, cut_nodes);
+}
+
+int DPCutGraph::grab_cuts(CutQueue<dominoparity> &domino_q)
+{
+  int rval = 0;
+  int special_ind = cutgraph_nodes.size() - 1;
+
+  cout << "\tNow converting cuts to dominoparity.....";
+
+  while(!CC_gh_q.empty()){
+    vector<int> cut_shore_nodes;
+    int deltacount = 0;
+    
+    vector<int> handle_nodes;
+    vector<SimpleTooth*> used_teeth;
+    vector<IntPair> nonneg_edges;
+
+    try { expand_cut(CC_gh_q.peek_front(), cut_shore_nodes); } catch (...) {
+      PSEP_SET_GOTO(rval, "Couldn't expand cut nodes. ");
+    }
+
+    GraphUtils::get_delta(cut_shore_nodes.size(), &cut_shore_nodes[0],
+			  cut_ecap.size(), &cut_elist[0], &deltacount,
+			  &cutgraph_delta[0], &cg_delta_marks[0]);
+
+    for(int i = 0; i < deltacount; ++i){
+      int edge_ind = cutgraph_delta[i];
+      int end0 = cut_elist[2 * edge_ind], end1 = cut_elist[(2 * edge_ind) + 1];
+
+      SimpleTooth *T1 = cutgraph_nodes[end0];
+      SimpleTooth *T2 = cutgraph_nodes[end1];
+
+      if(T1 && T2){
+	if(T1->root != T2->root){
+	  try { nonneg_edges.push_back(IntPair(T1->root, T2->root)); }
+	  catch (...) { PSEP_SET_GOTO(rval, "Couldn't add nonneg edge. "); }
+	  continue;
+	}
+
+	try { used_teeth.push_back(T1); } catch (...) {
+	  PSEP_SET_GOTO(rval, "Couldn't push back used tooth. ");
+	}
+
+	continue;
+      }
+
+      if(!T1 && !T2){
+	if(end0 != special_ind && end1 != special_ind){
+	  try { nonneg_edges.push_back(IntPair(end0, end1)); } catch (...) {
+	    PSEP_SET_GOTO(rval, "Couldn't add nonneg edge. ");
+	  }
+
+	  continue;
+	}
+
+	try { handle_nodes.push_back(end0 == special_ind ? end1 : end0); }
+	catch (...) { PSEP_SET_GOTO(rval, "Couldn't add handle ind. "); }
+
+	continue;
+      }
+
+      //at this point precisely one of T1, T2 is non-null
+      try { used_teeth.push_back( T2 ? T2 : T1 ); } catch (...) {
+	PSEP_SET_GOTO(rval, "Couldn't push back used tooth. ");
+      }
+    }
+
+    try {
+      dominoparity newDP(used_teeth, handle_nodes, nonneg_edges);
+      domino_q.push_back(newDP);
+    } catch (...) { PSEP_SET_GOTO(rval, "Couldn't push back new DP ineq. "); }
+
+    CC_gh_q.pop_front();
+  }
+
+  cout << "Done, " << domino_q.size() << " cuts transferred.\n";
+
+ CLEANUP:
+  if(rval)
+    cerr << "Problem in DPCutGraph::grab_cuts.\n";
+  return rval;
+}
+
+
 
 }
