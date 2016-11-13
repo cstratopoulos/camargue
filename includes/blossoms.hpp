@@ -1,7 +1,7 @@
 #ifndef PSEP_BLOSSOMS_H
 #define PSEP_BLOSSOMS_H
 
-#include<vector>
+#include <vector>
 
 #include "cuts.hpp"
 #include "Graph.hpp"
