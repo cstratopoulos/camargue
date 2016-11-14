@@ -16,8 +16,17 @@ extern "C" {
 #include <concorde/INCLUDE/edgegen.h>
 }
 
-using namespace std;
-using namespace PSEP::Data;
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::setprecision;
+using std::string;
+using std::vector;
+using std::unique_ptr;
+
+
+namespace PSEP {
+namespace Data {
 
 GraphGroup::GraphGroup(const string &fname, string &probname,
 		       RandProb &randprob,
@@ -34,7 +43,7 @@ GraphGroup::GraphGroup(const string &fname, string &probname,
 
   if(!fname.empty()){
     rval = CCutil_gettsplib(filestring, &(m_graph.node_count), rawdat);
-    if (rval) PSEP_GOTO_CLEANUP("CCutil_gettsplib failed, ");
+    PSEP_CHECK_RVAL(rval, "CCutil_gettsplib failed. ");
 
     probname = fname.substr(fname.find_last_of("/") + 1);
     probname = probname.substr(0, probname.find_last_of("."));
@@ -122,7 +131,7 @@ GraphGroup::GraphGroup(const string &fname, string &probname,
   delta.resize(m_graph.edge_count, 0);
   edge_marks.resize(m_graph.node_count, 0);
   } catch(const std::bad_alloc &){
-    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for dfs vectors, ");
+    PSEP_SET_GOTO(rval, "Out of memory for dfs vectors, ");
   }
 
   if(dump_xy){
@@ -510,4 +519,42 @@ LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
     cerr << "LPGroup constructor failed\n";
     throw 1;
   }
+}
+
+int make_cut_test(const string &tsp_fname, const string &tour_nodes_fname,
+		  const string &lp_sol_fname, GraphGroup &graph_data,
+		  BestGroup &best_data, vector<double> &lp_edges,
+		  SupportGroup &supp_data)
+{
+  int rval = 0;
+  int ncount;
+  CCdatagroup *dat = nullptr;
+
+  CCutil_init_datagroup(dat);
+
+  rval = CCutil_gettsplib(const_cast<char *>(tsp_fname.c_str()), &ncount, dat);
+  PSEP_CHECK_RVAL(rval, "CCutil_gettsplib failed. ");
+
+  graph_data.m_graph.node_count = ncount;
+
+  try {
+    graph_data.island.resize(ncount);
+    graph_data.edge_marks.resize(ncount, 0);
+  } catch (...) { PSEP_SET_GOTO(rval, "Couldn't resize island/edge marks. "); }
+
+  rval = PSEP::get_tour_nodes(ncount, best_data.best_tour_nodes,
+			      tour_nodes_fname);
+  if(rval) goto CLEANUP;
+
+  rval = PSEP::get_lp_sol(ncount, supp_data.support_elist,
+			  supp_data.support_ecap, lp_sol_fname);
+  if(rval) goto CLEANUP;
+
+ CLEANUP:
+  if(rval)
+    cerr << "Problem in Data::make_cut_test.\n";
+  return rval;
+}
+
+}
 }

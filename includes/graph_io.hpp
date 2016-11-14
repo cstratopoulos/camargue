@@ -94,6 +94,25 @@ int write_xy_coords(const double *x, const double *y, const int ncount,
  */
 int get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
 		   const std::string &tour_nodes_fname);
+
+
+/** Loads an lp solution from file.
+ * Reads the lp solution specified in \p lp_sol_fname, storing the ends of
+ * the edges in \p support_elist and the corresponding lp weight in 
+ * \p support_ecap, for a graph with \p node_count edges. 
+ * @pre \p lp_sol_fname names an existant file whose first line is `n m` where
+ * `n` is \p node_count and `m` is the number of nonzero edges in the solution.
+ * @post `support_ecap.size() == m` and `support_elist.size() == 2 * m`.
+ *
+ * @post For all positive `i`, if the `i`th line of \p lp_sol_fname is
+ *  `u v w` then
+ * @post `support_elist[2 * i] == u`
+ * @post `suppor_elist[(2 * i) + 1] == v`
+ * @post `support_ecap[i] == w`
+ */
+int get_lp_sol(const int node_count, std::vector<int> &support_elist,
+	       std::vector<double> &support_ecap,
+	       const std::string &lp_sol_fname);
 		     
 }
 

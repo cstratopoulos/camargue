@@ -26,7 +26,7 @@ namespace PSEP {
  * datagroups and, if applicable, individual members of relevant groups should
  * be passed to members or methods. 
  */
-namespace Data {
+namespace Data {		  
 
 /** GraphGroup stores pure combinatorial information about the problem.
  * This structure essentially encodes a weighted graph which represents
@@ -38,7 +38,7 @@ struct GraphGroup {
 	     PSEP::RandProb &randprob,
 	     std::unique_ptr<CCdatagroup> &dat,
 	     const bool sparse, const int quadnearest,
-	     const bool dump_xy); /**< @see TSPSolver. */
+	     const bool dump_xy); /**< Standard constructor, @see TSPSolver. */
 
   
   Graph m_graph; /**< A Graph object describing the TSP instance. */
@@ -147,6 +147,30 @@ struct SupportGroup  {
   std::vector<int> support_elist;
   std::vector<double> support_ecap;
 };
+
+/** Load just enough Data to test cut separation routines.
+ * This pseudo-constructor function is designed for testing separation routines
+ * using the tour in \p tour_nodes_fname and the lp solution in \p lp_sol_fname
+ * as a tour/lp solution on the tsp instance in \p tsp_fname. It will 
+ * populate \p graph_data with precisely the edges in \p lp_sol_fname, together
+ * with the edges joining adjacent nodes in \p tour_nodes_fname. Then, 
+ * \p best_data will be initialized with the tour in \p tour_nodes_fname. 
+ * The vector \p lp_edges will then have size equal to
+ * `graph_data.m_graph.edge_count`, with binary entries indicating the lp
+ * solution from \p lp_sol_fname. Finally, \p lp_edges and \p graph_data
+ * will be used to populate \p supp_data. 
+ * @pre \p tsp_fname is the name of a TSPLIB instance.
+ * @pre \p tour_nodes_fname is as in PSEP::get_tour_nodes.
+ * @pre \p lp_sol_fname is as in PSEP::get_lp_sol.
+ */
+int make_cut_test(const std::string &tsp_fname,
+		  const std::string &tour_nodes_fname,
+		  const std::string &lp_sol_fname,
+		  PSEP::Data::GraphGroup &graph_data,
+		  PSEP::Data::BestGroup &best_data,
+		  std::vector<double> &lp_edges,
+		  PSEP::Data::SupportGroup &supp_data);
+
 }
 }
 

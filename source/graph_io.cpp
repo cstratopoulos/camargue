@@ -1,11 +1,11 @@
 #include "graph_io.hpp"
 #include "PSEP_util.hpp"
 
-#include<algorithm>
+#include <algorithm>
 #include <sstream>
 
 #include <cstdio>
-
+#include <cmath>
 
 
 namespace PSEP {
@@ -253,6 +253,56 @@ int get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
     std::cerr << "PSEP::get_tour_nodes failed\n";
     tour_nodes.clear();
   }
+  return rval;
+}
+
+int get_lp_sol(const int node_count, std::vector<int> &support_elist,
+	       std::vector<double> &support_ecap,
+	       const std::string &lp_sol_fname)
+{
+  int rval = 0;
+  std::ifstream lp_in;
+  int file_ncount, file_ecount;
+
+  if(node_count == 0) PSEP_SET_GOTO(rval, "Specified zero nodes. ");
+
+  if(lp_sol_fname.empty()) PSEP_SET_GOTO(rval, "Gave empty filename. ");
+
+  try { lp_in.open(lp_sol_fname); } catch (std::ios_base::failure &) {
+    PSEP_SET_GOTO(rval, "Couldn't open infile stream. ");
+  }
+
+  if(!lp_in.good()) PSEP_SET_GOTO(rval, "Infile is not good. ");
+
+  try { lp_in >> file_ncount >> file_ecount; }
+  catch (std::ios_base::failure &) {
+    PSEP_SET_GOTO(rval, "Couldn't read in file ncount or ecount. ");
+  }
+
+  if(file_ncount != node_count) PSEP_SET_GOTO(rval, "File has wrong ncount. ");
+
+  try {
+    support_ecap.resize(file_ecount);
+    support_elist.resize(2 * file_ecount);
+  } catch (std::bad_alloc &) {
+    PSEP_SET_GOTO(rval, "Out of memory for sup vecs. ");
+  }
+
+  try {
+    for(int i = 0; i < file_ecount; ++i){
+      int end0, end1;
+      lp_in >> end0 >> end1 >> support_ecap[i];
+      support_elist[2 * i] = fmin(end0, end1);
+      support_elist[(2 * i) + 1] = fmax(end0, end1);
+    }
+  } catch (std::ios_base::failure &) {
+    PSEP_SET_GOTO(rval, "Problem reading file lines. ");
+  }
+
+ CLEANUP:
+  if(rval)
+    std::cerr << "get_lp_sol failed.\n";
+  lp_in.close();
   return rval;
 }
 
