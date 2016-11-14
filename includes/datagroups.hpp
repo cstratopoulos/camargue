@@ -34,6 +34,7 @@ namespace Data {
  * from the complete graph.
  */
 struct GraphGroup {
+  GraphGroup() = default;
   GraphGroup(const std::string &fname, std::string &probname,
 	     PSEP::RandProb &randprob,
 	     std::unique_ptr<CCdatagroup> &dat,
@@ -54,6 +55,7 @@ struct GraphGroup {
  * with the tour nodes and edges
  */
 struct BestGroup {
+  BestGroup() : min_tour_value(0) {}
 
   /** The Lin-Kernighan tour constructor.
    * In this constructor, a tour on \p graph is constructed via a call to

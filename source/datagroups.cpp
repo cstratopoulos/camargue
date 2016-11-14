@@ -521,40 +521,5 @@ LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
   }
 }
 
-int make_cut_test(const string &tsp_fname, const string &tour_nodes_fname,
-		  const string &lp_sol_fname, GraphGroup &graph_data,
-		  BestGroup &best_data, vector<double> &lp_edges,
-		  SupportGroup &supp_data)
-{
-  int rval = 0;
-  int ncount;
-  CCdatagroup *dat = nullptr;
-
-  CCutil_init_datagroup(dat);
-
-  rval = CCutil_gettsplib(const_cast<char *>(tsp_fname.c_str()), &ncount, dat);
-  PSEP_CHECK_RVAL(rval, "CCutil_gettsplib failed. ");
-
-  graph_data.m_graph.node_count = ncount;
-
-  try {
-    graph_data.island.resize(ncount);
-    graph_data.edge_marks.resize(ncount, 0);
-  } catch (...) { PSEP_SET_GOTO(rval, "Couldn't resize island/edge marks. "); }
-
-  rval = PSEP::get_tour_nodes(ncount, best_data.best_tour_nodes,
-			      tour_nodes_fname);
-  if(rval) goto CLEANUP;
-
-  rval = PSEP::get_lp_sol(ncount, supp_data.support_elist,
-			  supp_data.support_ecap, lp_sol_fname);
-  if(rval) goto CLEANUP;
-
- CLEANUP:
-  if(rval)
-    cerr << "Problem in Data::make_cut_test.\n";
-  return rval;
-}
-
 }
 }

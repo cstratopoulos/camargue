@@ -1,6 +1,7 @@
 #include "graph_io.hpp"
 #include "PSEP_util.hpp"
 
+#include <iomanip>
 #include <algorithm>
 #include <sstream>
 
@@ -131,7 +132,8 @@ int write_lp_edges(const std::vector<int> &lp_elist,
 
     for(int i = 0; i < lp_ecap.size(); ++i){
       lp_out << lp_elist[2 * i] << " " << lp_elist[(2 * i) + 1] << " "
-	     << lp_ecap[i] << "\n";
+	     << std::fixed << std::setprecision(6) << lp_ecap[i] << "\n";
+      lp_out.unsetf(std::ios_base::fixed);
     }
   } catch(std::ios_base::failure &e) {
     PSEP_SET_GOTO(rval, "Couldn't write LP solution to file. ");
@@ -234,7 +236,7 @@ int get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
   }
 
   if(tour_nodes.size() != node_count)
-    PSEP_SET_GOTO(rval, "File contains wrong number of nodes. ");
+    PSEP_SET_GOTO(rval, "Tour nodes has " << tour_nodes.size() << " nodes. ");
 
   uniq_vec = tour_nodes;
 

@@ -32,6 +32,10 @@
 #include <cstring>
 #include <getopt.h>
 
+using std::vector;
+using std::string;
+using std::cout;
+
 static int initial_parse(int ac, char **av, std::string &fname,
 			 std::string &tour_fname,
 			 PSEP::RandProb &randprob, PSEP::LP::Prefs &prefs,
@@ -51,6 +55,26 @@ int main(int argc, char* argv[]){
   int qnearest = 0;
   /**@todo probably put this somewhere else */
 
+
+  string
+    probname = "problems/dantzig42.tsp",
+    lpsol = "dantzig42.sub.x",
+    tour = "dantzig42.sol";
+
+  PSEP::Data::BestGroup b_dat;
+  PSEP::Data::GraphGroup g_dat;
+  PSEP::Data::SupportGroup s_dat;
+  vector<double> lp_edges;
+
+  PSEP::Data::make_cut_test(probname, tour, lpsol, g_dat, b_dat, lp_edges,
+			    s_dat);
+
+
+  return 1;
+
+
+  
+
   if(initial_parse(argc, argv, probfile, tourfile, randprob, prefs, o_prefs,
   		   do_sparse, qnearest)){
     std::cerr << "Problem parsing arguments\n";
@@ -68,8 +92,8 @@ int main(int argc, char* argv[]){
   try {
     if(tourfile.empty())
       solver = PSEP::make_unique<PSEP::TSPSolver>(probfile, randprob,
-						      o_prefs, prefs, dat,
-						      do_sparse, qnearest);
+						  o_prefs, prefs, dat,
+						  do_sparse, qnearest);
     else
       solver = PSEP::make_unique<PSEP::TSPSolver>(probfile, tourfile,
 						  o_prefs, prefs, dat,
