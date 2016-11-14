@@ -133,6 +133,7 @@ protected:
 template<typename cut_rep>
 class CutQueue {
 public:
+  CutQueue() : q_capacity(INFINITY), q_fresh(true) {}
   CutQueue(const int cap) : q_capacity(cap), q_fresh(true) {}
   
   //the max number of cuts to be stored in the queue
