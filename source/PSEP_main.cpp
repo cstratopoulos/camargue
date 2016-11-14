@@ -55,26 +55,6 @@ int main(int argc, char* argv[]){
   int qnearest = 0;
   /**@todo probably put this somewhere else */
 
-
-  string
-    probname = "problems/dantzig42.tsp",
-    lpsol = "dantzig42.sub.x",
-    tour = "dantzig42.sol";
-
-  PSEP::Data::BestGroup b_dat;
-  PSEP::Data::GraphGroup g_dat;
-  PSEP::Data::SupportGroup s_dat;
-  vector<double> lp_edges;
-
-  PSEP::Data::make_cut_test(probname, tour, lpsol, g_dat, b_dat, lp_edges,
-			    s_dat);
-
-
-  return 1;
-
-
-  
-
   if(initial_parse(argc, argv, probfile, tourfile, randprob, prefs, o_prefs,
   		   do_sparse, qnearest)){
     std::cerr << "Problem parsing arguments\n";
