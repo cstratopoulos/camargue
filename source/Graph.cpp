@@ -117,7 +117,7 @@ void GraphUtils::get_delta(const int interval_start, const int interval_end,
     edge_marks[tour_nodes[i]] = 0;  
 }
 
-int GraphUtils::build_s_graph (int node_count, int edge_count,
+int GraphUtils::build_s_graph (int node_count,
 			       vector<Edge> &edges,
 			       vector<int> &support_indices,
 			       vector<double> &m_lp_edges, SupportGraph *G_s)
@@ -125,6 +125,7 @@ int GraphUtils::build_s_graph (int node_count, int edge_count,
   int i, ind, a, b;
   SNode *n;
   s_adjobj *p;
+  int edge_count = support_indices.size();
 
   if(G_s->nodelist) free(G_s->nodelist);
   if(G_s->adjspace) free(G_s->adjspace);

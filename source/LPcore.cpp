@@ -495,9 +495,8 @@ int Core::set_support_graph(){
     }
   }
 
-  rval = GraphUtils::build_s_graph(m_graph.node_count, support_indices.size(),
-				m_graph.edges, support_indices, m_lp_edges,
-				&G_s);
+  rval = GraphUtils::build_s_graph(m_graph.node_count, m_graph.edges,
+				   support_indices, m_lp_edges, &G_s);
   
   if(rval)
     cerr << "Problem in LPCore::set_support_graph" << endl;
