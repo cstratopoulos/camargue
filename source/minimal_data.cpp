@@ -3,6 +3,8 @@
 #include "PSEP_util.hpp"
 #include "Graph.hpp"
 
+#include <iostream>
+#include <iomanip>
 #include <vector>
 #include <string>
 
@@ -14,6 +16,7 @@ extern "C" {
 
 using std::cout;
 using std::cerr;
+using std::endl;
 using std::vector;
 using std::string;
 
@@ -35,8 +38,6 @@ int Data::make_cut_test(const string &tsp_fname, const string &tour_nodes_fname,
   PSEP_CHECK_RVAL(rval, "CCutil_gettsplib failed. ");
 
   graph_data.m_graph.node_count = ncount;
-  cout << "Set ncount to " << graph_data.m_graph.node_count << ", ncount "
-       << ncount << "\n";
 
   try {
     graph_data.island.resize(ncount);
@@ -127,14 +128,11 @@ int Data::make_cut_test(const string &tsp_fname, const string &tour_nodes_fname,
     PSEP_SET_GOTO(rval, "Couldn't push back sup inds. ");
   }
 
-  cout << "Calling build_s_graph with ncount " << ncount
-       << ", ecount " << graph_data.m_graph.edge_count << "\n";
-  rval = GraphUtils::build_s_graph(ncount, graph_data.m_graph.edge_count,
-				   graph_data.m_graph.edges,
+  rval = GraphUtils::build_s_graph(ncount, graph_data.m_graph.edges,
 				   supp_data.support_indices,
 				   lp_edges, &supp_data.G_s);
   if(rval) goto CLEANUP;
-    
+
 
  CLEANUP:
   if(rval)
