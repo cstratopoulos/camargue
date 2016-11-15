@@ -2,6 +2,7 @@
 #include "DPgraph.hpp"
 
 #include <chrono>
+#include <iomanip>
 
 extern "C" {
  #include <concorde/INCLUDE/combs.h>
@@ -265,6 +266,7 @@ int CutControl::in_subtour_poly(bool &result)
 
   int ecount = support_ecap.size(), ncount = supp_data.G_s.node_count;
   double cutval = 2;
+  double rhs = 2.0 - LP::EPSILON;
 
   result = false;
 
@@ -274,7 +276,9 @@ int CutControl::in_subtour_poly(bool &result)
     return 1;
   }
 
-  result = (cutval >= 2);
+  
+
+  result = !((cutval < rhs) && (fabs(cutval - rhs) > LP::EPSILON));
 
   return 0;
 }
