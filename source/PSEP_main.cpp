@@ -19,6 +19,7 @@
 #include "PSEP_util.hpp"
 #include "graph_io.hpp"
 #include "timer.hpp"
+#include "tests.hpp"
 
 #include <iostream>
 #include <string>
@@ -43,6 +44,8 @@ static int initial_parse(int ac, char **av, std::string &fname,
 			 bool &sparseflag, int &qnearest);
 
 static void usage(const std::string &fname);
+
+#ifndef PSEP_DO_TESTS
 
 int main(int argc, char* argv[]){
   PSEP::LP::Prefs prefs;
@@ -92,6 +95,8 @@ int main(int argc, char* argv[]){
 
   return rval;
 }
+
+#endif
 
 static int initial_parse(int ac, char **av, std::string &fname,
 			 std::string &tourfname,
