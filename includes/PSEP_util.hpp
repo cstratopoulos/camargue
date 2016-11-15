@@ -108,9 +108,6 @@ struct OutPrefs {
 /** Namespace for classes, constants, and enums related to %LP relaxations. */
 namespace LP {
 
-/** Tolerance under which a number is considered equal to zero. */
-constexpr double EPSILON = 0.000001;
-
 /** The CPLEX default iteration limit for simplex optimizers */
 constexpr long long DEFAULT_ITLIM = 9223372036800000000;
 
@@ -156,6 +153,20 @@ struct Prefs {
 };
 }
 
+
+/** Namespace for numerical tolerances used in this project. */
+namespace Epsilon {
+
+/** Numbers less than this are treated as zero. */
+constexpr double Zero = 0.000001;
+
+/** Cuts are not considered violated unless violated by at least this much. */
+constexpr double Cut = 0.0001;
+
+/** The connected component tolerance for Grotschel Holland fast blossoms. */
+constexpr double GH = 0.3;
+
+}
 
 /** CPU time function. */
 double zeit (void);

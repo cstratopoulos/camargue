@@ -74,7 +74,7 @@ int Cut<blossom>::separate(){
       }
     }
 
-    if(cutval < 0.999 && cutcount >= 3 &&
+    if(cutval < 1.0 - Epsilon::Cut && cutcount >= 3 &&
        cutcount <= (ncount - 3)){
       
       vector<int> handle;
@@ -174,7 +174,7 @@ int Cut<blossom>::separate(){
       goto CLEANUP;
     }
 
-    if(cutval < 0.999 && cutcount >= 3 &&
+    if(cutval < 1.0 - Epsilon::Cut && cutcount >= 3 &&
        cutcount <= (ncount - 3)){
       
       vector<int> handle;
@@ -232,7 +232,7 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
   switch(best_tour_edges[cutedge]){
   case 0:
     for(int i = 0; i < deltacount; i++)
-      if(m_lp_edges[delta[i]] > LP::EPSILON &&
+      if(m_lp_edges[delta[i]] > Epsilon::Zero &&
 	 (best_tour_edges[delta[i]] == 1 || delta[i] == cutedge)){
 	int edge_index = delta[i];
 	vector<int> new_tooth{edges[edge_index].end[0],
@@ -245,7 +245,7 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
 
   case 1:
     for(int i = 0; i < deltacount; i++)
-      if(m_lp_edges[delta[i]] > LP::EPSILON &&
+      if(m_lp_edges[delta[i]] > Epsilon::Zero &&
 	 (best_tour_edges[delta[i]] == 1 && delta[i] != cutedge)){
 	int edge_index = delta[i];
 	vector<int> new_tooth{edges[edge_index].end[0],

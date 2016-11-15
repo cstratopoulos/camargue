@@ -44,8 +44,6 @@ private:
   std::vector<int> &support_elist;
   std::vector<double> &support_ecap;
 
-  static constexpr double GH_eps = 0.3;
-
   CutQueue<fastblossom> local_q;
   CutQueue<HyperGraph> &external_q;
 };

@@ -122,7 +122,7 @@ int Data::make_cut_test(const string &tsp_fname, const string &tour_nodes_fname,
 
   try {
     for(int i = 0; i < lp_edges.size(); ++i)
-      if(lp_edges[i] >= LP::EPSILON)
+      if(lp_edges[i] >= Epsilon::Zero)
 	supp_data.support_indices.push_back(i);
   } catch(...) {
     PSEP_SET_GOTO(rval, "Couldn't push back sup inds. ");

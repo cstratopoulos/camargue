@@ -11,10 +11,6 @@ using std::vector;
 using std::cout;
 using std::cerr;
 
-//this should be defined to use linsub to make a more efficient choice of cuts
-//rather than linsub_allcuts which may add more than needed
-#define PSEP_SEG_LINSUB
-
 namespace PSEP {
 
 int Cut<seg>::linsub_all_callback(double cut_val, int cut_start, int cut_end,
@@ -54,7 +50,6 @@ int Cut<seg>::separate()
   int rval = 0;
   vector<int> endmark;
 
-#ifdef PSEP_SEG_LINSUB
   vector<int> cut_elist;
 
   try { cut_elist.resize(support_elist.size()); } catch(std::bad_alloc &) {
@@ -63,7 +58,6 @@ int Cut<seg>::separate()
 
   for(int i = 0; i < cut_elist.size(); i++)
     cut_elist[i] = perm[support_elist[i]];
-#endif
 
 
   try { endmark = vector<int>(G_s.node_count, CC_LINSUB_BOTH_END); }
@@ -71,19 +65,10 @@ int Cut<seg>::separate()
     rval = 1; PSEP_GOTO_CLEANUP("Couldn't allocate endmark. ");
   }
 
-#ifdef PSEP_SEG_LINSUB
   rval = CCcut_linsub(G_s.node_count, G_s.edge_count, &endmark[0],
-		      &cut_elist[0], &support_ecap[0], 1.999, (void *) this,
-		      linsub_callback);
+		      &cut_elist[0], &support_ecap[0], 2.0 - Epsilon::Cut,
+		      (void *) this, linsub_callback);
   PSEP_CHECK_RVAL(rval, "CCcut_linsub failed. ");
-#else
-  rval = CCcut_linsub_allcuts(G_s.node_count,
-			      G_s.edge_count,
-			      &best_tour_nodes[0], &endmark[0],
-			      &support_elist[0], &support_ecap[0], 1.999,
-			      (void *) this, linsub_all_callback);
-  PSEP_CHECK_RVAL(rval, "CCcut_linsub_allcuts failed. ");
-#endif
 
   if(local_q.empty())
     rval = 2;

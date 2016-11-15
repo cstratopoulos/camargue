@@ -100,7 +100,7 @@ int Cut<safeGMI>::get_tab_rows(){
   for(int i = 0; i < support_indices.size(); i++){
     int ind = support_indices[i];
     double lp_entry = m_lp_edges[ind];
-    if(frac_colstat[ind] == CPX_BASIC && lp_entry < 1 - LP::EPSILON){
+    if(frac_colstat[ind] == CPX_BASIC && lp_entry < 1 - Epsilon::Zero){
       lp_vranking[ind] = (-(lp_entry - 0.5) * (lp_entry - 0.5)) + 0.25;
       try{ frac_basic_vars.push_back(pair<int, double>(ind, lp_entry)); }
       catch(const std::bad_alloc &){
@@ -208,7 +208,7 @@ int Cut<safeGMI>::add_cut(){
 
     bool exact = (tour_act == rhs);
 
-    if((tour_act < rhs) || fabs(tour_act - rhs) >= LP::EPSILON)
+    if((tour_act < rhs) || fabs(tour_act - rhs) >= Epsilon::Zero)
       continue;
 
     cut_obj current_cut(exact, numcols - nz, lp_viol, cur_row);

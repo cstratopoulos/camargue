@@ -73,7 +73,7 @@ int CutPrune::prune_cuts(int &num_removed){
   }
 
   for(int i = 0; i < slacks.size(); i++){
-    if(fabs(slacks[i]) >= LP::EPSILON){
+    if(fabs(slacks[i]) >= Epsilon::Zero){
       delset[node_count + i] = 1;
       num_removed++;
     }
@@ -108,7 +108,7 @@ int CutPrune::prune_with_skip(int &num_removed, IntPair skiprange,
   for(int i = 0; i < slacks.size(); i++){
     if(skip_start <= node_count + i && node_count + i <= skip_end)
       continue;
-    if(fabs(slacks[i]) >= LP::EPSILON){
+    if(fabs(slacks[i]) >= Epsilon::Zero){
       delset[node_count + i] = 1;
       num_removed++;
     }

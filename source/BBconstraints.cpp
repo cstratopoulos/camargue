@@ -99,7 +99,7 @@ int Constraints::compute_branch_edge(){
     index = support_indices[i];
     if(EdgeStats.Right.count(index) || EdgeStats.Left.count(index)) continue;
     lp_weight = m_lp_edges[index];
-    if(fabs(lp_weight - 0.5) < LP::EPSILON){
+    if(fabs(lp_weight - 0.5) < Epsilon::Zero){
       max_under_half = 0.5; min_over_half = 0.5;
       break;
     }
@@ -191,17 +191,17 @@ int Constraints::compute_right_update(const int clamp, const int partner,
 				      const vector<double> &new_tour){
   double clamp_best, partner_best;
 
-  if(fabs(new_tour[clamp]) < LP::EPSILON)
+  if(fabs(new_tour[clamp]) < Epsilon::Zero)
     clamp_best = 0;
-  else if (fabs(new_tour[clamp]) > 1 - LP::EPSILON)
+  else if (fabs(new_tour[clamp]) > 1 - Epsilon::Zero)
     clamp_best = 1;
   else {
     cerr << "New tour is not integral\n"; return 1;
   }
 
-  if(fabs(new_tour[partner]) < LP::EPSILON)
+  if(fabs(new_tour[partner]) < Epsilon::Zero)
     partner_best = 0;
-  else if (fabs(new_tour[partner]) > 1 - LP::EPSILON)
+  else if (fabs(new_tour[partner]) > 1 - Epsilon::Zero)
     partner_best = 1;
   else {
     cerr << "New tour is not integral\n"; return 1;
@@ -314,13 +314,13 @@ int Constraints::update_right_rows(){
   rval = PSEPlp_x(&m_lp, &newtour[0]);
   if(rval) goto CLEANUP;
 
-  clamp_dif = (fabs(best_tour_edges[clamp] - newtour[clamp]) >= LP::EPSILON);
+  clamp_dif = (fabs(best_tour_edges[clamp] - newtour[clamp]) >= Epsilon::Zero);
 
   for(map<int, int>::const_iterator it = RBranch.edge_row_lookup.begin();
       it != RBranch.edge_row_lookup.end(); it++){
     partner = it->first;
     if(clamp_dif ||
-       (fabs(best_tour_edges[partner] - newtour[partner]) >= LP::EPSILON)){
+       (fabs(best_tour_edges[partner] - newtour[partner]) >= Epsilon::Zero)){
       rownum = it->second;
       rval = compute_right_update(clamp, partner, rmatval, RHS, newtour);
       if(rval) goto CLEANUP;

@@ -39,7 +39,7 @@ int Cut<fastblossom>::oc_sep()
   try {
     for(int i = 0; i < support_indices.size(); i++){
       int edge_index = support_indices[i];
-      if(support_ecap[i] <= 1 - LP::EPSILON){
+      if(support_ecap[i] <= 1 - Epsilon::Zero){
 	// cout << "Adding edge " << edge_index << ", ends "
 	//      << support_elist[2*i] << ", "
 	//      << support_elist[2*i + 1] << endl;
@@ -95,7 +95,7 @@ int Cut<fastblossom>::oc_sep()
 	for(int k = 0; k < deltacount; k++){
 	  int sup_ind = delta[k];
 	  int edge_index = support_indices[sup_ind];
-	  if(support_ecap[sup_ind] > 1 - LP::EPSILON){
+	  if(support_ecap[sup_ind] > 1 - Epsilon::Zero){
 	    edge_marks[support_elist[2*sup_ind]] += 1;
 	    edge_marks[support_elist[(2*sup_ind) + 1]] += 1;
 	    //cout << "Pushing back " << edge_index << endl;
@@ -123,7 +123,7 @@ int Cut<fastblossom>::oc_sep()
 
       for(int k = 0; k < deltacount; k++){
 	int sup_ind = delta[k];
-	if(support_ecap[sup_ind] > 1 - LP::EPSILON){
+	if(support_ecap[sup_ind] > 1 - Epsilon::Zero){
 	  edge_marks[support_elist[2*sup_ind]] = 0;
 	  edge_marks[support_elist[(2*sup_ind) + 1]] = 0;
 	}
@@ -207,7 +207,7 @@ int Cut<fastblossom>::GH_sep()
   try {
     for(int i = 0; i < support_indices.size(); i++){
       int edge_index = support_indices[i];
-      if(support_ecap[i] >= GH_eps && support_ecap[i] <= 1 - GH_eps){
+      if(support_ecap[i] >= Epsilon::GH && support_ecap[i] <= 1 - Epsilon::GH){
 	eps_indices.push_back(edge_index);
 	eps_ecap.push_back(support_ecap[i]);
 	eps_elist.push_back(support_elist[2 * i]);
@@ -275,7 +275,7 @@ int Cut<fastblossom>::GH_sep()
 	  int sup_ind = delta[k];
 	  int edge_ind = support_indices[sup_ind];
 
-	  if(support_ecap[sup_ind] > 1 - GH_eps){
+	  if(support_ecap[sup_ind] > 1 - Epsilon::GH){
 	    edge_marks[support_elist[2 * sup_ind]] += 1;
 	    edge_marks[support_elist[(2 * sup_ind) + 1]] += 1;
 	    teeth_set.insert(edge_ind);
@@ -293,7 +293,7 @@ int Cut<fastblossom>::GH_sep()
 	  int sup_ind = delta[k];
 	  int edge_ind = support_indices[sup_ind];
 
-	  if(support_ecap[sup_ind] < GH_eps &&
+	  if(support_ecap[sup_ind] < Epsilon::GH &&
 	     support_ecap[sup_ind] > max_little){
 	    best_edge_ind = edge_ind;
 	    best_sup_ind = sup_ind;
@@ -455,15 +455,14 @@ int Cut<fastblossom>::GH_sep()
 		 (sum_e_F == num_teeth - 1 && sum_handle_minus_F == 0));
 
 	lhs = lp_handle_minus_F - lp_e_F;
-	violated = (lhs < rhs) && fabs(lhs - rhs) >= 0.001; 
+	violated = (lhs < rhs) && fabs(lhs - rhs) >= Epsilon::Cut; 
 
 	if(loud) cout << "tight/viol " << tight << "/" << violated << endl;
 
 	if(!(tight && violated)) continue;
 	if(loud)
-	  cout << "!!!!TIGHT AND VIOLATED!!! but is viol > lp epsilon: "
-	       << (fabs(lhs - rhs) >= LP::EPSILON) << ", or 0.001: "
-	       << (fabs(lhs - rhs) >= 0.001) << "\n";
+	  cout << "!!!!TIGHT AND VIOLATED!!! but is viol > cut epsilon: "
+	       << (fabs(lhs - rhs) >= Epsilon::Cut) << "\n";
 	try {
 	  if(num_teeth == teeth.size()){
 	    local_q.push_front(fastblossom(handle_nodes, teeth));

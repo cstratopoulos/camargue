@@ -266,7 +266,7 @@ int CutControl::in_subtour_poly(bool &result)
 
   int ecount = support_ecap.size(), ncount = supp_data.G_s.node_count;
   double cutval = 2;
-  double rhs = 2.0 - LP::EPSILON;
+  double rhs = 2.0 - Epsilon::Cut;
 
   result = false;
 
@@ -278,7 +278,7 @@ int CutControl::in_subtour_poly(bool &result)
 
   
 
-  result = !((cutval < rhs) && (fabs(cutval - rhs) > LP::EPSILON));
+  result = (cutval > rhs);
 
   return 0;
 }

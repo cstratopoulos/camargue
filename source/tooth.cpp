@@ -63,7 +63,8 @@ int CandidateTeeth::get_light_teeth()
   rval = CCcut_linsub_allcuts(G_s.node_count,
 			      G_s.edge_count,
 			      &best_tour_nodes[0], &endmark[0],
-			      &support_elist[0], &support_ecap[0], 2.999,
+			      &support_elist[0], &support_ecap[0],
+			      3.0 - Epsilon::Cut,
 			      &cb_data, get_teeth);
   if(rval) goto CLEANUP;
   ft = zeit() - ft;
@@ -178,13 +179,14 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
   int set_size = cut_end - cut_start + 1;
   int rhs = (2 * set_size) - 1;
   double partial_lhs = (2 * set_size) - cut_val;
-  double root_bod_lb = rhs - partial_lhs - 0.4999;
+  double root_bod_lb = rhs - partial_lhs - (0.5 - Epsilon::Cut);
 #endif
 
   double slack = (cut_val - 2.0) / 2.0;
 
   if(cut_start == old_cut->start){//if the current seg contains previous
-    if(cut_end == old_cut->end + 1 && slack + old_cut->slack < 0.4999){
+    if(cut_end == old_cut->end + 1 &&
+       slack + old_cut->slack < (0.5 - Epsilon::Cut)){
       rval = add_tooth(teeth, cut_end, cut_start, old_cut->end,
 		       old_cut->slack + slack);
       PSEP_CHECK_RVAL(rval, "Problem with adjacent teeth. ");

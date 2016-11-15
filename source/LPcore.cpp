@@ -4,14 +4,14 @@
 #include <cmath>
 #include <iomanip>
 
-using namespace std;
-using namespace PSEP::LP;
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::vector;
+using std::bad_alloc;
 
-#define PRINT_EACH_AUG
-
-#ifdef PRINT_EACH_AUG
-static int numaug = 0;
-#endif
+namespace PSEP {
+namespace LP {
 
 bool Core::is_dual_feas(){
   return PSEPlp_dualfeas(&m_lp);
@@ -19,7 +19,8 @@ bool Core::is_dual_feas(){
 
 inline bool Core::is_integral(){
   for(int i = 0; i < m_lp_edges.size(); i++)
-    if((m_lp_edges[i] >= EPSILON) && (m_lp_edges[i] <= (1 - EPSILON)))
+    if((m_lp_edges[i] >= Epsilon::Zero) &&
+       (m_lp_edges[i] <= (1 - Epsilon::Zero)))
       return false;
 
   return true;
@@ -46,7 +47,7 @@ int Core::is_best_tour_feas(bool &result){
 
   for(int i = 0; i < feas_stat.size(); i++)
     //    if(feas_stat[i] != 0.0){
-    if(fabs(feas_stat[i]) >= EPSILON){
+    if(fabs(feas_stat[i]) >= Epsilon::Zero){
       cout << "Row " << i << " infeasible, feas_stat: "
 	   << feas_stat[i] << "\n";
       result = false;
@@ -77,7 +78,7 @@ int Core::single_pivot(){
 
 int Core::nondegenerate_pivot(){
   int infeasible = 0, rval = 0;
-  double lowlimit = m_min_tour_value - EPSILON;
+  double lowlimit = m_min_tour_value - Epsilon::Zero;
 
   rval = PSEPlp_primal_nd_pivot(&m_lp, &infeasible, lowlimit);
   if(rval || infeasible){
@@ -306,7 +307,7 @@ int Core::rebuild_basis(bool prune){
   if(rval) goto CLEANUP;
 
   objval = get_obj_val();
-  if(fabs(objval - m_min_tour_value) >= EPSILON){
+  if(fabs(objval - m_min_tour_value) >= Epsilon::Zero){
     rval = 1; PSEP_GOTO_CLEANUP("Rebuilt basis and got objval " << objval
 				<< ". ");
   }
@@ -487,7 +488,7 @@ int Core::set_support_graph(){
   support_ecap.clear();
 
   for(int i = 0; i < m_graph.edge_count; i++){
-    if(m_lp_edges[i] >= EPSILON){
+    if(m_lp_edges[i] >= Epsilon::Zero){
       support_indices.push_back(i);
       support_ecap.push_back(m_lp_edges[i]);
       support_elist.push_back(m_graph.edges[i].end[0]);
@@ -508,7 +509,7 @@ bool Core::test_new_tour(){
   bool result = false;
 
   for(int i = 0; i < m_graph.edge_count; i++)
-    if(m_lp_edges[i] >= EPSILON)
+    if(m_lp_edges[i] >= Epsilon::Zero)
       objval += m_graph.edges[i].len;
 
   result = objval < m_min_tour_value && is_integral();
@@ -520,16 +521,12 @@ int Core::update_best_tour(){
   double objval = 0;
   int rval = 0;
   bool newbest_feas = false;
-
-#ifdef PRINT_EACH_AUG
-  numaug++;
-#endif
   
   for(int i = 0; i < m_graph.node_count; i++)
     best_tour_nodes[i] = island[i];
 
   for(int i = 0; i < m_graph.edge_count; i++)
-    if(m_lp_edges[i] < EPSILON)
+    if(m_lp_edges[i] < Epsilon::Zero)
       best_tour_edges[i] = 0;
     else {
       best_tour_edges[i] = 1;
@@ -567,12 +564,7 @@ int Core::update_best_tour(){
   }
 
   if(outprefs.save_tour_edges){
-#ifndef PRINT_EACH_AUG
     std::string tour_e_fname = outprefs.probname + "_tour.x";
-#else
-    std::string tour_e_fname = outprefs.probname + "_tour" +
-      std::to_string(numaug) + ".x";
-#endif
 
     rval = write_tour_edges(best_tour_edges, m_graph.edges,
 			    m_graph.node_count, tour_e_fname);
@@ -611,7 +603,7 @@ int Core::pivot_until_change(PivType &pivot_status){
     rval = set_edges();
     if(rval) goto CLEANUP;
 
-    if(fabs(get_obj_val() - m_min_tour_value) >= EPSILON)
+    if(fabs(get_obj_val() - m_min_tour_value) >= Epsilon::Zero)
       break;    
   }
   
@@ -664,3 +656,5 @@ void Core::change_pricing(){
     cerr << "ERROR: PRICING SWITCH DID NOT TAKE PLACE\n";
 }
 
+}
+}
