@@ -48,7 +48,9 @@ directories:
 
 clean:
 	@$(RM) -f $(BUILDDIR)/*.o
+	@$(RM) -f $(BUILDDIR)/*.d
 	@$(RM) -f $(BUILDDIR)/tests/*.o
+	@$(RM) -f $(BUILDDIR)/tests/*.d
 	@$(RM) -f $(TARGET)
 
 #Pull in dependency info for *existing* .o files
