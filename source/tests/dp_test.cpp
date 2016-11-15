@@ -18,7 +18,8 @@ TEST_CASE("Concorde subtour solutions are in subtour poly", "[subtour]") {
   bool result;
   PSEP::LP::Prefs prefs;
 
-  vector<string> probs{"dantzig42", "pr1002", "lin105", "rl1304", "d2103"};
+  vector<string> probs{"dantzig42", "pr1002", "lin105", "rl1304", "d2103",
+		       "fleisA9", "fleisB9"};
 
   for(string &fname : probs){
     SECTION(fname){
