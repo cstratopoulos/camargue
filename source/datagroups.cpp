@@ -500,10 +500,6 @@ LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
 
   prefs = _prefs;
 
-  cout << "Adding at most " << prefs.max_per_round << " cuts per round, "
-       << "keeping at most " << prefs.q_max_size << " candidate blossoms\n";
-
-
   try {
     m_lp_edges.resize(m_graph.edge_count);
     old_colstat.resize(m_graph.edge_count, CPX_AT_LOWER);
