@@ -68,12 +68,14 @@ public:
   int add_primal_cuts();
   
   int safe_gomory_sep();
+
+  int in_subtour_poly(bool &result);
     
   void profile();
 
 private:
   int q_has_viol(bool &result, CutQueue<HyperGraph> &pool_q);
-  int in_subtour_poly(bool &result);
+
   
   SetBank set_repo;
   CutTranslate translator;
