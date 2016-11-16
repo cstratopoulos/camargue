@@ -13,22 +13,6 @@ using std::cerr;
 
 namespace PSEP {
 
-int Cut<seg>::linsub_all_callback(double cut_val, int cut_start, int cut_end,
-				  void *cb_data)
-{
-  Cut<seg> *this_p = (Cut<seg> *) cb_data;
-  CutQueue<seg> &lq = this_p->local_q;
-
-  if(lq.empty() || cut_val <= lq.peek_front().cutval){
-    try{ lq.push_front(seg(cut_start, cut_end, cut_val)); } catch(...){
-      cerr << "Couldn't push back new seg\n";
-      return 1;
-    }
-  }
-
-  return 0;
-}
-
 int Cut<seg>::linsub_callback(double cut_val, int cut_start, int cut_end,
 			      void *cb_data)
 {
