@@ -149,19 +149,12 @@ int DPCutGraph::build_light_tree()
       num_teeth += vec.size();
     
     if(cutgraph_nodes.size() != G_s.node_count + num_teeth + 1){
-      cerr << "\tWRONG LIGHT TREE NODE COUNT!!!\n";
-      rval = 1;
+      PSEP_SET_GOTO(rval, "Wrong light tree node count. ");
     }
 
     if(cut_ecap.size() != G_s.node_count + num_teeth){
-      cerr << "\tWRONG LIGHT TREE EDGE COUNT!!!\n";
-      rval = 1;
+      PSEP_SET_GOTO(rval, "Wrong light tree edge count. ");
     }
-
-    if(!rval)
-      cout << "\tCORRECT TREE DIMS!!!!!\n"
-	   << "\t ncount " << cutgraph_nodes.size() << ", ecount "
-	   << cut_ecap.size() << "\n";
   }
 
   try { cg_delta_marks.resize(cutgraph_nodes.size(), 0); } catch (...) {
@@ -236,16 +229,12 @@ int DPCutGraph::add_web_edges()
   }
 
   if(cut_ecap.size() != start_ecount + G_s.edge_count){
-    rval = 1;
-    cerr << "\t!!!WRONG WEB ECOUNT!!!!!\n";
-  } else
-    cout << "\t!!!CORRECT # WEB EDGES ADDED!!!!\n"
-	 << "\tnew ecount: " << cut_ecap.size() << "\n";
+    PSEP_SET_GOTO(rval, "Wrong number of web edges added. ");
+  } 
 
   try { cutgraph_delta.resize(cut_ecap.size()); } catch (...) {
     PSEP_SET_GOTO(rval, "Couldn't allocate cutgraph delta. ");
   }
-
   
 
  CLEANUP:
@@ -261,8 +250,8 @@ int DPCutGraph::call_concorde_gomoryhu()
   int markcount = odd_nodes_list.size();
 
   CCrandstate rstate;
-
-  CCutil_sprand((int) real_zeit(), &rstate);
+  //int seed = (int) real_zeit();
+  CCutil_sprand(1479252604, &rstate);
 
   cout << "\tCalling CCcut_gh with ncount: " << ncount << "\n"
        << "\tecount: " << ecount << "\n"
@@ -320,8 +309,6 @@ int DPCutGraph::grab_cuts(CutQueue<dominoparity> &domino_q)
 {
   int rval = 0;
   int special_ind = cutgraph_nodes.size() - 1;
-
-  cout << "\tNow converting cuts to dominoparity.....";
 
   while(!CC_gh_q.empty()){
     vector<int> cut_shore_nodes;
@@ -388,8 +375,6 @@ int DPCutGraph::grab_cuts(CutQueue<dominoparity> &domino_q)
 
     CC_gh_q.pop_front();
   }
-
-  cout << "Done, " << domino_q.size() << " cuts transferred.\n";
 
  CLEANUP:
   if(rval)
