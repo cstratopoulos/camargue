@@ -11,7 +11,7 @@ using std::setprecision;
 namespace PSEP {
 
 int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
-  int rval = 0, cut_rval;
+  int rval = 0, cut_rval = 0;
 
   double piv_val;
   int rounds = 0, augrounds = 0;
