@@ -17,7 +17,7 @@ using std::string;
 
 TEST_CASE ("Toy examples from paper",
 	   "[simpleDP]") {
-  vector<string> probs{"fleisA9", "fleisB9", "comb9"};
+  vector<string> probs{"fleisA9"/*, "fleisB9", "comb9", "ulysses16"*/};
 
     for(string &fname : probs){
       SECTION(fname){
@@ -46,31 +46,34 @@ TEST_CASE ("Toy examples from paper",
 	//	cands.weak_elim();
 	
 	for(vector<PSEP::SimpleTooth::Ptr> &vec : cands.light_teeth)
-	  for(PSEP::SimpleTooth::Ptr &T : vec)
-	    cands.print_tooth(*T, true);
+	  for(PSEP::SimpleTooth::Ptr &T : vec){
+	    cout << "Root label: " << cands.print_label(*T, true) << "\n";
+	  }
 
-	PSEP::DPCutGraph dp_graph(cands.light_teeth, b_dat.perm, s_dat.G_s);
+	PSEP::DPCutGraph dp_graph(cands.light_teeth, cands,
+				  b_dat.perm, s_dat.G_s);
+	dp_graph.ofname = fname;
 	PSEP::CutQueue<PSEP::dominoparity> dp_q;
 
 	REQUIRE(dp_graph.simple_DP_sep(dp_q) == 0);
 
-	while(!dp_q.empty()){
-	  PSEP::dominoparity dp = dp_q.peek_front();
-	  vector<int> bt = b_dat.best_tour_nodes;
+	// while(!dp_q.empty()){
+	//   PSEP::dominoparity dp = dp_q.peek_front();
+	//   vector<int> bt = b_dat.best_tour_nodes;
 
-	  cout << "Found dp with....\n";
-	  cout << "Handle: ";
-	  for(int i : dp.degree_nodes) cout << bt[i] << ", "; cout << "\n";
-	  cout << "Nonneg edges: ";
-	  for(IntPair &e : dp.nonneg_edges)
-	    cout << "(" << bt[e.first] << ", " << bt[e.second] << "), ";
-	  cout << "\n";
-	  cout << "Simple teeth: (" << dp.used_teeth.size() << " total)\n";
-	  for(PSEP::SimpleTooth *T : dp.used_teeth)
-	    cands.print_tooth(*T, true);
+	//   cout << "Found dp with....\n";
+	//   cout << "Handle: ";
+	//   for(int i : dp.degree_nodes) cout << bt[i] << ", "; cout << "\n";
+	//   cout << "Nonneg edges: ";
+	//   for(IntPair &e : dp.nonneg_edges)
+	//     cout << "(" << bt[e.first] << ", " << bt[e.second] << "), ";
+	//   cout << "\n";
+	//   cout << "Simple teeth: (" << dp.used_teeth.size() << " total)\n";
+	//   for(PSEP::SimpleTooth *T : dp.used_teeth)
+	//     cands.print_tooth(*T, true);
 
-	  dp_q.pop_front();
-	}
+	//   dp_q.pop_front();
+	// }
 	cout << "\n\n";
       }
     }
