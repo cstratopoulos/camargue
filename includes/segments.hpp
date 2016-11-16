@@ -1,3 +1,9 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/** @file
+ * @brief EXACT PRIMAL SUBTOUR SEPARATION
+ *
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef PSEP_SEGCUTS_H
 #define PSEP_SEGCUTS_H
 
@@ -8,6 +14,11 @@
 
 namespace PSEP {
 
+/** Class for exact primal subtour separation.
+ * Can be instantiated with data about a best tour and an lp solution, and used
+ * to perform primal subtour separation using the segments algorithm of
+ * Applegate et al.
+ */
 template<> class Cut<seg> {
 public:
   Cut<seg>(std::vector<int> &_best_tour_nodes, std::vector<int> &_perm,
@@ -27,9 +38,12 @@ protected:
     
 private:
   int build_hypergraph(const seg& seg_cut);
-  static int linsub_all_callback(double cut_val, int cut_start, int cut_end,
-				 void *cb_data);
-  static int linsub_callback(double vut_val, int cut_start, int cut_end,
+
+  /** Callback function for use by Concorde linsub function.
+   * This function is the callback to CCcut_linsub in Concorde. For more
+   * information see segments.c in Concorde. 
+   */
+  static int linsub_callback(double cut_val, int cut_start, int cut_end,
 			     void *cb_data);
 
   std::vector<int> &best_tour_nodes;

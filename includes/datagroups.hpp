@@ -1,8 +1,9 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
- *                
- *                      DATA GROUP STRUCTURE DEFINITIONS
- *
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/** @file                
+ * @brief DATA GROUP STRUCTURE DEFINITIONS
+ * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef PSEP_DATAGROUP_H
 #define PSEP_DATAGROUP_H
 

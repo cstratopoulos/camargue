@@ -1,3 +1,9 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/** @file
+ * @brief EXACT PRIMAL BLOSSOM SEPARATION
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef PSEP_BLOSSOMS_H
 #define PSEP_BLOSSOMS_H
 
@@ -8,6 +14,11 @@
 
 namespace PSEP {
 
+/** Class for exact primal blossom separation. 
+ * This class can be instantiated with data about a best tour and an lp 
+ * solution, and used to perform primal blossom separation using the algorithm
+ * of Letchford and Lodi.
+ */
 template<> class Cut<blossom> {
 public:
   Cut<blossom>(std::vector<int> &_delta, std::vector<int> &_edge_marks,
@@ -26,7 +37,7 @@ public:
     local_q(blossom_queue.q_capacity),
     external_q(blossom_queue) {}
 
-  int cutcall();
+  int cutcall(); 
 
 protected:
   int separate();
@@ -39,8 +50,11 @@ private:
   std::vector<int> &delta;
   std::vector<int> &edge_marks;
   Graph &m_graph;
+  
   std::vector<int> &best_tour_edges;
+  
   std::vector<double> &m_lp_edges;
+  
   std::vector<int> &support_indices;
   std::vector<int> &support_elist;
   std::vector<double> &support_ecap;

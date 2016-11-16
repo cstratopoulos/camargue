@@ -1,3 +1,9 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/** @file
+ * @brief PRIMAL SEPARATION OF SAFE GOMORY MIXED-INTEGER CUTS
+ *
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef PSEP_SAFEGMI_H
 #define PSEP_SAFEGMI_H
 
@@ -13,6 +19,7 @@
 
 namespace PSEP {
 
+/** Wrapper class for using cuts from the safemir code. */
 struct cut_obj {
   cut_obj(bool _exact, int _zeros, double _viol,
 	  CUTSsprow_t<double> *_row):
@@ -21,20 +28,30 @@ struct cut_obj {
     viol(_viol),
     row(_row){}
 
-  bool exact;
-  int zeros;
-  double viol;
+  bool exact; /**< Is the cut tight by double `==`.*/
+  int zeros; /**< Number of zeros in the cut. */
+  double viol; /** Amount by which cut is violated. */
 
-  CUTSsprow_t<double> *row;
+  CUTSsprow_t<double> *row; /**< Inherited structure from safemir. */
 };
 
-//idiom for lexicographic order:
-//exactness is most important, then sparsity, then viol
+/** Idiomatic implementation of lexicographic order on cut_obj.
+ * Exactness is most important, then density, then violation.
+ */
 inline static bool operator >(const cut_obj &a, const cut_obj &b) {
   return std::tie(a.exact, a.zeros, a.viol) >
     std::tie(b.exact, b.zeros, b.viol);
 }
-  
+
+/** Class for primal separation of safe GMI cuts.
+ * This class performs exact primal separation of safe GMI cuts using the
+ * algorithm and numerical safety framework of Cook, Dash, Fukasawa, and 
+ * Goycoolea. All the members and classes/structs are wrappers to the code
+ * provided online as a supplement to the paper
+ *  Numerically safe Gomory mixed-integer
+ * cuts, W. Cook,  S. Dash, R. Fukasawa, and M. Goycoolea, 
+ * INFORMS Journal on Computing 21 (2009) 641--649.
+ */
 template<> class Cut<safeGMI> {
 public:
   Cut<safeGMI>(std::vector<int> &_best_tour_edges,

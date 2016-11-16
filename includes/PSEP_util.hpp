@@ -1,45 +1,32 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
- *
- *               UTILITY FUNCTIONS AND MACROS/ENUM CLASSES
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
+ * @file
+ * @brief UTILITY FUNCTIONS AND MACROS/ENUM CLASSES
  *
  * This header contains namespace and enum classes for labels/constants that
  * are used elsewhere in the code, as well as some very simple structures
- *
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef __PSEP_UTIL_H
 #define __PSEP_UTIL_H
 
-#include<utility>
-#include<unordered_map>
-#include<vector>
-#include<iostream>
-#include<type_traits>
+#include <utility>
+#include <unordered_map>
+#include <vector>
+#include <iostream>
+#include <type_traits>
 
-#include<boost/functional/hash.hpp>
+#include <boost/functional/hash.hpp>
 
-/*
- * In this project virtually all functions will produce a pseudo function
- * call graph in the event of an error, and they use the goto label CLEANUP
- * as the exit point for this. Also almost all functions have integer return 
- * types with nonzero values indicating error or special conditions. Thus
- * if the function big_task() contains a call to function helper_task(), 
- * use of this macro might look like
- *
- * int big_task()
- *    int rval = helper_task()
- *    if(rval) PSEP_GOTO_CLEANUP("helper_task failed, ");
- *    ... (skipped control flow) ...
- *    CLEANUP:
- *        if(rval) cerr << " problem in big_task\n"
- *
- * This will result in "helper_task failed, problem in big_task" being printed
- * to stderr, as well as similar error messages possibly embedded in 
- * helper_task, hopefully giving a clean description of the source of error
+/** Macro for printing error message and going to exit label. 
+ * Prints the message \a message to stderr and goes to CLEANUP. Thus CLEANUP
+ * must have been defined as a labelled section in function scope.
  */
 #define PSEP_GOTO_CLEANUP(message) { std::cerr << message; goto CLEANUP; }
 
+/** Conditional version of #PSEP_GOTO_CLEANUP(message).
+ * Only prints the error \a message if \a rval is nonzero.
+ */
 #define PSEP_CHECK_RVAL(rval, message) {	\
     if ((rval)) {				\
       std::cerr << message;			\
@@ -47,6 +34,13 @@
     }						\
   }
 
+/** Version of #PSEP_GOTO_CLEANUP(message) for setting return code.
+ * This macro sets rval to 1, prints \a message to stderr, and goes to 
+ * CLEANUP. Its intended use is in mixing try/catch blocks with retcodes, and
+ * in function calls where subtasks have their own retcodes. For example,
+ * `try { task } catch (...) { PSEP_SET_GOTO(rval, "task threw exception"); }`
+ * or `subval = sub_task(); if(subval) PSEP_SET_GOTO(rval, "sub_task error")`
+ */
 #define PSEP_SET_GOTO(rval, message) {		\
     rval = 1;					\
     std::cerr << message;			\
@@ -123,16 +117,16 @@ enum class Pricing {
   Steepest /**< True steepest edge. */
 };
 
-/** Enum class for categorizing %LP solutions. */
+/** Enum class for categorizing lp solutions. */
 enum class PivType {
   Frac, /**< Fractional solution. */
   Subtour, /**< Integral subtour. */
   Tour, /**< A new or augmented tour. */
-  FathomedTour /**< A Tour with a dual feasible basis in the current %LP. */
+  FathomedTour /**< A Tour with a dual feasible basis in the current lp. */
 };
 
 /*
- * Prefs is a simple struct to store preferences for the %LP solver.
+ * Prefs is a simple struct to store preferences for the lp solver.
  *
  * price_method is one of the Pricing types indicated above
  * dp_threshold - controls when simple domino parity inequality separation
@@ -141,15 +135,17 @@ enum class PivType {
  *    called only after that many rounds of cutting plane generation, or
  *    if no other cuts are found
  */
+
+/** POD struct for lp solver preferences. */
 struct Prefs {
   Prefs();
   Prefs(Pricing _price, int _dp_threshold, int max_round, int q_max);
       
-  Pricing price_method;
+  Pricing price_method; /**< Which primal pricing criterion to use. */
       
-  int dp_threshold;
-  int max_per_round;
-  int q_max_size;
+  int dp_threshold; /**< Wait this many rounds before calling simple DP sep. */
+  int max_per_round; /**< Add at most this many cuts of each type per round. */
+  int q_max_size; /**< Keep a pool of this many blossoms. */
 };
 }
 
