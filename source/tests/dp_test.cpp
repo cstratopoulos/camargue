@@ -17,7 +17,7 @@ using std::string;
 
 TEST_CASE ("Toy examples from paper",
 	   "[simpleDP]") {
-  vector<string> probs{"fleisA9", "fleisB9"};
+  vector<string> probs{"fleisA9", "fleisB9", "comb9"};
 
     for(string &fname : probs){
       SECTION(fname){
@@ -43,6 +43,11 @@ TEST_CASE ("Toy examples from paper",
 				   s_dat.support_ecap);
 	
 	REQUIRE_FALSE(cands.get_light_teeth());
+	//	cands.weak_elim();
+	
+	for(vector<PSEP::SimpleTooth::Ptr> &vec : cands.light_teeth)
+	  for(PSEP::SimpleTooth::Ptr &T : vec)
+	    cands.print_tooth(*T, true);
 
 	PSEP::DPCutGraph dp_graph(cands.light_teeth, b_dat.perm, s_dat.G_s);
 	PSEP::CutQueue<PSEP::dominoparity> dp_q;
@@ -60,13 +65,13 @@ TEST_CASE ("Toy examples from paper",
 	  for(IntPair &e : dp.nonneg_edges)
 	    cout << "(" << bt[e.first] << ", " << bt[e.second] << "), ";
 	  cout << "\n";
-	  cout << "Simple teeth:\n";
-	  for(vector<PSEP::SimpleTooth::Ptr> &vec : cands.light_teeth)
-	    for(PSEP::SimpleTooth::Ptr &T : vec)
-	      cands.print_tooth(*T, true);
+	  cout << "Simple teeth: (" << dp.used_teeth.size() << " total)\n";
+	  for(PSEP::SimpleTooth *T : dp.used_teeth)
+	    cands.print_tooth(*T, true);
 
 	  dp_q.pop_front();
 	}
+	cout << "\n\n";
       }
     }
 }

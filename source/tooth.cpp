@@ -9,8 +9,8 @@ extern "C" {
 
 using std::vector;
 using std::cout;
-
-static int num_adjacent = 0, num_distant = 0;
+using std::cerr;
+using std::endl;
 
 #define TOOTH_GET_DIST
 
@@ -39,15 +39,14 @@ int CandidateTeeth::get_light_teeth()
 {
   int rval = 0;
   tooth_seg lin_seg(G_s.node_count - 1, G_s.node_count - 1, 0);
-  double ft, st, we_t;
-  int numremain = 0;
-  int max_deg = 0;
+  double ft, st;
+  int max_deg = 0, numfound = 0;
 
   for(int i = 0; i < G_s.node_count; i++)
     if(G_s.nodelist[i].s_degree > max_deg)
       max_deg = G_s.nodelist[i].s_degree;
 
-  std::cout << "Support graph has max degree " << max_deg << ", ecount "
+  cout << "Support graph has max degree " << max_deg << ", ecount "
        << G_s.edge_count << "\n";
 
   //TODO: this should be a method in LinsubCBdata
@@ -57,7 +56,7 @@ int CandidateTeeth::get_light_teeth()
   
   clear_collection();
   
-  std::cout << "Getting light teeth via linsub...." << std::endl;
+  cout << "Getting light teeth via linsub...." << endl;
   ft = zeit();
   
   rval = CCcut_linsub_allcuts(G_s.node_count,
@@ -69,8 +68,10 @@ int CandidateTeeth::get_light_teeth()
   if(rval) goto CLEANUP;
   ft = zeit() - ft;
 
-  std::cout << ft << "s total, " << num_adjacent << " adjacent teeth, "
-       << num_distant << " distant teeth\n";
+  for(vector<SimpleTooth::Ptr> &vec : light_teeth)
+    numfound += vec.size();
+
+  cout << "Found " << numfound << " light teeth in " << ft << "s\n";
 
   st = zeit();
   for(int i = 0; i < cb_data.unsorted_roots.size(); i++){
@@ -83,22 +84,12 @@ int CandidateTeeth::get_light_teeth()
   }
   st = zeit() - st;
 
-  std::cout << "Sorted only " << cb_data.unsorted_roots.size() << " lists in "
+  cout << "Sorted only " << cb_data.unsorted_roots.size() << " lists in "
        << st << "s\n";
-
-  we_t = zeit();
-  weak_elim();
-  we_t = zeit() - we_t;
-
-  for(const vector<SimpleTooth::Ptr> &vec : light_teeth)
-    numremain += vec.size();
-
-  std::cout << "Performed weak elimination in " << we_t << "s, "
-       << numremain << " teeth remain\n";
 
  CLEANUP:
   if(rval == 1){
-    std::cerr << "CandidateTeeth::get_light_teeth failed\n";
+    cerr << "CandidateTeeth::get_light_teeth failed\n";
     clear_collection();
   }
   return rval;
@@ -106,6 +97,8 @@ int CandidateTeeth::get_light_teeth()
 
 void CandidateTeeth::weak_elim()
 {
+  double we_t = zeit();
+  
   for(vector<SimpleTooth::Ptr> &t_list : light_teeth){
     if(t_list.empty()) continue;
 
@@ -153,6 +146,15 @@ void CandidateTeeth::weak_elim()
 				  return T->slack == -1.0;
 				}),
 		 t_list.end());
+
+  we_t = zeit() - we_t;
+  
+  int numremain = 0;
+  for(const vector<SimpleTooth::Ptr> &vec : light_teeth)
+    numremain += vec.size();
+
+  cout << "Performed weak elimination in " << we_t << "s, "
+	    << numremain << " teeth remain\n";
 }
 
 int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
@@ -190,7 +192,6 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
       rval = add_tooth(teeth, cut_end, cut_start, old_cut->end,
 		       old_cut->slack + slack);
       PSEP_CHECK_RVAL(rval, "Problem with adjacent teeth. ");
-      num_adjacent++;
     }
 
 #ifdef TOOTH_GET_DIST
@@ -245,14 +246,13 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
       
       if(arg->unsorted_roots.empty() || arg->unsorted_roots.back() != kv.first)
 	arg->unsorted_roots.push_back(kv.first);
-      num_distant++;
     }
 #endif  
 
 
  CLEANUP:
   if(rval)
-    std::cerr << "Linsub callback failed\n";
+    cerr << "Linsub callback failed\n";
   old_cut->start = cut_start;
   old_cut->end = cut_end;
   old_cut->slack = slack;
@@ -284,7 +284,7 @@ inline int CandidateTeeth::add_tooth(vector<vector<SimpleTooth::Ptr>> &teeth,
   } catch(...) { rval = 1; }
 
   if(rval)
-    std::cerr << "Couldn't push back light tooth\n";
+    cerr << "Couldn't push back light tooth\n";
   return rval;
 }
 
@@ -358,7 +358,7 @@ int CandidateTeeth::body_subset(const SimpleTooth &T, const SimpleTooth &R,
 				bool &result)
 {
   if(T.root != R.root){
-    std::cerr << "Cannot currently test body subset with different roots\n";
+    cerr << "Cannot currently test body subset with different roots\n";
     return 1;
   }
 
@@ -410,9 +410,9 @@ void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full)
 void CandidateTeeth::print_collection()
 {
   for(int i = 0; i < G_s.node_count; i++){
-    std::cout << "=== LIGHT TEETH WITH ROOT "
+    cout << "=== LIGHT TEETH WITH ROOT "
 	 << best_tour_nodes[i] << ", " << light_teeth[i].size() << " TOTAL==="
-	 << std::endl;
+	 << endl;
     // for(SimpleTooth::Ptr &T : light_teeth[i])
     //   print_tooth(*T);
   }

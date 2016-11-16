@@ -274,7 +274,7 @@ int DPCutGraph::call_concorde_gomoryhu()
 
   if(CC_gh_q.empty()) rval = 2;
 
-  
+  CCcut_GHtreeprint(&gh_tree);
 
  CLEANUP:
   if(rval == 1)
