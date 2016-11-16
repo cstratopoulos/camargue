@@ -2,7 +2,7 @@
 /** @file
  * @brief EXACT PRIMAL SUBTOUR SEPARATION
  *
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef PSEP_SEGCUTS_H
 #define PSEP_SEGCUTS_H

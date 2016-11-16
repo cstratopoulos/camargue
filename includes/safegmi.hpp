@@ -2,7 +2,7 @@
 /** @file
  * @brief PRIMAL SEPARATION OF SAFE GOMORY MIXED-INTEGER CUTS
  *
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef PSEP_SAFEGMI_H
 #define PSEP_SAFEGMI_H
