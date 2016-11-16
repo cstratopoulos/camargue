@@ -11,6 +11,8 @@ using std::vector;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::string;
+using std::to_string;
 
 #define TOOTH_GET_DIST
 
@@ -85,7 +87,7 @@ int CandidateTeeth::get_light_teeth()
   st = zeit() - st;
 
   cout << "Sorted only " << cb_data.unsorted_roots.size() << " lists in "
-       << st << "s\n";
+       << st << "s, teeth sorted by INCREASING body size.\n";
 
  CLEANUP:
   if(rval == 1){
@@ -405,6 +407,20 @@ void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full)
       cout << (comma_sep ? ", " : "\n\t");
   }
   cout << ") -- slack " << T.slack << "\n";  
+}
+
+string CandidateTeeth::print_label(const SimpleTooth &T, bool show_root)
+{  
+  string
+    body = (T.body_start == T.body_end) ?
+    to_string(T.body_start) :
+    ("{"
+     + to_string(T.body_start) + "..." + to_string(T.body_end)
+     + "}");
+
+  return "("
+    + (show_root ? (to_string(T.root) + ", ") : "")
+    + body + ")";
 }
 
 void CandidateTeeth::print_collection()

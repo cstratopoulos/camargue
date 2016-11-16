@@ -89,7 +89,8 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
 
       cout << "Got collection of light candidate teeth" << endl;
 
-      DPCutGraph cutgraph(candidates.light_teeth, best_data.perm,
+      DPCutGraph cutgraph(candidates.light_teeth,
+			  candidates, best_data.perm,
 			  supp_data.G_s);
       
       CutQueue<dominoparity> domino_q(25);

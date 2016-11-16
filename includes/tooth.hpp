@@ -16,6 +16,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <string>
 
 /*
  * If defined, lists of simple teeth will be implemented as unique pointers,
@@ -147,6 +148,7 @@ public:
 
   
   void print_tooth(const SimpleTooth &T, bool full);
+  std::string print_label(const SimpleTooth &T, bool show_root);
   void print_collection();
   
   std::vector<std::vector<SimpleTooth::Ptr>> light_teeth;

@@ -3,17 +3,22 @@
 #include "Graph.hpp"
 
 #include <iostream>
+#include <fstream>
 
 using std::vector;
 using std::cout;
 using std::cerr;
 
+#define PSEP_DO_VIZ
+
 namespace PSEP {
 
 DPCutGraph::DPCutGraph(vector<vector<SimpleTooth::Ptr>> &_teeth,
+		       CandidateTeeth &_cands,
 		       const vector<int> &_perm,
 		       const SupportGraph &_G_s) :
   light_teeth(_teeth),
+  cands(_cands),
   G_s(_G_s),
   perm(_perm),
   CC_gh_q(25)
@@ -50,43 +55,75 @@ int DPCutGraph::build_light_tree()
   int rval = 0;
   int num_cutnodes = 0, current_index, star_index;
 
+#ifdef PSEP_DO_VIZ
+  std::ofstream light_out;
+  light_out.open(ofname + "-light.gv");
+  light_out << "graph {\n\t"
+	    << "mindist=0.1;\n\t"; //circo
+#endif
+
 
   try { //nullptrs represent the degree eqn on each root
-    for(int i = 0; i < light_teeth.size(); i++)
+    for(int i = 0; i < light_teeth.size(); i++){
       cutgraph_nodes.push_back(nullptr);
+#ifdef PSEP_DO_VIZ
+      light_out << i << "[color=aquamarine3];\n\t";
+#endif
+    }
   } catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back degree eqn nodes. "); }
 
   current_index = cutgraph_nodes.size();
 
-  try { //number a cutgraph node for each tooth ineq, add to vec
+#ifdef PSEP_DO_VIZ
+  light_out << "//numbering and labelling cutgraph node for each tooth\n\t";
+#endif
+  try {
     for(const vector<SimpleTooth::Ptr> &t_vec : light_teeth)
       for(auto it = t_vec.rbegin(); it != t_vec.rend(); ++it){
 	cutgraph_nodes.push_back(it->get());
 	(*it)->cutgraph_index = current_index++;
+#ifdef PSEP_DO_VIZ
+	light_out << (*it)->cutgraph_index
+		  << "[label=\"" << cands.print_label(**it, true)
+		  << "\"];\n\t";
+#endif
       }
   } catch(...){ PSEP_SET_GOTO(rval, "Couldn't add tooth ineqs. " ); }
 
-  //add a node representing the special central node, "star" node
+
   cutgraph_nodes.push_back(nullptr);
   num_cutnodes = cutgraph_nodes.size();
   star_index = num_cutnodes - 1;
+#ifdef PSEP_DO_VIZ
+  light_out << "//adding and labelling star node\n\t";
+  light_out << star_index << "[label=\"X\",color=red];\n\t";
+  light_out << "root=" << star_index << ";\n\t";
+#endif
 
   try { node_marks.resize(num_cutnodes, false); } catch(...){
     PSEP_SET_GOTO(rval, "Couldn't initialize cut marks bool. ");
   }
 
+#ifdef PSEP_DO_VIZ
+  light_out << "//adding degree eqn nodes between root and star\n\t";
+#endif
   try {//add edges between every root and central node for degree eqns
     for(int i = 0; i < light_teeth.size(); ++i){
       cut_elist.push_back(i);
       cut_elist.push_back(star_index);
       cut_ecap.push_back(0);
+#ifdef PSEP_DO_VIZ
+      light_out << star_index << "--" << i << "[label=\"d" << i << "\"];\n\t";
+#endif
     }
   } catch(...){ PSEP_SET_GOTO(rval, "Couldn't add degree eqn edges. "); }
 
   try {
     for(int i = 0; i < light_teeth.size(); i++){
       if(light_teeth[i].empty()) continue;
-
+#ifdef PSEP_DO_VIZ
+      light_out << "//Building subtree with root " << i << "\n\t";
+#endif
       auto child = light_teeth[i].rbegin();
       int child_index = (*child)->cutgraph_index;
       double child_slack = (*child)->slack;
@@ -94,6 +131,9 @@ int DPCutGraph::build_light_tree()
       cut_elist.push_back(child_index);
       cut_elist.push_back(i);
       cut_ecap.push_back(child_slack);
+#ifdef PSEP_DO_VIZ
+      light_out << i << "--" << child_index << ";\n\t";
+#endif
 
       //complement bits for odd or evenness
       node_marks[i] = !(node_marks[i]);
@@ -114,7 +154,9 @@ int DPCutGraph::build_light_tree()
 	    cut_elist.push_back(child_index);
 	    cut_elist.push_back(parent_index);
 	    cut_ecap.push_back(child_slack);
-
+#ifdef PSEP_DO_VIZ
+	    light_out << child_index  << "--" << parent_index << ";\n\t";
+#endif
 	    node_marks[child_index] = !(node_marks[child_index]);
 	    node_marks[parent_index] = !(node_marks[parent_index]);
 
@@ -128,7 +170,9 @@ int DPCutGraph::build_light_tree()
 	  cut_elist.push_back(child_index);
 	  cut_elist.push_back(i);
 	  cut_ecap.push_back(child_slack);
-
+#ifdef PSEP_DO_VIZ
+	  light_out << i  << "--" << child_index << ";\n\t";
+#endif
 	  node_marks[i] = !(node_marks[i]);
 	  node_marks[child_index] = !(node_marks[child_index]);
 	}	
@@ -164,6 +208,10 @@ int DPCutGraph::build_light_tree()
  CLEANUP:
   if(rval)
     cerr << "DPCutGraph::build_light_tree failed\n";
+#ifdef PSEP_DO_VIZ
+  light_out << "}";
+  light_out.close();
+#endif
   return rval;
 }
 
