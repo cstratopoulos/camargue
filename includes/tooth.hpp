@@ -137,15 +137,6 @@ public:
   /** Build a collection of light simple teeth. */
   int get_light_teeth();
 
-  void print_tooth(const SimpleTooth &T);
-  void print_collection();
-  
-  std::vector<std::vector<SimpleTooth::Ptr>> light_teeth;
-
-  
-private:
-  void clear_collection();
-
   /*
    * Reduces the size of the collection of light teeth using the elimination
    * criterion of Lemma 5.5 in Fleischer et al (2006). This reduces the 
@@ -153,6 +144,16 @@ private:
    * arguments
    */
   void weak_elim();
+
+  
+  void print_tooth(const SimpleTooth &T, bool full);
+  void print_collection();
+  
+  std::vector<std::vector<SimpleTooth::Ptr>> light_teeth;
+
+  
+private:
+  void clear_collection();
 
   static int add_tooth(std::vector<std::vector<SimpleTooth::Ptr>> &teeth,
 		       const int root, const int body_start,

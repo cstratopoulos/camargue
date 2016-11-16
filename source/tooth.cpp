@@ -377,22 +377,34 @@ int CandidateTeeth::body_subset(const SimpleTooth &T, const SimpleTooth &R,
   return 0;
 }
 
-void CandidateTeeth::print_tooth(const SimpleTooth &T)
+void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full)
 {
-  int ncount = G_s.node_count;
-  int current_node = T.body_start;
-  int upper_limit = body_size(T) + T.sandwich();
+  vector<int> &bt = best_tour_nodes;
 
-  std::cout << "Root: " << best_tour_nodes[T.root] << ", body size: "
-       << body_size(T) 
-       << ", Body: \n"
-       << best_tour_nodes[T.body_start] << "\n";
-  for(int i = 1; i < upper_limit; i++){
-    current_node = best_tour_nodes[(T.body_start + i) % ncount];
-    if(current_node != best_tour_nodes[T.root])
-      std::cout <<current_node << "\n";
+  cout << "(" << bt[T.root] << ", {" << bt[T.body_start];
+
+  if(T.body_start == T.body_end){
+    cout << "}) -- slack " << T.slack << "\n";
+    return;
   }
-  std::cout << "Slack: " << T.slack << "\n";
+
+  if(!full){
+    cout << ", ..., " << bt[T.body_end] << "}) -- slack " << T.slack << "\n";
+    return;
+  }
+
+  bool comma_sep = bt.size() <= 20;
+  int i = T.body_start;
+  
+  cout << ", ";
+  while(i++ != T.body_end){
+    cout << bt[i];
+    if(i == T.body_end)
+      cout << "}";
+    else
+      cout << (comma_sep ? ", " : "\n\t");
+  }
+  cout << ") -- slack " << T.slack << "\n";  
 }
 
 void CandidateTeeth::print_collection()
