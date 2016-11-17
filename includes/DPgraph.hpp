@@ -1,3 +1,9 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/** @file
+ * @brief BUILDING SIMPLE DP WITNESS CUTGRAPH
+ *
+\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef PSEP_DPGRAPH_HPP
 #define PSEP_DPGRAPH_HPP
 
@@ -12,10 +18,29 @@ extern "C" {
 #include <concorde/INCLUDE/cut.h>
 }
 
-//#define PSEP_DO_VIZ
+
+/** @def PSEP_DO_VIZ
+ * @brief Macro for conditional compilation of graphviz DOT files.
+ * If defined, the DPCutGraph constructor must provide an output file name.
+ * This will be used to open an output file stream, which will contain a 
+ * graphviz (.gv) file describing the light cut tree and full witness cutgraph.
+ * This can then be processed with (suggested) fdp, circo, etc. 
+ * @remark Comments in the gv file will indicate the beginning of the 
+ * nonnegativity edges. You may wish to delete these entirely; with them 
+ * included it is hard to get a graph that is not an unintelligible scribble.
+ * @warning This should be undef'd for all but very small examples in Catch
+ * test cases. 
+ */
+#undef PSEP_DO_VIZ
 
 namespace PSEP {
 
+/** Class for building light simple DP witness cutgraphs.
+ * As per Fleischer, Letchford, and Lodi (2006), this class will build the 
+ * witness graph for detecting light simple DP inequalities. Then, it builds
+ * a Gomory-Hu cut tree from the witness graph, from which an odd cut of weight
+ * less than one corresponds to a violated light simple DP inequality.
+ */
 class DPCutGraph {
 public:
   DPCutGraph(
