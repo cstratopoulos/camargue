@@ -17,7 +17,8 @@ using std::string;
 
 TEST_CASE ("Toy examples from paper",
 	   "[simpleDP]") {
-  vector<string> probs{"fleisA9"/*, "fleisB9", "comb9", "ulysses16"*/};
+  vector<string> probs{"fleisA9", "fleisB9", "comb9", "ulysses16",
+		       "dantzig42"};
 
     for(string &fname : probs){
       SECTION(fname){
@@ -43,7 +44,7 @@ TEST_CASE ("Toy examples from paper",
 				   s_dat.support_ecap);
 	
 	REQUIRE_FALSE(cands.get_light_teeth());
-	//	cands.weak_elim();
+	cands.weak_elim();
 	
 	for(vector<PSEP::SimpleTooth::Ptr> &vec : cands.light_teeth)
 	  for(PSEP::SimpleTooth::Ptr &T : vec){
@@ -57,23 +58,22 @@ TEST_CASE ("Toy examples from paper",
 
 	REQUIRE(dp_graph.simple_DP_sep(dp_q) == 0);
 
-	// while(!dp_q.empty()){
-	//   PSEP::dominoparity dp = dp_q.peek_front();
-	//   vector<int> bt = b_dat.best_tour_nodes;
+	while(!dp_q.empty()){
+	  PSEP::dominoparity dp = dp_q.peek_front();
 
-	//   cout << "Found dp with....\n";
-	//   cout << "Handle: ";
-	//   for(int i : dp.degree_nodes) cout << bt[i] << ", "; cout << "\n";
-	//   cout << "Nonneg edges: ";
-	//   for(IntPair &e : dp.nonneg_edges)
-	//     cout << "(" << bt[e.first] << ", " << bt[e.second] << "), ";
-	//   cout << "\n";
-	//   cout << "Simple teeth: (" << dp.used_teeth.size() << " total)\n";
-	//   for(PSEP::SimpleTooth *T : dp.used_teeth)
-	//     cands.print_tooth(*T, true);
+	  cout << "Found dp with....\n";
+	  cout << "Handle: ";
+	  for(int i : dp.degree_nodes) cout << i << ", "; cout << "\n";
+	  cout << "Nonneg edges: ";
+	  for(IntPair &e : dp.nonneg_edges)
+	    cout << "(" << e.first << ", " << e.second << "), ";
+	  cout << "\n";
+	  cout << "Simple teeth: (" << dp.used_teeth.size() << " total)\n";
+	  for(PSEP::SimpleTooth *T : dp.used_teeth)
+	    cands.print_tooth(*T, true);
 
-	//   dp_q.pop_front();
-	// }
+	  dp_q.pop_front();
+	}
 	cout << "\n\n";
       }
     }
