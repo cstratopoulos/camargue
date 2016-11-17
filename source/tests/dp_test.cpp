@@ -51,9 +51,9 @@ TEST_CASE ("Toy examples from paper",
 	    cout << "Root label: " << cands.print_label(*T, true) << "\n";
 	  }
 
-	PSEP::DPCutGraph dp_graph(cands.light_teeth, cands,
-				  b_dat.perm, s_dat.G_s);
-	dp_graph.ofname = fname;
+	PSEP::DPCutGraph dp_graph(fname, cands.light_teeth, cands,
+				  b_dat.perm, s_dat.G_s,
+				  s_dat.support_elist, s_dat.support_ecap);
 	PSEP::CutQueue<PSEP::dominoparity> dp_q;
 
 	REQUIRE(dp_graph.simple_DP_sep(dp_q) == 0);

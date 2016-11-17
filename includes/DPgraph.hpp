@@ -6,23 +6,34 @@
 
 #include <vector>
 #include <string>
+#include <fstream>
 
 extern "C" {
 #include <concorde/INCLUDE/cut.h>
 }
 
+#define PSEP_DO_VIZ
 
 namespace PSEP {
 
 class DPCutGraph {
 public:
-  DPCutGraph(std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &_teeth,
+  DPCutGraph(
+#ifdef PSEP_DO_VIZ
+	     std::string _ofname,
+#endif
+	     std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &_teeth,
 	     PSEP::CandidateTeeth &_cands,
 	     const std::vector<int> &_perm,
-	     const SupportGraph &_G_s);
+	     const SupportGraph &_G_s,
+	     const std::vector<int> &_support_elist,
+	     const std::vector<double> &_support_ecap);
   ~DPCutGraph();
 
+#ifdef PSEP_DO_VIZ
   std::string ofname;
+  std::ofstream cg_out;
+#endif
 
   int simple_DP_sep(PSEP::CutQueue<PSEP::dominoparity> &domino_q);
 
@@ -40,6 +51,9 @@ public:
   PSEP::CandidateTeeth &cands;
 
   const SupportGraph &G_s;
+  const std::vector<int> &support_elist;
+  const std::vector<double> &support_ecap;
+  
   const std::vector<int> &perm;
   
   std::vector<PSEP::SimpleTooth*> cutgraph_nodes;

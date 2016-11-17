@@ -4,33 +4,47 @@
 
 #include <iostream>
 #include <iomanip>
-#include <fstream>
 
 using std::vector;
 using std::cout;
 using std::cerr;
 
-#define PSEP_DO_VIZ
-
 namespace PSEP {
 
-DPCutGraph::DPCutGraph(vector<vector<SimpleTooth::Ptr>> &_teeth,
+DPCutGraph::DPCutGraph(
+#ifdef PSEP_DO_VIZ
+		       std::string _ofname,
+#endif
+		       vector<vector<SimpleTooth::Ptr>> &_teeth,
 		       CandidateTeeth &_cands,
 		       const vector<int> &_perm,
-		       const SupportGraph &_G_s) :
+		       const SupportGraph &_G_s,
+		       const vector<int> &_support_elist,
+		       const vector<double> &_support_ecap) :
+#ifdef PSEP_DO_VIZ
+  ofname(_ofname),
+#endif
   light_teeth(_teeth),
   cands(_cands),
-  G_s(_G_s),
+  G_s(_G_s), support_elist(_support_elist), support_ecap(_support_ecap),
   perm(_perm),
   CC_gh_q(25)
 {
   CCcut_GHtreeinit(&gh_tree);
 }
 
-DPCutGraph::~DPCutGraph(){ CCcut_GHtreefree(&gh_tree); }
+DPCutGraph::~DPCutGraph()
+{
+  CCcut_GHtreefree(&gh_tree);
+}
 
 int DPCutGraph::simple_DP_sep(CutQueue<dominoparity> &domino_q)
 {
+#ifdef PSEP_DO_VIZ
+  cg_out.open(ofname + "-witness.gv");
+  cg_out << "graph {\n\t"
+	 << "mindist=0.5;\n\t";
+#endif
   int rval = 0;
 
   rval = build_light_tree();
@@ -48,6 +62,10 @@ int DPCutGraph::simple_DP_sep(CutQueue<dominoparity> &domino_q)
  CLEANUP:
   if(rval == 1)
     cerr << "Problem in DPCutGraph::simple_DP_sep.\n";
+#ifdef PSEP_DO_VIZ
+  cg_out << "}";
+  cg_out.close();
+#endif
   return rval;
 }
 
@@ -56,19 +74,12 @@ int DPCutGraph::build_light_tree()
   int rval = 0;
   int num_cutnodes = 0, current_index, star_index;
 
-#ifdef PSEP_DO_VIZ
-  std::ofstream light_out;
-  light_out.open(ofname + "-light.gv");
-  light_out << "graph {\n\t"
-	    << "mindist=0.5;\n\t"; //circo
-#endif
-
 
   try { //nullptrs represent the degree eqn on each root
     for(int i = 0; i < light_teeth.size(); i++){
       cutgraph_nodes.push_back(nullptr);
 #ifdef PSEP_DO_VIZ
-      light_out << i << "[color=aquamarine3];\n\t";
+      cg_out << i << "[color=aquamarine3];\n\t";
 #endif
     }
   } catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back degree eqn nodes. "); }
@@ -76,7 +87,7 @@ int DPCutGraph::build_light_tree()
   current_index = cutgraph_nodes.size();
 
 #ifdef PSEP_DO_VIZ
-  light_out << "//numbering and labelling cutgraph node for each tooth\n\t";
+  cg_out << "//numbering and labelling cutgraph node for each tooth\n\t";
 #endif
   try {
     for(const vector<SimpleTooth::Ptr> &t_vec : light_teeth)
@@ -84,7 +95,7 @@ int DPCutGraph::build_light_tree()
 	cutgraph_nodes.push_back(it->get());
 	(*it)->cutgraph_index = current_index++;
 #ifdef PSEP_DO_VIZ
-	light_out << (*it)->cutgraph_index
+	cg_out << (*it)->cutgraph_index
 		  << "[label=\"" << cands.print_label(**it, true)
 		  << "\"];\n\t";
 #endif
@@ -96,9 +107,9 @@ int DPCutGraph::build_light_tree()
   num_cutnodes = cutgraph_nodes.size();
   star_index = num_cutnodes - 1;
 #ifdef PSEP_DO_VIZ
-  light_out << "//adding and labelling star node\n\t";
-  light_out << star_index << "[label=\"X\"];\n\t";
-  light_out << "root=" << star_index << ";\n\t";
+  cg_out << "//adding and labelling star node\n\t";
+  cg_out << star_index << "[label=\"X\"];\n\t";
+  cg_out << "root=" << star_index << ";\n\t";
 #endif
 
   try { node_marks.resize(num_cutnodes, false); } catch(...){
@@ -106,7 +117,7 @@ int DPCutGraph::build_light_tree()
   }
 
 #ifdef PSEP_DO_VIZ
-  light_out << "//adding degree eqn nodes between root and star\n\t";
+  cg_out << "//adding degree eqn nodes between root and star\n\t";
 #endif
   try {//add edges between every root and central node for degree eqns
     for(int i = 0; i < light_teeth.size(); ++i){
@@ -114,7 +125,7 @@ int DPCutGraph::build_light_tree()
       cut_elist.push_back(star_index);
       cut_ecap.push_back(0);
 #ifdef PSEP_DO_VIZ
-      light_out << star_index << "--" << i << "[label=\"d" << i << "\"];\n\t";
+      cg_out << star_index << "--" << i << "[label=\"d" << i << "\"];\n\t";
 #endif
     }
   } catch(...){ PSEP_SET_GOTO(rval, "Couldn't add degree eqn edges. "); }
@@ -137,7 +148,7 @@ int DPCutGraph::build_light_tree()
 	  cut_elist.push_back(child_index);
 	  cut_elist.push_back(parent_index);
 #ifdef PSEP_DO_VIZ
-	  light_out << child_index << "--" << parent_index
+	  cg_out << child_index << "--" << parent_index
 		    << "[label=\"" << std::setprecision(2)
 		    << child_slack << "\"]"
 		    << ";\n\t";
@@ -155,7 +166,7 @@ int DPCutGraph::build_light_tree()
 	cut_elist.push_back(child_index);
 	cut_elist.push_back(i);
 #ifdef PSEP_DO_VIZ
-	light_out << child_index << "--" << i
+	cg_out << child_index << "--" << i
 		  << "[label=\"" << std::setprecision(2)
 		  << child_slack << "\"]"
 		  << ";\n\t";
@@ -174,7 +185,7 @@ int DPCutGraph::build_light_tree()
       if(node_marks[i]){
 	odd_nodes_list.push_back(i);
 #ifdef PSEP_DO_VIZ
-	light_out << i << "[color=red];\n\t";
+	cg_out << i << "[color=red];\n\t";
 #endif
       }
   } catch(...){ PSEP_SET_GOTO(rval, "Couldn't set gomoryhu marked nodes. "); }
@@ -201,13 +212,64 @@ int DPCutGraph::build_light_tree()
  CLEANUP:
   if(rval)
     cerr << "DPCutGraph::build_light_tree failed\n";
-#ifdef PSEP_DO_VIZ
-  light_out << "}";
-  light_out.close();
-#endif
   return rval;
 }
 
+int DPCutGraph::add_web_edges()
+{
+  int rval = 0;
+  int start_ecount = cut_ecap.size();
+
+  for(int i = 0; i < support_ecap.size(); ++i){
+    double lp_weight = support_ecap[i];
+    int end0 = perm[support_elist[2 * i]];
+    int end1 = perm[support_elist[(2 * i) + 1]];
+    int end0_container = -1, end1_container = -1;
+
+    //search subtree root w  end0 for smallest (end0, S) with end1 in S
+    for(const SimpleTooth::Ptr &T : light_teeth[end0]){
+      if(T->body_contains(end1)){
+	end1_container = T->cutgraph_index;
+	break;
+      }
+    }
+    if(end1_container == -1) end1_container = end0;
+
+    //search subtree w root end1 for smallest (end1, S) with end0 in S
+    for(const SimpleTooth::Ptr &T : light_teeth[end1]){
+      if(T->body_contains(end0)){
+	end0_container = T->cutgraph_index;
+	break;
+      }
+    }
+    if(end0_container == -1) end0_container = end1;
+
+    try {
+      cut_elist.push_back(end0_container);
+      cut_elist.push_back(end1_container);
+      cut_ecap.push_back(lp_weight);
+#ifdef PSEP_DO_VIZ
+      cg_out << end0_container << "--" << end1_container
+	     << "[label=\"" << lp_weight << "\"];\n\t";
+#endif
+    } catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back web edge. "); }
+  }
+
+  if(cut_ecap.size() != start_ecount + G_s.edge_count){
+    PSEP_SET_GOTO(rval, "Wrong number of web edges added. ");
+  } 
+
+  try { cutgraph_delta.resize(cut_ecap.size()); } catch (...) {
+    PSEP_SET_GOTO(rval, "Couldn't allocate cutgraph delta. ");
+  }
+
+ CLEANUP:
+  if(rval)
+    cerr << "DPCutGraph::add_web_edges failed.\n";
+  return rval;
+}
+
+/*
 int DPCutGraph::add_web_edges()
 {
   int rval = 0;
@@ -283,6 +345,7 @@ int DPCutGraph::add_web_edges()
     cerr << "DPCutGraph::add_web_edges failed\n";
   return rval;
 }
+*/
 
 int DPCutGraph::call_concorde_gomoryhu()
 {
@@ -315,7 +378,7 @@ int DPCutGraph::call_concorde_gomoryhu()
 
   if(CC_gh_q.empty()) rval = 2;
 
-  CCcut_GHtreeprint(&gh_tree);
+  // CCcut_GHtreeprint(&gh_tree);
 
  CLEANUP:
   if(rval == 1)
