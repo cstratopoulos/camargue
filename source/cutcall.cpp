@@ -54,25 +54,6 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   total_2mcalls++;
 
   if(segval == 2 && matchval == 2 && stat != LP::PivType::Subtour){
-    dptime.start();
-    
-    bool in_sub = false;
-    
-    rval = in_subtour_poly(in_sub);
-    if(rval) goto CLEANUP;
-
-    if(in_sub){
-      dominos.reset(new Cut<dominoparity>(graph_data.delta,
-					  graph_data.edge_marks,
-					  best_data.best_tour_nodes,
-					  best_data.perm, supp_data.G_s,
-					  supp_data.support_elist,
-					  supp_data.support_ecap, domino_q));
-      dptime.resume();
-      dpval = dominos->cutcall();
-      if(dpval == 1){ rval = 1; goto CLEANUP; }
-      dptime.stop();
-    }
   }
 
   if(segval == 2 && matchval == 2 && dpval == 2)
@@ -95,7 +76,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
 int CutControl::add_primal_cuts()
 {
   int rval = 0;
-  int seg_added = 0, blossom_added = 0, dp_added = 0;
+  int seg_added = 0, blossom_added = 0;
   vector<int> rmatind;
   vector<double> rmatval;
   char sense;
@@ -151,42 +132,6 @@ int CutControl::add_primal_cuts()
       blossom_q.pop_front();
     } 
   }
-
-  if(!domino_q.empty()){
-  while(!domino_q.empty()){
-    vector<double> coeff_buffer;
-    rhs = 0.0;
-    sense = 'L';
-    vector<int> dp_inds;
-    
-    try { coeff_buffer.resize(graph_data.m_graph.edge_count, 0); } catch(...) {
-      PSEP_SET_GOTO(rval, "Couldn't allocate simple DP coeff buffer. ");
-    }
-
-    rval = dominos->parse_cut(domino_q.peek_front(), graph_data, supp_data.G_s,
-			      coeff_buffer, rhs);
-    if(rval) goto CLEANUP;
-
-    try {
-      for(int i = 0; i < coeff_buffer.size(); ++i)
-	if(coeff_buffer[i] != 0.0) dp_inds.push_back(i);
-    } catch(...) { PSEP_SET_GOTO(rval, "Couldn't push back dp inds. "); }
-
-    coeff_buffer.erase(std::remove(coeff_buffer.begin(),
-				   coeff_buffer.end(), 0.0),
-		       coeff_buffer.end());
-    rval = PSEPlp_addrows(m_lp, 1, dp_inds.size(), &rhs, &sense, &rmatbeg,
-			  &dp_inds[0], &coeff_buffer[0]);
-    if(rval) goto CLEANUP;
-    ++dp_added;
-    
-    domino_q.pop_front();
-  }
-  cout << "\tAdded " << dp_added << " simple DP ineqs.\n";
-  }
-
-
-
 
  CLEANUP:
   if(rval)

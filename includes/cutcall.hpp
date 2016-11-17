@@ -9,7 +9,6 @@
 #include "segments.hpp"
 #include "blossoms.hpp"
 #include "fastblossoms.hpp"
-#include "simpleDP.hpp"
 #include "safegmi.hpp"
 #include "tooth.hpp"
 #include "cuts.hpp"
@@ -28,7 +27,6 @@ public:
     translator(GraphGroup),
     segment_q(LPGroup.prefs.max_per_round),
     blossom_q(LPGroup.prefs.q_max_size),
-    domino_q(10),
     segments(BestGroup.best_tour_nodes, BestGroup.perm,
 	     SupportGroup.G_s, SupportGroup.support_elist,
 	     SupportGroup.support_ecap,
@@ -79,15 +77,10 @@ private:
   
   PSEP::CutQueue<PSEP::HyperGraph> segment_q;
   PSEP::CutQueue<PSEP::HyperGraph> blossom_q;
-
-  PSEP::CutQueue<PSEP::dominoparity> domino_q;
   
   PSEP::Cut<PSEP::seg> segments;
   PSEP::Cut<PSEP::blossom> blossoms;
   PSEP::Cut<PSEP::fastblossom> fastblossoms;
-
-  /** @todo: make all cut classes like this. */
-  std::unique_ptr<PSEP::Cut<PSEP::dominoparity>> dominos;
 
   PSEP::Cut<PSEP::safeGMI> safe_gomory;
 
