@@ -217,6 +217,9 @@ int DPCutGraph::build_light_tree()
 
 int DPCutGraph::add_web_edges()
 {
+#ifdef PSEP_DO_VIZ
+  cg_out << "//Adding nonnegativity edges to cutgraph\n\t";
+#endif
   int rval = 0;
   int start_ecount = cut_ecap.size();
 
@@ -268,84 +271,6 @@ int DPCutGraph::add_web_edges()
     cerr << "DPCutGraph::add_web_edges failed.\n";
   return rval;
 }
-
-/*
-int DPCutGraph::add_web_edges()
-{
-  int rval = 0;
-  int start_ecount = cut_ecap.size();
-
-  for(int end0 = 0; end0 < G_s.node_count; ++end0){
-    for(int j = 0; j < G_s.nodelist[end0].s_degree; ++j){
-      bool end0_in = false, end1_in = false;
-      int end1 = G_s.nodelist[end0].adj_objs[j].other_end;
-      
-      if(end0 > end1) continue;
-
-      double lp_weight = G_s.nodelist[end0].adj_objs[j].lp_weight;
-      //search for smallest body with root end0 containing end1
-      if(!light_teeth[end0].empty()){
-	for(auto root_end0 = light_teeth[end0].begin(); //iterator
-	    root_end0 != light_teeth[end0].end();
-	    ++root_end0){
-	  end1_in = (*root_end0)->body_contains(perm[end1]);
-	  if(end1_in){
-	    try { cut_elist.push_back((*root_end0)->cutgraph_index); }
-	    catch (...) {
-	      PSEP_SET_GOTO(rval, "Couldn't push back web edge. ");
-	    }
-	    break;
-	  }
-	}
-      }
-      if(!end1_in){ //none found, take degree eqn end0
-	try { cut_elist.push_back(end0); } catch(...) {
-	  PSEP_SET_GOTO(rval, "Couldn't push back web edge. ");
-	}
-      }
-
-      if(!light_teeth[end1].empty()){
-	for(auto root_end1 = light_teeth[end1].begin(); //iterator
-	    root_end1 != light_teeth[end1].end();
-	    ++root_end1){
-	  end0_in = (*root_end1)->body_contains(perm[end0]);
-	  if(end0_in){
-	    try { cut_elist.push_back((*root_end1)->cutgraph_index); }
-	    catch (...) {
-	      PSEP_SET_GOTO(rval, "Couldn't push back web edge. ");
-	    }
-	    break;
-	  }
-	}
-      }
-      
-      if(!end0_in){ //none found, take degree eqn end1
-	try{ cut_elist.push_back(end1); } catch (...) {
-	  PSEP_SET_GOTO(rval, "Couldn't push back web edge. ");
-	}
-      }
-
-      try{ cut_ecap.push_back(lp_weight); } catch (...) {
-	PSEP_SET_GOTO(rval, "Couldn't push back edge cap. ");
-      }
-    }
-  }
-
-  if(cut_ecap.size() != start_ecount + G_s.edge_count){
-    PSEP_SET_GOTO(rval, "Wrong number of web edges added. ");
-  } 
-
-  try { cutgraph_delta.resize(cut_ecap.size()); } catch (...) {
-    PSEP_SET_GOTO(rval, "Couldn't allocate cutgraph delta. ");
-  }
-  
-
- CLEANUP:
-  if(rval)
-    cerr << "DPCutGraph::add_web_edges failed\n";
-  return rval;
-}
-*/
 
 int DPCutGraph::call_concorde_gomoryhu()
 {
