@@ -58,7 +58,7 @@ int CandidateTeeth::get_light_teeth()
   
   clear_collection();
   
-  cout << "Getting light teeth via linsub...." << endl;
+  cout << "Getting light teeth via linsub....";
   ft = zeit();
   
   rval = CCcut_linsub_allcuts(G_s.node_count,

@@ -354,31 +354,25 @@ int DPCutGraph::call_concorde_gomoryhu()
   int markcount = odd_nodes_list.size();
 
   CCrandstate rstate;
-  //int seed = (int) real_zeit();
-  CCutil_sprand(1479252604, &rstate);
+  int seed = (int) real_zeit();
+  CCutil_sprand(seed, &rstate);
 
-  cout << "\tCalling CCcut_gh with ncount: " << ncount << "\n"
-       << "\tecount: " << ecount << "\n"
-       << "\tmarkcount: " << markcount << ".......";
+  double gh_time = zeit(), dfs_time;
   rval = CCcut_gomory_hu(&gh_tree, ncount, ecount, &cut_elist[0], &cut_ecap[0],
 			 markcount, &odd_nodes_list[0], &rstate);
   PSEP_CHECK_RVAL(rval, "CCcut_gomory_hu failed. ");
-  cout << "Done.\n";
+  cout << "Built Gomory-Hu tree in " << (zeit() - gh_time) << "s\n";
 
-  cout << "\tPerforming odd cut dfs.....";
-  
-  try { dfs_odd_cuts(gh_tree.root); } catch (...) {
+  dfs_time = zeit();
+  try {
+    dfs_odd_cuts(gh_tree.root);
+  } catch (...) {
     PSEP_SET_GOTO(rval, "Problem dfsing tree for odd cuts. ");
-  }
-  
-  cout << "Done. " << CC_gh_q.size() << " cuts in queue. ";
-  if(CC_gh_q.size())
-    cout << "Best cutval: " << CC_gh_q.peek_front()->cutval;
-  cout << "\n";
+  }  
+  cout << "Done odd cut dfs in " << (zeit() - dfs_time)  <<  "s, "
+       << CC_gh_q.size() << " cuts in queue.\n";
 
   if(CC_gh_q.empty()) rval = 2;
-
-  // CCcut_GHtreeprint(&gh_tree);
 
  CLEANUP:
   if(rval == 1)
@@ -390,10 +384,10 @@ inline void DPCutGraph::dfs_odd_cuts(CC_GHnode *n)
 {
   if(n->parent)
     if(n->ndescendants % 2 == 1 && n->ndescendants > 1 && n->cutval < 0.9) {
-      if(CC_gh_q.empty() || n->cutval < CC_gh_q.peek_front()->cutval)
+      if(CC_gh_q.empty() || n->cutval <= CC_gh_q.peek_front()->cutval)
 	CC_gh_q.push_front(n);
-      else
-	CC_gh_q.push_back(n);
+      // else
+      // 	CC_gh_q.push_back(n);
     }
 
   for(n = n->child; n; n = n->sibling)

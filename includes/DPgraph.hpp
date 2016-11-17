@@ -12,7 +12,7 @@ extern "C" {
 #include <concorde/INCLUDE/cut.h>
 }
 
-#define PSEP_DO_VIZ
+//#define PSEP_DO_VIZ
 
 namespace PSEP {
 
