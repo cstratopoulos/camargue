@@ -1,7 +1,6 @@
 *.o
 objects
 
-
 *.dSYM
 
 #no main executable
@@ -24,3 +23,9 @@ sloc
 doc
 
 dp_old
+
+#ignore gv files, softlinks, and output
+*.png
+*.gv
+viz
+circo
