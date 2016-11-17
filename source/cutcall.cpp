@@ -1,8 +1,8 @@
 #include "cutcall.hpp"
 #include "DPgraph.hpp"
 
-#include <chrono>
 #include <iomanip>
+#include <algorithm>
 
 extern "C" {
  #include <concorde/INCLUDE/combs.h>
@@ -13,9 +13,6 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-
-//#define PSEP_TEST_TOOTH
-
 namespace PSEP {
 
 int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
@@ -25,20 +22,9 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   int segval = 2, matchval = 2, dpval = 2;
   bool pool_blossoms;
 
-  Timer
-    insubtime("Test subtour poly", &dptime),
-    getlight_time("Get light teeth", &dptime),
-    buildtree_time("Build light tree", &dptime),
-    addweb_time("add web edges", &dptime),
-    gh_time("CC gomoryhu", &dptime),
-    grab_time("Grabbing GH cuts", &dptime);
-
   segtime.resume();
   segval = segments.cutcall();
-  if(segval == 1){
-    rval = 1;
-    goto CLEANUP;
-  }  
+  if(segval == 1){ rval = 1; goto CLEANUP; }  
   segtime.stop();
   
   total_segcalls++;
@@ -67,60 +53,27 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   
   total_2mcalls++;
 
-#ifdef PSEP_TEST_TOOTH
-  if(segval == 2 && stat != LP::PivType::Subtour){
+  if(segval == 2 && matchval == 2 && stat != LP::PivType::Subtour){
     dptime.start();
     
     bool in_sub = false;
     
-    insubtime.start();
     rval = in_subtour_poly(in_sub);
     if(rval) goto CLEANUP;
-    insubtime.stop();
 
     if(in_sub){
-      cout << "Augrounds " << augrounds << ", solution is in subtour polytope, "
-	   << "testing candidate teeth!" << endl;
-
-      getlight_time.start();
-      rval = candidates.get_light_teeth();
-      if(rval) goto CLEANUP;
-      getlight_time.stop();
-
-      cout << "Got collection of light candidate teeth" << endl;
-
-      DPCutGraph cutgraph(candidates.light_teeth,
-			  candidates, best_data.perm,
-			  supp_data.G_s);
-      
-      CutQueue<dominoparity> domino_q(25);
-
-      buildtree_time.start();
-      rval = cutgraph.build_light_tree();
-      if(rval) goto CLEANUP;
-      buildtree_time.stop();
-
-      addweb_time.start();
-      rval = cutgraph.add_web_edges();
-      if(rval) goto CLEANUP;
-      addweb_time.stop();
-
-      gh_time.start();
-      rval = cutgraph.call_concorde_gomoryhu();
-      if(rval) goto CLEANUP;
-      gh_time.stop();
-
-      grab_time.start();
-      rval = cutgraph.grab_cuts(domino_q);
-      if(rval) goto CLEANUP;
-      grab_time.stop();
-
+      dominos.reset(new Cut<dominoparity>(graph_data.delta,
+					  graph_data.edge_marks,
+					  best_data.best_tour_nodes,
+					  best_data.perm, supp_data.G_s,
+					  supp_data.support_elist,
+					  supp_data.support_ecap, domino_q));
+      dptime.resume();
+      dpval = dominos->cutcall();
+      if(dpval == 1){ rval = 1; goto CLEANUP; }
       dptime.stop();
-
-      rval = 1; goto CLEANUP;
     }
   }
-#endif
 
   if(segval == 2 && matchval == 2 && dpval == 2)
     rval = 2;
@@ -135,25 +88,14 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   if(dpval == 1)
     cerr << "Cuts<domino>::cutcall";
   if(rval == 1)
-    cerr << "\n";
-
-#ifdef PSEP_TEST_TOOTH
-  insubtime.report(false);
-  getlight_time.report(false);
-  buildtree_time.report(false);
-  addweb_time.report(false);
-  gh_time.report(false);
-  grab_time.report(false);
-  dptime.report(false);
-#endif
-  
+    cerr << "\n";  
   return rval;
 }
 
 int CutControl::add_primal_cuts()
 {
   int rval = 0;
-  int seg_added = 0, blossom_added = 0;
+  int seg_added = 0, blossom_added = 0, dp_added = 0;
   vector<int> rmatind;
   vector<double> rmatval;
   char sense;
@@ -209,6 +151,41 @@ int CutControl::add_primal_cuts()
       blossom_q.pop_front();
     } 
   }
+
+  if(!domino_q.empty()){
+  while(!domino_q.empty()){
+    vector<double> coeff_buffer;
+    rhs = 0.0;
+    sense = 'L';
+    vector<int> dp_inds;
+    
+    try { coeff_buffer.resize(graph_data.m_graph.edge_count, 0); } catch(...) {
+      PSEP_SET_GOTO(rval, "Couldn't allocate simple DP coeff buffer. ");
+    }
+
+    rval = dominos->parse_cut(domino_q.peek_front(), graph_data, supp_data.G_s,
+			      coeff_buffer, rhs);
+    if(rval) goto CLEANUP;
+
+    try {
+      for(int i = 0; i < coeff_buffer.size(); ++i)
+	if(coeff_buffer[i] != 0.0) dp_inds.push_back(i);
+    } catch(...) { PSEP_SET_GOTO(rval, "Couldn't push back dp inds. "); }
+
+    coeff_buffer.erase(std::remove(coeff_buffer.begin(),
+				   coeff_buffer.end(), 0.0),
+		       coeff_buffer.end());
+    rval = PSEPlp_addrows(m_lp, 1, dp_inds.size(), &rhs, &sense, &rmatbeg,
+			  &dp_inds[0], &coeff_buffer[0]);
+    if(rval) goto CLEANUP;
+    ++dp_added;
+    
+    domino_q.pop_front();
+  }
+  cout << "\tAdded " << dp_added << " simple DP ineqs.\n";
+  }
+
+
 
 
  CLEANUP:

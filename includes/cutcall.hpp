@@ -1,15 +1,15 @@
 #ifndef PSEP_CUTCALL_H
 #define PSEP_CUTCALL_H
 
-#include<iostream>
-#include<iomanip>
-#include<list>
+#include <vector>
+#include <memory>
 
 #include "lp.hpp"
 #include "datagroups.hpp"
 #include "segments.hpp"
 #include "blossoms.hpp"
 #include "fastblossoms.hpp"
+#include "simpleDP.hpp"
 #include "safegmi.hpp"
 #include "tooth.hpp"
 #include "cuts.hpp"
@@ -28,6 +28,7 @@ public:
     translator(GraphGroup),
     segment_q(LPGroup.prefs.max_per_round),
     blossom_q(LPGroup.prefs.q_max_size),
+    domino_q(10),
     segments(BestGroup.best_tour_nodes, BestGroup.perm,
 	     SupportGroup.G_s, SupportGroup.support_elist,
 	     SupportGroup.support_ecap,
@@ -48,10 +49,6 @@ public:
 		LPGroup.frac_rowstat,
 		SupportGroup.support_indices,
 		LPGroup.prefs.max_per_round),
-    candidates(GraphGroup.delta, GraphGroup.edge_marks,
-	       BestGroup.best_tour_nodes, BestGroup.perm,
-	       SupportGroup.G_s, SupportGroup.support_elist,
-	       SupportGroup.support_ecap),
     graph_data(GraphGroup),
     LP_data(LPGroup),
     supp_data(SupportGroup),
@@ -77,19 +74,22 @@ private:
   int q_has_viol(bool &result, CutQueue<HyperGraph> &pool_q);
 
   
-  SetBank set_repo;
-  CutTranslate translator;
+  PSEP::SetBank set_repo;
+  PSEP::CutTranslate translator;
   
-  CutQueue<HyperGraph> segment_q;
-  CutQueue<HyperGraph> blossom_q;
+  PSEP::CutQueue<PSEP::HyperGraph> segment_q;
+  PSEP::CutQueue<PSEP::HyperGraph> blossom_q;
+
+  PSEP::CutQueue<PSEP::dominoparity> domino_q;
   
   PSEP::Cut<PSEP::seg> segments;
   PSEP::Cut<PSEP::blossom> blossoms;
   PSEP::Cut<PSEP::fastblossom> fastblossoms;
 
-  PSEP::Cut<PSEP::safeGMI> safe_gomory;
+  /** @todo: make all cut classes like this. */
+  std::unique_ptr<PSEP::Cut<PSEP::dominoparity>> dominos;
 
-  PSEP::CandidateTeeth candidates;
+  PSEP::Cut<PSEP::safeGMI> safe_gomory;
 
   PSEP::Data::GraphGroup &graph_data;
   PSEP::Data::LPGroup &LP_data;
