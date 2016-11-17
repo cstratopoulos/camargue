@@ -3,6 +3,7 @@
 #include "Graph.hpp"
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 
 using std::vector;
@@ -59,7 +60,7 @@ int DPCutGraph::build_light_tree()
   std::ofstream light_out;
   light_out.open(ofname + "-light.gv");
   light_out << "graph {\n\t"
-	    << "mindist=0.1;\n\t"; //circo
+	    << "mindist=0.5;\n\t"; //circo
 #endif
 
 
@@ -96,7 +97,7 @@ int DPCutGraph::build_light_tree()
   star_index = num_cutnodes - 1;
 #ifdef PSEP_DO_VIZ
   light_out << "//adding and labelling star node\n\t";
-  light_out << star_index << "[label=\"X\",color=red];\n\t";
+  light_out << star_index << "[label=\"X\"];\n\t";
   light_out << "root=" << star_index << ";\n\t";
 #endif
 
@@ -119,71 +120,63 @@ int DPCutGraph::build_light_tree()
   } catch(...){ PSEP_SET_GOTO(rval, "Couldn't add degree eqn edges. "); }
 
   try {
-    for(int i = 0; i < light_teeth.size(); i++){
-      if(light_teeth[i].empty()) continue;
-#ifdef PSEP_DO_VIZ
-      light_out << "//Building subtree with root " << i << "\n\t";
-#endif
-      auto child = light_teeth[i].rbegin();
+  for(int i = 0; i < light_teeth.size(); ++i){
+    if(light_teeth[i].empty()) continue;
+
+    for(auto child = light_teeth[i].begin();
+	child != light_teeth[i].end(); ++child){
       int child_index = (*child)->cutgraph_index;
       double child_slack = (*child)->slack;
+      bool found_parent = false;
+      
+      for(auto parent = child + 1; parent != light_teeth[i].end(); ++parent){
+	found_parent = (*child)->is_subset_of(**parent);
+	if(found_parent){
+	  int parent_index = (*parent)->cutgraph_index;
 
-      cut_elist.push_back(child_index);
-      cut_elist.push_back(i);
-      cut_ecap.push_back(child_slack);
-#ifdef PSEP_DO_VIZ
-      light_out << i << "--" << child_index << ";\n\t";
-#endif
-
-      //complement bits for odd or evenness
-      node_marks[i] = !(node_marks[i]);
-      node_marks[child_index] = !(node_marks[child_index]);
-
-      ++child; //for loop initialized one after begin
-      for(; child != light_teeth[i].rend(); ++child){
-	auto parent = child;
-	int parent_index = (*parent)->cutgraph_index;
-	bool found_parent;
-	
-	while(true){
-	  --parent;
-
-	  found_parent = (**child).is_subset_of(**parent);
-
-	  if(found_parent){//add edge between smallest parent
-	    cut_elist.push_back(child_index);
-	    cut_elist.push_back(parent_index);
-	    cut_ecap.push_back(child_slack);
-#ifdef PSEP_DO_VIZ
-	    light_out << child_index  << "--" << parent_index << ";\n\t";
-#endif
-	    node_marks[child_index] = !(node_marks[child_index]);
-	    node_marks[parent_index] = !(node_marks[parent_index]);
-
-	    break;
-	  }
-
-	  if(parent == light_teeth[i].rbegin()) break;
-	}
-
-	if(!found_parent){//then edge is between degree node
 	  cut_elist.push_back(child_index);
-	  cut_elist.push_back(i);
-	  cut_ecap.push_back(child_slack);
+	  cut_elist.push_back(parent_index);
 #ifdef PSEP_DO_VIZ
-	  light_out << i  << "--" << child_index << ";\n\t";
-#endif
-	  node_marks[i] = !(node_marks[i]);
+	  light_out << child_index << "--" << parent_index
+		    << "[label=\"" << std::setprecision(2)
+		    << child_slack << "\"]"
+		    << ";\n\t";
+#endif	  
+	  cut_ecap.push_back(child_slack);
+	  
 	  node_marks[child_index] = !(node_marks[child_index]);
-	}	
-      }      
-    }
-  } catch(...){ PSEP_SET_GOTO(rval, "Couldn't add tree edges. "); }
+	  node_marks[parent_index] = !(node_marks[parent_index]);
 
-  try{
+	  break;
+	}
+      }
+
+      if(!found_parent){
+	cut_elist.push_back(child_index);
+	cut_elist.push_back(i);
+#ifdef PSEP_DO_VIZ
+	light_out << child_index << "--" << i
+		  << "[label=\"" << std::setprecision(2)
+		  << child_slack << "\"]"
+		  << ";\n\t";
+#endif
+	cut_ecap.push_back(child_slack);
+
+	node_marks[child_index] = !(node_marks[child_index]);
+	node_marks[i] = !(node_marks[i]);
+      }
+    }
+  }
+  } catch(...) { PSEP_SET_GOTO(rval, "Problem building light cuttree. "); }
+
+  try {
     for(int i = 0; i < node_marks.size(); i++)
-      if(node_marks[i])
+      if(node_marks[i]){
 	odd_nodes_list.push_back(i);
+#ifdef PSEP_DO_VIZ
+	light_out << i << "[color=red];\n\t";
+#endif
+      }
   } catch(...){ PSEP_SET_GOTO(rval, "Couldn't set gomoryhu marked nodes. "); }
 
   
