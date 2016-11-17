@@ -15,19 +15,15 @@ DPCutGraph::DPCutGraph(
 #ifdef PSEP_DO_VIZ
 		       std::string _ofname,
 #endif
-		       vector<vector<SimpleTooth::Ptr>> &_teeth,
-		       CandidateTeeth &_cands,
-		       const vector<int> &_perm,
-		       const SupportGraph &_G_s,
-		       const vector<int> &_support_elist,
-		       const vector<double> &_support_ecap) :
+		       CandidateTeeth &_cands) :
 #ifdef PSEP_DO_VIZ
   ofname(_ofname),
 #endif
-  light_teeth(_teeth),
+  light_teeth(_cands.light_teeth),
   cands(_cands),
-  G_s(_G_s), support_elist(_support_elist), support_ecap(_support_ecap),
-  perm(_perm),
+  G_s(_cands.G_s), support_elist(_cands.support_elist),
+  support_ecap(_cands.support_ecap),
+  perm(_cands.perm),
   CC_gh_q(25)
 {
   CCcut_GHtreeinit(&gh_tree);

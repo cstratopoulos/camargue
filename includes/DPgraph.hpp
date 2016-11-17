@@ -47,12 +47,7 @@ public:
 #ifdef PSEP_DO_VIZ
 	     std::string _ofname,
 #endif
-	     std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &_teeth,
-	     PSEP::CandidateTeeth &_cands,
-	     const std::vector<int> &_perm,
-	     const SupportGraph &_G_s,
-	     const std::vector<int> &_support_elist,
-	     const std::vector<double> &_support_ecap);
+	     PSEP::CandidateTeeth &_cands);
   ~DPCutGraph();
 
 #ifdef PSEP_DO_VIZ

@@ -26,6 +26,7 @@ CandidateTeeth::CandidateTeeth(vector<int> &_delta, vector<int> &_edge_marks,
 			       vector<double> &_support_ecap) :
   edge_marks(_edge_marks),
   best_tour_nodes(_best_tour_nodes),
+  perm(_perm),
   G_s(_G_s), support_elist(_support_elist), support_ecap(_support_ecap),
   cb_data(light_teeth,
 	  _edge_marks,

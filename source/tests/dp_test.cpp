@@ -57,9 +57,7 @@ TEST_CASE ("Tiny simple DP cutgraph tests",
 #ifdef PSEP_DO_VIZ
 				  fname,
 #endif
-				  cands.light_teeth, cands,
-				  b_dat.perm, s_dat.G_s,
-				  s_dat.support_elist, s_dat.support_ecap);
+				  cands);
 	PSEP::CutQueue<PSEP::dominoparity> dp_q;
 
 	if(fname == "ulysses16")
@@ -118,9 +116,7 @@ TEST_CASE ("simple DP cutgraph tests",
 	REQUIRE_FALSE(cands.get_light_teeth());
 	cands.weak_elim();
       
-	PSEP::DPCutGraph dp_graph(cands.light_teeth, cands,
-				  b_dat.perm, s_dat.G_s,
-				  s_dat.support_elist, s_dat.support_ecap);
+	PSEP::DPCutGraph dp_graph(cands);
 	PSEP::CutQueue<PSEP::dominoparity> dp_q;
 	
 	REQUIRE(dp_graph.simple_DP_sep(dp_q) == 0);

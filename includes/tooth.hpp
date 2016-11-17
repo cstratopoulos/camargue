@@ -155,6 +155,8 @@ public:
 
   
 private:
+  friend class DPCutGraph;
+  
   void clear_collection();
 
   static int add_tooth(std::vector<std::vector<SimpleTooth::Ptr>> &teeth,
@@ -169,7 +171,9 @@ private:
 		       void *u_data);
   
   std::vector<int> &edge_marks;
+  
   std::vector<int> &best_tour_nodes;
+  std::vector<int> &perm;
   
   SupportGraph &G_s;
   std::vector<int> &support_elist;
