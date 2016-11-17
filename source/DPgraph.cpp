@@ -361,7 +361,8 @@ int DPCutGraph::call_concorde_gomoryhu()
   rval = CCcut_gomory_hu(&gh_tree, ncount, ecount, &cut_elist[0], &cut_ecap[0],
 			 markcount, &odd_nodes_list[0], &rstate);
   PSEP_CHECK_RVAL(rval, "CCcut_gomory_hu failed. ");
-  cout << "Built Gomory-Hu tree in " << (zeit() - gh_time) << "s\n";
+  cout << "Built Gomory-Hu tree in " << (zeit() - gh_time) << "s "
+       << "(ncount " << ncount << ", ecount " << ecount << ")\n";
 
   dfs_time = zeit();
   try {
