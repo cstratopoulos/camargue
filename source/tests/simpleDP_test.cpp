@@ -232,10 +232,6 @@ TEST_CASE ("Printless simple DP cutgraph translator tests",
 	  
 	  if(tour_activity == rhs)
 	    ++primal_found;
-	  else
-	    if(rhs - tour_activity != 1.0)
-	      cout << "\tFound cut with slack " << (rhs - tour_activity)
-		   << "\n";
 	  
 	  dp_q.pop_front();
 	}
