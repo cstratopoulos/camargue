@@ -9,7 +9,7 @@ PSEP
 #no softlink to problems folder or scripts
 problems
 sloc
-run_LKH
+run_LKH.sh
 LKH
 
 #no tramp history from using local emacs to ssh
