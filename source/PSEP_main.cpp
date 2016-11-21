@@ -37,6 +37,8 @@ using std::vector;
 using std::string;
 using std::cout;
 
+#ifndef PSEP_DO_TESTS
+
 static int initial_parse(int ac, char **av, std::string &fname,
 			 std::string &tour_fname,
 			 PSEP::RandProb &randprob, PSEP::LP::Prefs &prefs,
@@ -44,8 +46,6 @@ static int initial_parse(int ac, char **av, std::string &fname,
 			 bool &sparseflag, int &qnearest);
 
 static void usage(const std::string &fname);
-
-#ifndef PSEP_DO_TESTS
 
 int main(int argc, char* argv[]){
   PSEP::LP::Prefs prefs;
@@ -95,8 +95,6 @@ int main(int argc, char* argv[]){
 
   return rval;
 }
-
-#endif
 
 static int initial_parse(int ac, char **av, std::string &fname,
 			 std::string &tourfname,
@@ -284,3 +282,5 @@ static void usage(const std::string &fname){
   fprintf(stderr, "-u    initial edge set will be union of 10 LK tours plus\n");
   fprintf(stderr, "      quad x-nearest edges (0 default).\n");
 }
+
+#endif
