@@ -53,6 +53,16 @@ clean:
 	@$(RM) -f $(BUILDDIR)/tests/*.d
 	@$(RM) -f $(TARGET)
 
+# deftest:
+# 	sed -e 's/#undef PSEP_DO_TESTS/#define PSEP_DO_TESTS/' \
+# -i.back includes/tests.hpp && rm includes/tests.hpp.back
+
+# undeftest:
+# 	sed -e 's/#define PSEP_DO_TESTS/#undef PSEP_DO_TESTS/' \
+# -i.back includes/tests.hpp && rm includes/tests.hpp.back
+
+# test: deftest all undeftest
+
 #Pull in dependency info for *existing* .o files
 -include $(OBJECTS:.$(OBJEXT)=.$(DEPEXT))
 
@@ -71,4 +81,4 @@ $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	@rm -f $(BUILDDIR)/$*.$(DEPEXT).tmp
 
 #Non-File Targets
-.PHONY: all remake clean
+.PHONY: all remake clean #deftest undeftest test
