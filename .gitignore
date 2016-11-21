@@ -6,9 +6,11 @@ objects
 #no main executable
 PSEP
 
-#no softlink to problems folder or sloc script
+#no softlink to problems folder or scripts
 problems
 sloc
+run_LKH
+LKH
 
 #no tramp history from using local emacs to ssh
 .tramp_history
