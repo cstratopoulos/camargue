@@ -1,5 +1,6 @@
 #include "cutcall.hpp"
 #include "DPgraph.hpp"
+#include "PSEP_util.hpp"
 
 #include <iomanip>
 #include <algorithm>
@@ -53,7 +54,22 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   
   total_2mcalls++;
 
+  
   if(segval == 2 && matchval == 2 && stat != LP::PivType::Subtour){
+    bool in_sub = false;
+    rval = in_subtour_poly(in_sub);
+
+    if(in_sub){
+      try {
+	dptime.resume();
+	dominos = PSEP::make_unique<Cut<dominoparity>>(graph_data,best_data,
+						       supp_data, domino_q);
+      } catch(...){ PSEP_SET_GOTO(rval, "Couldn't allocate dominos. "); }
+
+      dpval = dominos->cutcall();
+      if(dpval == 1){ rval = 1; goto CLEANUP; }
+      dptime.stop();
+    }
   }
 
   if(segval == 2 && matchval == 2 && dpval == 2)
@@ -76,7 +92,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
 int CutControl::add_primal_cuts()
 {
   int rval = 0;
-  int seg_added = 0, blossom_added = 0;
+  int seg_added = 0, blossom_added = 0, dp_added = 0;
   vector<int> rmatind;
   vector<double> rmatval;
   char sense;
@@ -133,8 +149,33 @@ int CutControl::add_primal_cuts()
     } 
   }
 
+  while(!domino_q.empty()){
+    const dominoparity &dp_cut = domino_q.peek_front();
+    double tour_activity;
+
+    rval = translator.get_sparse_row(dp_cut, best_data.best_tour_nodes,
+				     rmatind, rmatval, sense, rhs);
+    if(rval) goto CLEANUP;
+
+    translator.get_activity(tour_activity, best_data.best_tour_edges,
+			    rmatind, rmatval);
+
+    if(tour_activity == rhs){
+      rval = PSEPlp_addrows(m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
+			    &rmatind[0], &rmatval[0]);
+      if(rval) goto CLEANUP;
+      
+      ++dp_added;
+    }
+
+    domino_q.pop_front();
+  }
+
+  if(dp_added)
+    cout << "\tAdded " << dp_added << " simple DP inequalities\n";
+
  CLEANUP:
-  if(rval)
+  if(rval == 1)
     cerr << "CutControl::add_primal_cuts failed\n";
   return rval;
 }
