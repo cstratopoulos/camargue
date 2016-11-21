@@ -57,8 +57,6 @@ int CandidateTeeth::get_light_teeth()
   cb_data.cb_edge_marks[best_tour_nodes[lin_seg.start]] = 1;
   cb_data.unsorted_roots.clear();
   
-  clear_collection();
-  
   cout << "Getting light teeth via linsub....";
   ft = zeit();
   
@@ -91,10 +89,9 @@ int CandidateTeeth::get_light_teeth()
        << st << "s, teeth sorted by INCREASING body size.\n";
 
  CLEANUP:
-  if(rval == 1){
-    cerr << "CandidateTeeth::get_light_teeth failed\n";
-    clear_collection();
-  }
+  if(rval == 1)
+    cerr << "CandidateTeeth::get_light_teeth failed\n";    
+  for(int &i : cb_data.cb_edge_marks) i = 0;
   return rval;
 }
 
@@ -262,17 +259,6 @@ int CandidateTeeth::get_teeth(double cut_val, int cut_start, int cut_end,
   return rval;
 }
 
-inline void CandidateTeeth::clear_collection()
-{
-  for(vector<SimpleTooth::Ptr> &vec : light_teeth){
-#ifndef PSEP_TOOTH_UNIQ
-    for(SimpleTooth::Ptr &T : vec)
-      delete(T);
-#endif
-    vec.clear();
-  }
-}
-
 inline int CandidateTeeth::add_tooth(vector<vector<SimpleTooth::Ptr>> &teeth,
 				     const int root, const int body_start,
 				     const int body_end, const double slack)
@@ -280,10 +266,9 @@ inline int CandidateTeeth::add_tooth(vector<vector<SimpleTooth::Ptr>> &teeth,
   int rval = 0;
 
   try {
-    teeth[root].emplace_back(SimpleTooth::Ptr(new SimpleTooth(root,
-							      body_start,
-							      body_end,
-							      slack)));
+    teeth[root].emplace_back(SimpleTooth::Ptr(new
+					      SimpleTooth(root, body_start,
+							  body_end, slack)));
   } catch(...) { rval = 1; }
 
   if(rval)
@@ -382,8 +367,12 @@ int CandidateTeeth::body_subset(const SimpleTooth &T, const SimpleTooth &R,
 
 void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full)
 {
-  vector<int> &bt = best_tour_nodes;
+  print_tooth(T, full, best_tour_nodes);
+}
 
+void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full,
+				 const vector<int> &bt)
+{
   cout << "(" << bt[T.root] << ", {" << bt[T.body_start];
 
   if(T.body_start == T.body_end){
@@ -396,7 +385,7 @@ void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full)
     return;
   }
 
-  bool comma_sep = bt.size() <= 20;
+  bool comma_sep = T.body_end - T.body_start <= 20;
   int i = T.body_start;
   
   cout << ", ";
@@ -426,13 +415,9 @@ string CandidateTeeth::print_label(const SimpleTooth &T, bool show_root)
 
 void CandidateTeeth::print_collection()
 {
-  for(int i = 0; i < G_s.node_count; i++){
-    cout << "=== LIGHT TEETH WITH ROOT "
-	 << best_tour_nodes[i] << ", " << light_teeth[i].size() << " TOTAL==="
-	 << endl;
-    // for(SimpleTooth::Ptr &T : light_teeth[i])
-    //   print_tooth(*T);
-  }
+  for(vector<SimpleTooth::Ptr> &vec : light_teeth)
+    for(SimpleTooth::Ptr &T : vec)
+      print_tooth(*T, true);
 }
 
 }

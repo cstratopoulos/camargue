@@ -18,12 +18,6 @@
 #include <unordered_map>
 #include <string>
 
-/*
- * If defined, lists of simple teeth will be implemented as unique pointers,
- * else they will be raw pointers.
- */
-#define PSEP_TOOTH_UNIQ
-
 namespace PSEP {
 
 /** Structure for storing candidate simple teeth.
@@ -53,11 +47,8 @@ struct SimpleTooth {
     slack(_slack) {}
 
 
-#ifdef PSEP_TOOTH_UNIQ
   typedef std::unique_ptr<SimpleTooth> Ptr;
-#else
-  typedef SimpleTooth* Ptr;
-#endif
+
 
   int root;
   int body_start;
@@ -148,6 +139,8 @@ public:
 
   
   void print_tooth(const SimpleTooth &T, bool full);
+  static void print_tooth(const SimpleTooth &T, bool full,
+			  const std::vector<int> &tour_nodes);
   std::string print_label(const SimpleTooth &T, bool show_root);
   void print_collection();
   
@@ -157,8 +150,6 @@ public:
 private:
   friend class DPCutGraph;
   
-  void clear_collection();
-
   static int add_tooth(std::vector<std::vector<SimpleTooth::Ptr>> &teeth,
 		       const int root, const int body_start,
 		       const int body_end, const double slack);
