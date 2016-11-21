@@ -1,8 +1,14 @@
 #include "cuts.hpp"
 
 #include <map>
+#include <iostream>
 
-using namespace std;
+#include <cmath>
+
+using std::vector;
+using std::map;
+using std::cout;
+using std::cerr;
 
 namespace PSEP {
   
@@ -32,10 +38,6 @@ void CutQueue<HyperGraph>::pop_front()
   cut_q.front().delete_refs();
   cut_q.pop_front();
 }
-
-}
-
-using namespace PSEP;
 
 int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
 				 vector<double> &rmatval, char &sense,
@@ -127,6 +129,130 @@ int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
   return rval;
 }
 
+int CutTranslate::get_sparse_row(const dominoparity &dp_cut,
+				 const vector<int> &tour_nodes,
+				 vector<int> &rmatind, vector<double> &rmatval,
+				 char &sense, double &rhs)
+{
+  int rval = 0;
+  vector<double> coeff_buff;
+
+  rmatind.clear();
+  rmatval.clear();
+  rhs = 0.0;
+  sense = 'L';
+
+  try { coeff_buff.resize(edges.size(), 0.0); } catch(...){
+    PSEP_SET_GOTO(rval, "Couldn't allocate coefficient buffer. ");
+  }
+
+  //parse the handle
+  //  cout << "\t PARSING HANDLE\n";
+  for(const int node : dp_cut.degree_nodes)
+    edge_marks[tour_nodes[node]] = 1;
+
+  for(int i = 0; i < edges.size(); ++i){
+    Edge e = edges[i];
+    int sum = edge_marks[e.end[0]] + edge_marks[e.end[1]];
+    coeff_buff[i] += sum;
+    // if(sum)
+    //   cout << "Added " << sum << " * [" << e.end[0] << ", " << e.end[1]
+    // 	   << "]\n";
+  }
+
+  rhs += 2 * dp_cut.degree_nodes.size();
+  //  cout << "\trhs now " << rhs << "\n";
+
+  for(const int node : dp_cut.degree_nodes)
+    edge_marks[tour_nodes[node]] = 0;
+
+  //parse the used teeth
+  for(const SimpleTooth *T : dp_cut.used_teeth){
+    // cout << "\t PARSING USED TOOTH " << tour_nodes[T->root] << " ("
+    // 	 << tour_nodes[T->body_start] << "..." << tour_nodes[T->body_end]
+    // 	 << ")\n";
+    for(int i = T->body_start; i <= T->body_end; ++i)
+      edge_marks[tour_nodes[i]] = 1;
+    edge_marks[tour_nodes[T->root]] = -2;
+
+    for(int i = 0; i < edges.size(); ++i){
+      Edge e = edges[i];
+      int sum = edge_marks[e.end[0]] + edge_marks[e.end[1]];
+      switch(sum){
+      case 2:
+	coeff_buff[i] += 2;
+	//cout << "Added 2 * [" << e.end[0] << ", " << e.end[1] << "]\n";
+	break;
+      case -1:
+	coeff_buff[i] += 1;
+	//cout << "Added 1 * [" << e.end[0] << ", " << e.end[1] << "]\n";
+	break;
+      default:
+	break;
+      }
+    }
+
+    rhs += (2 * (T->body_end - T->body_start + 1)) - 1;
+    //cout << "\trhs now: " << rhs << "\n";
+    
+    for(int i = T->body_start; i <= T->body_end; ++i)
+      edge_marks[tour_nodes[i]] = 0;
+    edge_marks[tour_nodes[T->root]] = 0; 
+  }
+
+  //parse nonnegativity edges
+  // if(dp_cut.nonneg_edges.size())
+  //   cout << "\t PARSING NONNEG EDGES\n";
+  for(const IntPair &ends : dp_cut.nonneg_edges){
+    int end0 = fmin(tour_nodes[ends.first], tour_nodes[ends.second]);
+    int end1 = fmax(tour_nodes[ends.first], tour_nodes[ends.second]);
+
+    IntPairMap::const_iterator it = edge_lookup.find(IntPair(end0, end1));
+    
+    if(it == edge_lookup.end()){
+      PSEP_SET_GOTO(rval, "Tried to lookup invalid edge. ");
+    }
+
+    coeff_buff[it->second] -= 1.0;
+  }
+
+  try {
+    for(int i = 0; i < coeff_buff.size(); ++i)
+      if(coeff_buff[i] != 0.0){
+	rmatind.push_back(i);
+	rmatval.push_back(coeff_buff[i]);
+      }
+  } catch(...){ PSEP_SET_GOTO(rval, "Couldn't get sparse row from buffer. "); }
+
+  rhs /= 2;
+  rhs = floor(rhs);
+  //cout << "rhs halved and rounded to: " << rhs << "\n";
+
+  //cout << "Final aggregated coeffs....\n";
+  {int i = 0;
+  for(double &coeff : rmatval){
+    if(fabs(coeff >= Epsilon::Cut)){
+      coeff /= 2;
+      coeff = floor(coeff);
+      // cout << coeff << "[" << edges[i].end[0] << "," << edges[i].end[1]
+      // 	   << "] + ";
+      // if(i % 8 == 0 && i) cout << "\n";
+    }
+    i++;
+  }
+  //cout << "\n";
+  }
+
+ CLEANUP:
+  if(rval){
+    cerr << "Problem in CutTranslate::get_sparse_row(dp_cut, ...), "
+	 << "cut invalidated.\n";
+    rmatind.clear();
+    rmatval.clear();
+  }
+  return rval;
+}
+
 int CutTranslate::get_sparse_row_if(bool &violated, const HyperGraph &H,
 				    const vector<double> &x,
 				    vector<int> &rmatind,
@@ -156,8 +282,8 @@ int CutTranslate::get_sparse_row_if(bool &violated, const HyperGraph &H,
 
  CLEANUP:
   if(rval)
-    std::cerr << "CutTranslate<HyperGraph>::get_sparse_row_if failed, "
-	      << "row is invalid.\n";
+    cerr << "CutTranslate<HyperGraph>::get_sparse_row_if failed, "
+	 << "row is invalid.\n";
 
   if(rval || !violated){
     rmatind.clear();
@@ -184,4 +310,6 @@ int CutTranslate::is_cut_violated(bool &violated, const HyperGraph &H,
   if(rval)
     cerr << "CutTranslate::is_cut_violated failed\n";
   return rval;
+}
+
 }

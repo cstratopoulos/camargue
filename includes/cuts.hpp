@@ -174,16 +174,21 @@ public:
     edge_marks(GraphGroup.edge_marks),
     edge_lookup(GraphGroup.m_graph.edge_lookup) {}
 
-  int get_sparse_row(const HyperGraph &H, std::vector<int> &rmatind,
+  int get_sparse_row(const PSEP::HyperGraph &H, std::vector<int> &rmatind,
 		     std::vector<double> &rmatval, char &sense, double &rhs);
-  int get_sparse_row_if(bool &violated, const HyperGraph &H,
+  
+  int get_sparse_row(const PSEP::dominoparity &dp_cut,
+		     const std::vector<int> &tour_nodes,
+		     std::vector<int> &rmatind, std::vector<double> &rmatval,
+		     char &sense, double &rhs);
+  
+  int get_sparse_row_if(bool &violated, const PSEP::HyperGraph &H,
 			const std::vector<double> &x,
 			std::vector<int> &rmatind, std::vector<double> &rmatval,
 			char &sense, double &rhs);
-  int is_cut_violated(bool &violated, const HyperGraph &H,
+  int is_cut_violated(bool &violated, const PSEP::HyperGraph &H,
 		      std::vector<double> &x);
-
-private:
+  
   template<typename number_t>
   void get_activity(double &activity, const std::vector<number_t> &x,
 		    const std::vector<int> &rmatind,
@@ -195,6 +200,8 @@ private:
       activity += x[index] * rmatval[i];
     }
   }
+
+private:
   
   std::vector<Edge> &edges;
   std::vector<int> &delta;
