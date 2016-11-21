@@ -60,8 +60,8 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     rval = in_subtour_poly(in_sub);
 
     if(in_sub){
+      dptime.resume();
       try {
-	dptime.resume();
 	dominos = PSEP::make_unique<Cut<dominoparity>>(graph_data,best_data,
 						       supp_data, domino_q);
       } catch(...){ PSEP_SET_GOTO(rval, "Couldn't allocate dominos. "); }
@@ -69,6 +69,29 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
       dpval = dominos->cutcall();
       if(dpval == 1){ rval = 1; goto CLEANUP; }
       dptime.stop();
+
+      if(dpval == 0){
+	while(!domino_q.empty()){
+	  vector<int> rmatind;
+	  vector<double> rmatval;
+	  char sense;
+	  double rhs, tour_activity;
+
+	  rval = translator.get_sparse_row(domino_q.peek_front(),
+					   best_data.best_tour_nodes, rmatind,
+					   rmatval, sense, rhs);
+	  if(rval) goto CLEANUP;
+
+	  translator.get_activity(tour_activity, best_data.best_tour_edges,
+				  rmatind, rmatval);
+	  if(tour_activity == rhs)
+	    break;
+	  else
+	    domino_q.pop_front();
+	}
+
+	if(domino_q.empty()) dpval = 2;
+      }
     }
   }
 
