@@ -4,7 +4,6 @@ fname="$prob".par
 
 echo PROBLEM_FILE = problems/"$prob".tsp > "$fname"
 echo OPTIMUM = "$opt" >> "$fname"
-echo MAX_TRIALS = 10 >> "$fname"
 echo ASCENT_CANDIDATES = 50 >> "$fname"
 echo TOUR_FILE = "$prob".sol >> "$fname"
 
