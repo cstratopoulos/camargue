@@ -57,7 +57,9 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   
   if(segval == 2 && matchval == 2 && stat != LP::PivType::Subtour){
     bool in_sub = false;
+    
     rval = in_subtour_poly(in_sub);
+    if(rval) goto CLEANUP;
 
     if(in_sub){
       dptime.resume();
