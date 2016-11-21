@@ -25,14 +25,8 @@ DPCutGraph::DPCutGraph(
   support_ecap(_cands.support_ecap),
   perm(_cands.perm),
   CC_gh_q(25)
-{
-  CCcut_GHtreeinit(&gh_tree);
-}
+{}
 
-DPCutGraph::~DPCutGraph()
-{
-  CCcut_GHtreefree(&gh_tree);
-}
 
 int DPCutGraph::simple_DP_sep(CutQueue<dominoparity> &domino_q)
 {
@@ -275,8 +269,10 @@ int DPCutGraph::call_concorde_gomoryhu()
   int markcount = odd_nodes_list.size();
 
   CCrandstate rstate;
-  int seed = (int) real_zeit();
+  int seed = 99;
+  
   CCutil_sprand(seed, &rstate);
+  CCcut_GHtreeinit(&gh_tree);
 
   double gh_time = zeit(), dfs_time;
   rval = CCcut_gomory_hu(&gh_tree, ncount, ecount, &cut_elist[0], &cut_ecap[0],
@@ -399,6 +395,7 @@ int DPCutGraph::grab_cuts(CutQueue<dominoparity> &domino_q)
  CLEANUP:
   if(rval)
     cerr << "Problem in DPCutGraph::grab_cuts.\n";
+  CCcut_GHtreefree(&gh_tree);
   return rval;
 }
 

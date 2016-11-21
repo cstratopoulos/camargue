@@ -48,7 +48,6 @@ public:
 	     std::string _ofname,
 #endif
 	     PSEP::CandidateTeeth &_cands);
-  ~DPCutGraph();
 
 #ifdef PSEP_DO_VIZ
   std::string ofname;
