@@ -117,10 +117,6 @@ TEST_CASE ("simple DP cutgraph translator tests",
 						g_dat, b_dat, lp_edges,
 						s_dat));
 	
-	PSEP::CandidateTeeth cands(g_dat.delta, g_dat.edge_marks,
-				   b_dat.best_tour_nodes, b_dat.perm,
-				   s_dat.G_s, s_dat.support_elist,
-				   s_dat.support_ecap);
 
 	PSEP::CutQueue<PSEP::dominoparity> dp_q(25);
 	PSEP::Cut<PSEP::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
@@ -197,12 +193,7 @@ TEST_CASE ("Printless simple DP cutgraph translator tests",
 	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
-	
-	PSEP::CandidateTeeth cands(g_dat.delta, g_dat.edge_marks,
-				   b_dat.best_tour_nodes, b_dat.perm,
-				   s_dat.G_s, s_dat.support_elist,
-				   s_dat.support_ecap);
-
+      
 	PSEP::CutQueue<PSEP::dominoparity> dp_q(25);
 	PSEP::Cut<PSEP::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
 	
