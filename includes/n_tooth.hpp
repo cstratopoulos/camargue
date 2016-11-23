@@ -63,7 +63,14 @@ public:
     return (zones[root][s1.start] == zones[root][s2.start]) &&
       (zones[root][s1.end] == zones[root][s2.end]);
   }
-  
+
+  /*
+    This currently does not cover the case where the root body edge set is
+    empty for both.
+    Possible fix: zones has enough info to detect if the set is empty,
+    namely, if the endpoints are both in the same zone and neither of them 
+    is "on" the actual node. Maybe mark the first incident nodes as negative?
+   */
   bool root_equivalent(const int root,
 		       const tooth_seg &s1, const tooth_seg &s2) const {
     return root_equivalent(root, s1, s2, adj_zones);
