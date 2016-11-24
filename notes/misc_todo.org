@@ -30,3 +30,6 @@ internal = external.
 ** TODO Fix bug in oc_sep
 Currently code gets locked in get_delta during oc_sep somehow. This
 happens independent of any parallel features. 
+* TODO Fix d2103 bug
+With the file d2103 solution w infix random seed, either CutTranslate
+gets passed an empty row or a connect cut is infeasible???
