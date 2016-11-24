@@ -3,6 +3,7 @@
 
 #include "Graph.hpp"
 #include "datagroups.hpp"
+#include "PSEP_util.hpp"
 
 #include <memory>
 #include <vector>
@@ -16,6 +17,7 @@ namespace nu {
 struct tooth_seg {
   tooth_seg(int _start, int _end, double _slack) :
     start(_start), end(_end), slack(_slack) {}
+  tooth_seg(int _start, int _end) : start(_start), end(_end), slack(1.0) {}
 
   bool contains(int vx) const { return start <= vx && vx <= end; }
   bool subset_of(tooth_seg &S) const {
@@ -31,8 +33,8 @@ struct SimpleTooth {
     root(_root), body_start(_body_start), body_end(_body_end),
     slack(_slack) {}
 
-  SimpleTooth(int _root, tooth_seg &seg) :
-    root(_root), body_start(seg.start), body_end(seg.end), slack(seg.slack) {}
+  SimpleTooth(int _root, tooth_seg &seg, double _slack) :
+    root(_root), body_start(seg.start), body_end(seg.end), slack(_slack) {}
 
   typedef std::unique_ptr<SimpleTooth> Ptr;
 
@@ -56,25 +58,17 @@ public:
 		 PSEP::Data::BestGroup &_best_dat,
 		 PSEP::Data::SupportGroup &_supp_dat);
 
-  static bool root_equivalent(const int root,
-			      const tooth_seg &s1, const tooth_seg &s2,
-			      const std::vector<std::vector<int>> &zones)
-  {
-    return (zones[root][s1.start] == zones[root][s2.start]) &&
-      (zones[root][s1.end] == zones[root][s2.end]);
-  }
+  int get_light_teeth();
 
-  /*
-    This currently does not cover the case where the root body edge set is
-    empty for both.
-    Possible fix: zones has enough info to detect if the set is empty,
-    namely, if the endpoints are both in the same zone and neither of them 
-    is "on" the actual node. Maybe mark the first incident nodes as negative?
-   */
-  bool root_equivalent(const int root,
-		       const tooth_seg &s1, const tooth_seg &s2) const {
-    return root_equivalent(root, s1, s2, adj_zones);
-  }
+  static void get_range(const int root, const tooth_seg &s, IntPair &range,
+			const std::vector<std::vector<int>> &zones);
+
+  static bool root_equivalent(const int root, const tooth_seg &s1,
+			      const tooth_seg &s2,
+			      const std::vector<std::vector<int>> &zones);
+
+  bool root_equivalent(const int root, const tooth_seg &s1,
+		       const tooth_seg &s2) const;
 
   void weak_elim(const int root);
   
@@ -87,31 +81,33 @@ public:
   light_teeth, left_teeth, right_teeth, dist_teeth;
 
   std::vector<std::vector<int>> adj_zones;
-  std::vector<int> endmark;
-    
 
-  //private:
+private:
+  std::vector<int> endmark;
+  
   static int add_tooth(std::vector<SimpleTooth::Ptr> &teeth,
 		       const int root, const int body_start,
 		       const int body_end, const double slack);
   
-  static int get_teeth(double cut_val, int cut_start, int cut_end,
-		       void *u_data);
+  static int teeth_cb(double cut_val, int cut_start, int cut_end,
+		      void *u_data);
 
   struct LinsubCBData {
     LinsubCBData(std::vector<std::vector<SimpleTooth::Ptr>> &_r_teeth,
 		 std::vector<std::vector<SimpleTooth::Ptr>> &_l_teeth,
 		 std::vector<std::vector<SimpleTooth::Ptr>> &_d_teeth,
+		 std::vector<std::vector<int>> &_adj_zones,
 		 std::vector<int> &_node_marks,
 		 std::vector<int> &_tour_nodes,
 		 std::vector<int> &_perm,
 		 PSEP::SupportGraph &_G_s) :
       r_teeth(_r_teeth), l_teeth(_l_teeth), d_teeth(_d_teeth),
+      adj_zones(_adj_zones),
       node_marks(_node_marks),
       tour_nodes(_tour_nodes), perm(_perm),
       G_s(_G_s),
       old_seg(_G_s.node_count - 1, _G_s.node_count - 1, 0.0),
-      root_bod_sums(std::vector<int>(G_s.node_count, 0.0)),
+      root_bod_sums(std::vector<double>(G_s.node_count, 0.0)),
       prev_slacks(std::vector<
 		  std::pair<int, double>
 		  >(_G_s.node_count,
@@ -119,6 +115,7 @@ public:
     {}
 
     std::vector<std::vector<SimpleTooth::Ptr>> &r_teeth, &l_teeth, &d_teeth;
+    std::vector<std::vector<int>> &adj_zones;
 
     std::vector<int> &node_marks;
     std::vector<int> &tour_nodes, &perm;
@@ -127,7 +124,7 @@ public:
 
     tooth_seg old_seg;
     
-    std::vector<int> root_bod_sums;
+    std::vector<double> root_bod_sums;
     std::vector<std::pair<int, double>> prev_slacks;
   };
 
