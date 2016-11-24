@@ -43,7 +43,7 @@ static bool tooth_cmp(const PSEP::nu::SimpleTooth::Ptr &T,
   return T->body_size() < S->body_size();
 }
 
-TEST_CASE("New tiny candidate teeth with elim",
+TEST_CASE("New tiny candidate teeth with no elim",
 	  "[.][tooth][tiny]") {
   vector<string> tests{"fleisA9", "fleisB9", "comb9", "ulysses16"};
 
@@ -176,7 +176,7 @@ TEST_CASE("New candidate teeth with elim",
   }
 }
 
-TEST_CASE("New tiny tooth constructor tests",
+TEST_CASE("New tiny tooth constructor with brute force tests",
 	  "[.][tooth][tiny]") {
   vector<string> tests{"fleisA9", "fleisB9", "comb9", "ulysses16"};
   
