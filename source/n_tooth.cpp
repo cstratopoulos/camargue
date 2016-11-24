@@ -149,7 +149,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   vector<int>
     &marks = arg->node_marks, &tour = arg->tour_nodes, &perm = arg->perm;
   PSEP::SupportGraph &G = arg->G_s;
-  vector<double> &rb_sums = arg->root_bod_sums;
+  std::unordered_map<int, double> &rb_sums = arg->rb_sums;
   int ncount = G.node_count;
   double rb_lower = cut_val - (1.5 - Epsilon::Cut);
 
@@ -225,10 +225,10 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   if(cut_start == old_seg.start){
     for(int i = old_seg.end + 1; i <= cut_end; ++i){
       marks[i] = 1;
-      rb_sums[i] = 0.0;
+      rb_sums.erase(i);
     }
     marks[(cut_end + 1) % ncount] = 1;
-    rb_sums[(cut_end + 1) % ncount] = 0.0;
+    rb_sums.erase((cut_end + 1) % ncount);
 
     for(int i = old_seg.end + 1; i <= cut_end; ++i){
       SNode vx = G.nodelist[tour[i]];
@@ -243,16 +243,13 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
     //clean up after the old one
     for(int i = 0; i < ncount; ++i){
       marks[i] = 0;
-      rb_sums[i] = 0.0;
     }
+    rb_sums.clear();
 
     //set up for the new one
     marks[cut_start] = 1;
     marks[(cut_start + 1) % ncount] = 1;
     marks[(cut_start + (ncount - 1)) % ncount] = 1;
-    rb_sums[cut_start] = 0.0;
-    rb_sums[(cut_start + 1) % ncount] = 0.0;
-    rb_sums[(cut_start + (ncount - 1)) % ncount] = 0.0;
 
     SNode vx = G.nodelist[tour[cut_start]];
     for(int k = 0; k < vx.s_degree; ++k){
@@ -263,13 +260,13 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
     }    
   }
 
-  for(int i = 0; i < ncount; ++i){
-    if((cut_start <= i && i <= cut_end) ||
-       i + 1 == cut_start || cut_end + 1 == i) continue;
-    if(rb_sums[i] > rb_lower){
+  for(auto &kv : rb_sums){
+    int i = kv.first;
+    double rb_sum = kv.second;
+    if(rb_sum > rb_lower){
       vector<SimpleTooth::Ptr> &dt = arg->d_teeth[i];
       bool elim = false;
-      double new_slack = cut_val - rb_sums[i] - 1;
+      double new_slack = cut_val - rb_sum - 1;
       tooth_seg new_body(cut_start, cut_end);
 
       if(!dt.empty()){

@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 #include <utility>
-#include <bitset>
+#include <unordered_map>
 
 namespace PSEP {
 namespace nu {
@@ -107,7 +107,6 @@ private:
       tour_nodes(_tour_nodes), perm(_perm),
       G_s(_G_s),
       old_seg(_G_s.node_count - 1, _G_s.node_count - 1, 0.0),
-      root_bod_sums(std::vector<double>(G_s.node_count, 0.0)),
       prev_slacks(std::vector<
 		  std::pair<int, double>
 		  >(_G_s.node_count,
@@ -124,7 +123,7 @@ private:
 
     tooth_seg old_seg;
     
-    std::vector<double> root_bod_sums;
+    std::unordered_map<int, double> rb_sums;
     std::vector<std::pair<int, double>> prev_slacks;
   };
 
