@@ -43,6 +43,7 @@ CandidateTeeth::CandidateTeeth(PSEP::Data::GraphGroup &_graph_dat,
   vector<int> &perm = best_dat.perm;
   vector<int> &tour = best_dat.best_tour_nodes;
 
+  #pragma omp parallel for
   for(int root_ind = 0; root_ind < ncount; ++root_ind){
     int actual_vx = tour[root_ind];
     PSEP::SNode x = G_s.nodelist[actual_vx];
