@@ -17,9 +17,7 @@ public:
 		    PSEP::Data::BestGroup &best_dat,
 		    PSEP::Data::SupportGroup &supp_dat,
 		    PSEP::CutQueue<dominoparity> &_dp_q) :
-    candidates(graph_dat.delta, graph_dat.edge_marks,
-	       best_dat.best_tour_nodes, best_dat.perm,
-	       supp_dat.G_s, supp_dat.support_elist, supp_dat.support_ecap),
+    candidates(graph_dat, best_dat, supp_dat),
     dp_q(_dp_q) {}
 
   int cutcall();

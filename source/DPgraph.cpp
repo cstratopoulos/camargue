@@ -21,9 +21,9 @@ DPCutGraph::DPCutGraph(
 #endif
   light_teeth(_cands.light_teeth),
   cands(_cands),
-  G_s(_cands.G_s), support_elist(_cands.support_elist),
-  support_ecap(_cands.support_ecap),
-  perm(_cands.perm),
+  G_s(_cands.supp_dat.G_s), support_elist(_cands.supp_dat.support_elist),
+  support_ecap(_cands.supp_dat.support_ecap),
+  perm(_cands.best_dat.perm),
   CC_gh_q(25)
 {}
 

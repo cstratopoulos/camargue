@@ -137,6 +137,7 @@ int CutTranslate::get_sparse_row(const dominoparity &dp_cut,
   int rval = 0;
   vector<double> coeff_buff;
 
+  for(int &i : edge_marks) i = 0;
   rmatind.clear();
   rmatval.clear();
   rhs = 0.0;

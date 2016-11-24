@@ -17,6 +17,7 @@ using std::pair;
 
 #ifdef PSEP_DO_TESTS
 
+/*
 //for these tests, consider defining PSEP_DO_TESTS in DPgraph.hpp to generate
 //a DOT file for the witness cutgraph which can be viewed with graphviz or
 //some such
@@ -49,10 +50,7 @@ TEST_CASE ("Tiny simple DP cutgraph tests",
 	for(int i : b_dat.best_tour_nodes) cout << i << ", "; cout << "\n";
 
 	  
-	PSEP::CandidateTeeth cands(g_dat.delta, g_dat.edge_marks,
-				   b_dat.best_tour_nodes, b_dat.perm,
-				   s_dat.G_s, s_dat.support_elist,
-				   s_dat.support_ecap);
+	PSEP::CandidateTeeth cands(g_dat, b_dat, s_dat);	
 	
 	REQUIRE_FALSE(cands.get_light_teeth());
 	cands.weak_elim();
@@ -128,6 +126,7 @@ TEST_CASE ("simple DP cutgraph tests", "[cutgraph]") {
       }
     }
 }
-#endif //PSEP_DO_VIZ
 
+#endif //PSEP_DO_VIZ
+*/
 #endif //PSEP_TEST_TOOTH

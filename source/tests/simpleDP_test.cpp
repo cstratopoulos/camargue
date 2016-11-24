@@ -26,7 +26,7 @@ TEST_CASE ("Tiny simple DP translator tests",
 
   typedef pair<string, int> ProbPair;
   vector<ProbPair> tests{ProbPair("fleisA9", 1), //one dp inequality
-			 ProbPair("fleisB9", 1), //one dp inequality
+			 ProbPair("fleisB9", 2), //two dp inequalites
 			 ProbPair("comb9", 2), //one blossom, one comb
 			 ProbPair("ulysses16", 0)}; //no dp inequalities
 
@@ -51,7 +51,7 @@ TEST_CASE ("Tiny simple DP translator tests",
 	PSEP::Cut<PSEP::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
 
 	REQUIRE(dominos.cutcall() != 1);
-	REQUIRE(dp_q.size() == expected_num_cuts);
+	CHECK(dp_q.size() == expected_num_cuts);
 
 	PSEP::CutTranslate translator(g_dat);
 	
