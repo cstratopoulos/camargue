@@ -102,7 +102,8 @@ TEST_CASE("New tiny candidate teeth with elim",
 
 TEST_CASE("New candidate teeth with elim",
 	  "[tooth]") {
-  vector<string> tests{"lin318", "d493", "pr1002", "d2103", "pcb3038"};
+  vector<string> tests{"lin318", "d493", "pr1002", "rl1304", "d2103",
+		       "pcb3038"};
 
   for(string &fname : tests){
     SECTION(fname){
@@ -119,60 +120,58 @@ TEST_CASE("New candidate teeth with elim",
 					      g_dat, b_dat, lp_edges,
 					      s_dat));
       int ncount = s_dat.G_s.node_count;
-      double ft = PSEP::zeit();
+
+      double ct = PSEP::zeit();
       PSEP::nu::CandidateTeeth cands(g_dat, b_dat, s_dat);
+      ct = PSEP::zeit() - ct;
+      cout << "Did adj zones preprocessing in " << ct << "s\n";
       
+      double ft = PSEP::zeit();      
       REQUIRE_FALSE(cands.get_light_teeth());
       ft = PSEP::zeit() - ft;
-      int numfound = 0;
-
-      for(auto &vec : cands.right_teeth) numfound += vec.size();
-      for(auto &vec : cands.left_teeth)	numfound += vec.size();
-      for(auto &vec : cands.dist_teeth)	numfound += vec.size();
-      cout << "Found " << numfound << " in " << ft << "s\n";
-      int
-	sum_sums = 0, sum_lefts = 0, sum_rights = 0, max_sum = 0,
-	max_left = 0, max_right = 0, sum_dists = 0, max_dist = 0;
-      for(int i = 0; i < ncount; ++i){
-	int left_sum = cands.left_teeth[i].size();
-	int right_sum = cands.right_teeth[i].size();
-	int dist_sum = cands.dist_teeth[i].size();
-	int sum = left_sum + right_sum + dist_sum;
-	
-	sum_sums += sum;
-	sum_lefts += left_sum;
-	sum_rights += right_sum;
-	sum_dists += dist_sum;
-	if(sum > max_sum) max_sum = sum;
-	if(left_sum > max_left) max_left = left_sum;
-	if(right_sum > max_right) max_right = right_sum;
-	if(dist_sum > max_dist) max_dist = dist_sum;
-      }
-      cout << "Avg sum of sizes of teeth w same root: "
-	   << avg(sum_sums, ncount) << ", biggest: " << max_sum << "\n";
-      cout << "Avg num left teeth: " << avg(sum_lefts, ncount)  << ", max: "
-	   << max_left << "\n";
-      cout << "Avg num right teeth: " << avg(sum_rights, ncount) << ", max: "
-	   << max_right << "\n";
-      cout << "Avg num dist teeth: " << avg(sum_dists, ncount)  << ", max: "
-	   << max_dist << "\n\n";
-
-      bool r_sorted = true, l_sorted = true, d_sorted = true;
-      for(int i = 0; i < ncount; ++i){
-	if(!std::is_sorted(cands.right_teeth[i].begin(),
-			   cands.right_teeth[i].end(), tooth_cmp))
-	  r_sorted = false;
-	if(!std::is_sorted(cands.left_teeth[i].begin(),
-			   cands.left_teeth[i].end(), tooth_cmp))
-	  l_sorted = false;
-	if(!std::is_sorted(cands.dist_teeth[i].begin(),
-			   cands.dist_teeth[i].end(), tooth_cmp))
-	  d_sorted = false;
-      }
       
-      REQUIRE(r_sorted == true);
-      REQUIRE(l_sorted == true);
-      REQUIRE(d_sorted == true);
+      double st = PSEP::zeit();
+      int numfound = 0, msort_rval = 0;
+      
+      for(int i = 0; i < ncount; ++i){
+	msort_rval = cands.merge_and_sort(i);
+	if(msort_rval) break;
+	numfound += cands.light_teeth[i].size();
+      }
+
+      REQUIRE_FALSE(msort_rval);
+      
+      st = PSEP::zeit() - st;
+      cout << "Found " << numfound << " teeth in " << ft << "s\n";
+      cout << "Sorted them in " << st << "s\n";
+
+      int m_count = 0, s_count = 0, leftover;
+      for(auto &stat : cands.stats)
+	if(stat == PSEP::nu::ListStat::Merge)
+	  ++m_count;
+	else if(stat == PSEP::nu::ListStat::Full)
+	  ++s_count;
+      cout << "Did " << m_count << " merges, " << s_count << " full sorts ("
+	   << (ncount - m_count - s_count) << " untouched!)\n";
+
+      
+      double et = PSEP::zeit();
+      cands.weak_elim();
+      et = PSEP::zeit() - et;
+      int after_elim = 0;
+      
+      for(auto &vec : cands.light_teeth)
+	after_elim += vec.size();
+      
+      cout << "Did weak elim on the " << (m_count + s_count)
+	   << " merged/sorted roots in " << et << "s.\n";
+      cout << "Got " << after_elim << " light teeth.\n";
+      cout << "(eliminated "
+	   << (numfound - after_elim) << ")\n";
+      cout << "EVERYTHING: "
+	   << (ct + ft + st + et) << "s\n";
+      
+      cout << "\n";
     }
   }
 }
