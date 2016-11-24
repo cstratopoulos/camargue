@@ -86,6 +86,8 @@ int Cut<fastblossom>::oc_sep()
     // cout << "Stored handle in vector" << endl;
 
     do {
+      if(handle_nodes.size() >= ncount)
+	break;
       GraphUtils::get_delta(handle_nodes.size(), &handle_nodes[0],
 			    support_indices.size(), &support_elist[0],
 			    &deltacount, &delta[0], &edge_marks[0]);
