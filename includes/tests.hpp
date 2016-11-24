@@ -13,7 +13,7 @@
  * If defined, compiling the project will create a Catch main for the
  * execution of test cases, rather than the main for running the solver. 
  */
-#define PSEP_DO_TESTS
+//#define PSEP_DO_TESTS
 
 
 #endif

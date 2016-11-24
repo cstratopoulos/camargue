@@ -220,7 +220,7 @@ void CutControl::profile()
 {
   segtime.report(false);
   matchtime.report(true);
-  dptime.report(false);
+  dptime.report(true);
   gmitime.report(false);
   cout << "\n";
 }
