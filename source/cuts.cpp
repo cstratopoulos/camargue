@@ -61,7 +61,9 @@ int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
   
   GraphUtils::get_delta(body_nodes, edges, &deltacount, delta, edge_marks);
   rval = (deltacount == 0);
-  PSEP_CHECK_RVAL(rval, "Body nodes gave empty delta, ");
+  PSEP_CHECK_RVAL(rval, "Body nodes gave empty delta, cut type: "
+		  << ((H.cut_type == HyperGraph::CutType::Segment) ?
+		      "segment" : "blossom. "));
   
 
   try {
