@@ -15,9 +15,13 @@ using std::string;
 using std::to_string;
 using std::pair;
 using std::unique_ptr;
+using std::inplace_merge;
 
 namespace PSEP {
 namespace nu {
+
+static bool ptr_cmp(const SimpleTooth::Ptr &S, const SimpleTooth::Ptr &T)
+{ return S->body_size() < T->body_size(); }
 
 CandidateTeeth::CandidateTeeth(PSEP::Data::GraphGroup &_graph_dat,
 			       PSEP::Data::BestGroup &_best_dat,
@@ -28,6 +32,7 @@ CandidateTeeth::CandidateTeeth(PSEP::Data::GraphGroup &_graph_dat,
   dist_teeth(std::vector<vector<SimpleTooth::Ptr>>(_supp_dat.G_s.node_count)),
   adj_zones(vector<vector<int>>(_supp_dat.G_s.node_count,
 				vector<int>(_supp_dat.G_s.node_count, 0))),
+  stats(_supp_dat.G_s.node_count, ListStat::None),
   endmark(vector<int>(_supp_dat.G_s.node_count, CC_LINSUB_BOTH_END)),
   graph_dat(_graph_dat),
   best_dat(_best_dat),
@@ -83,6 +88,67 @@ int CandidateTeeth::get_light_teeth()
   if(rval)
     cerr << "Problem in CandidateTeeth::get_light_teeth.\n";
   return rval;
+}
+
+int CandidateTeeth::merge_and_sort(const int root)
+{
+  vector<SimpleTooth::Ptr> &teeth = light_teeth[root];
+  int left_sz = left_teeth[root].size();
+  int right_sz = right_teeth[root].size();
+  int dist_sz = dist_teeth[root].size();
+  
+  try {
+    for(SimpleTooth::Ptr &T : left_teeth[root]) teeth.push_back(std::move(T));
+    for(SimpleTooth::Ptr &T : right_teeth[root]) teeth.push_back(std::move(T));
+    for(SimpleTooth::Ptr &T : dist_teeth[root]) teeth.push_back(std::move(T));
+  } catch(...){ cerr << "CandidateTeeth::merge_and sort failed.\n"; return 1; }
+
+  if(dist_sz > 0){
+    std::sort(teeth.begin(), teeth.end(), ptr_cmp);
+    stats[root] = ListStat::Full;
+  } else
+    if(left_sz > 0 && right_sz > 0){
+      std::inplace_merge(teeth.begin(), teeth.begin() + left_sz, teeth.end(),
+			 ptr_cmp);
+      stats[root] = ListStat::Merge;
+    }
+  return 0;
+}
+
+void CandidateTeeth::weak_elim()
+{
+  for(int root = 0; root < light_teeth.size(); ++root){
+    if(stats[root] == ListStat::None) continue;
+    
+    vector<SimpleTooth::Ptr> &teeth = light_teeth[root];
+    bool found_elim = false;
+    
+    for(auto it = teeth.begin(); it != teeth.end() - 1; ++it){
+      SimpleTooth::Ptr &S = *it;      
+      if(S->root == -1) continue;
+      
+      for(auto it2 = it + 1; it2 != teeth.end(); ++it2){
+	SimpleTooth::Ptr &T = *it2;	
+	if(T->root == -1) continue;
+
+	if(root_equivalent(root, tooth_seg(S->body_start, S->body_end),
+			   tooth_seg(T->body_start, T->body_end))){
+	  found_elim = true;
+	  if(S->slack < T->slack)
+	    T->root = -1;
+	  else
+	    S->root = -1;
+	}
+      }
+    }
+    
+    if(found_elim)
+      teeth.erase(std::remove_if(teeth.begin(), teeth.end(),
+				 [](const SimpleTooth::Ptr &T) -> bool {
+				   return T->root == -1;
+				 }),
+		  teeth.end());
+  }
 }
 
 void CandidateTeeth::get_range(const int root, const tooth_seg &s,
