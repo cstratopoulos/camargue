@@ -10,9 +10,12 @@
 #include <string>
 #include <utility>
 #include <unordered_map>
+#include <bitset>
 
 namespace PSEP {
 namespace nu {
+
+enum class ListStat {None, Merge, Full};
 
 struct tooth_seg {
   tooth_seg(int _start, int _end, double _slack) :
@@ -70,7 +73,8 @@ public:
   bool root_equivalent(const int root, const tooth_seg &s1,
 		       const tooth_seg &s2) const;
 
-  void weak_elim(const int root);
+  int merge_and_sort(const int root);
+  void weak_elim();
   
   static void print_tooth(const SimpleTooth &T, bool full,
 			  const std::vector<int> &tour_nodes);
@@ -81,6 +85,7 @@ public:
   light_teeth, left_teeth, right_teeth, dist_teeth;
 
   std::vector<std::vector<int>> adj_zones;
+  std::vector<ListStat> stats;
 
 private:
   std::vector<int> endmark;
