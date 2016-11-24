@@ -151,10 +151,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   PSEP::SupportGraph &G = arg->G_s;
   vector<double> &rb_sums = arg->root_bod_sums;
   int ncount = G.node_count;
-  int set_size = cut_end - cut_start + 1;
-  int rhs = (2 * set_size) - 1;
-  double partial_lhs = (2 * set_size) - cut_val;
-  double rb_lower = rhs - partial_lhs - (0.5 - Epsilon::Cut);
+  double rb_lower = cut_val - (1.5 - Epsilon::Cut);
 
   //right-adjacent declarations
   tooth_seg &old_seg = arg->old_seg;
@@ -219,54 +216,49 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
 	  l_vec.emplace_back(PSEP::make_unique<SimpleTooth>(root, new_body,
 							    new_slack));
 	} catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back new tooth. "); }
-      }      
+      }
     }
   }
+  
 
   //distant add
   if(cut_start == old_seg.start){
     for(int i = old_seg.end + 1; i <= cut_end; ++i){
-      marks[tour[i]] = 1;
+      marks[i] = 1;
       rb_sums[i] = 0.0;
     }
-    marks[tour[(cut_end + 1) % ncount]] = 1;
+    marks[(cut_end + 1) % ncount] = 1;
     rb_sums[(cut_end + 1) % ncount] = 0.0;
 
     for(int i = old_seg.end + 1; i <= cut_end; ++i){
       SNode vx = G.nodelist[tour[i]];
       for(int k = 0; k < vx.s_degree; ++k){
-	int other_end = vx.adj_objs[k].other_end;
-	int root_perm = perm[other_end];
+	int root_perm = perm[vx.adj_objs[k].other_end];
 
-	if(marks[other_end] == 0)
+	if(marks[root_perm] == 0)
 	  rb_sums[root_perm] += vx.adj_objs[k].lp_weight;
       }
     }
   } else {//on a new degree node
     //clean up after the old one
-    for(int i = old_seg.start; i <= old_seg.end; ++i){
-      marks[tour[i]] = 0;
+    for(int i = 0; i < ncount; ++i){
+      marks[i] = 0;
       rb_sums[i] = 0.0;
     }
-    marks[tour[(old_seg.end + 1) % ncount]] = 0;
-    rb_sums[(old_seg.end + 1) % ncount] = 0.0;
-    marks[tour[(old_seg.end + (ncount - 1)) % ncount]] = 0;
-    rb_sums[(old_seg.end + (ncount - 1)) % ncount] = 0.0;
 
     //set up for the new one
-    marks[tour[cut_start]] = 1;
-    marks[tour[(cut_start + 1) % ncount]] = 1;
-    marks[tour[(cut_start + (ncount - 1)) % ncount]] = 1;
+    marks[cut_start] = 1;
+    marks[(cut_start + 1) % ncount] = 1;
+    marks[(cut_start + (ncount - 1)) % ncount] = 1;
     rb_sums[cut_start] = 0.0;
     rb_sums[(cut_start + 1) % ncount] = 0.0;
     rb_sums[(cut_start + (ncount - 1)) % ncount] = 0.0;
 
     SNode vx = G.nodelist[tour[cut_start]];
     for(int k = 0; k < vx.s_degree; ++k){
-      int other_end = vx.adj_objs[k].other_end;
-      int root_perm = perm[other_end];
+      int root_perm = perm[vx.adj_objs[k].other_end];
 
-      if(marks[other_end] == 0)
+      if(marks[root_perm] == 0)
 	rb_sums[root_perm] += vx.adj_objs[k].lp_weight;
     }    
   }
@@ -276,12 +268,27 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
        i + 1 == cut_start || cut_end + 1 == i) continue;
     if(rb_sums[i] > rb_lower){
       vector<SimpleTooth::Ptr> &dt = arg->d_teeth[i];
-      try {
-	dt.emplace_back(PSEP::make_unique<SimpleTooth>(i, cut_start,
-						       cut_end,
-						       rhs - partial_lhs -
-						       rb_sums[i]));
-      } catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back tooth. "); }
+      bool elim = false;
+      double new_slack = cut_val - rb_sums[i] - 1;
+      tooth_seg new_body(cut_start, cut_end);
+
+      if(!dt.empty()){
+	tooth_seg prev_body(dt.back()->body_start, dt.back()->body_end);
+	double prev_slack = dt.back()->slack;
+
+	if(CandidateTeeth::root_equivalent(i, new_body, prev_body, zones)){
+	  elim = true;
+	  if(new_slack < prev_slack)
+	    dt.back() = PSEP::make_unique<SimpleTooth>(i, new_body, new_slack);
+	}
+      }
+      
+      if(!elim){
+	try {
+	  dt.emplace_back(PSEP::make_unique<SimpleTooth>(i, new_body,
+							 new_slack));
+	} catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back tooth. "); }
+      }
     }
   }
 
