@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 #include <catch.hpp>
 
@@ -31,11 +32,20 @@ static int dump_segment(double cut_val, int cut_start, int cut_end,
   return 0;
 }
 
-TEST_CASE("New candidate teeth with elim",
-	  "[tooth][tiny]") {
-  vector<string> tests{"fleisA9", "fleisB9", "comb9", "ulysses16",
-		       "dantzig42", "pr76",
-		       "d2103", "pr1002", "rl1304"};
+static double avg(int sum, int trials)
+{
+  return (double) sum / (double) trials;
+}
+
+static bool tooth_cmp(const PSEP::nu::SimpleTooth::Ptr &T,
+		      const PSEP::nu::SimpleTooth::Ptr &S)
+{
+  return T->body_size() < S->body_size();
+}
+
+TEST_CASE("New tiny candidate teeth with elim",
+	  "[.][tooth][tiny]") {
+  vector<string> tests{"fleisA9", "fleisB9", "comb9", "ulysses16"};
 
   for(string &fname : tests){
     SECTION(fname){
@@ -53,87 +63,122 @@ TEST_CASE("New candidate teeth with elim",
 					      s_dat));
       int ncount = s_dat.G_s.node_count;
       
-      if(ncount < 20){
-	cout << "Best tour:\n";
-	for(int i : b_dat.best_tour_nodes)
-	  cout << " " << i << ", ";
-	cout << "\n";
-      }
+      cout << "Best tour:\n";
+      for(int i : b_dat.best_tour_nodes) cout << " " << i << ", ";
+      cout << "\n";
+      
 
-      double ft = PSEP::zeit();
       PSEP::nu::CandidateTeeth cands(g_dat, b_dat, s_dat);
       REQUIRE_FALSE(cands.get_light_teeth());
-      ft = PSEP::zeit() - ft;
       int numfound = 0;
 
       cout << "\tLEFT ADJACENT TEETH\n";
       for(vector<PSEP::nu::SimpleTooth::Ptr> &vec : cands.right_teeth){
 	numfound += vec.size();
-	if(ncount < 100)
-	  for(const PSEP::nu::SimpleTooth::Ptr &T : vec){
-	    cands.print_tooth(*T, ncount < 20);
-	  }
+	for(const PSEP::nu::SimpleTooth::Ptr &T : vec){
+	  cands.print_tooth(*T, ncount < 20);
+	}
       }
 
       cout << "\tRIGHT ADJACENT TEETH\n";
       for(vector<PSEP::nu::SimpleTooth::Ptr> &vec : cands.left_teeth){
 	numfound += vec.size();
-	if(ncount < 100)
-	  for(const PSEP::nu::SimpleTooth::Ptr &T : vec){
-	    cands.print_tooth(*T, ncount < 20);
-	  }
+	for(const PSEP::nu::SimpleTooth::Ptr &T : vec){
+	  cands.print_tooth(*T, ncount < 20);
+	}
       }
 
       cout << "\tDISTANT TEETH\n";
       for(vector<PSEP::nu::SimpleTooth::Ptr> &vec : cands.dist_teeth){
 	numfound += vec.size();
-	if(ncount < 100)
-	  for(const PSEP::nu::SimpleTooth::Ptr &T : vec){
-	    cands.print_tooth(*T, ncount < 20);
-	  }
+	for(const PSEP::nu::SimpleTooth::Ptr &T : vec){
+	  cands.print_tooth(*T, ncount < 20);
+	}
       }
-      cout << "Found " << numfound << " in " << ft << "s\n";
-      int
-	sum_sums = 0, sum_lefts = 0, sum_rights = 0, max_sum = 0,
-	max_left = 0, max_right = 0;
-      for(int i = 0; i < ncount; ++i){
-	int left_sum = cands.left_teeth[i].size();
-	int right_sum = cands.right_teeth[i].size();
-	int sum = left_sum + right_sum;
-	
-	sum_sums += sum;
-	sum_lefts += left_sum;
-	sum_rights += right_sum;
-	if(sum > max_sum) max_sum = sum;
-	if(left_sum > max_left) max_left = left_sum;
-	if(right_sum > max_right) max_right = right_sum;
-      }
-      cout << "Avg sum of sizes of left and right teeth w same root: "
-	   << ((double) sum_sums / (double) ncount) << ", biggest: "
-	   << max_sum << "\n";
-      cout << "Avg num left teeth: "
-	   << ((double) sum_lefts / (double) ncount) << ", max: "
-	   << max_left << "\n";
-      cout << "Avg num right teeth: "
-	   << ((double) sum_rights / (double) ncount) << ", max: "
-	   << max_right << "\n";
-
-      int sum_dists = 0, max_dist = 0;
-      for(auto &vec : cands.dist_teeth){
-	sum_dists += vec.size();
-	if(vec.size() > max_dist)
-	  max_dist = vec.size();
-      }
-      cout << "Avg num dist teeth: "
-	   << ((double) sum_dists / (double) ncount) << ", max: "
-	   << max_dist << "\n";
-      cout << "\n";
+      cout << "\n\n";
     }
   }
 }
 
-TEST_CASE("New tooth constructor tests",
-	  "[.tooth][tiny]") {
+TEST_CASE("New candidate teeth with elim",
+	  "[tooth]") {
+  vector<string> tests{"lin318", "d493", "pr1002", "d2103", "pcb3038"};
+
+  for(string &fname : tests){
+    SECTION(fname){
+      string
+	probfile = "problems/" + fname + ".tsp",
+	solfile = "test_data/tours/" + fname + ".sol",
+	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
+      PSEP::Data::GraphGroup g_dat;
+      PSEP::Data::BestGroup b_dat;
+      PSEP::Data::SupportGroup s_dat;
+      std::vector<double> lp_edges;
+	
+      REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+					      g_dat, b_dat, lp_edges,
+					      s_dat));
+      int ncount = s_dat.G_s.node_count;
+      double ft = PSEP::zeit();
+      PSEP::nu::CandidateTeeth cands(g_dat, b_dat, s_dat);
+      
+      REQUIRE_FALSE(cands.get_light_teeth());
+      ft = PSEP::zeit() - ft;
+      int numfound = 0;
+
+      for(auto &vec : cands.right_teeth) numfound += vec.size();
+      for(auto &vec : cands.left_teeth)	numfound += vec.size();
+      for(auto &vec : cands.dist_teeth)	numfound += vec.size();
+      cout << "Found " << numfound << " in " << ft << "s\n";
+      int
+	sum_sums = 0, sum_lefts = 0, sum_rights = 0, max_sum = 0,
+	max_left = 0, max_right = 0, sum_dists = 0, max_dist = 0;
+      for(int i = 0; i < ncount; ++i){
+	int left_sum = cands.left_teeth[i].size();
+	int right_sum = cands.right_teeth[i].size();
+	int dist_sum = cands.dist_teeth[i].size();
+	int sum = left_sum + right_sum + dist_sum;
+	
+	sum_sums += sum;
+	sum_lefts += left_sum;
+	sum_rights += right_sum;
+	sum_dists += dist_sum;
+	if(sum > max_sum) max_sum = sum;
+	if(left_sum > max_left) max_left = left_sum;
+	if(right_sum > max_right) max_right = right_sum;
+	if(dist_sum > max_dist) max_dist = dist_sum;
+      }
+      cout << "Avg sum of sizes of teeth w same root: "
+	   << avg(sum_sums, ncount) << ", biggest: " << max_sum << "\n";
+      cout << "Avg num left teeth: " << avg(sum_lefts, ncount)  << ", max: "
+	   << max_left << "\n";
+      cout << "Avg num right teeth: " << avg(sum_rights, ncount) << ", max: "
+	   << max_right << "\n";
+      cout << "Avg num dist teeth: " << avg(sum_dists, ncount)  << ", max: "
+	   << max_dist << "\n\n";
+
+      bool r_sorted = true, l_sorted = true, d_sorted = true;
+      for(int i = 0; i < ncount; ++i){
+	if(!std::is_sorted(cands.right_teeth[i].begin(),
+			   cands.right_teeth[i].end(), tooth_cmp))
+	  r_sorted = false;
+	if(!std::is_sorted(cands.left_teeth[i].begin(),
+			   cands.left_teeth[i].end(), tooth_cmp))
+	  l_sorted = false;
+	if(!std::is_sorted(cands.dist_teeth[i].begin(),
+			   cands.dist_teeth[i].end(), tooth_cmp))
+	  d_sorted = false;
+      }
+      
+      REQUIRE(r_sorted == true);
+      REQUIRE(l_sorted == true);
+      REQUIRE(d_sorted == true);
+    }
+  }
+}
+
+TEST_CASE("New tiny tooth constructor tests",
+	  "[.][tooth][tiny]") {
   vector<string> tests{"fleisA9", "fleisB9", "comb9", "ulysses16"};
   
   for(string &fname : tests){
