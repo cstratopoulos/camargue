@@ -1,0 +1,16 @@
+#+STARTUP: indent
+
+* Simple DP TODO list
+** DONE Investigate stalling/amount of violation in cuts
+   CLOSED: [2016-11-21 Mon 15:50]
+** Tooth
+*** TODO Add mulitple versions of weak elim for right-adjacent/general
+*** TODO Replace hash maps with arrays in linsub_allcuts cb
+*** TODO Try version with just linsub
+** CutControl
+*** TODO Add in_subtour_poly to DP time
+*** TODO Make it so add_primal_cuts can return rval of 2
+** PureCut
+*** TODO Possibly rewrite entirely
+** Timing
+*** TODO Create timers for all subroutines
