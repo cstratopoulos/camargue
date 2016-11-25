@@ -109,48 +109,10 @@ int CandidateTeeth::merge_and_sort()
 
 int CandidateTeeth::merge_and_sort(const int root)
 {
-#ifdef TOOTH_GET_LRD
   vector<SimpleTooth::Ptr> &teeth = light_teeth[root];
   int left_sz = left_teeth[root].size();
   int right_sz = right_teeth[root].size();
   int dist_sz = dist_teeth[root].size();
-
-  if(dist_sz == 0){
-    if(left_sz > 0 && right_sz > 0){
-      stats[root] = ListStat::Merge;
-      vector<SimpleTooth::Ptr> &left = left_teeth[root];
-      vector<SimpleTooth::Ptr> &right = right_teeth[root];
-
-      try{
-	auto first_right = right.begin();
-	auto last_right = right.end();
-	auto first_left = left.begin();
-	auto last_left = left.end();
-
-	while(first_right != last_right){
-	  if(first_left == last_left){
-	    for(auto it = first_right; it != last_right; ++it)
-	      teeth.push_back(std::move(*it));
-	    break;
-	  }
-	  if(ptr_cmp(*first_left, *first_right)){
-	    teeth.push_back(std::move(*first_left));
-	    ++first_left;
-	  } else{
-	    teeth.push_back(std::move(*first_right));
-	    ++first_right;
-	  }
-	}	
-      } catch(...){
-	cerr << "CandidateTeeth::merge_and_sort failed.\n";
-	return 1;
-      }
-      return 0;
-    }
-
-    teeth = std::move(right_sz > 0 ? right_teeth[root] : left_teeth[root]);
-    return 0;
-  }
 
   try {
     for(SimpleTooth::Ptr &T : left_teeth[root]) teeth.push_back(std::move(T));
@@ -160,20 +122,12 @@ int CandidateTeeth::merge_and_sort(const int root)
     cerr << "CandidateTeeth::merge_and sort failed.\n"; return 1;
   }
 
-  gfx::timsort(teeth.begin(), teeth.end(), ptr_cmp);
-  stats[root] = ListStat::Full;
-    
-  return 0;
-
-#else
-  if(dist_teeth[root].empty()) return 0;
-  
-  light_teeth[root] = std::move(dist_teeth[root]);
-  gfx::timsort(light_teeth[root].begin(), light_teeth[root].end(), ptr_cmp);
-  stats[root] = ListStat::Full;
+  if(dist_sz > 0 || (left_sz > 0 && right_sz > 0)){
+    gfx::timsort(teeth.begin(), teeth.end(), ptr_cmp);
+    stats[root] = ListStat::Full;
+  }
 
   return 0;
-#endif
 }
 
 void CandidateTeeth::weak_elim()
@@ -286,7 +240,6 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   vector<pair<int, double>> &old_rights = arg->prev_slacks;
 
   //right adjacent add/elim
-#ifdef TOOTH_GET_LRD
   if((cut_start == old_seg.start) &&
      (old_seg.body_size() != (ncount - 2))){
     if(cut_end == old_seg.end + 1 &&
@@ -315,10 +268,8 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
       }
     }
   }
-#endif
 
   //left adjacent add/elim
-#ifdef TOOTH_GET_LRD
   if((cut_start + 1 != cut_end) &&
      ((cut_end - (cut_start + 1) - 1) != (ncount - 2))){
     pair<int, double> &old_right_pair = arg->prev_slacks[cut_end];
@@ -351,7 +302,6 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
       }
     }
   }
-#endif
   
 
   //distant add
@@ -360,10 +310,8 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
       marks[i] = 1;
       rb_sums.erase(i);
     }
-#ifdef TOOTH_GET_LRD
     marks[(cut_end + 1) % ncount] = 1;
     rb_sums.erase((cut_end + 1) % ncount);
-#endif
 
     for(int i = old_seg.end + 1; i <= cut_end; ++i){
       SNode vx = G.nodelist[tour[i]];
@@ -383,10 +331,8 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
 
     //set up for the new one
     marks[cut_start] = 1;
-#ifdef TOOTH_GET_LRD
     marks[(cut_start + 1) % ncount] = 1;
     marks[(cut_start + (ncount - 1)) % ncount] = 1;
-#endif
 
     SNode vx = G.nodelist[tour[cut_start]];
     for(int k = 0; k < vx.s_degree; ++k){
@@ -401,9 +347,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
     int i = kv.first;
     double rb_sum = kv.second;
     if((i < cut_start) && (cut_start == cut_end)) continue;
-#ifndef TOOTH_GET_LRD
-    if((cut_end - cut_start + 1) == (ncount - 2)) continue;
-#endif
+
     if(rb_sum > rb_lower){
       vector<SimpleTooth::Ptr> &dt = arg->d_teeth[i];
       bool elim = false;
