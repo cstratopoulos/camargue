@@ -21,6 +21,7 @@ struct tooth_seg {
     start(_start), end(_end), slack(_slack) {}
   tooth_seg(int _start, int _end) : start(_start), end(_end), slack(1.0) {}
 
+  int body_size() const { return end - start + 1; }
   bool contains(int vx) const { return start <= vx && vx <= end; }
   bool subset_of(tooth_seg &S) const {
     return S.start <= start && end <= S.end;
