@@ -23,7 +23,7 @@ using std::inplace_merge;
  * right adjacent, and distant teeth, respectively. If not defined, the
  * distant teeth section will scan for all possible roots. 
  */
-//#define TOOTH_GET_LRD
+#define TOOTH_GET_LRD
 
 namespace PSEP {
 
@@ -114,40 +114,70 @@ int CandidateTeeth::merge_and_sort(const int root)
   int left_sz = left_teeth[root].size();
   int right_sz = right_teeth[root].size();
   int dist_sz = dist_teeth[root].size();
-  
+
+  if(dist_sz == 0){
+    if(left_sz > 0 && right_sz > 0){
+      stats[root] = ListStat::Merge;
+      vector<SimpleTooth::Ptr> &left = left_teeth[root];
+      vector<SimpleTooth::Ptr> &right = right_teeth[root];
+
+      try{
+	auto first_right = right.begin();
+	auto last_right = right.end();
+	auto first_left = left.begin();
+	auto last_left = left.end();
+
+	while(first_right != last_right){
+	  if(first_left == last_left){
+	    for(auto it = first_right; it != last_right; ++it)
+	      teeth.push_back(std::move(*it));
+	    break;
+	  }
+	  if(ptr_cmp(*first_left, *first_right)){
+	    teeth.push_back(std::move(*first_left));
+	    ++first_left;
+	  } else{
+	    teeth.push_back(std::move(*first_right));
+	    ++first_right;
+	  }
+	}	
+      } catch(...){
+	cerr << "CandidateTeeth::merge_and_sort failed.\n";
+	return 1;
+      }
+      return 0;
+    }
+
+    teeth = std::move(right_sz > 0 ? right_teeth[root] : left_teeth[root]);
+    return 0;
+  }
+
   try {
     for(SimpleTooth::Ptr &T : left_teeth[root]) teeth.push_back(std::move(T));
     for(SimpleTooth::Ptr &T : right_teeth[root]) teeth.push_back(std::move(T));
     for(SimpleTooth::Ptr &T : dist_teeth[root]) teeth.push_back(std::move(T));
-  } catch(...){ cerr << "CandidateTeeth::merge_and sort failed.\n"; return 1; }
+  } catch(...){
+    cerr << "CandidateTeeth::merge_and sort failed.\n"; return 1;
+  }
 
-  if(dist_sz > 0){
-    gfx::timsort(teeth.begin(), teeth.end(), ptr_cmp);
-    //    std::sort(teeth.begin(), teeth.end(), ptr_cmp);
-    stats[root] = ListStat::Full;
-  } else
-    if(left_sz > 0 && right_sz > 0){
-      std::inplace_merge(teeth.begin(), teeth.begin() + left_sz, teeth.end(),
-			 ptr_cmp);
-      stats[root] = ListStat::Merge;
-    }
+  gfx::timsort(teeth.begin(), teeth.end(), ptr_cmp);
+  stats[root] = ListStat::Full;
+    
+  return 0;
+
 #else
-  if(dist_teeth[root].empty())
-    return 0;
+  if(dist_teeth[root].empty()) return 0;
   
   light_teeth[root] = std::move(dist_teeth[root]);
   gfx::timsort(light_teeth[root].begin(), light_teeth[root].end(), ptr_cmp);
-  //  std::sort(light_teeth[root].begin(), light_teeth[root].end(), ptr_cmp);
   stats[root] = ListStat::Full;
-#endif
-  
-  return 0;
 
+  return 0;
+#endif
 }
 
 void CandidateTeeth::weak_elim()
 {
-#ifdef TOOTH_GET_LRD
   for(int root = 0; root < light_teeth.size(); ++root){
     if(stats[root] == ListStat::None) continue;
     
@@ -180,7 +210,6 @@ void CandidateTeeth::weak_elim()
 				 }),
 		  teeth.end());
   }
-#endif
 }
 
 void CandidateTeeth::get_range(const int root, const tooth_seg &s,
