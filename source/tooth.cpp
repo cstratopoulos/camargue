@@ -1,5 +1,7 @@
 #include "tooth.hpp"
 
+#include <timsort.hpp>
+
 extern "C" {
 #include <concorde/INCLUDE/cut.h>
 }
@@ -16,6 +18,12 @@ using std::to_string;
 using std::pair;
 using std::unique_ptr;
 using std::inplace_merge;
+
+/* If this is defined, separate sections of teeth_cb will get left adjacent,
+ * right adjacent, and distant teeth, respectively. If not defined, the
+ * distant teeth section will scan for all possible roots. 
+ */
+//#define TOOTH_GET_LRD
 
 namespace PSEP {
 
@@ -101,6 +109,7 @@ int CandidateTeeth::merge_and_sort()
 
 int CandidateTeeth::merge_and_sort(const int root)
 {
+#ifdef TOOTH_GET_LRD
   vector<SimpleTooth::Ptr> &teeth = light_teeth[root];
   int left_sz = left_teeth[root].size();
   int right_sz = right_teeth[root].size();
@@ -113,7 +122,8 @@ int CandidateTeeth::merge_and_sort(const int root)
   } catch(...){ cerr << "CandidateTeeth::merge_and sort failed.\n"; return 1; }
 
   if(dist_sz > 0){
-    std::sort(teeth.begin(), teeth.end(), ptr_cmp);
+    gfx::timsort(teeth.begin(), teeth.end(), ptr_cmp);
+    //    std::sort(teeth.begin(), teeth.end(), ptr_cmp);
     stats[root] = ListStat::Full;
   } else
     if(left_sz > 0 && right_sz > 0){
@@ -121,11 +131,23 @@ int CandidateTeeth::merge_and_sort(const int root)
 			 ptr_cmp);
       stats[root] = ListStat::Merge;
     }
+#else
+  if(dist_teeth[root].empty())
+    return 0;
+  
+  light_teeth[root] = std::move(dist_teeth[root]);
+  gfx::timsort(light_teeth[root].begin(), light_teeth[root].end(), ptr_cmp);
+  //  std::sort(light_teeth[root].begin(), light_teeth[root].end(), ptr_cmp);
+  stats[root] = ListStat::Full;
+#endif
+  
   return 0;
+
 }
 
 void CandidateTeeth::weak_elim()
 {
+#ifdef TOOTH_GET_LRD
   for(int root = 0; root < light_teeth.size(); ++root){
     if(stats[root] == ListStat::None) continue;
     
@@ -158,6 +180,7 @@ void CandidateTeeth::weak_elim()
 				 }),
 		  teeth.end());
   }
+#endif
 }
 
 void CandidateTeeth::get_range(const int root, const tooth_seg &s,
@@ -234,7 +257,9 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   vector<pair<int, double>> &old_rights = arg->prev_slacks;
 
   //right adjacent add/elim
-  if(cut_start == old_seg.start){
+#ifdef TOOTH_GET_LRD
+  if((cut_start == old_seg.start) &&
+     (old_seg.body_size() != (ncount - 2))){
     if(cut_end == old_seg.end + 1 &&
        slack + old_seg.slack < (0.5 - Epsilon::Cut)){
       int root = cut_end;
@@ -243,27 +268,30 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
       bool elim = false;
       
       if(!r_vec.empty()){
-	tooth_seg prev_body(r_vec.back()->body_start, r_vec.back()->body_end);
-	double prev_slack = r_vec.back()->slack;
-	if(CandidateTeeth::root_equivalent(root, prev_body, old_seg, zones)){
-	  elim = true;
-	  if(new_slack < prev_slack)
-	    r_vec.back() = PSEP::make_unique<SimpleTooth>(root, old_seg,
-							  new_slack);
-	}
+  	tooth_seg prev_body(r_vec.back()->body_start, r_vec.back()->body_end);
+  	double prev_slack = r_vec.back()->slack;
+  	if(CandidateTeeth::root_equivalent(root, prev_body, old_seg, zones)){
+  	  elim = true;
+  	  if(new_slack < prev_slack)
+  	    r_vec.back() = PSEP::make_unique<SimpleTooth>(root, old_seg,
+  							  new_slack);
+  	}
       }
 
       if(!elim){
-	try {
-	  r_vec.emplace_back(PSEP::make_unique<SimpleTooth>(root, old_seg,
-							    new_slack));
-	} catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back new tooth. ")}
+  	try {
+  	  r_vec.emplace_back(PSEP::make_unique<SimpleTooth>(root, old_seg,
+  							    new_slack));
+  	} catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back new tooth. ")}
       }
     }
   }
+#endif
 
   //left adjacent add/elim
-  if(cut_start + 1 != cut_end){
+#ifdef TOOTH_GET_LRD
+  if((cut_start + 1 != cut_end) &&
+     ((cut_end - (cut_start + 1) - 1) != (ncount - 2))){
     pair<int, double> &old_right_pair = arg->prev_slacks[cut_end];
     
     if((old_right_pair.first == cut_start + 1) &&
@@ -275,25 +303,26 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
       bool elim = false;
 
       if(!l_vec.empty()){
-	tooth_seg prev_body(l_vec.back()->body_start, l_vec.back()->body_end);
-	double prev_slack = l_vec.back()->slack;
+  	tooth_seg prev_body(l_vec.back()->body_start, l_vec.back()->body_end);
+  	double prev_slack = l_vec.back()->slack;
 
-	if(CandidateTeeth::root_equivalent(root, new_body, prev_body, zones)){
-	  elim = true;
-	  if(new_slack < prev_slack)
-	    l_vec.back() = PSEP::make_unique<SimpleTooth>(root, new_body,
-							  new_slack);
-	}
+  	if(CandidateTeeth::root_equivalent(root, new_body, prev_body, zones)){
+  	  elim = true;
+  	  if(new_slack < prev_slack)
+  	    l_vec.back() = PSEP::make_unique<SimpleTooth>(root, new_body,
+  							  new_slack);
+  	}
       }
 
       if(!elim){
-	try {
-	  l_vec.emplace_back(PSEP::make_unique<SimpleTooth>(root, new_body,
-							    new_slack));
-	} catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back new tooth. "); }
+  	try {
+  	  l_vec.emplace_back(PSEP::make_unique<SimpleTooth>(root, new_body,
+  							    new_slack));
+  	} catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back new tooth. "); }
       }
     }
   }
+#endif
   
 
   //distant add
@@ -302,8 +331,10 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
       marks[i] = 1;
       rb_sums.erase(i);
     }
+#ifdef TOOTH_GET_LRD
     marks[(cut_end + 1) % ncount] = 1;
     rb_sums.erase((cut_end + 1) % ncount);
+#endif
 
     for(int i = old_seg.end + 1; i <= cut_end; ++i){
       SNode vx = G.nodelist[tour[i]];
@@ -323,8 +354,10 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
 
     //set up for the new one
     marks[cut_start] = 1;
+#ifdef TOOTH_GET_LRD
     marks[(cut_start + 1) % ncount] = 1;
     marks[(cut_start + (ncount - 1)) % ncount] = 1;
+#endif
 
     SNode vx = G.nodelist[tour[cut_start]];
     for(int k = 0; k < vx.s_degree; ++k){
@@ -338,6 +371,10 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   for(auto &kv : rb_sums){
     int i = kv.first;
     double rb_sum = kv.second;
+    if((i < cut_start) && (cut_start == cut_end)) continue;
+#ifndef TOOTH_GET_LRD
+    if((cut_end - cut_start + 1) == (ncount - 2)) continue;
+#endif
     if(rb_sum > rb_lower){
       vector<SimpleTooth::Ptr> &dt = arg->d_teeth[i];
       bool elim = false;
