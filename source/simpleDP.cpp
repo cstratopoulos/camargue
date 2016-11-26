@@ -32,11 +32,11 @@ int Cut<dominoparity>::separate()
   rval = candidates.get_light_teeth();
   if(rval) goto CLEANUP;
 
+  candidates.unmerged_weak_elim();
+  
   rval = candidates.merge_and_sort();
   if(rval) goto CLEANUP;
-
-  candidates.weak_elim();
-
+    
   try { witness = PSEP::make_unique<DPCutGraph>(candidates); } catch(...){
     PSEP_SET_GOTO(rval, "DPCutGraph allocation failed. ");
   }
