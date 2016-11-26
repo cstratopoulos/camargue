@@ -1,6 +1,7 @@
 #include "tests.hpp"
 #include "tooth.hpp"
 #include "datagroups.hpp"
+#include "timer.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -119,33 +120,44 @@ TEST_CASE("New candidate teeth with elim",
       PSEP::Data::BestGroup b_dat;
       PSEP::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
+
+      PSEP::Timer ot("Overall");
+      PSEP::Timer ct("Adj zones", &ot);
+      PSEP::Timer ft("Find initial", &ot);
+      PSEP::Timer et("Unmerged elim", &ot);
+      PSEP::Timer st("Sort", &ot);
 	
       REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 					      g_dat, b_dat, lp_edges,
 					      s_dat));
       int ncount = s_dat.G_s.node_count;
 
-      double ct = PSEP::zeit();
+      ot.start();
+
+      ct.start();
       PSEP::CandidateTeeth cands(g_dat, b_dat, s_dat);
-      ct = PSEP::zeit() - ct;
-      cout << "Did adj zones preprocessing in " << ct << "s\n";
+      ct.stop();
+
+      cout << "Did adj zones preprocessing.\n";
       
-      double ft = PSEP::zeit();      
+      ft.start();
       REQUIRE_FALSE(cands.get_light_teeth());
-      ft = PSEP::zeit() - ft;
+      ft.stop();
 
       int numfound = 0;
       for(int i = 0; i < ncount; ++i)
 	numfound += (cands.left_teeth[i].size() + cands.right_teeth[i].size()
-		       + cands.dist_teeth[i].size());       
+		       + cands.dist_teeth[i].size());
+      cout << "Got initial collection of " << numfound
+	   << ", eliminating in place.\n";
 
-      double et = PSEP::zeit();
+      et.start();
       cands.unmerged_weak_elim();
-      et = PSEP::zeit() - et;
+      et.stop();
       int after_elim = 0;
      
       
-      double st = PSEP::zeit();
+      st.start();
       int msort_rval = 0;
       
       for(int i = 0; i < ncount; ++i){
@@ -153,39 +165,25 @@ TEST_CASE("New candidate teeth with elim",
 	if(msort_rval) break;
 	after_elim += cands.light_teeth[i].size();
       }
+      REQUIRE_FALSE(msort_rval);      
+      st.stop();
+      ot.stop();
 
-      REQUIRE_FALSE(msort_rval);
-      
-      st = PSEP::zeit() - st;
-      cout << "Found " << numfound << " teeth in " << ft << "s\n";
-      cout << "Sorted them in " << st << "s\n";
-
-      int m_count = 0, s_count = 0, leftover;
-      for(auto &stat : cands.stats)
-	if(stat == PSEP::ListStat::Merge)
-	  ++m_count;
-	else if(stat == PSEP::ListStat::Full)
-	  ++s_count;
-      cout << "Did " << m_count << " merges, " << s_count << " full sorts ("
-	   << (ncount - m_count - s_count) << " untouched!)\n";
-
-      
-      // double et = PSEP::zeit();
-      // cands.weak_elim();
-      // et = PSEP::zeit() - et;
-      // int after_elim = 0;
-      
-      // for(auto &vec : cands.light_teeth)
-      // 	after_elim += vec.size();
-      
-      cout << "Did weak elim on the " << (m_count + s_count)
-	   << " merged/sorted roots in " << et << "s.\n";
-      cout << "Got " << after_elim << " light teeth.\n";
-      cout << "(eliminated "
+      cout << "Got " << after_elim << " teeth after weak elim (eliminated "
 	   << (numfound - after_elim) << ")\n";
-      cout << "EVERYTHING: "
-	   << (ct + ft + st + et) << "s\n";
-      
+
+      int s_count = 0;
+      for(auto &stat : cands.stats)
+	if(stat == PSEP::ListStat::Full)
+	  ++s_count;
+      cout << "Did " << s_count << " full sorts ("
+	   << (ncount - s_count) << " untouched!)\n";
+
+      ct.report(true);
+      ft.report(false);
+      et.report(false);
+      st.report(false);
+      ot.report(true);
       cout << "\n";
     }
   }
