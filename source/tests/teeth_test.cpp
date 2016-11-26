@@ -133,14 +133,25 @@ TEST_CASE("New candidate teeth with elim",
       double ft = PSEP::zeit();      
       REQUIRE_FALSE(cands.get_light_teeth());
       ft = PSEP::zeit() - ft;
+
+      int numfound = 0;
+      for(int i = 0; i < ncount; ++i)
+	numfound += (cands.left_teeth[i].size() + cands.right_teeth[i].size()
+		       + cands.dist_teeth[i].size());       
+
+      double et = PSEP::zeit();
+      cands.unmerged_weak_elim();
+      et = PSEP::zeit() - et;
+      int after_elim = 0;
+     
       
       double st = PSEP::zeit();
-      int numfound = 0, msort_rval = 0;
+      int msort_rval = 0;
       
       for(int i = 0; i < ncount; ++i){
 	msort_rval = cands.merge_and_sort(i);
 	if(msort_rval) break;
-	numfound += cands.light_teeth[i].size();
+	after_elim += cands.light_teeth[i].size();
       }
 
       REQUIRE_FALSE(msort_rval);
@@ -159,13 +170,13 @@ TEST_CASE("New candidate teeth with elim",
 	   << (ncount - m_count - s_count) << " untouched!)\n";
 
       
-      double et = PSEP::zeit();
-      cands.weak_elim();
-      et = PSEP::zeit() - et;
-      int after_elim = 0;
+      // double et = PSEP::zeit();
+      // cands.weak_elim();
+      // et = PSEP::zeit() - et;
+      // int after_elim = 0;
       
-      for(auto &vec : cands.light_teeth)
-	after_elim += vec.size();
+      // for(auto &vec : cands.light_teeth)
+      // 	after_elim += vec.size();
       
       cout << "Did weak elim on the " << (m_count + s_count)
 	   << " merged/sorted roots in " << et << "s.\n";

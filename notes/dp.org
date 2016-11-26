@@ -8,6 +8,10 @@
 *** DONE Replace hash maps with arrays in linsub_allcuts cb
 CLOSED: [2016-11-25 Fri 15:19]
 *** TODO Adapt weak elim to unsorted (or possibly unmerged?) lists
+The idea here is to sort AFTER elimination has occurred, which should
+net a marginal speedup. Possible approaches:
+- Use std::move to merge the lists, record indices of iterators
+- Compare the disjoint lists separately
 ** CutControl
 *** TODO Add in_subtour_poly to DP time
 *** TODO Make it so add_primal_cuts can return rval of 2
