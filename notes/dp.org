@@ -19,3 +19,4 @@ net a marginal speedup. Possible approaches:
 *** TODO Possibly rewrite entirely
 ** Timing
 *** TODO Create timers for all subroutines
+* TODO Check self dist elim
