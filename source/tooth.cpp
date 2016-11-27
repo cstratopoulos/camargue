@@ -128,6 +128,7 @@ int CandidateTeeth::merge_and_sort(const int root)
 
 void CandidateTeeth::unmerged_weak_elim()
 {
+  bool right_left = false, right_dist = false, left_dist = false;
   for(int root = 0; root < light_teeth.size(); ++root){
     vector<SimpleTooth::Ptr>
       &right = right_teeth[root],
@@ -138,58 +139,45 @@ void CandidateTeeth::unmerged_weak_elim()
     bool left_elim = false;
     bool dist_elim = false;
 
-    //if there's not at least two nonempty lists
-    if((!right.empty() + !left.empty() + !dist.empty()) <= 1) continue;
-    
-    for(SimpleTooth::Ptr &R : right){
-      if(R->root == -1) continue;
-      //right vs left
-      for(SimpleTooth::Ptr &L : left){
-	if(L->root == -1) continue;
-	  
-	if(root_equivalent(root, tooth_seg(R->body_start, R->body_end),
-			   tooth_seg(L->body_start, L->body_end))){
-	  if(R->slack < L->slack){
-	    L->root = -1;
-	    left_elim = true;
-	  } else {
-	    R->root = -1;
-	    right_elim = true;
-	  }
-	}
-      }
-      //right vs dist
-      if(R->root == -1) continue;
-      for(SimpleTooth::Ptr &D : dist){
-	if(D->root == -1) continue;
-	  
-	if(root_equivalent(root, tooth_seg(R->body_start, R->body_end),
-			   tooth_seg(D->body_start, D->body_end))){
-	  if(R->slack < D->slack){
-	    D->root = -1;
-	    dist_elim = true;
-	  } else {
-	    R->root = -1;
-	    right_elim = true;
-	  }
-	}
-      }
-    }
+    if(dist.empty()) continue;
 
-    //left vs dist
-    for(SimpleTooth::Ptr &L : left){
-      if(L->root == -1) continue;
-      for(SimpleTooth::Ptr &D : dist){
-	if(D->root == -1) continue;
-	if(root_equivalent(root, tooth_seg(L->body_start, L->body_end),
-			   tooth_seg(D->body_start, D->body_end))){
-	  if(L->slack < D->slack){
-	    D->root = -1;
-	    dist_elim = true;
-	  } else {
-	    L->root = -1;
-	    left_elim = true;
+    for(SimpleTooth::Ptr &D : dist){
+      if(D->root == -1) continue;
+      
+      if(D->root < D->body_start){//left of body
+	for(SimpleTooth::Ptr &L : left){
+	  if(L->root == -1) continue;
+	  if(D->root == -1) break;
+	  if(root_equivalent(root, tooth_seg(L->body_start, L->body_end),
+			     tooth_seg(D->body_start, D->body_end))){
+	    left_dist = true;
+	    if(L->slack < D->slack){
+	      D->root = -1;
+	      dist_elim = true;
+	    } else {
+	      L->root = -1;
+	      left_elim = true;
+	    }
 	  }
+	}
+	continue;
+      }
+
+      if(D->root > D->body_end){//right of body
+	for(SimpleTooth::Ptr &R : right){
+	  if(R->root == -1) continue;
+	  if(D->root == -1) break;
+	  if(root_equivalent(root, tooth_seg(R->body_start, R->body_end),
+			     tooth_seg(D->body_start, D->body_end))){
+	    right_dist = true;
+	    if(R->slack < D->slack){
+	      D->root = -1;
+	      dist_elim = true;
+	    } else {
+	      R->root = -1;
+	      right_elim = true;
+	    }
+	  }	  
 	}
       }
     }
@@ -204,6 +192,11 @@ void CandidateTeeth::unmerged_weak_elim()
       dist.erase(std::remove_if(dist.begin(), dist.end(), ptr_elim),
 		 dist.end());    
   }
+
+  cout << "Did unmerged weak elim remove....\n"
+       << "\tRight v left: " << right_left << "\n"
+       << "\tRight v dist: " << right_dist << "\n"
+       << "\tLeft v dist: " << left_dist << "\n";
 }
 
 void CandidateTeeth::weak_elim()
