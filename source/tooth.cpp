@@ -22,12 +22,13 @@ using std::inplace_merge;
 
 namespace PSEP {
 
-static bool ptr_cmp(const SimpleTooth::Ptr &S, const SimpleTooth::Ptr &T)
+static inline bool ptr_cmp(const SimpleTooth::Ptr &S, const SimpleTooth::Ptr &T)
 { return S->body_size() < T->body_size(); }
 
-static bool ptr_elim(const SimpleTooth::Ptr &S){ return S->root == -1; }
+static inline bool ptr_elim(const SimpleTooth::Ptr &S){ return S->root == -1; }
 
-static bool elim_less_tie(const SimpleTooth::Ptr &S, const SimpleTooth::Ptr &T)
+static inline bool elim_less_tie(const SimpleTooth::Ptr &S,
+				 const SimpleTooth::Ptr &T)
 {
   return std::make_tuple(S->slack, S->body_size()) <
     std::make_tuple(T->slack, T->body_size());
