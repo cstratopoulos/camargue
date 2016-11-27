@@ -60,3 +60,7 @@ high concentration of fractional edges
 
 What if there was a node marks guard/wrapper structure that could
 automatically mark and unmark them by being passed a predicate function?
+* TODO Try to save on re-allocation
+In large instances, allocating memory for zones and teeth lists is a
+bottleneck. May want to keep the old approach of having the separator
+always have those things allocated already?

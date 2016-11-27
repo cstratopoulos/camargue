@@ -115,14 +115,20 @@ int CandidateTeeth::get_light_teeth()
 int CandidateTeeth::merge_and_sort()
 {
   t_sort.start();
-  
-  for(int root = 0; root < light_teeth.size(); ++root)
-    if(merge_and_sort(root))
-      return 1;
+  int rval = 0;
+
+  #pragma omp parallel for
+  for(int root = 0; root < light_teeth.size(); ++root){
+    if(rval) continue;
+    if(merge_and_sort(root)){
+      #pragma omp critical
+      { rval = 1; }
+    }
+  }
   
   t_sort.stop();
   t_all.stop();
-  return 0;
+  return rval;
 }
 
 int CandidateTeeth::merge_and_sort(const int root)
@@ -151,6 +157,8 @@ int CandidateTeeth::merge_and_sort(const int root)
 void CandidateTeeth::unmerged_weak_elim()
 {
   t_elim.start();
+
+  #pragma omp parallel for
   for(int root = 0; root < light_teeth.size(); ++root){
     vector<SimpleTooth::Ptr>
       &right = right_teeth[root],
@@ -485,8 +493,8 @@ void CandidateTeeth::profile()
 {
   t_zones.report(true);
   t_find.report(false);
-  t_elim.report(false);
-  t_sort.report(false);
+  t_elim.report(true);
+  t_sort.report(true);
   t_all.report(true);
 }
 
