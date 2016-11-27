@@ -8,6 +8,7 @@ extern "C" {
 
 #include <iostream>
 #include <algorithm>
+#include <tuple>
 
 using std::vector;
 using std::cout;
@@ -25,6 +26,12 @@ static bool ptr_cmp(const SimpleTooth::Ptr &S, const SimpleTooth::Ptr &T)
 { return S->body_size() < T->body_size(); }
 
 static bool ptr_elim(const SimpleTooth::Ptr &S){ return S->root == -1; }
+
+static bool elim_less_tie(const SimpleTooth::Ptr &S, const SimpleTooth::Ptr &T)
+{
+  return std::make_tuple(S->slack, S->body_size()) <
+    std::make_tuple(T->slack, T->body_size());
+}
 
 CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
 			       Data::BestGroup &_best_dat,
@@ -128,7 +135,7 @@ int CandidateTeeth::merge_and_sort(const int root)
 
 void CandidateTeeth::unmerged_weak_elim()
 {
-  bool right_left = false, right_dist = false, left_dist = false;
+  int right_dist = 0, left_dist = 0;
   for(int root = 0; root < light_teeth.size(); ++root){
     vector<SimpleTooth::Ptr>
       &right = right_teeth[root],
@@ -150,13 +157,17 @@ void CandidateTeeth::unmerged_weak_elim()
 	  if(D->root == -1) break;
 	  if(root_equivalent(root, tooth_seg(L->body_start, L->body_end),
 			     tooth_seg(D->body_start, D->body_end))){
-	    left_dist = true;
-	    if(L->slack < D->slack){
-	      D->root = -1;
-	      dist_elim = true;
-	    } else {
+	    // cout << "Left elim: "
+	    // 	 << print_label(*L) << ", " << print_label(*D) << ", keeping ";
+	    ++left_dist;
+	    if(elim_less_tie(D, L)){
+	      // cout << "D\n";
 	      L->root = -1;
 	      left_elim = true;
+	    } else {
+	      // cout << "L\n";
+	      D->root = -1;
+	      dist_elim = true;
 	    }
 	  }
 	}
@@ -169,13 +180,19 @@ void CandidateTeeth::unmerged_weak_elim()
 	  if(D->root == -1) break;
 	  if(root_equivalent(root, tooth_seg(R->body_start, R->body_end),
 			     tooth_seg(D->body_start, D->body_end))){
-	    right_dist = true;
-	    if(R->slack < D->slack){
-	      D->root = -1;
-	      dist_elim = true;
-	    } else {
+	    // cout << "Right elim: "
+	    // 	 << print_label(*R) << ", " << print_label(*D) << ", keeping ";
+	    ++right_dist;
+	    if(elim_less_tie(D,R)){
+	      // cout << "D\n";
 	      R->root = -1;
 	      right_elim = true;
+	    } else {
+	      // cout << "R\n";
+	      // cout << "\t R slack: " << R->slack << ", D: " << D->slack
+	      // 	   << "\n";
+	      D->root = -1;
+	      dist_elim = true;
 	    }
 	  }	  
 	}
@@ -194,45 +211,8 @@ void CandidateTeeth::unmerged_weak_elim()
   }
 
   cout << "Did unmerged weak elim remove....\n"
-       << "\tRight v left: " << right_left << "\n"
        << "\tRight v dist: " << right_dist << "\n"
        << "\tLeft v dist: " << left_dist << "\n";
-}
-
-void CandidateTeeth::weak_elim()
-{
-  for(int root = 0; root < light_teeth.size(); ++root){
-    if(stats[root] == ListStat::None) continue;
-    
-    vector<SimpleTooth::Ptr> &teeth = light_teeth[root];
-    bool found_elim = false;
-    
-    for(auto it = teeth.begin(); it != teeth.end() - 1; ++it){
-      SimpleTooth::Ptr &S = *it;      
-      if(S->root == -1) continue;
-      
-      for(auto it2 = it + 1; it2 != teeth.end(); ++it2){
-	SimpleTooth::Ptr &T = *it2;	
-	if(T->root == -1) continue;
-
-	if(root_equivalent(root, tooth_seg(S->body_start, S->body_end),
-			   tooth_seg(T->body_start, T->body_end))){
-	  found_elim = true;
-	  if(S->slack < T->slack)
-	    T->root = -1;
-	  else
-	    S->root = -1;
-	}
-      }
-    }
-    
-    if(found_elim)
-      teeth.erase(std::remove_if(teeth.begin(), teeth.end(),
-				 [](const SimpleTooth::Ptr &T) -> bool {
-				   return T->root == -1;
-				 }),
-		  teeth.end());
-  }
 }
 
 void CandidateTeeth::get_range(const int root, const tooth_seg &s,
@@ -291,7 +271,9 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
 			     void *u_data)
 {
   int rval = 0;
-  double slack = (cut_val - 2.0) / 2.0;
+  
+  //discard negative values caused by numerical instability
+  double slack = fabs((cut_val - 2.0) / 2.0);
   
   LinsubCBData *arg = (LinsubCBData *) u_data;
   
