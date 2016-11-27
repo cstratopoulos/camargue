@@ -47,8 +47,15 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
   endmark(vector<int>(_supp_dat.G_s.node_count, CC_LINSUB_BOTH_END)),
   graph_dat(_graph_dat),
   best_dat(_best_dat),
-  supp_dat(_supp_dat)
+  supp_dat(_supp_dat),
+  t_all("Candidate Teeth"),
+  t_zones("Adj zones", &t_all),
+  t_find("Initial find", &t_all),
+  t_elim("Weak elim", &t_all),
+  t_sort("Merge and sort", &t_all)
 {
+  t_all.start();
+  t_zones.start();
   SupportGraph &G_s = supp_dat.G_s;
   int ncount = G_s.node_count;
   vector<int> &perm = best_dat.perm;
@@ -74,13 +81,15 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
 	i = label;
     }
   }
+  
+  t_zones.stop();
 }
 
 int CandidateTeeth::get_light_teeth()
 {
+  t_find.start();
   int rval = 0;
   unique_ptr<LinsubCBData> cb_data;
-
   try {
     cb_data =
       PSEP::make_unique<LinsubCBData>(right_teeth,left_teeth, dist_teeth,
@@ -95,6 +104,7 @@ int CandidateTeeth::get_light_teeth()
 			      &supp_dat.support_ecap[0], 3.0 - Epsilon::Cut,
 			      cb_data.get(), teeth_cb);
   if(rval) goto CLEANUP;
+  t_find.stop();
 
  CLEANUP:
   if(rval)
@@ -104,10 +114,14 @@ int CandidateTeeth::get_light_teeth()
 
 int CandidateTeeth::merge_and_sort()
 {
+  t_sort.start();
+  
   for(int root = 0; root < light_teeth.size(); ++root)
     if(merge_and_sort(root))
       return 1;
   
+  t_sort.stop();
+  t_all.stop();
   return 0;
 }
 
@@ -136,7 +150,7 @@ int CandidateTeeth::merge_and_sort(const int root)
 
 void CandidateTeeth::unmerged_weak_elim()
 {
-  int right_dist = 0, left_dist = 0;
+  t_elim.start();
   for(int root = 0; root < light_teeth.size(); ++root){
     vector<SimpleTooth::Ptr>
       &right = right_teeth[root],
@@ -158,15 +172,10 @@ void CandidateTeeth::unmerged_weak_elim()
 	  if(D->root == -1) break;
 	  if(root_equivalent(root, tooth_seg(L->body_start, L->body_end),
 			     tooth_seg(D->body_start, D->body_end))){
-	    // cout << "Left elim: "
-	    // 	 << print_label(*L) << ", " << print_label(*D) << ", keeping ";
-	    ++left_dist;
 	    if(elim_less_tie(D, L)){
-	      // cout << "D\n";
 	      L->root = -1;
 	      left_elim = true;
 	    } else {
-	      // cout << "L\n";
 	      D->root = -1;
 	      dist_elim = true;
 	    }
@@ -181,17 +190,10 @@ void CandidateTeeth::unmerged_weak_elim()
 	  if(D->root == -1) break;
 	  if(root_equivalent(root, tooth_seg(R->body_start, R->body_end),
 			     tooth_seg(D->body_start, D->body_end))){
-	    // cout << "Right elim: "
-	    // 	 << print_label(*R) << ", " << print_label(*D) << ", keeping ";
-	    ++right_dist;
 	    if(elim_less_tie(D,R)){
-	      // cout << "D\n";
 	      R->root = -1;
 	      right_elim = true;
 	    } else {
-	      // cout << "R\n";
-	      // cout << "\t R slack: " << R->slack << ", D: " << D->slack
-	      // 	   << "\n";
 	      D->root = -1;
 	      dist_elim = true;
 	    }
@@ -210,10 +212,8 @@ void CandidateTeeth::unmerged_weak_elim()
       dist.erase(std::remove_if(dist.begin(), dist.end(), ptr_elim),
 		 dist.end());    
   }
-
-  cout << "Did unmerged weak elim remove....\n"
-       << "\tRight v dist: " << right_dist << "\n"
-       << "\tLeft v dist: " << left_dist << "\n";
+  
+  t_elim.stop();
 }
 
 void CandidateTeeth::get_range(const int root, const tooth_seg &s,
@@ -479,6 +479,15 @@ void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full,
       cout << (comma_sep ? ", " : "\n\t");
   }
   cout << ") -- slack " << T.slack << "\n";  
+}
+
+void CandidateTeeth::profile()
+{
+  t_zones.report(true);
+  t_find.report(false);
+  t_elim.report(false);
+  t_sort.report(false);
+  t_all.report(true);
 }
 
 }

@@ -4,6 +4,7 @@
 #include "Graph.hpp"
 #include "datagroups.hpp"
 #include "PSEP_util.hpp"
+#include "timer.hpp"
 
 #include <memory>
 #include <vector>
@@ -83,6 +84,8 @@ public:
   void print_tooth(const SimpleTooth &T, bool full);
   std::string print_label(const SimpleTooth &T);
 
+  void profile();
+
   std::vector<std::vector<SimpleTooth::Ptr>>
   light_teeth, left_teeth, right_teeth, dist_teeth;
 
@@ -139,7 +142,12 @@ private:
   PSEP::Data::GraphGroup &graph_dat;
   PSEP::Data::BestGroup &best_dat;
   PSEP::Data::SupportGroup &supp_dat;
-  
+
+  PSEP::Timer t_all;
+  PSEP::Timer t_zones;
+  PSEP::Timer t_find;
+  PSEP::Timer t_elim;
+  PSEP::Timer t_sort;
 };
 
 }

@@ -120,29 +120,17 @@ TEST_CASE("New candidate teeth with elim",
       PSEP::Data::BestGroup b_dat;
       PSEP::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-
-      PSEP::Timer ot("Overall");
-      PSEP::Timer ct("Adj zones", &ot);
-      PSEP::Timer ft("Find initial", &ot);
-      PSEP::Timer et("Unmerged elim", &ot);
-      PSEP::Timer st("Sort", &ot);
 	
       REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 					      g_dat, b_dat, lp_edges,
 					      s_dat));
       int ncount = s_dat.G_s.node_count;
 
-      ot.start();
-
-      ct.start();
       PSEP::CandidateTeeth cands(g_dat, b_dat, s_dat);
-      ct.stop();
 
       cout << "Did adj zones preprocessing.\n";
       
-      ft.start();
       REQUIRE_FALSE(cands.get_light_teeth());
-      ft.stop();
 
       int numfound = 0;
       for(int i = 0; i < ncount; ++i)
@@ -151,23 +139,12 @@ TEST_CASE("New candidate teeth with elim",
       cout << "Got initial collection of " << numfound
 	   << ", eliminating in place.\n";
 
-      et.start();
       cands.unmerged_weak_elim();
-      et.stop();
+
+      REQUIRE_FALSE(cands.merge_and_sort());
+      
       int after_elim = 0;
-     
-      
-      st.start();
-      int msort_rval = 0;
-      
-      for(int i = 0; i < ncount; ++i){
-	msort_rval = cands.merge_and_sort(i);
-	if(msort_rval) break;
-	after_elim += cands.light_teeth[i].size();
-      }
-      REQUIRE_FALSE(msort_rval);      
-      st.stop();
-      ot.stop();
+      for(auto &vec : cands.light_teeth) after_elim += vec.size();
 
       cout << "Got " << after_elim << " teeth after weak elim (eliminated "
 	   << (numfound - after_elim) << ")\n";
@@ -179,11 +156,7 @@ TEST_CASE("New candidate teeth with elim",
       cout << "Did " << s_count << " full sorts ("
 	   << (ncount - s_count) << " untouched!)\n";
 
-      ct.report(true);
-      ft.report(false);
-      et.report(false);
-      st.report(false);
-      ot.report(true);
+      cands.profile();
       cout << "\n";
     }
   }
