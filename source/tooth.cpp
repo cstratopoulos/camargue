@@ -199,41 +199,6 @@ void CandidateTeeth::unmerged_weak_elim()
        << "\tLeft v dist: " << left_dist << "\n";
 }
 
-void CandidateTeeth::weak_elim()
-{
-  for(int root = 0; root < light_teeth.size(); ++root){
-    if(stats[root] == ListStat::None) continue;
-    
-    vector<SimpleTooth::Ptr> &teeth = light_teeth[root];
-    bool found_elim = false;
-    
-    for(auto it = teeth.begin(); it != teeth.end() - 1; ++it){
-      SimpleTooth::Ptr &S = *it;      
-      if(S->root == -1) continue;
-      
-      for(auto it2 = it + 1; it2 != teeth.end(); ++it2){
-	SimpleTooth::Ptr &T = *it2;	
-	if(T->root == -1) continue;
-
-	if(root_equivalent(root, tooth_seg(S->body_start, S->body_end),
-			   tooth_seg(T->body_start, T->body_end))){
-	  found_elim = true;
-	  if(S->slack < T->slack)
-	    T->root = -1;
-	  else
-	    S->root = -1;
-	}
-      }
-    }
-    
-    if(found_elim)
-      teeth.erase(std::remove_if(teeth.begin(), teeth.end(),
-				 [](const SimpleTooth::Ptr &T) -> bool {
-				   return T->root == -1;
-				 }),
-		  teeth.end());
-  }
-}
 
 void CandidateTeeth::get_range(const int root, const tooth_seg &s,
 			       IntPair &range,

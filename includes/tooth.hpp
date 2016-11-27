@@ -76,7 +76,6 @@ public:
   int merge_and_sort(const int root);
   int merge_and_sort();
   
-  void weak_elim();
   void unmerged_weak_elim();
   
   static void print_tooth(const SimpleTooth &T, bool full,
