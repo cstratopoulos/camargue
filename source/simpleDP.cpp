@@ -33,6 +33,8 @@ int Cut<dominoparity>::separate()
   if(rval) goto CLEANUP;
 
   candidates.unmerged_weak_elim();
+
+  candidates.complement_elim();
   
   rval = candidates.merge_and_sort();
   if(rval) goto CLEANUP;
