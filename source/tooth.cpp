@@ -52,6 +52,7 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
   t_zones("Adj zones", &t_all),
   t_find("Initial find", &t_all),
   t_elim("Weak elim", &t_all),
+  t_comp_elim("Complement elim", &t_all),
   t_sort("Merge and sort", &t_all)
 {
   t_all.start();
@@ -101,7 +102,8 @@ int CandidateTeeth::get_light_teeth()
   rval = CCcut_linsub_allcuts(supp_dat.G_s.node_count, supp_dat.G_s.edge_count,
 			      &best_dat.best_tour_nodes[0], &endmark[0],
 			      &supp_dat.support_elist[0],
-			      &supp_dat.support_ecap[0], 3.0 - Epsilon::Cut,
+			      &supp_dat.support_ecap[0],
+			      3.0 - Epsilon::Cut,
 			      cb_data.get(), teeth_cb);
   if(rval) goto CLEANUP;
   t_find.stop();
@@ -152,6 +154,106 @@ int CandidateTeeth::merge_and_sort(const int root)
   }
 
   return 0;
+}
+
+void CandidateTeeth::complement_elim()
+{
+  t_comp_elim.start();
+  int ncount = light_teeth.size();
+  
+  int root = ncount - 1;
+  if(!right_teeth[root].empty() && !dist_teeth[root].empty()){
+    vector<SimpleTooth::Ptr>
+      &right = right_teeth[root], &dist = dist_teeth[root];
+    double right_elim = false;
+    double dist_elim = false;
+
+    for(SimpleTooth::Ptr &R : right){
+      for(SimpleTooth::Ptr &D : dist){
+	if((D->body_start == 0) && ((D->body_end + 1) == R->body_start)){
+	  if(R->body_size() <= D->body_size()){
+	    dist_elim = true;
+	    D->root = -1;
+	  } else {
+	    right_elim = true;
+	    R->root = -1;
+	  }
+	}
+	if(right_elim) break;
+      }
+    }
+
+    if(right_elim)
+      right.erase(std::remove_if(right.begin(), right.end(), ptr_elim),
+		  right.end());
+    if(dist_elim)
+      dist.erase(std::remove_if(dist.begin(), dist.end(), ptr_elim),
+		 dist.end());
+  }
+
+  root = 0;
+  if(!left_teeth[root].empty() && !dist_teeth[root].empty()){
+    vector<SimpleTooth::Ptr>
+      &left = left_teeth[root], &dist = dist_teeth[root];
+    bool left_elim = false;
+    bool dist_elim = false;
+
+    for(SimpleTooth::Ptr &L : left){
+      for(SimpleTooth::Ptr &D : dist){
+	if((D->body_end == (ncount - 1)) &&
+	   ((L->body_end + 1)  == D->body_start)){
+	  if(L->body_size() <= D->body_size()){
+	    dist_elim = true;
+	    D->root = -1;
+	  } else {
+	    left_elim = true;
+	    L->root = -1;
+	  }
+	}
+	if(left_elim) break;
+      }
+    }
+
+    if(left_elim)
+      left.erase(std::remove_if(left.begin(), left.end(), ptr_elim),
+		 left.end());
+    if(dist_elim)
+      dist.erase(std::remove_if(dist.begin(), dist.end(), ptr_elim),
+		 dist.end());
+  }
+
+  #pragma omp parallel for
+  for(root = 1; root < ncount - 1; ++root){
+    vector<SimpleTooth::Ptr>
+      &right = right_teeth[root], &left = left_teeth[root];
+    if(right.empty() || left.empty()) continue;
+    bool right_elim = false;
+    bool left_elim = false;
+
+    for(SimpleTooth::Ptr &R : right){
+      for(SimpleTooth::Ptr &L : left){
+	if((L->body_end == (ncount - 1)) && (R->body_start == 0)){
+	  if(L->body_size() <= R->body_size()){
+	    right_elim = true;
+	    R->root = -1;
+	  } else {
+	    left_elim = true;
+	    L->root = -1;
+	  }
+	}
+	if(right_elim) break;
+      }
+    }
+    
+    if(left_elim)
+      left.erase(std::remove_if(left.begin(), left.end(), ptr_elim),
+		 left.end());
+    if(right_elim)
+      right.erase(std::remove_if(right.begin(), right.end(), ptr_elim),
+		  right.end());    
+  }
+  
+  t_comp_elim.stop();
 }
 
 void CandidateTeeth::unmerged_weak_elim()
@@ -439,6 +541,7 @@ void CandidateTeeth::profile()
   t_zones.report(true);
   t_find.report(false);
   t_elim.report(true);
+  t_comp_elim.report(true);
   t_sort.report(true);
   t_all.report(true);
 }

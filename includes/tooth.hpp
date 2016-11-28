@@ -78,6 +78,7 @@ public:
   int merge_and_sort();
   
   void unmerged_weak_elim();
+  void complement_elim();
   
   static void print_tooth(const SimpleTooth &T, bool full,
 			  const std::vector<int> &tour_nodes);
@@ -148,6 +149,7 @@ private:
   PSEP::Timer t_zones;
   PSEP::Timer t_find;
   PSEP::Timer t_elim;
+  PSEP::Timer t_comp_elim;
   PSEP::Timer t_sort;
 };
 
