@@ -105,9 +105,10 @@ TEST_CASE("New candidate teeth with elim",
 	  "[tooth]") {
   vector<string> tests{
     // "lin318", "d493",
-    "pr1002", "rl1304",
-    "d2103", "pcb3038",
-    "rl5915", "pla7397"
+    // "pr1002", "rl1304",
+    // "d2103", "pcb3038",
+    "rl5915", "pla7397",
+    "usa13509"
   };
 
   for(string &fname : tests){

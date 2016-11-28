@@ -97,9 +97,10 @@ private:
   
   std::vector<int> endmark;
   
-  static int add_tooth(std::vector<SimpleTooth::Ptr> &teeth,
-		       const int root, const int body_start,
-		       const int body_end, const double slack);
+  static void add_tooth(std::vector<SimpleTooth::Ptr> &teeth,
+			const std::vector<std::vector<int>> &zones,
+			const int root, const int body_start,
+			const int body_end, const double slack);
   
   static int teeth_cb(double cut_val, int cut_start, int cut_end,
 		      void *u_data);

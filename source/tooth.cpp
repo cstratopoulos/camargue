@@ -307,25 +307,11 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
       int root = cut_end;
       double new_slack = slack + old_seg.slack;
       vector<SimpleTooth::Ptr> &r_vec = arg->r_teeth[root];
-      bool elim = false;
-      
-      if(!r_vec.empty()){
-  	tooth_seg prev_body(r_vec.back()->body_start, r_vec.back()->body_end);
-  	double prev_slack = r_vec.back()->slack;
-  	if(CandidateTeeth::root_equivalent(root, prev_body, old_seg, zones)){
-  	  elim = true;
-  	  if(new_slack < prev_slack)
-  	    r_vec.back() = PSEP::make_unique<SimpleTooth>(root, old_seg,
-  							  new_slack);
-  	}
-      }
 
-      if(!elim){
-  	try {
-  	  r_vec.emplace_back(PSEP::make_unique<SimpleTooth>(root, old_seg,
-  							    new_slack));
-  	} catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back new tooth. ")}
-      }
+      try {
+	add_tooth(r_vec, zones, root, old_seg.start, old_seg.end, new_slack);
+      } catch(...){ PSEP_SET_GOTO(rval, "Couldn't add right adj tooth. "); }
+      
     }
   }
 
@@ -338,28 +324,12 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
        (old_right_pair.second + slack < (0.5 - Epsilon::Cut))){
       int root = cut_start;
       double new_slack = slack + old_right_pair.second;
-      tooth_seg new_body(old_right_pair.first, cut_end);
       vector<SimpleTooth::Ptr> &l_vec = arg->l_teeth[root];
-      bool elim = false;
 
-      if(!l_vec.empty()){
-  	tooth_seg prev_body(l_vec.back()->body_start, l_vec.back()->body_end);
-  	double prev_slack = l_vec.back()->slack;
-
-  	if(CandidateTeeth::root_equivalent(root, new_body, prev_body, zones)){
-  	  elim = true;
-  	  if(new_slack < prev_slack)
-  	    l_vec.back() = PSEP::make_unique<SimpleTooth>(root, new_body,
-  							  new_slack);
-  	}
-      }
-
-      if(!elim){
-  	try {
-  	  l_vec.emplace_back(PSEP::make_unique<SimpleTooth>(root, new_body,
-  							    new_slack));
-  	} catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back new tooth. "); }
-      }
+      try {
+	add_tooth(l_vec, zones, root, old_right_pair.first, cut_end,
+		  new_slack);
+      } catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back left tooth. "); }
     }
   }
   
@@ -410,27 +380,11 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
 
     if(rb_sum > rb_lower){
       vector<SimpleTooth::Ptr> &dt = arg->d_teeth[i];
-      bool elim = false;
       double new_slack = cut_val - rb_sum - 1;
-      tooth_seg new_body(cut_start, cut_end);
 
-      if(!dt.empty()){
-	tooth_seg prev_body(dt.back()->body_start, dt.back()->body_end);
-	double prev_slack = dt.back()->slack;
-
-	if(CandidateTeeth::root_equivalent(i, new_body, prev_body, zones)){
-	  elim = true;
-	  if(new_slack < prev_slack)
-	    dt.back() = PSEP::make_unique<SimpleTooth>(i, new_body, new_slack);
-	}
-      }
-      
-      if(!elim){
-	try {
-	  dt.emplace_back(PSEP::make_unique<SimpleTooth>(i, new_body,
-							 new_slack));
-	} catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back tooth. "); }
-      }
+      try {
+	add_tooth(dt, zones, i, cut_start, cut_end, new_slack);
+      } catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back dist tooth. "); }
     }
   }
 
@@ -441,6 +395,28 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   old_seg = tooth_seg(cut_start, cut_end, slack); //right adjacent update
   old_rights[cut_end] = pair<int, double>(cut_start, slack); //left adj update
   return rval;
+}
+
+inline void CandidateTeeth::add_tooth(vector<SimpleTooth::Ptr> &teeth,
+			      const vector<vector<int>> &zones,
+			      const int root, const int body_start,
+			      const int body_end, const double slack)
+{
+  bool elim = false;
+  tooth_seg body(body_start, body_end);
+  
+  if(!teeth.empty()){
+    tooth_seg old_body(teeth.back()->body_start, teeth.back()->body_end);
+    double old_slack{teeth.back()->slack};
+    if(CandidateTeeth::root_equivalent(root, body, old_body, zones)){
+      elim = true;
+      if(slack < old_slack)
+	teeth.back() = PSEP::make_unique<SimpleTooth>(root, body, slack);
+    }
+  }
+
+  if(!elim)
+    teeth.emplace_back(PSEP::make_unique<SimpleTooth>(root, body, slack));
 }
 
 string CandidateTeeth::print_label(const SimpleTooth &T)
