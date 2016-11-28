@@ -74,7 +74,7 @@ TEST_CASE("New tiny candidate teeth with no elim",
       int numfound = 0;
 
       cout << "\tLEFT ADJACENT TEETH\n";
-      for(vector<PSEP::SimpleTooth::Ptr> &vec : cands.right_teeth){
+      for(vector<PSEP::SimpleTooth::Ptr> &vec : cands.left_teeth){
 	numfound += vec.size();
 	for(const PSEP::SimpleTooth::Ptr &T : vec){
 	  cands.print_tooth(*T, ncount < 20);
@@ -82,7 +82,7 @@ TEST_CASE("New tiny candidate teeth with no elim",
       }
 
       cout << "\tRIGHT ADJACENT TEETH\n";
-      for(vector<PSEP::SimpleTooth::Ptr> &vec : cands.left_teeth){
+      for(vector<PSEP::SimpleTooth::Ptr> &vec : cands.right_teeth){
 	numfound += vec.size();
 	for(const PSEP::SimpleTooth::Ptr &T : vec){
 	  cands.print_tooth(*T, ncount < 20);
@@ -104,11 +104,11 @@ TEST_CASE("New tiny candidate teeth with no elim",
 TEST_CASE("New candidate teeth with elim",
 	  "[tooth]") {
   vector<string> tests{
-    // "lin318", "d493",
-    // "pr1002", "rl1304",
-    // "d2103", "pcb3038",
+    "lin318", "d493",
+    "pr1002", "rl1304",
+    "d2103", "pcb3038",
     "rl5915", "pla7397",
-    "usa13509"
+    //"usa13509"
   };
 
   for(string &fname : tests){

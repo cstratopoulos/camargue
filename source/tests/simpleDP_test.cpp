@@ -46,6 +46,9 @@ TEST_CASE ("Tiny simple DP translator tests",
 	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
+	cout << "Best tour: \n";
+	for(int i : b_dat.best_tour_nodes) cout << i << ", ";
+	cout << "\n";
 
 	PSEP::CutQueue<PSEP::dominoparity> dp_q(25);
 	PSEP::Cut<PSEP::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);

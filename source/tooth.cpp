@@ -300,8 +300,8 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   vector<pair<int, double>> &old_rights = arg->prev_slacks;
 
   //right adjacent add/elim
-  if((cut_start == old_seg.start) &&
-     (old_seg.body_size() != (ncount - 2))){
+  if((cut_start == old_seg.start) /*&&
+     (old_seg.body_size() != (ncount - 2))*/){
     if(cut_end == old_seg.end + 1 &&
        slack + old_seg.slack < (0.5 - Epsilon::Cut)){
       int root = cut_end;
@@ -316,8 +316,8 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   }
 
   //left adjacent add/elim
-  if((cut_start + 1 != cut_end) &&
-     ((cut_end - (cut_start + 1) - 1) != (ncount - 2))){
+  /*  if(//(cut_start + 1 != cut_end) &&
+     ((cut_end - (cut_start + 1) + 1) != (ncount - 2)))*/{
     pair<int, double> &old_right_pair = arg->prev_slacks[cut_end];
     
     if((old_right_pair.first == cut_start + 1) &&
@@ -376,7 +376,8 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   for(auto &kv : rb_sums){
     int i = kv.first;
     double rb_sum = kv.second;
-    if((i < cut_start) && (cut_start == cut_end)) continue;
+    // if((i < cut_start) && (cut_start == cut_end)) continue;
+    // if((cut_end - cut_start + 1) == (ncount - 2)) continue;
 
     if(rb_sum > rb_lower){
       vector<SimpleTooth::Ptr> &dt = arg->d_teeth[i];
