@@ -164,7 +164,7 @@ TEST_CASE("New candidate teeth with elim",
 }
 
 TEST_CASE("New tiny tooth constructor with brute force tests",
-	  "[.][tooth][tiny]") {
+	  "[.zones]") {
   vector<string> tests{"fleisA9", "fleisB9", "comb9", "ulysses16"};
   
   for(string &fname : tests){

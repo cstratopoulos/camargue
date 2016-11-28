@@ -279,12 +279,14 @@ bool CandidateTeeth::root_equivalent(const int root, const tooth_seg &s1,
 int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
 			     void *u_data)
 {
+
   int rval = 0;
-  
+
   //discard negative values caused by numerical instability
-  double slack = fabs((cut_val - 2.0) / 2.0);
+  double slack = (cut_val - (2.0 - Epsilon::Cut)) / 2.0;
   
   LinsubCBData *arg = (LinsubCBData *) u_data;
+  if((cut_end - cut_start + 1) > (arg->G_s.node_count - 2)) return 0;
   
   //distant declarations
   vector<int>
@@ -299,49 +301,12 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   vector<vector<int>> &zones = arg->adj_zones;
   vector<pair<int, double>> &old_rights = arg->prev_slacks;
 
-  //right adjacent add/elim
-  if((cut_start == old_seg.start) /*&&
-     (old_seg.body_size() != (ncount - 2))*/){
-    if(cut_end == old_seg.end + 1 &&
-       slack + old_seg.slack < (0.5 - Epsilon::Cut)){
-      int root = cut_end;
-      double new_slack = slack + old_seg.slack;
-      vector<SimpleTooth::Ptr> &r_vec = arg->r_teeth[root];
-
-      try {
-	add_tooth(r_vec, zones, root, old_seg.start, old_seg.end, new_slack);
-      } catch(...){ PSEP_SET_GOTO(rval, "Couldn't add right adj tooth. "); }
-      
-    }
-  }
-
-  //left adjacent add/elim
-  /*  if(//(cut_start + 1 != cut_end) &&
-     ((cut_end - (cut_start + 1) + 1) != (ncount - 2)))*/{
-    pair<int, double> &old_right_pair = arg->prev_slacks[cut_end];
-    
-    if((old_right_pair.first == cut_start + 1) &&
-       (old_right_pair.second + slack < (0.5 - Epsilon::Cut))){
-      int root = cut_start;
-      double new_slack = slack + old_right_pair.second;
-      vector<SimpleTooth::Ptr> &l_vec = arg->l_teeth[root];
-
-      try {
-	add_tooth(l_vec, zones, root, old_right_pair.first, cut_end,
-		  new_slack);
-      } catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back left tooth. "); }
-    }
-  }
-  
-
   //distant add
   if(cut_start == old_seg.start){
     for(int i = old_seg.end + 1; i <= cut_end; ++i){
       marks[i] = 1;
       rb_sums.erase(i);
     }
-    marks[(cut_end + 1) % ncount] = 1;
-    rb_sums.erase((cut_end + 1) % ncount);
 
     for(int i = old_seg.end + 1; i <= cut_end; ++i){
       SNode vx = G.nodelist[tour[i]];
@@ -361,8 +326,6 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
 
     //set up for the new one
     marks[cut_start] = 1;
-    marks[(cut_start + 1) % ncount] = 1;
-    marks[(cut_start + (ncount - 1)) % ncount] = 1;
 
     SNode vx = G.nodelist[tour[cut_start]];
     for(int k = 0; k < vx.s_degree; ++k){
@@ -374,17 +337,22 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   }
 
   for(auto &kv : rb_sums){
-    int i = kv.first;
+    int root = kv.first;
     double rb_sum = kv.second;
-    // if((i < cut_start) && (cut_start == cut_end)) continue;
-    // if((cut_end - cut_start + 1) == (ncount - 2)) continue;
+    if((cut_start == cut_end) && (root > cut_end) && (root != (ncount - 1)))
+      continue;
+    if(((cut_end - cut_start + 1) == (ncount - 2)) && (root > cut_end))
+      continue;
 
     if(rb_sum > rb_lower){
-      vector<SimpleTooth::Ptr> &dt = arg->d_teeth[i];
-      double new_slack = cut_val - rb_sum - 1;
+      vector<SimpleTooth::Ptr>
+	&teeth = (root + 1 == cut_start) ? arg->l_teeth[root] :
+	((cut_end + 1 == root) ? arg->r_teeth[root] : arg->d_teeth[root]);
+      double abs_slack = fabs(cut_val - rb_sum - 1);
+      double new_slack = (abs_slack < Epsilon::Zero) ? 0 : abs_slack;
 
       try {
-	add_tooth(dt, zones, i, cut_start, cut_end, new_slack);
+	add_tooth(teeth, zones, root, cut_start, cut_end, new_slack);
       } catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back dist tooth. "); }
     }
   }
