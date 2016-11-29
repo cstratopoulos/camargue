@@ -12,6 +12,7 @@ int PSEPlp_init (PSEPlp *lp){
 
   if(rval){
     fprintf (stderr, "CPXopenCPLEX failed, return code %d\n", rval);
+    PSEPlp_free(lp);
     goto CLEANUP;
   }
 
