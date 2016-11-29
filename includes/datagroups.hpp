@@ -11,6 +11,10 @@
 #include "lp.hpp"
 #include "Graph.hpp"
 
+extern "C" {
+  #include <concorde/INCLUDE/util.h>
+}
+
 #include <vector>
 #include <memory>
 #include <string>
