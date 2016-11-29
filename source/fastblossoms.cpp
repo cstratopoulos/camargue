@@ -1,7 +1,9 @@
 #include "fastblossoms.hpp"
 #include "PSEP_util.hpp"
 
+extern "C" {
 #include <concorde/INCLUDE/cut.h>
+}
 
 #include <algorithm>
 #include <iostream>

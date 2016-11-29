@@ -1,5 +1,9 @@
 #include "blossoms.hpp"
 
+extern "C" {
+  #include <concorde/INCLUDE/cut.h>
+}
+
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
