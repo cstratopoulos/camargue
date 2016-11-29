@@ -221,10 +221,10 @@ TEST_CASE ("Printless simple DP cutgraph translator tests",
 				  rmatind, rmatval);
 	  translator.get_activity(lp_activity, lp_edges, rmatind, rmatval);
 	  
-	  REQUIRE(lp_activity > rhs);
-	  REQUIRE(tour_activity <= rhs);
+	  CHECK(lp_activity > rhs);
+	  CHECK(tour_activity <= rhs);
 	  
-	  if(tour_activity == rhs)
+	  if(tour_activity == rhs && lp_activity > rhs)
 	    ++primal_found;
 	  
 	  dp_q.pop_front();
