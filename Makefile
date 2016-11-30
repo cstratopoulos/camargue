@@ -25,6 +25,7 @@ CFLAGS      := -Wall -O3 -pedantic -fopenmp \
 -std=c++11
 LIB         := /Users/christos/Applications/IBM/ILOG/CPLEX_Studio1261/cplex/lib/x86-64_osx/static_pic/libcplex.a \
 /Users/christos/Dropbox/school/research/programs/concorde/concorde.a \
+/Users/christos/Applications/QSOPT/qsopt.a \
 -lm -lpthread -fopenmp 
 INC         := -I$(INCDIR) -I$(BOOSTDIR) -I$(CPXDIR) -I$(PROGDIR)
 INCDEP      := -I$(INCDIR) -I$(BOOSTDIR) -I$(CPXDIR) -I$(PROGDIR)
