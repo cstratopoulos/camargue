@@ -56,6 +56,17 @@ high concentration of fractional edges
 - n calls to this would give O(mnlogn +n^2logn)
 - Maybe there is a modified edge capacity under which segment cuts are
   candidate bodies for a tooth with a given root. 
+  + In the modified ecap, maybe we could add a dummy vertex which is
+    adjacent only to i and has capacity 3? 
+- Also, zones gives a way to instantly see if a body is compatible
+  with a root (compatible means the root is in the body's delta)
+- There would have to be a way to eliminate the edges....if an edge is
+  properly outside all zones, adding it to the tooth incurs an easily
+  computable penalty......certain edges could maybe be eliminated
+  thusly? 
+- Alternatively, for each root i, for every body found, we can short
+  circuit the computation by returning prematurely when i is in the
+  body, but this still technically provides the same complexity.
 
 
 What if there was a node marks guard/wrapper structure that could
@@ -64,3 +75,14 @@ automatically mark and unmark them by being passed a predicate function?
 In large instances, allocating memory for zones and teeth lists is a
 bottleneck. May want to keep the old approach of having the separator
 always have those things allocated already?
+* TODO In place elim without adj zones
+Now that all orientations of teeth are handled by the same routine, we
+naturally scroll through all the bodies. For a given root i,
+successive bodies are i-equivalent if no new sum was added while
+traversing the adjacency list of the newly added nodes. This
+information alone is enough to determine if we can eliminate the
+tooth. 
+- Maybe store an 'old' bit with each entry to indicate whether we are
+  seeing it for the first time this body. Then when traversing the
+  entries of the hash map, 
+
