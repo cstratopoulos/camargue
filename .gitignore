@@ -31,3 +31,7 @@ dp_old
 *.gv
 viz
 circo
+
+#ignore my own notes/orgs
+*.txt
+*.org
