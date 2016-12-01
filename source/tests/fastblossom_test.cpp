@@ -1,3 +1,4 @@
+#include "cc_fastblossoms.hpp"
 #include "tests.hpp"
 #include "datagroups.hpp"
 
@@ -22,8 +23,33 @@ using std::pair;
 
 #ifdef PSEP_DO_TESTS
 
+TEST_CASE("Fast blossosm via wrapper class",
+	  "[fast2m][tiny]"){
+  vector<string> tests{"blossom6", "comb9"};
+
+  for(string &fname : tests){
+    SECTION(fname){
+      string
+	probfile = "problems/" + fname + ".tsp",
+	solfile = "test_data/tours/" + fname + ".sol",
+	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
+      PSEP::Data::GraphGroup g_dat;
+      PSEP::Data::BestGroup b_dat;
+      PSEP::Data::SupportGroup s_dat;
+      std::vector<double> lp_edges;
+	
+      REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+					      g_dat, b_dat, lp_edges,
+					      s_dat));
+
+      PSEP::cc::FastBlossom fb_sep(g_dat, b_dat, s_dat);
+      REQUIRE(fb_sep.cutcall() == PSEP::CutFound::Yes);
+    }
+  }
+}
+
 TEST_CASE("Fast blossoms via concorde", "[fast2m]"){
-  vector<string> tests{"comb9"};
+  vector<string> tests{"blossom6"};
 
   for(string &fname : tests){
     SECTION(fname){
@@ -45,21 +71,13 @@ TEST_CASE("Fast blossoms via concorde", "[fast2m]"){
       CCtsp_lpcut_in *cc_cut = nullptr;
       CCtsp_init_lpcut_in(cc_cut);
 
-      // for(int &i : s_dat.support_elist)
-      // 	i = b_dat.perm[i];
+      vector<int> cut_elist = s_dat.support_elist;
+            for(int &i : cut_elist) i = b_dat.perm[i];
 
       REQUIRE_FALSE(CCtsp_fastblossom(&cc_cut, &cutcount, ncount, ecount,
-      				      s_dat.support_elist.data(),
+      				      cut_elist.data(),
       				      s_dat.support_ecap.data()));
-
-      // REQUIRE_FALSE(CCtsp_block_combs(&cc_cut, &cutcount, ncount,
-      // 				      ecount, s_dat.support_elist.data(),
-      // 				      s_dat.support_ecap.data(), 0));
-
-      REQUIRE_FALSE(CCtsp_segment_cuts(&cc_cut, &cutcount, ncount, ecount,
-				       s_dat.support_elist.data(),
-				       s_dat.support_ecap.data()));
-      cout << "Cutcount: " << cutcount << "\n";
+      REQUIRE(cutcount == 2);
       int i = 0;
       for(CCtsp_lpcut_in *c = cc_cut; c; c = c->next){
 	int cq_count = c->cliquecount;
@@ -79,6 +97,7 @@ TEST_CASE("Fast blossoms via concorde", "[fast2m]"){
       }
       
       CCtsp_free_lpcut_in(cc_cut);
+      CC_IFFREE(cc_cut, CCtsp_lpcut_in);
     }
   }
 }
