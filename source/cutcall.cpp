@@ -38,9 +38,6 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     blossom_q.q_fresh = false;
   }
   else {
-    matchval = fastblossoms.cutcall();
-    if(matchval == 1){ rval = 1; goto CLEANUP; }
-
     /**@todo old version was matchval == 2. maybe should be a switch? */
     if(matchval == 2 && segval == 2){
       matchval = blossoms.cutcall();

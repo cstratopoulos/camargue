@@ -8,7 +8,6 @@
 #include "datagroups.hpp"
 #include "segments.hpp"
 #include "blossoms.hpp"
-#include "fastblossoms.hpp"
 #include "simpleDP.hpp"
 #include "safegmi.hpp"
 #include "cuts.hpp"
@@ -37,12 +36,6 @@ public:
 	     LPGroup.m_lp_edges, SupportGroup.support_indices,
 	     SupportGroup.support_elist, SupportGroup.support_ecap,
 	     blossom_q),
-    fastblossoms(GraphGroup.delta, GraphGroup.edge_marks,
-		 GraphGroup.m_graph, BestGroup.best_tour_edges,
-		 LPGroup.m_lp_edges,
-		 SupportGroup.support_indices,
-		 SupportGroup.support_elist, SupportGroup.support_ecap,
-		 blossom_q),
     safe_gomory(BestGroup.best_tour_edges,
 		LPGroup.m_lp, LPGroup.m_lp_edges, LPGroup.frac_colstat,
 		LPGroup.frac_rowstat,
@@ -83,7 +76,6 @@ private:
   
   PSEP::Cut<PSEP::seg> segments;
   PSEP::Cut<PSEP::blossom> blossoms;
-  PSEP::Cut<PSEP::fastblossom> fastblossoms;
 
   std::unique_ptr<PSEP::Cut<PSEP::dominoparity>> dominos;
 
