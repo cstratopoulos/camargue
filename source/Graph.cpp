@@ -1,12 +1,14 @@
-#include <fstream>
-		   
+#include <fstream>		   
 #include <iostream>
+#include <stdexcept>
 
 #include "Graph.hpp"
 
-using namespace std;
-using namespace PSEP;
+using std::vector;
+using std::cout;
+using std::cerr;
 
+namespace PSEP {
 
 Edge::Edge(int e0, int e1, int _len):
   len(_len),
@@ -24,13 +26,40 @@ void Graph::print_edges() {
     for (int i = 0; i < edges.size(); ++i)
     {
         cout << edges[i].end[0] << ", " << edges[i].end[1]
-	     << "-(" << edges[i].len << ")" << endl;
+	     << "-(" << edges[i].len << ")\n";
     }
 }
 
+TourGraph::TourGraph(const vector<int> &tour_edges,
+		     const vector<Edge> &edges, const vector<int> &perm)
+try {
+  vector<int> tour_elist;
+  int ecount = 0;
+  int ncount = perm.size();
+  
+  for(int i = 0; i < tour_edges.size(); ++i)
+    if(tour_edges[i]){
+      ++ecount;
+      Edge e = edges[i];
+      tour_elist.push_back(perm[e.end[0]]);
+      tour_elist.push_back(perm[e.end[1]]);
+    }
+
+  for(int i : tour_edges) d_tour.push_back(i);
+
+  CCtsp_init_lpgraph_struct(&L);
+  CCtsp_build_lpgraph(&L, ncount, ecount, &tour_elist[0], (int *) NULL);
+  CCtsp_build_lpadj(&L, 0, ecount);
+ } catch(const std::exception &e){
+  cerr << "Caught exception" << e.what() << "\n";
+  throw std::runtime_error("TourGraph constructor failed.");
+ }
+
+TourGraph::~TourGraph(){ CCtsp_free_lpgraph(&L); }
+
 int GraphUtils::connected(SupportGraph *G, int *icount,
 			  std::vector<int> &island,
-		       int starting_node){
+			  int starting_node){
   *icount = 0;
   for(int i = 0; i < G->node_count; i++)
     G->nodelist[i].mark = 0;
@@ -171,4 +200,6 @@ int GraphUtils::build_s_graph (int node_count,
   G_s->node_count = node_count; G_s->edge_count = edge_count;
 
   return 0;
+}
+
 }

@@ -10,6 +10,10 @@
 
 #include "PSEP_util.hpp"
 
+extern "C" {
+  #include <concorde/INCLUDE/tsp.h>
+}
+
 namespace PSEP {
 
 struct Edge {
@@ -72,6 +76,26 @@ struct SupportGraph {
   int edge_count;
   SNode *nodelist;
   s_adjobj *adjspace;
+};
+
+/** Wrapper to the Concorde CCtsp_lpgraph structure.
+ * This class constructs a CCtsp_lpgraph which corresponds to a tour specified
+ * by the constructor arguments. It is used to check whether cuts found by 
+ * Concorde standard heuristics are tight at the current tour. 
+ */
+class TourGraph {
+public:
+  TourGraph(const std::vector<int> &tour_edges,
+	    const std::vector<PSEP::Edge> &edges,
+	    const std::vector<int> &perm);
+  ~TourGraph();
+
+  CCtsp_lpgraph* pass_ptr() { return &L; }
+  double* tour_array() { return &d_tour[0]; }
+  
+private:
+  CCtsp_lpgraph L;
+  std::vector<double> d_tour;
 };
 
 
