@@ -33,18 +33,18 @@ public:
    */
   void filter_primal(); 
 
-  int cut_count() const { return _cutcount; }
-  bool empty() const { return _cutcount == 0; }
+  int cut_count() const { return cutcount; }
+  bool empty() const { return cutcount == 0; }
   
   /** Passes address of member pointer for use by separation routines. */
   CCtsp_lpcut_in** pass_ptr() { return &cc_cut; }
 
   /** Passes address of cut count for use by separation routines. */
-  int* count_ptr() { return &_cutcount; }
+  int* count_ptr() { return &cutcount; }
   
 private:
   CCtsp_lpcut_in *cc_cut; /**< The raw pointer to the Concorde struct. */
-  int _cutcount; /**< Number of cuts in the linked list starting at cc_cut. */
+  int cutcount; /**< Number of cuts in the linked list starting at cc_cut. */
 };
 
 
