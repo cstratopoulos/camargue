@@ -22,7 +22,8 @@ namespace Cut {
  * This class is meant to provide an extremely limited (but memory safe!) 
  * interface, for no other purpose but to call certain cut separation routines
  * provided by Concorde. 
- * @
+ * @warning CCtsp_lpcut_in is a doubly linked list node, but if you pass one to
+ * a CCtsp separation routine, it will store the cuts in a SINGLY LINKED queue.
  */
 class LPcutIn {
 public:
