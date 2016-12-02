@@ -38,11 +38,11 @@ public:
   int cut_count() const { return cutcount; }
   bool empty() const { return cutcount == 0; }
 
-  CCtsp_lpcut_in* begin() { return cc_cut; } /**< Start of list iterator. */
+  CCtsp_lpcut_in* begin() { return head_cut; } /**< Start of list iterator. */
   CCtsp_lpcut_in* end() { return nullptr; } /**< nullptr for end of list. */
   
   /** Passes address of member pointer for use by separation routines. */
-  CCtsp_lpcut_in** pass_ptr() { return &cc_cut; }
+  CCtsp_lpcut_in** pass_ptr() { return &head_cut; }
 
   /** Passes address of cut count for use by separation routines. */
   int* count_ptr() { return &cutcount; }
@@ -50,8 +50,8 @@ public:
 private:
   void del_cut(CCtsp_lpcut_in *cut);
   
-  CCtsp_lpcut_in *cc_cut; /**< The raw pointer to the Concorde struct. */
-  int cutcount; /**< Number of cuts in the linked list starting at cc_cut. */
+  CCtsp_lpcut_in *head_cut; /**< The raw pointer to the Concorde struct. */
+  int cutcount; /**< Number of cuts in the linked list starting at head_cut. */
 };
 
 

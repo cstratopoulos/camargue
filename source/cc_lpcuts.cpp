@@ -4,6 +4,7 @@
 #include <iostream>
 
 using std::cout;
+using std::endl;
 using std::cerr;
 
 using lpcut_in = CCtsp_lpcut_in;
@@ -11,47 +12,51 @@ using lpcut_in = CCtsp_lpcut_in;
 namespace PSEP {
 namespace Cut {
 
-LPcutIn::LPcutIn() : cc_cut(nullptr), cutcount(0) {}
+LPcutIn::LPcutIn() : head_cut(nullptr), cutcount(0) {}
 
 LPcutIn::~LPcutIn()
 {
-  lpcut_in *it = cc_cut;
+  lpcut_in *it = head_cut;
   
   while(it != nullptr){
-    cc_cut = cc_cut->next;
+    head_cut = head_cut->next;
     CCtsp_free_lpcut_in(it);
     delete(it);
-    it = cc_cut;
+    it = head_cut;
   }
 }
 
 void LPcutIn::filter_primal(PSEP::TourGraph &TG)
 {
   if(cutcount == 0 || begin() == nullptr) return;
-  
-  lpcut_in *it = begin();
 
-  while(it != nullptr){
-    double slack = CCtsp_cutprice(TG.pass_ptr(), it, TG.tour_array());
-    lpcut_in *del = it;
-    it = it->next;
+  lpcut_in *current = begin();
+  lpcut_in *prev = begin();
 
-    if(slack != 0){
+  while(current != end()){
+    double cur_slack = CCtsp_cutprice(TG.pass_ptr(), current, TG.tour_array());
+
+    if(cur_slack != 0){
       --cutcount;
-      
-      if(begin() == del)
-	cc_cut = begin()->next;
 
-      if(del->next != nullptr)
-	del->next->prev = del->prev;
-
-      if(del->prev != nullptr)
-	del->prev->next = del->next;
-
-      CCtsp_free_lpcut_in(del);
-      delete(del);
+      if(current == begin()){
+	current = current->next;
+	prev = current;
+	CCtsp_free_lpcut_in(head_cut);
+	delete(head_cut);
+	head_cut = current;
+      } else {
+	prev->next = current->next;
+	CCtsp_free_lpcut_in(current);
+	delete(current);
+	current = prev->next;
+      }
+      continue;
     }
-  }
+
+    prev = current;
+    current = current->next;
+  }  
 }
 
 }
