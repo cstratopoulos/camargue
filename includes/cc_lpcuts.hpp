@@ -7,6 +7,8 @@
 #ifndef PSEP_CC_LPCUTS_HPP
 #define PSEP_CC_LPCUTS_HPP
 
+#include "Graph.hpp"
+
 extern "C" {
 #include <concorde/INCLUDE/tsp.h>
 }
@@ -22,19 +24,22 @@ namespace Cut {
  * provided by Concorde. 
  * @
  */
-class CCwrapper {
+class LPcutIn {
 public:
-  CCwrapper();
-  ~CCwrapper();
+  LPcutIn();
+  ~LPcutIn();
 
   /** Deletes all non-primal cuts.
    * @pre This function assumes that Concorde heuristic routines were called
    * with the nodes permuted according to the current best tour.
    */
-  void filter_primal(); 
+  void filter_primal(PSEP::TourGraph &TG);
 
   int cut_count() const { return cutcount; }
   bool empty() const { return cutcount == 0; }
+
+  CCtsp_lpcut_in* begin() { return cc_cut; } /**< Start of list iterator. */
+  CCtsp_lpcut_in* end() { return nullptr; } /**< nullptr for end of list. */
   
   /** Passes address of member pointer for use by separation routines. */
   CCtsp_lpcut_in** pass_ptr() { return &cc_cut; }
@@ -43,6 +48,8 @@ public:
   int* count_ptr() { return &cutcount; }
   
 private:
+  void del_cut(CCtsp_lpcut_in *cut);
+  
   CCtsp_lpcut_in *cc_cut; /**< The raw pointer to the Concorde struct. */
   int cutcount; /**< Number of cuts in the linked list starting at cc_cut. */
 };
