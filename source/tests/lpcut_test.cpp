@@ -1,4 +1,5 @@
 #include "tests.hpp"
+#include "fastblossoms.hpp"
 #include "cc_lpcuts.hpp"
 #include "datagroups.hpp"
 
@@ -14,10 +15,64 @@ using std::vector;
 
 #ifdef PSEP_DO_TESTS
 
+SCENARIO("Filtering primal cuts frees and deletes cuts from list",
+	 "[LPcutIn][filter_primal]"){
+  PSEP::Data::GraphGroup g_dat;
+  PSEP::Data::BestGroup b_dat;
+  PSEP::Data::SupportGroup s_dat;
+  std::vector<double> lp_edges;
+  PSEP::Cut::LPcutIn cutq;
+
+  GIVEN("Blossom 6 with no cuts primal"){
+    REQUIRE_FALSE(PSEP::Data::make_cut_test("problems/blossom6.tsp",
+					    "test_data/tours/blossom6.bad.sol",
+					    "test_data/subtour_lp/blossom6.sub.x",
+					    g_dat, b_dat, lp_edges, s_dat));
+    PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+		       b_dat.perm);
+    for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	
+    PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+
+    WHEN("Cuts are found but none are primal"){
+      THEN("Cutcount matches non-null count"){
+
+
+      REQUIRE_FALSE(fb_sep.find_cuts());
+	int nncount = 0;
+	for(auto it = cutq.begin(); it; it = it->next)
+	  ++nncount;
+	REQUIRE(nncount == cutq.cut_count());
+      }
+    }
+  }
+
+  GIVEN("d493 with some cuts primal but not others"){
+    WHEN("Cuts are found but some are not primal"){
+      THEN("Cutcount matches non-null count"){
+	REQUIRE_FALSE(PSEP::Data::make_cut_test("problems/d493.tsp",
+						"test_data/tours/d493.sol",
+						"test_data/subtour_lp/d493.sub.x",
+						g_dat, b_dat, lp_edges,
+						s_dat));
+	PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+			   b_dat.perm);
+	for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	
+	PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+      REQUIRE(fb_sep.find_cuts());
+      
+	int nncount = 0;
+	for(auto it = cutq.begin(); it; it = it->next)
+	  ++nncount;
+	REQUIRE(nncount == cutq.cut_count());
+      }
+    }
+  }
+}
+
 TEST_CASE("Basic member tests",
-	  "[ccwrap]"){
-  REQUIRE_NOTHROW(PSEP::Cut::LPcutIn wrap);
-  
+	  "[LPcutIn]"){
   PSEP::Cut::LPcutIn wrap;
   PSEP::Data::GraphGroup g_dat;
   PSEP::Data::BestGroup b_dat;
@@ -25,7 +80,7 @@ TEST_CASE("Basic member tests",
   std::vector<double> lp_edges;
   
   SECTION("Cutcount changes appropriately"){
-    vector<string> probs{"blossom6", "comb9", "lin318", "pr1002"};
+    vector<string> probs{"blossom6", "comb9", "lin318"};
     for(string &fname : probs){
       SECTION(fname){
 	string
