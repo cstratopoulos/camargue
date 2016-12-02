@@ -16,9 +16,9 @@ using std::vector;
 
 TEST_CASE("Basic member tests",
 	  "[ccwrap]"){
-  REQUIRE_NOTHROW(PSEP::Cut::CCwrapper wrap);
+  REQUIRE_NOTHROW(PSEP::Cut::LPcutIn wrap);
   
-  PSEP::Cut::CCwrapper wrap;
+  PSEP::Cut::LPcutIn wrap;
   PSEP::Data::GraphGroup g_dat;
   PSEP::Data::BestGroup b_dat;
   PSEP::Data::SupportGroup s_dat;

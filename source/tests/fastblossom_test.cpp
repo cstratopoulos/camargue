@@ -15,61 +15,89 @@ using std::vector;
 
 #ifdef PSEP_DO_TESTS
 
-TEST_CASE("Concorde finds violated odd component blossoms",
-	  "[fast2m]"){
-  PSEP::Cut::CCwrapper wrap;
+SCENARIO("Finding fast blossoms in tiny problems, filtering them by tour",
+	  "[fast2m][tiny]"){
+  PSEP::Cut::LPcutIn wrap;
   PSEP::Data::GraphGroup g_dat;
   PSEP::Data::BestGroup b_dat;
   PSEP::Data::SupportGroup s_dat;
   std::vector<double> lp_edges;
   
-  SECTION("Cutcount changes appropriately"){
-    vector<string> probs{"blossom6", "comb9"};
-    for(string &fname : probs){
-      SECTION(fname){
-	string
-	  probfile = "problems/" + fname + ".tsp",
-	  solfile = "test_data/tours/" + fname + ".sol",
-	  subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
+  vector<string> probs{"blossom6", "comb9"};
+  for(string &fname : probs){
+    GIVEN("TSP instance " + fname){
+      string
+	probfile = "problems/" + fname + ".tsp",
+	solfile = "test_data/tours/" + fname + ".sol",
+	badsolfile = "test_data/tours/" + fname + ".bad.sol",
+	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+      WHEN("The tour is good"){
+	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile,
+						subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
 
+	PSEP::TourGraph TG(b_dat.best_tour_edges,
+			   g_dat.m_graph.edges,
+			   b_dat.perm);
+	for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	
+	THEN("Odd component blossoms found, all are primal"){
 	  REQUIRE_FALSE(CCtsp_fastblossom(wrap.pass_ptr(), wrap.count_ptr(),
 					  s_dat.G_s.node_count,
 					  s_dat.G_s.edge_count,
 					  &s_dat.support_elist[0],
 					  &s_dat.support_ecap[0]));
-	  REQUIRE(wrap.cut_count() > 0);
-	  CCtsp_lpgraph L;
-	  CCtsp_init_lpgraph_struct(&L);
-	  auto sg = PSEP::make_guard([&L]{ CCtsp_free_lpgraph(&L); });
+	  REQUIRE(wrap.cut_count() == 2);
+	  wrap.filter_primal(TG);
+	  REQUIRE(wrap.cut_count() == 2);
+	}
 
-	  vector<int> tour_elist;
-	  vector<int> &t_edges = b_dat.best_tour_edges;
-	  
-	  vector<PSEP::Edge> &edges = g_dat.m_graph.edges;
+	AND_THEN("Grostschel-Holland blossoms found, all are primal"){
+	  REQUIRE_FALSE(CCtsp_ghfastblossom(wrap.pass_ptr(), wrap.count_ptr(),
+					    s_dat.G_s.node_count,
+					    s_dat.G_s.edge_count,
+					    &s_dat.support_elist[0],
+					    &s_dat.support_ecap[0]));
+	  REQUIRE(wrap.cut_count() == 2);
+	  wrap.filter_primal(TG);
+	  REQUIRE(wrap.cut_count() == 2);
+	}
+      }
 
-	  int ecount = 0;
-	  for(int i = 0; i < t_edges.size(); ++i)
-	    if(t_edges[i]){
-	      ++ecount;
-	      PSEP::Edge e = edges[i];
-	      tour_elist.push_back(e.end[0]);
-	      tour_elist.push_back(e.end[1]);
-	    }
+      AND_WHEN("The tour is bad"){
+	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, badsolfile,
+						subtourfile,
+						g_dat, b_dat, lp_edges,
+						s_dat));
 
-	  vector<double> d_tour;
-	  for(int i : t_edges) d_tour.push_back(i);
+	PSEP::TourGraph TG(b_dat.best_tour_edges,
+			   g_dat.m_graph.edges,
+			   b_dat.perm);
+	for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	
+	THEN("Odd component blossoms found, none are primal"){
+	  REQUIRE_FALSE(CCtsp_fastblossom(wrap.pass_ptr(), wrap.count_ptr(),
+					  s_dat.G_s.node_count,
+					  s_dat.G_s.edge_count,
+					  &s_dat.support_elist[0],
+					  &s_dat.support_ecap[0]));
+	  REQUIRE(wrap.cut_count() == 2);
+	  wrap.filter_primal(TG);
+	  REQUIRE(wrap.cut_count() == 0);
+	}
 
-	  CCtsp_build_lpgraph(&L, s_dat.G_s.node_count, ecount, &tour_elist[0],
-			      (int *) NULL);
-	  CCtsp_build_lpadj(&L, 0, ecount);
-	  for(auto it = *wrap.pass_ptr(); it; it = it->next){
-	    cout << "Slack of cut: "
-		 << CCtsp_cutprice(&L, it, &d_tour[0]) << "\n";
-	  }
+	AND_THEN("Grostschel-Holland blossoms found, none are primal"){
+	  REQUIRE_FALSE(CCtsp_ghfastblossom(wrap.pass_ptr(), wrap.count_ptr(),
+					    s_dat.G_s.node_count,
+					    s_dat.G_s.edge_count,
+					    &s_dat.support_elist[0],
+					    &s_dat.support_ecap[0]));
+	  REQUIRE(wrap.cut_count() == 2);
+	  wrap.filter_primal(TG);
+	  REQUIRE(wrap.cut_count() == 0);
+	}
       }
     }
   }
