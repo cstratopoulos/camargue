@@ -1,7 +1,6 @@
 #include "tests.hpp"
 #include "cc_lpcuts.hpp"
 #include "datagroups.hpp"
-#include "err_util.hpp"
 
 #include <catch.hpp>
 

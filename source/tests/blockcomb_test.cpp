@@ -2,7 +2,6 @@
 #include "cc_lpcuts.hpp"
 #include "datagroups.hpp"
 
-
 #include <catch.hpp>
 
 #include <iostream>

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** @file
- * @brief WRAPPERS FOR CONCORDE LP STRUCTURES
+ * @brief WRAPPERS FOR CONCORDE LP STRUCTURES AND CUT SEPARATORS
  * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -71,6 +71,10 @@ public:
     graph_dat(_graph_dat), best_dat(_best_dat), supp_dat(_supp_dat),
     TG(_TG), cutq(_cutq) {}
 
+  /** The call to the separation routine.
+   * @returns `true` if cuts are found, `false` otherwise. 
+   * @throws std::runtime_error if a call to a concorde routine fails.
+   */
   virtual bool find_cuts() = 0;
   
 protected:
@@ -84,6 +88,7 @@ protected:
   PSEP::Cut::LPcutIn &cutq;
 };
 
+/** Exact separation of segment cut subtours. */
 class SegmentCuts : public ConcordeSeparator {
 public:
   SegmentCuts(PSEP::Data::GraphGroup &g_dat, PSEP::Data::BestGroup &b_dat,
@@ -94,6 +99,7 @@ public:
   bool find_cuts();
 };
 
+/** Primal separation of comb ineqalities via standard block comb heuristic. */
 class BlockCombs : public ConcordeSeparator {
 public:
   BlockCombs(PSEP::Data::GraphGroup &g_dat, PSEP::Data::BestGroup &b_dat,
@@ -104,6 +110,10 @@ public:
   bool find_cuts();
 };
 
+/** Primal separation of blossoms via standard fast blossom heuristics. 
+ * Calls Padberg-Hong odd component blossoms, and then Grotschel-Holland fast
+ * blossoms if none are found.
+ */
 class FastBlossoms : public ConcordeSeparator {
 public:
   FastBlossoms(PSEP::Data::GraphGroup &g_dat, PSEP::Data::BestGroup &b_dat,
