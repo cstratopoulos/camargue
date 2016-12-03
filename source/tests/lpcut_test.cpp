@@ -1,5 +1,4 @@
 #include "tests.hpp"
-#include "fastblossoms.hpp"
 #include "cc_lpcuts.hpp"
 #include "datagroups.hpp"
 
@@ -24,19 +23,17 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
   PSEP::Cut::LPcutIn cutq;
 
   GIVEN("Blossom 6 with no cuts primal"){
-    REQUIRE_FALSE(PSEP::Data::make_cut_test("problems/blossom6.tsp",
-					    "test_data/tours/blossom6.bad.sol",
-					    "test_data/subtour_lp/blossom6.sub.x",
-					    g_dat, b_dat, lp_edges, s_dat));
-    PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
-		       b_dat.perm);
-    for(int &i : s_dat.support_elist) i = b_dat.perm[i];
-	
-    PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
-
     WHEN("Cuts are found but none are primal"){
       THEN("Cutcount matches non-null count"){
-
+	REQUIRE_FALSE(PSEP::Data::make_cut_test("problems/blossom6.tsp",
+						"test_data/tours/blossom6.bad.sol",
+						"test_data/subtour_lp/blossom6.sub.x",
+						g_dat, b_dat, lp_edges, s_dat));
+	PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+			   b_dat.perm);
+	for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	
+	PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 
       REQUIRE_FALSE(fb_sep.find_cuts());
 	int nncount = 0;

@@ -52,57 +52,57 @@ SCENARIO("Primal comb separation by standard block comb heuristics",
   }
 }
 
-// SCENARIO("Primal heuristic fast blossom sep in tiny instances",
-// 	 "[fast2m][tiny]"){
-//   vector<string> probs{"blossom6", "comb9"};
-//   for(string &fname : probs){
-//     GIVEN("TSP instance " + fname){
-//       string
-// 	probfile = "problems/" + fname + ".tsp",
-// 	solfile = "test_data/tours/" + fname + ".sol",
-// 	badsolfile = "test_data/tours/" + fname + ".bad.sol",
-// 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
+SCENARIO("Primal heuristic block comb sep in tiny instances",
+	 "[blkcomb][tiny]"){
+  vector<string> probs{"blossom6", "comb9"};
+  for(string &fname : probs){
+    GIVEN("TSP instance " + fname){
+      string
+	probfile = "problems/" + fname + ".tsp",
+	solfile = "test_data/tours/" + fname + ".sol",
+	badsolfile = "test_data/tours/" + fname + ".bad.sol",
+	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-//       PSEP::Data::GraphGroup g_dat;
-//       PSEP::Data::BestGroup b_dat;
-//       PSEP::Data::SupportGroup s_dat;
-//       std::vector<double> lp_edges;
-//       PSEP::Cut::LPcutIn cutq;
+      PSEP::Data::GraphGroup g_dat;
+      PSEP::Data::BestGroup b_dat;
+      PSEP::Data::SupportGroup s_dat;
+      std::vector<double> lp_edges;
+      PSEP::Cut::LPcutIn cutq;
 
-//       WHEN("The tour is good"){
-// 	THEN("Primal blossoms are found"){
-// 	  REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile,
-// 						  subtourfile, g_dat, b_dat,
-// 						  lp_edges, s_dat));
+      WHEN("The tour is good"){
+	THEN("Primal block combs are found"){
+	  REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile,
+						  subtourfile, g_dat, b_dat,
+						  lp_edges, s_dat));
 
-// 	  PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
-// 			     b_dat.perm);
-// 	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	  PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+			     b_dat.perm);
+	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-// 	  PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
-// 	  REQUIRE(fb_sep.find_cuts());
-// 	}
-//       }
+	  PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  REQUIRE(fb_sep.find_cuts());
+	}
+      }
 
-//       AND_WHEN("The tour is bad"){
-// 	THEN("No primal blossoms are found"){
-// 	  REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, badsolfile,
-// 						  subtourfile,
-// 						  g_dat, b_dat, lp_edges,
-// 						  s_dat));
+      AND_WHEN("The tour is bad"){
+	THEN("No primal block combs are found"){
+	  REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, badsolfile,
+						  subtourfile,
+						  g_dat, b_dat, lp_edges,
+						  s_dat));
 
-// 	  PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
-// 			     b_dat.perm);
-// 	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	  PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+			     b_dat.perm);
+	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-// 	  PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 
-// 	  REQUIRE_FALSE(fb_sep.find_cuts());
-// 	}
-//       }
-//     }
-//   }
-// }
+	  REQUIRE_FALSE(fb_sep.find_cuts());
+	}
+      }
+    }
+  }
+}
 
 
 

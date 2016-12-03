@@ -56,13 +56,18 @@ private:
   int cutcount; /**< Number of cuts in the linked list starting at head_cut. */
 };
 
+/** Abstract base class for calling Concorde separation routines. 
+ * Separator classes based on separation routines from Concorde should derive
+ * from this class and provide an implementation of find_cuts which calls
+ * an appropriate separation routine or sequence of routines. See below
+ * for examples. 
+ */
 class ConcordeSeparator {
 public:
   ConcordeSeparator(PSEP::Data::GraphGroup &_graph_dat,
 		    PSEP::Data::BestGroup &_best_dat,
 		    PSEP::Data::SupportGroup &_supp_dat,
-		    PSEP::TourGraph &_TG,
-		    PSEP::Cut::LPcutIn &_cutq) :
+		    PSEP::TourGraph &_TG, PSEP::Cut::LPcutIn &_cutq) :
     graph_dat(_graph_dat), best_dat(_best_dat), supp_dat(_supp_dat),
     TG(_TG), cutq(_cutq) {}
 
@@ -81,36 +86,30 @@ protected:
 
 class SegmentCuts : public ConcordeSeparator {
 public:
-  SegmentCuts(PSEP::Data::GraphGroup &graph_dat,
-	      PSEP::Data::BestGroup &best_dat,
-	      PSEP::Data::SupportGroup &supp_dat,
-	      PSEP::TourGraph &TG,
+  SegmentCuts(PSEP::Data::GraphGroup &g_dat, PSEP::Data::BestGroup &b_dat,
+	      PSEP::Data::SupportGroup &s_dat, PSEP::TourGraph &TG,
 	      PSEP::Cut::LPcutIn &cutq) :
-    ConcordeSeparator(graph_dat, best_dat, supp_dat, TG, cutq) {}
+    ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
 
   bool find_cuts();
 };
 
 class BlockCombs : public ConcordeSeparator {
 public:
-  BlockCombs(PSEP::Data::GraphGroup &graph_dat,
-	     PSEP::Data::BestGroup &best_dat,
-	     PSEP::Data::SupportGroup &supp_dat,
-	     PSEP::TourGraph &TG,
+  BlockCombs(PSEP::Data::GraphGroup &g_dat, PSEP::Data::BestGroup &b_dat,
+	     PSEP::Data::SupportGroup &s_dat, PSEP::TourGraph &TG,
 	     PSEP::Cut::LPcutIn &cutq) :
-    ConcordeSeparator(graph_dat, best_dat, supp_dat, TG, cutq) {}
+    ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
 
   bool find_cuts();
 };
 
 class FastBlossoms : public ConcordeSeparator {
 public:
-  FastBlossoms(PSEP::Data::GraphGroup &graph_dat,
-	       PSEP::Data::BestGroup &best_dat,
-	       PSEP::Data::SupportGroup &supp_dat,
-	       PSEP::TourGraph &TG,
+  FastBlossoms(PSEP::Data::GraphGroup &g_dat, PSEP::Data::BestGroup &b_dat,
+	       PSEP::Data::SupportGroup &s_dat, PSEP::TourGraph &TG,
 	       PSEP::Cut::LPcutIn &cutq) :
-    ConcordeSeparator(graph_dat, best_dat, supp_dat, TG, cutq) {}
+    ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
 
   bool find_cuts();
 };
