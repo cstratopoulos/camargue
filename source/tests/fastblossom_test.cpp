@@ -1,5 +1,4 @@
 #include "tests.hpp"
-#include "fastblossoms.hpp"
 #include "cc_lpcuts.hpp"
 #include "datagroups.hpp"
 #include "err_util.hpp"
@@ -17,7 +16,7 @@ using std::vector;
 
 #ifdef PSEP_DO_TESTS
 
-SCENARIO("Primal heuristic fast bossom separation",
+SCENARIO("Primal blossom separation by fast standard heuristics",
 	 "[fast2m]"){
   vector<string> probs{"pr76", "d493", "pr1002"};
   for(string &fname : probs){

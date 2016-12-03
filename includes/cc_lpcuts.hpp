@@ -8,6 +8,7 @@
 #define PSEP_CC_LPCUTS_HPP
 
 #include "Graph.hpp"
+#include "datagroups.hpp"
 
 extern "C" {
 #include <concorde/INCLUDE/tsp.h>
@@ -55,6 +56,64 @@ private:
   int cutcount; /**< Number of cuts in the linked list starting at head_cut. */
 };
 
+class ConcordeSeparator {
+public:
+  ConcordeSeparator(PSEP::Data::GraphGroup &_graph_dat,
+		    PSEP::Data::BestGroup &_best_dat,
+		    PSEP::Data::SupportGroup &_supp_dat,
+		    PSEP::TourGraph &_TG,
+		    PSEP::Cut::LPcutIn &_cutq) :
+    graph_dat(_graph_dat), best_dat(_best_dat), supp_dat(_supp_dat),
+    TG(_TG), cutq(_cutq) {}
+
+  virtual bool find_cuts() = 0;
+  
+protected:
+  
+  PSEP::Data::GraphGroup &graph_dat;
+  PSEP::Data::BestGroup &best_dat;
+  PSEP::Data::SupportGroup &supp_dat;
+  
+  PSEP::TourGraph &TG;
+  
+  PSEP::Cut::LPcutIn &cutq;
+};
+
+class SegmentCuts : public ConcordeSeparator {
+public:
+  SegmentCuts(PSEP::Data::GraphGroup &graph_dat,
+	      PSEP::Data::BestGroup &best_dat,
+	      PSEP::Data::SupportGroup &supp_dat,
+	      PSEP::TourGraph &TG,
+	      PSEP::Cut::LPcutIn &cutq) :
+    ConcordeSeparator(graph_dat, best_dat, supp_dat, TG, cutq) {}
+
+  bool find_cuts();
+};
+
+class BlockCombs : public ConcordeSeparator {
+public:
+  BlockCombs(PSEP::Data::GraphGroup &graph_dat,
+	     PSEP::Data::BestGroup &best_dat,
+	     PSEP::Data::SupportGroup &supp_dat,
+	     PSEP::TourGraph &TG,
+	     PSEP::Cut::LPcutIn &cutq) :
+    ConcordeSeparator(graph_dat, best_dat, supp_dat, TG, cutq) {}
+
+  bool find_cuts();
+};
+
+class FastBlossoms : public ConcordeSeparator {
+public:
+  FastBlossoms(PSEP::Data::GraphGroup &graph_dat,
+	       PSEP::Data::BestGroup &best_dat,
+	       PSEP::Data::SupportGroup &supp_dat,
+	       PSEP::TourGraph &TG,
+	       PSEP::Cut::LPcutIn &cutq) :
+    ConcordeSeparator(graph_dat, best_dat, supp_dat, TG, cutq) {}
+
+  bool find_cuts();
+};
 
 }
 }

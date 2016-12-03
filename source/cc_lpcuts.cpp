@@ -59,5 +59,53 @@ void LPcutIn::filter_primal(PSEP::TourGraph &TG)
   }  
 }
 
+bool SegmentCuts::find_cuts()
+{
+  if(CCtsp_segment_cuts(cutq.pass_ptr(), cutq.count_ptr(),
+			supp_dat.G_s.node_count, supp_dat.G_s.edge_count,
+			&supp_dat.support_elist[0],
+			&supp_dat.support_ecap[0]))
+    throw std::runtime_error("CCtsp_segment_cuts failed.");
+  
+  return(!cutq.empty());
+}
+
+bool BlockCombs::find_cuts()
+{
+  if(CCtsp_block_combs(cutq.pass_ptr(), cutq.count_ptr(),
+		       supp_dat.G_s.node_count, supp_dat.G_s.edge_count,
+		       &supp_dat.support_elist[0],
+		       &supp_dat.support_ecap[0], 1))
+    throw std::runtime_error("CCtsp_block_combs failed.");
+
+  if(cutq.empty())
+    return false;
+
+  cutq.filter_primal(TG);
+
+  return(!cutq.empty());
+}
+
+bool FastBlossoms::find_cuts()
+{
+  if(CCtsp_fastblossom(cutq.pass_ptr(), cutq.count_ptr(),
+		       supp_dat.G_s.node_count, supp_dat.G_s.edge_count,
+		       &supp_dat.support_elist[0],
+		       &supp_dat.support_ecap[0]))
+    throw std::runtime_error("CCtsp_fastblossom failed.");
+
+  cutq.filter_primal(TG);
+  if(!cutq.empty()) return true;
+
+  if(CCtsp_ghfastblossom(cutq.pass_ptr(), cutq.count_ptr(),
+			 supp_dat.G_s.node_count, supp_dat.G_s.edge_count,
+			 &supp_dat.support_elist[0],
+			 &supp_dat.support_ecap[0]))
+    throw std::runtime_error("CCtsp_ghfastblossom failed.");
+
+  cutq.filter_primal(TG);
+  return(!cutq.empty());
+}
+
 }
 }
