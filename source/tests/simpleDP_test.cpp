@@ -5,13 +5,16 @@
 #include "cuts.hpp"
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <utility>
 #include <vector>
+#include <set>
 
 #include <catch.hpp>
 
 using std::cout;
+using std::setprecision;
 using std::vector;
 using std::string;
 using std::pair;
@@ -50,7 +53,7 @@ TEST_CASE ("Tiny simple DP translator tests",
 	for(int i : b_dat.best_tour_nodes) cout << i << ", ";
 	cout << "\n";
 
-	PSEP::CutQueue<PSEP::dominoparity> dp_q(25);
+	PSEP::CutQueue<PSEP::dominoparity> dp_q(250);
 	PSEP::Cut<PSEP::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
 
 	REQUIRE(dominos.cutcall() != 1);
@@ -121,7 +124,7 @@ TEST_CASE ("simple DP cutgraph translator tests",
 						s_dat));
 	
 
-	PSEP::CutQueue<PSEP::dominoparity> dp_q(25);
+	PSEP::CutQueue<PSEP::dominoparity> dp_q(250);
 	PSEP::Cut<PSEP::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
 	
 	REQUIRE_FALSE(dominos.cutcall());
@@ -179,7 +182,9 @@ TEST_CASE ("simple DP cutgraph translator tests",
 
 TEST_CASE ("Printless simple DP cutgraph translator tests",
 	   "[simpleDP][medium]") {
-  vector<string> probs{"lin318", "d493", "att532", "pr1002", "rl1304", "d2103",
+  vector<string> probs{"lin318", "d493", "att532",
+		       "dsj1000", "pr1002", "rl1304",
+		       "d2103", "u2319",
 		       "pcb3038"};
 
     for(string &fname : probs){
@@ -192,15 +197,21 @@ TEST_CASE ("Printless simple DP cutgraph translator tests",
 	PSEP::Data::BestGroup b_dat;
 	PSEP::Data::SupportGroup s_dat;
 	std::vector<double> lp_edges;
+
 	
 	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
+
+	int ncount = g_dat.m_graph.node_count;
       
-	PSEP::CutQueue<PSEP::dominoparity> dp_q(25);
+	PSEP::CutQueue<PSEP::dominoparity> dp_q(250);
 	PSEP::Cut<PSEP::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
 	
 	REQUIRE_FALSE(dominos.cutcall());
+	int used_size = 0;
+	int min_used = ncount;
+	int max_used = 0;
 
 	PSEP::CutTranslate translator(g_dat);
 	int primal_found = 0;
@@ -214,6 +225,8 @@ TEST_CASE ("Printless simple DP cutgraph translator tests",
 	  vector<int> &bt = b_dat.best_tour_nodes;
 	  double tour_activity, lp_activity;
 
+	  std::set<int> nodes_used;
+
 	  REQUIRE_FALSE(translator.get_sparse_row(dp_cut, bt, rmatind, rmatval,
 						  sense, rhs));
 
@@ -224,12 +237,26 @@ TEST_CASE ("Printless simple DP cutgraph translator tests",
 	  CHECK(lp_activity > rhs);
 	  CHECK(tour_activity <= rhs);
 	  
-	  if(tour_activity == rhs && lp_activity > rhs)
+	  if(tour_activity == rhs && lp_activity > rhs){
 	    ++primal_found;
+	    for(int i : rmatind){
+	      PSEP::Edge e = g_dat.m_graph.edges[i];
+	      nodes_used.insert(e.end[0]);
+	      nodes_used.insert(e.end[1]);
+	    }
+	    used_size += nodes_used.size();
+	    if(nodes_used.size() < min_used) min_used = nodes_used.size();
+	    if(nodes_used.size() > max_used) max_used = nodes_used.size();
+	  }
 	  
 	  dp_q.pop_front();
 	}
 	cout << "\t" << primal_found << " primal violated cuts found\n";
+	double used_avg = ((double) used_size / (double) primal_found);
+	cout << "\tmin: " << min_used << "\tavg: " << used_avg << "\tmax: "
+	     << max_used << "\n"
+	     << "\tavg/ncount: " << setprecision(2)
+	     << (used_avg / ncount) << setprecision(6) << "\n";
 	cout << "\n";	
       }
     }

@@ -26,7 +26,7 @@ DPCutGraph::DPCutGraph(
   G_s(_cands.supp_dat.G_s), support_elist(_cands.supp_dat.support_elist),
   support_ecap(_cands.supp_dat.support_ecap),
   perm(_cands.best_dat.perm),
-  CC_gh_q(25){ CCcut_GHtreeinit(&gh_tree); }
+  CC_gh_q(250){ CCcut_GHtreeinit(&gh_tree); }
 
 DPCutGraph::~DPCutGraph(){ CCcut_GHtreefree(&gh_tree); }
 
