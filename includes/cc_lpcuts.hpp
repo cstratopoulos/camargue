@@ -59,8 +59,8 @@ private:
 /** Abstract base class for calling Concorde separation routines. 
  * Separator classes based on separation routines from Concorde should derive
  * from this class and provide an implementation of find_cuts which calls
- * an appropriate separation routine or sequence of routines. See below
- * for examples. 
+ * an appropriate separation routine or sequence of routines. See FastBlossoms,
+ * BlockCombs, or SegmentCuts for examples. 
  */
 class ConcordeSeparator {
 public:
@@ -96,7 +96,8 @@ public:
 	      PSEP::Cut::LPcutIn &cutq) :
     ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
 
-  bool find_cuts();
+  /** Finds subtours arising from intervals of the current best tour. */
+  bool find_cuts(); 
 };
 
 /** Primal separation of comb ineqalities via standard block comb heuristic. */
@@ -107,13 +108,11 @@ public:
 	     PSEP::Cut::LPcutIn &cutq) :
     ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
 
+  /** Returns true if block combs are found and some are tight at best tour. */
   bool find_cuts();
 };
 
-/** Primal separation of blossoms via standard fast blossom heuristics. 
- * Calls Padberg-Hong odd component blossoms, and then Grotschel-Holland fast
- * blossoms if none are found.
- */
+/** Primal separation of blossoms via standard fast blossom heuristics. */
 class FastBlossoms : public ConcordeSeparator {
 public:
   FastBlossoms(PSEP::Data::GraphGroup &g_dat, PSEP::Data::BestGroup &b_dat,
@@ -121,6 +120,10 @@ public:
 	       PSEP::Cut::LPcutIn &cutq) :
     ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
 
+  /** Returns true if blossoms are found and some are tight at best tour.
+   * First calls the Padberg-Hong odd component blossom heuristic, and then
+   * the Grotschell-Holland heuristic if no odd component blossoms are found.
+   */
   bool find_cuts();
 };
 
