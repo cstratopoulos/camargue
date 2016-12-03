@@ -13,26 +13,6 @@ using std::unique_ptr;
 
 namespace PSEP {
 
-static int shrink_cb(double cutval, int cut_size, int *cut_nodes, void *param)
-{
-  DPCutGraph::ShrinkCB *arg = (DPCutGraph::ShrinkCB *) param;
-  vector<bool> &marks = arg->marks;
-  CutQueue<vector<int>> &cutq = arg->shrink_q;
-  
-  int odd_count = 0;
-  
-  for(int i = 0; i < cut_size; ++i)
-    odd_count += marks[cut_nodes[i]];
-
-  if(odd_count && odd_count >= 3){
-    vector<int> cut_shore;
-    for(int i = 0; i < cut_size; ++i) cut_shore.push_back(cut_nodes[i]);
-    cutq.push_front(cut_shore);
-  }
-  
-  return 0;
-}
-
 DPCutGraph::DPCutGraph(
 #ifdef PSEP_DO_VIZ
 		       std::string _ofname,
@@ -46,9 +26,9 @@ DPCutGraph::DPCutGraph(
   G_s(_cands.supp_dat.G_s), support_elist(_cands.supp_dat.support_elist),
   support_ecap(_cands.supp_dat.support_ecap),
   perm(_cands.best_dat.perm),
-  CC_gh_q(25),
-  CC_shrink_q(100)
-{}
+  CC_gh_q(25){ CCcut_GHtreeinit(&gh_tree); }
+
+DPCutGraph::~DPCutGraph(){ CCcut_GHtreefree(&gh_tree); }
 
 
 int DPCutGraph::simple_DP_sep(CutQueue<dominoparity> &domino_q)
@@ -291,15 +271,12 @@ int DPCutGraph::call_concorde_gomoryhu()
   int ncount = cutgraph_nodes.size(), ecount = cut_ecap.size();
   int markcount = odd_nodes_list.size();
 
-  ShrinkCB param(node_marks, CC_shrink_q);
-
   CCrandstate rstate;
   int seed = 99;
   
   CCutil_sprand(seed, &rstate);
-  CCcut_GHtreeinit(&gh_tree);
 
-  double gh_time = zeit(), dfs_time, shrink_time;
+  double gh_time = zeit(), dfs_time;
   rval = CCcut_gomory_hu(&gh_tree, ncount, ecount, &cut_elist[0], &cut_ecap[0],
 			 markcount, &odd_nodes_list[0], &rstate);
   PSEP_CHECK_RVAL(rval, "CCcut_gomory_hu failed. ");
@@ -314,16 +291,6 @@ int DPCutGraph::call_concorde_gomoryhu()
   }  
   cout << "Done odd cut dfs in " << (zeit() - dfs_time)  <<  "s, "
        << CC_gh_q.size() << " cuts in queue.\n";
-
-  /*
-  cout << "Trying to get odd cuts via CCcut_violated_cuts....";
-  shrink_time = zeit();
-  rval = CCcut_violated_cuts(ncount, ecount, &cut_elist[0], &cut_ecap[0],
-			     0.9, shrink_cb, &param);
-  if(rval) cerr << "Problem with CCcut_violated\n";
-  cout << "got " << CC_shrink_q.size()
-       << " in " << (zeit() - shrink_time) << "s\n";
-  */
 
   if(CC_gh_q.empty()) rval = 2;
 
@@ -362,9 +329,7 @@ int DPCutGraph::grab_cuts(CutQueue<dominoparity> &domino_q)
   int special_ind = cutgraph_nodes.size() - 1;
 
    while(!CC_gh_q.empty()){
-  //  while(!CC_shrink_q.empty()){
-    vector<int> cut_shore_nodes;// = CC_shrink_q.peek_front();
-    CC_shrink_q.pop_front();
+    vector<int> cut_shore_nodes;
     int deltacount = 0;
     
     vector<int> handle_nodes;
@@ -432,7 +397,7 @@ int DPCutGraph::grab_cuts(CutQueue<dominoparity> &domino_q)
  CLEANUP:
   if(rval)
     cerr << "Problem in DPCutGraph::grab_cuts.\n";
-  CCcut_GHtreefree(&gh_tree);
+
   return rval;
 }
 

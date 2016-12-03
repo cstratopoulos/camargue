@@ -48,6 +48,7 @@ public:
 	     std::string _ofname,
 #endif
 	     PSEP::CandidateTeeth &_cands);
+  ~DPCutGraph();
 
 #ifdef PSEP_DO_VIZ
   std::string ofname;
@@ -86,16 +87,6 @@ public:
   std::vector<int> cg_delta_marks;
 
   PSEP::CutQueue<CC_GHnode *> CC_gh_q;
-  PSEP::CutQueue<std::vector<int>> CC_shrink_q;
-
-  struct ShrinkCB {
-    ShrinkCB(std::vector<bool> &_marks,
-	     PSEP::CutQueue<std::vector<int>> &_srk_q) :
-      marks(_marks), shrink_q(_srk_q) {}
-    
-    std::vector<bool> &marks;
-    PSEP::CutQueue<std::vector<int>> &shrink_q;
-  };
 
   CC_GHtree gh_tree;
 
