@@ -557,19 +557,15 @@ int Core::update_best_tour(){
   if(outprefs.save_tour){
     std::string tour_fname = outprefs.probname + ".sol";
 
-    rval = write_tour_nodes(best_tour_nodes, tour_fname);
-    if(rval) goto CLEANUP;
-
+    write_tour_nodes(best_tour_nodes, tour_fname);
     std::cout << "    Wrote new best tour to " << tour_fname << "\n";
   }
 
   if(outprefs.save_tour_edges){
     std::string tour_e_fname = outprefs.probname + "_tour.x";
 
-    rval = write_tour_edges(best_tour_edges, m_graph.edges,
+    write_tour_edges(best_tour_edges, m_graph.edges,
 			    m_graph.node_count, tour_e_fname);
-    if(rval) goto CLEANUP;
-
     std::cout << "    Wrote new best tour edges to " << tour_e_fname << "\n";
   }
 
