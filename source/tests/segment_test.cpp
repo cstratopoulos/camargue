@@ -34,7 +34,7 @@ SCENARIO("Exact primal separation of subtours",
 
       WHEN("The tour is good but the solution is in the subtour polytope"){
       	THEN("No segment cuts are found"){
-	  REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile,
+	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
 						  blossomfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 

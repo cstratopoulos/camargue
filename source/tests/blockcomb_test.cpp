@@ -34,7 +34,7 @@ SCENARIO("Primal comb separation by standard block comb heuristics",
 
       WHEN("Tour is good and solution is in the subtour polytope"){
 	THEN("Primal block combs are found"){
-	  REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile,
+	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
@@ -70,7 +70,7 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
 
       WHEN("The tour is good"){
 	THEN("Primal block combs are found"){
-	  REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile,
+	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
@@ -85,7 +85,7 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
 
       AND_WHEN("The tour is bad"){
 	THEN("No primal block combs are found"){
-	  REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, badsolfile,
+	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, badsolfile,
 						  subtourfile,
 						  g_dat, b_dat, lp_edges,
 						  s_dat));

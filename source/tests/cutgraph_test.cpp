@@ -43,7 +43,7 @@ TEST_CASE ("Tiny simple DP cutgraph tests",
 	PSEP::Data::SupportGroup s_dat;
 	std::vector<double> lp_edges;
 	
-	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
 	cout << "Best tour: ";
@@ -106,7 +106,7 @@ TEST_CASE ("simple DP cutgraph tests", "[cutgraph]") {
 	PSEP::Data::SupportGroup s_dat;
 	std::vector<double> lp_edges;
 	
-	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
 	

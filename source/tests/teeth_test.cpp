@@ -58,7 +58,7 @@ TEST_CASE("New tiny candidate teeth with no elim",
       PSEP::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
 	
-      REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+      REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 					      g_dat, b_dat, lp_edges,
 					      s_dat));
       int ncount = s_dat.G_s.node_count;
@@ -138,7 +138,7 @@ TEST_CASE("New candidate teeth with elim",
       PSEP::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
 	
-      REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+      REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 					      g_dat, b_dat, lp_edges,
 					      s_dat));
       int ncount = s_dat.G_s.node_count;
@@ -206,7 +206,7 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
       PSEP::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
 	
-      REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+      REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 					      g_dat, b_dat, lp_edges,
 					      s_dat));
       PSEP::SupportGraph &G_s = s_dat.G_s;
@@ -326,7 +326,7 @@ TEST_CASE("Linsub teeth one root at a time",
       PSEP::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
 	
-      REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+      REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 					      g_dat, b_dat, lp_edges,
 					      s_dat));
       PSEP::SupportGraph &G_s = s_dat.G_s;

@@ -46,7 +46,7 @@ TEST_CASE ("Tiny simple DP translator tests",
 	PSEP::Data::SupportGroup s_dat;
 	std::vector<double> lp_edges;
 	
-	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
 	cout << "Best tour: \n";
@@ -119,7 +119,7 @@ TEST_CASE ("simple DP cutgraph translator tests",
 	std::vector<double> lp_edges;
 	bool found_nz = false;
 	
-	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
 	
@@ -199,7 +199,7 @@ TEST_CASE ("Printless simple DP cutgraph translator tests",
 	std::vector<double> lp_edges;
 
 	
-	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
 

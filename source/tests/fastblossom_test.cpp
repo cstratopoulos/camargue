@@ -34,7 +34,7 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
 
       WHEN("The tour is good and blossoms exit"){
 	THEN("Primal blossoms are found"){
-	  REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile,
+	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
@@ -49,7 +49,7 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
       }
       AND_WHEN("The tour is good but the solution is in the blossom polytope"){
       	THEN("No primal blossoms are found"){
-	  REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile,
+	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
 						  blossomfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
@@ -85,7 +85,7 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
 
       WHEN("The tour is good"){
 	THEN("Primal blossoms are found"){
-	  REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile,
+	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
@@ -100,7 +100,7 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
 
       AND_WHEN("The tour is bad"){
 	THEN("No primal blossoms are found"){
-	  REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, badsolfile,
+	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, badsolfile,
 						  subtourfile,
 						  g_dat, b_dat, lp_edges,
 						  s_dat));
@@ -136,7 +136,7 @@ SCENARIO("Black box testing of tiny fast blossoms",
 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
       WHEN("The tour is good"){
-	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile,
+	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
 						subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
@@ -170,7 +170,7 @@ SCENARIO("Black box testing of tiny fast blossoms",
       }
 
       AND_WHEN("The tour is bad"){
-	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, badsolfile,
+	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, badsolfile,
 						subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));

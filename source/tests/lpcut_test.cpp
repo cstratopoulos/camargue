@@ -25,7 +25,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
   GIVEN("Blossom 6 with no cuts primal"){
     WHEN("Cuts are found but none are primal"){
       THEN("Cutcount matches non-null count"){
-	REQUIRE_FALSE(PSEP::Data::make_cut_test("problems/blossom6.tsp",
+	REQUIRE_NOTHROW(PSEP::Data::make_cut_test("problems/blossom6.tsp",
 						"test_data/tours/blossom6.bad.sol",
 						"test_data/subtour_lp/blossom6.sub.x",
 						g_dat, b_dat, lp_edges, s_dat));
@@ -47,7 +47,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
   GIVEN("d493 with some cuts primal but not others"){
     WHEN("Cuts are found but some are not primal"){
       THEN("Cutcount matches non-null count"){
-	REQUIRE_FALSE(PSEP::Data::make_cut_test("problems/d493.tsp",
+	REQUIRE_NOTHROW(PSEP::Data::make_cut_test("problems/d493.tsp",
 						"test_data/tours/d493.sol",
 						"test_data/subtour_lp/d493.sub.x",
 						g_dat, b_dat, lp_edges,
@@ -85,7 +85,7 @@ TEST_CASE("Basic member tests",
 	  solfile = "test_data/tours/" + fname + ".sol",
 	  subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-	REQUIRE_FALSE(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
 

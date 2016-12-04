@@ -31,9 +31,10 @@ TEST_CASE("Concorde subtour solutions are in subtour poly",
       PSEP::Data::BestGroup b_dat;
       PSEP::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-      rval = PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
-				       g_dat, b_dat, lp_edges, s_dat);
-      REQUIRE(rval == 0);
+      REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+						g_dat, b_dat, lp_edges,
+						s_dat));
+
 
       PSEP::Data::LPGroup lp_dat(g_dat.m_graph, prefs, b_dat.perm);
       lp_dat.m_lp_edges = lp_edges;
