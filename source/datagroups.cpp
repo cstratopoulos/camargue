@@ -7,6 +7,7 @@
 #include<iostream>
 #include<iomanip>
 #include<vector>
+#include <stdexcept>
 
 #include<cmath>
 
@@ -23,10 +24,47 @@ using std::setprecision;
 using std::string;
 using std::vector;
 using std::unique_ptr;
-
+using std::exception;
+using std::runtime_error;
+using std::logic_error;
 
 namespace PSEP {
 namespace Data {
+
+Instance::Instance(const string &fname, int &ncount)
+try : handle(PSEP::make_unique<CCdatagroup>()) {
+  int tmp_ncount = 0;
+    
+  if(CCutil_gettsplib(const_cast<char*>(fname.c_str()), &tmp_ncount,
+		      ptr()))
+    throw runtime_error("CCutil_gettsplib failed.");
+    
+  ncount = tmp_ncount;
+} catch(const exception &e){
+  cerr << e.what() << "\n";
+  throw runtime_error("Instance constructor failed.");
+ }
+
+Instance::Instance(const int seed, const int ncount, const int gridsize)
+try : handle(PSEP::make_unique<CCdatagroup>()) {
+  if(ncount <= 0) throw logic_error("Specified bad ncount.");
+  if(gridsize <= 0) throw logic_error("Specified bad gridsize.");
+    
+  CCrandstate rstate;
+  int allow_dups = 1;
+  int binary_in = 1;
+
+  int tmp_ncount = ncount;
+  int tmp_gridsize = gridsize;
+
+  CCutil_sprand(seed, &rstate);
+  if(CCutil_getdata((char *) NULL, binary_in, CC_EUCLIDEAN,
+		    &tmp_ncount, ptr(), tmp_gridsize, allow_dups, &rstate))
+    throw runtime_error("CCutil_getdata failed.");
+} catch(const exception &e){
+  cerr << e.what() << "\n";
+  throw runtime_error("Instance constructor failed.");
+ }
 
 GraphGroup::GraphGroup(const string &fname, string &probname,
 		       RandProb &randprob,
@@ -137,7 +175,7 @@ GraphGroup::GraphGroup(const string &fname, string &probname,
   if(dump_xy){
     if(dat->x && dat->y){
       std::string xyfile = probname + ".xy";
-      rval = write_xy_coords(dat->x, dat->y, m_graph.node_count,
+      write_xy_coords(dat->x, dat->y, m_graph.node_count,
 			     xyfile);
       PSEP_CHECK_RVAL(rval, "Couldn't dump xy coords to file. ");
 
@@ -338,19 +376,14 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
 
   if(save_tour){
     std::string solfile = probname + ".sol";
-    rval = write_tour_nodes(best_tour_nodes,
-			    solfile);
-    PSEP_CHECK_RVAL(rval, "Couldn't write initial tour to file. ");
-
+    write_tour_nodes(best_tour_nodes, solfile);
     std::cout << "Wrote initial tour to " << solfile << ".\n";
   }
   
   if(save_tour_edges) {
   std::string edgefile = probname + "_tour.x";
-  rval = write_tour_edges(best_tour_edges, m_graph.edges, m_graph.node_count,
-			  edgefile);
-  PSEP_CHECK_RVAL(rval, "Couldn't write initial tour edges to file. ");
-  
+  write_tour_edges(best_tour_edges, m_graph.edges, m_graph.node_count,
+		   edgefile);
   std::cout << "Wrote initial tour edges to " << edgefile << ".\n";
   }
 
@@ -374,9 +407,8 @@ BestGroup::BestGroup(const std::string &tourfile,
   int rval = 0;
   int ncount = graph.node_count;
   
-  rval = get_tour_nodes(ncount, best_tour_nodes, tourfile);
-  if (rval) goto CLEANUP;
-
+  get_tour_nodes(ncount, best_tour_nodes, tourfile);
+  
   try {
     perm.resize(ncount);
     best_tour_edges.resize(graph.edge_count, 0);
@@ -451,10 +483,8 @@ BestGroup::BestGroup(const std::string &tourfile,
   
   if(save_tour_edges) {
     std::string edgefile = probname + "_tour.x";
-    rval = write_tour_edges(best_tour_edges, graph.edges, graph.node_count,
+    write_tour_edges(best_tour_edges, graph.edges, graph.node_count,
 			    edgefile);
-    PSEP_CHECK_RVAL(rval, "Couldn't write initial tour edges to file. ");
-  
     std::cout << "Wrote initial tour edges to " << edgefile << ".\n";
   }
 

@@ -21,6 +21,18 @@ extern "C" {
 
 #include <cmath>
 
+namespace std {
+
+template<>
+struct default_delete<CCdatagroup> {
+  void operator()(CCdatagroup *dat) const {
+    if(dat) CCutil_freedatagroup(dat);
+    delete dat;    
+  }
+};
+
+}
+
 namespace PSEP {
 
 /** Namespace for storing data groups.
@@ -31,7 +43,19 @@ namespace PSEP {
  * datagroups and, if applicable, individual members of relevant groups should
  * be passed to members or methods. 
  */
-namespace Data {		  
+namespace Data {
+
+class Instance {
+public:
+  Instance() = default;
+  Instance(const std::string &fname, int &ncount);
+  Instance(const int seed, const int ncount, const int gridsize);
+
+  CCdatagroup* ptr() { return handle.get(); }
+  
+private:
+  std::unique_ptr<CCdatagroup> handle;
+};
 
 /** GraphGroup stores pure combinatorial information about the problem.
  * This structure essentially encodes a weighted graph which represents
@@ -170,13 +194,22 @@ struct SupportGroup  {
  * @pre \p tour_nodes_fname is as in PSEP::get_tour_nodes.
  * @pre \p lp_sol_fname is as in PSEP::get_lp_sol.
  */
-int make_cut_test(const std::string &tsp_fname,
-		  const std::string &tour_nodes_fname,
-		  const std::string &lp_sol_fname,
-		  PSEP::Data::GraphGroup &graph_data,
-		  PSEP::Data::BestGroup &best_data,
-		  std::vector<double> &lp_edges,
-		  PSEP::Data::SupportGroup &supp_data);
+void make_cut_test(const std::string &tsp_fname,
+		   const std::string &tour_nodes_fname,
+		   const std::string &lp_sol_fname,
+		   PSEP::Data::GraphGroup &graph_data,
+		   PSEP::Data::BestGroup &best_data,
+		   std::vector<double> &lp_edges,
+		   PSEP::Data::SupportGroup &supp_data);
+
+void make_cut_test(const std::string &tsp_fname,
+		   const std::string &tour_nodes_fname,
+		   const std::string &lp_sol_fname,
+		   PSEP::Data::GraphGroup &graph_data,
+		   PSEP::Data::BestGroup &best_data,
+		   std::vector<double> &lp_edges,
+		   PSEP::Data::SupportGroup &supp_data,
+		   std::unique_ptr<PSEP::Data::Instance> &inst_p);
 
 }
 }
