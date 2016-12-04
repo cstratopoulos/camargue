@@ -29,7 +29,7 @@ namespace PSEP {
  * tour_nodes.size() at the top, followed by the entries of tour_nodes
  * \return 0 if successful, 1 if error
  */
-int write_tour_nodes(const std::vector<int> &tour_nodes,
+void write_tour_nodes(const std::vector<int> &tour_nodes,
 		     const std::string &tour_nodes_fname);
 
 /** Writes tour edges to file.
@@ -46,7 +46,7 @@ int write_tour_nodes(const std::vector<int> &tour_nodes,
  * \p edges`[i].end[1]` `1.0` for each i such that \p tour_edges`[i] == 1`
  * \return 0 if successful, 1 if error
  */
-int write_tour_edges(const std::vector<int> &tour_edges,
+void write_tour_edges(const std::vector<int> &tour_edges,
 		     const std::vector<PSEP::Edge> &edges,
 		     const int node_count,
 		     const std::string &tour_edges_fname);
@@ -67,7 +67,7 @@ int write_tour_edges(const std::vector<int> &tour_edges,
  * for all `i` from 0 to  `lp_ecap.size()`
  * \return 0 if successful, 1 if error
  */
-int write_lp_edges(const std::vector<int> &lp_elist,
+void write_lp_edges(const std::vector<int> &lp_elist,
 		   const std::vector<double> &lp_ecap,
 		   const int node_count,
 		   const std::string &lp_edges_fname);
@@ -79,7 +79,7 @@ int write_lp_edges(const std::vector<int> &lp_elist,
  * @post \p xy_coords_fname has \p ncount on its first line, followed by
  * \p x`[i]` \p y`[i]` on all the following lines. 
  */
-int write_xy_coords(const double *x, const double *y, const int ncount,
+void write_xy_coords(const double *x, const double *y, const int ncount,
 		    const std::string &xy_coords_fname);
 
 /** Loads a tour from file.
@@ -92,7 +92,7 @@ int write_xy_coords(const double *x, const double *y, const int ncount,
  * from \p tour_nodes_fname in the same order
  * \returns 0 if successful, 1 if error
  */
-int get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
+void get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
 		   const std::string &tour_nodes_fname);
 
 
@@ -110,7 +110,7 @@ int get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
  * @post `suppor_elist[(2 * i) + 1] == v`
  * @post `support_ecap[i] == w`
  */
-int get_lp_sol(const int node_count, std::vector<int> &support_elist,
+void get_lp_sol(const int node_count, std::vector<int> &support_elist,
 	       std::vector<double> &support_ecap,
 	       const std::string &lp_sol_fname);
 		     

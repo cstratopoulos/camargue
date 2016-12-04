@@ -4,29 +4,38 @@
 #include <iomanip>
 #include <algorithm>
 #include <sstream>
+#include <stdexcept>
 
 #include <cstdio>
 #include <cmath>
 
+using std::runtime_error;
+using std::logic_error;
+using std::exception;
+
+using std::cerr;
+using std::endl;
+
 
 namespace PSEP {
 
-int write_tour_nodes(const std::vector<int> &tour_nodes,
+void write_tour_nodes(const std::vector<int> &tour_nodes,
 		     const std::string &tour_nodes_fname)
 {
-  int rval = 0;
   std::ofstream tour_out;
+  std::runtime_error err("Problem in write_tour_nodes.");
 
   if(tour_nodes.empty())
-    PSEP_SET_GOTO(rval, "Tried to write empty tour to file. ");
+    throw logic_error("Tried to write empty tour to file. ");
 
   if(tour_nodes_fname.empty())
-    PSEP_SET_GOTO(rval, "Tried to specfy empty filename. ");
+    throw logic_error("Tried to specfy empty filename. ");
 
   try {
     tour_out.open(tour_nodes_fname);
-  } catch(std::ios_base::failure &e) {
-    PSEP_SET_GOTO(rval, "Couldn't open outfile stream. ");
+  } catch(const exception &e) {
+    cerr << e.what() << "opening tour_out \n";
+    throw err;
   }
   
   try {
@@ -41,44 +50,38 @@ int write_tour_nodes(const std::vector<int> &tour_nodes,
 
     if(i % 10)
       tour_out << "\n";    
-  } catch(std::ios_base::failure &e) {
-    PSEP_SET_GOTO(rval, "Couldn't write tour to file. ");
+  } catch(const exception &e) {
+    cerr << e.what() << " writing tour_out\n";
+    throw err;
   }
-
- CLEANUP:
-  tour_out.close();
-  if(rval){
-    std::cerr << "PSEP::write_tour_nodes failed.\n";
-    std::remove(tour_nodes_fname.c_str());
-  }
-  return rval;
 }
 
-int write_tour_edges(const std::vector<int> &tour_edges,
+void write_tour_edges(const std::vector<int> &tour_edges,
 		     const std::vector<PSEP::Edge> &edges,
 		     const int node_count,
 		     const std::string &tour_edges_fname)
 {
-  int rval = 0;
   int ecount = 0;
   std::ofstream tour_out;
+  runtime_error err("Problem in write_tour_edges");
 
   for(int i : tour_edges)
     ecount += i;
 
   if(tour_edges.empty() || edges.empty())
-    PSEP_SET_GOTO(rval, "Tried to write empty tour to file. ");
+    throw logic_error("Tried to write empty tour to file. ");
 
   if(tour_edges_fname.empty())
-    PSEP_SET_GOTO(rval, "Tried to specify empty filename. ");
+    throw logic_error("Tried to specify empty filename. ");
 
   if(tour_edges.size() != edges.size())
-    PSEP_SET_GOTO(rval, "Sizes of edges and tour_edges incompatible. ");
+    throw logic_error("Sizes of edges and tour_edges incompatible. ");
 
   try {
     tour_out.open(tour_edges_fname);
-  } catch(std::ios_base::failure &e) {
-    PSEP_SET_GOTO(rval, "Couldn't open outfile stream. ");
+  } catch(const exception &e) {
+    cerr << e.what() << " opening tour out\n";
+    throw err;
   }
 
   try {
@@ -88,43 +91,37 @@ int write_tour_edges(const std::vector<int> &tour_edges,
       if(tour_edges[i] == 1)
 	tour_out << edges[i].end[0] << " " << edges[i].end[1] << " 1.0\n";
     }
-  } catch(std::ios_base::failure &e) {
-    PSEP_SET_GOTO(rval, "Couldn't write tour to file. ");
+  } catch(const exception &e) {
+    cerr << e.what() << " writing tour out\n";
+    throw err;
   }
-
- CLEANUP:
-  tour_out.close();
-  if(rval){
-    std::cerr << "PSEP::write_tour_edges failed.\n";
-    std::remove(tour_edges_fname.c_str());
-  }
-  return rval;
 }
 
-int write_lp_edges(const std::vector<int> &lp_elist,
+void write_lp_edges(const std::vector<int> &lp_elist,
 		   const std::vector<double> &lp_ecap,
 		   const int node_count,
 		   const std::string &lp_edges_fname)
 {
-  int rval = 0;
   std::ofstream lp_out;
+  runtime_error err("Problem in write_lp_edges");
 
   if(node_count <= 0)
-    PSEP_SET_GOTO(rval, "Passed bad value of node count. ");
+    throw logic_error("Passed bad value of node count. ");
 
   if(lp_elist.empty() || lp_ecap.empty())
-    PSEP_SET_GOTO(rval, "Passed empty lp solution. ");
+    throw logic_error("Passed empty lp solution. ");
 
   if(lp_edges_fname.empty())
-    PSEP_SET_GOTO(rval, "Tried to write to empty filename. ");
+    throw logic_error("Tried to write to empty filename. ");
 
   if(lp_elist.size() != 2 * lp_ecap.size())
-    PSEP_SET_GOTO(rval, "Incompatible elist and ecap. ");
+    throw logic_error("Incompatible elist and ecap. ");
 
   try {
     lp_out.open(lp_edges_fname);
-  } catch(std::ios_base::failure &e) {
-    PSEP_SET_GOTO(rval, "Couldn't open outfile stream. ");
+  } catch(const exception &e) {
+    cerr << e.what() << "opening lp_out\n";
+    throw err;
   }
 
   try {
@@ -135,38 +132,31 @@ int write_lp_edges(const std::vector<int> &lp_elist,
 	     << std::fixed << std::setprecision(6) << lp_ecap[i] << "\n";
       lp_out.unsetf(std::ios_base::fixed);
     }
-  } catch(std::ios_base::failure &e) {
-    PSEP_SET_GOTO(rval, "Couldn't write LP solution to file. ");
+  } catch(const exception &e) {
+    cerr << e.what() << "writing lp out\n";
+    throw err;
   }
-
- CLEANUP:
-  lp_out.close();
-  if(rval){
-    std::cerr << "PSEP::write_lp_edges failed\n";
-    std::remove(lp_edges_fname.c_str());
-  }
-  return rval;
 }
 
-int write_xy_coords(const double *x, const double *y, const int node_count,
+void write_xy_coords(const double *x, const double *y, const int node_count,
 		    const std::string &xy_coords_fname)
 {
-  int rval = 0;
   std::ofstream xy_out;
+  runtime_error err("Problem in write_xy_cords");
 
   if(node_count <= 0)
-    PSEP_SET_GOTO(rval, "Passed bad value of ncount. ");
+    throw logic_error( "Passed bad value of ncount. ");
 
-  if(!x || !y)
-    PSEP_SET_GOTO(rval, "Passed null x or y coords. ");
+  if(!x || !y) throw logic_error("Passed null x or y coords. ");
 
   if(xy_coords_fname.empty())
-    PSEP_SET_GOTO(rval, "Tried to specify empty filename. ");
+    throw logic_error("Tried to specify empty filename. ");
 
   try {
     xy_out.open(xy_coords_fname);
-  } catch(std::ios_base::failure &e) {
-    PSEP_SET_GOTO(rval, "Couldn't open outfile stream. ");
+  } catch(const exception &e) {
+    cerr << e.what() << " opening xy coords\n";
+    throw err;
   }
 
   try {
@@ -174,53 +164,48 @@ int write_xy_coords(const double *x, const double *y, const int node_count,
 
     for(int i = 0; i < node_count; ++i)
       xy_out << x[i] << " " << y[i] << "\n";
-  } catch(std::ios_base::failure &e) {
-    PSEP_SET_GOTO(rval, "Couldn't write xy coords. ");
+  } catch(const exception &e) {
+    cerr << e.what() << "wrting xy coords\n";
+    throw err;
   }
-
- CLEANUP:
-  xy_out.close();
-  if(rval){
-    std::cerr << "PSEP::write_xy_coords failed\n";
-    std::remove(xy_coords_fname.c_str());
-  }
-  return rval;
 }
 
-int get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
+void get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
 		   const std::string &tour_nodes_fname)
 {
-  int rval = 0;
   std::ifstream tour_in;
   std::string current_line;
   std::vector<int> uniq_vec;
   int file_ncount;
+  runtime_error err("Problem in get_tour_nodes");
 
-  if(node_count == 0)
-    PSEP_SET_GOTO(rval, "Specified zero nodes. ");
+  if(node_count == 0) throw logic_error( "Specified zero nodes. ");
 
   if(tour_nodes_fname.empty())
-    PSEP_SET_GOTO(rval, "Specified empty filename. ");
+    throw logic_error("Specified empty filename. ");
 
-  try { tour_in.open(tour_nodes_fname); } catch (std::ios_base::failure &e) {
-    PSEP_SET_GOTO(rval, "Couldn't open infile stream. ");
+  try { tour_in.open(tour_nodes_fname); } catch (const exception &e) {
+    cerr << e.what() << " trying to open infile stream\n";
+    throw err;
   }
 
   if(!tour_in.good())
-    PSEP_SET_GOTO(rval, "Bad infile. ");
+    throw logic_error("Bad infile. ");
 
-  try { tour_in >> file_ncount; } catch(std::ios_base::failure &e) {
-    PSEP_SET_GOTO(rval, "Couldn't read in file nodecount. ");
+  try { tour_in >> file_ncount; } catch(const exception &e) {
+    cerr << e.what() << " trying to read infile nodecount\n";
+    throw err;
   }
 
   if(file_ncount != node_count)
-    PSEP_SET_GOTO(rval, "File node count does not match specified count. ");
+    throw logic_error("File node count does not match specified count. ");
 
   try {
     tour_nodes.reserve(node_count);
     uniq_vec.reserve(node_count);
   } catch(std::bad_alloc &e) {
-    PSEP_SET_GOTO(rval, "Couldn't reserve tour nodes or uniq vec. ");
+    cerr << e.what() << " allocating tour vectors\n";
+    throw err;
   }
 
   try {
@@ -231,63 +216,58 @@ int get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
       while(line_stream >> current_node)
 	tour_nodes.push_back(current_node);
     }
-  } catch(std::ios_base::failure &e) {
-    PSEP_SET_GOTO(rval, "Couldn't read in tour nodes. ");
+  } catch(const exception &e) {
+    cerr << e.what() << " reading tour nodes\n"; throw err;
   }
 
   if(tour_nodes.size() != node_count)
-    PSEP_SET_GOTO(rval, "Tour nodes has " << tour_nodes.size() << " nodes. ");
+    throw logic_error("Tour nodes size mismatch. ");
 
   uniq_vec = tour_nodes;
 
   std::sort(uniq_vec.begin(), uniq_vec.end());
 
   if (std::unique(uniq_vec.begin(), uniq_vec.end()) != uniq_vec.end())
-    PSEP_SET_GOTO(rval, "Tour input file contains duplicate nodes. ");
+    throw logic_error("Tour input file contains duplicate nodes. ");
 
   if(uniq_vec.front() != 0 || uniq_vec.back() != node_count - 1)
-    PSEP_SET_GOTO(rval, "Tour input file contains nodes out of range. ");
-  
-
- CLEANUP:
-  tour_in.close();
-  if(rval){
-    std::cerr << "PSEP::get_tour_nodes failed\n";
-    tour_nodes.clear();
-  }
-  return rval;
+    throw logic_error("Tour input file contains nodes out of range. ");
 }
 
-int get_lp_sol(const int node_count, std::vector<int> &support_elist,
+void get_lp_sol(const int node_count, std::vector<int> &support_elist,
 	       std::vector<double> &support_ecap,
 	       const std::string &lp_sol_fname)
 {
-  int rval = 0;
   std::ifstream lp_in;
   int file_ncount, file_ecount;
+  runtime_error err("Problem in get_lp_sol");
 
-  if(node_count == 0) PSEP_SET_GOTO(rval, "Specified zero nodes. ");
+  if(node_count == 0)
+    throw logic_error("Zero nodes in get_lp_sol");
 
-  if(lp_sol_fname.empty()) PSEP_SET_GOTO(rval, "Gave empty filename. ");
+  if(lp_sol_fname.empty())
+    throw logic_error("lp_sol_fname.empty()");
 
-  try { lp_in.open(lp_sol_fname); } catch (std::ios_base::failure &) {
-    PSEP_SET_GOTO(rval, "Couldn't open infile stream. ");
+  try { lp_in.open(lp_sol_fname); } catch (const exception &e) {
+    cerr << e.what() << " opening lp_sol infile.";
   }
 
-  if(!lp_in.good()) PSEP_SET_GOTO(rval, "Infile is not good. ");
+  if(!lp_in.good()) throw logic_error("lp_in is not good.");
 
-  try { lp_in >> file_ncount >> file_ecount; }
-  catch (std::ios_base::failure &) {
-    PSEP_SET_GOTO(rval, "Couldn't read in file ncount or ecount. ");
+  try { lp_in >> file_ncount >> file_ecount; } catch (const exception &e) {
+    cerr << e.what() << " reading ncount or ecount\n";
+    throw err;
   }
 
-  if(file_ncount != node_count) PSEP_SET_GOTO(rval, "File has wrong ncount. ");
-
+  if(file_ncount != node_count)
+    throw logic_error("lp_in has wrong ncount.");
+  
   try {
     support_ecap.resize(file_ecount);
     support_elist.resize(2 * file_ecount);
-  } catch (std::bad_alloc &) {
-    PSEP_SET_GOTO(rval, "Out of memory for sup vecs. ");
+  } catch (const exception &e) {
+    cerr << e.what() << " resizing sup vecs\n";
+    throw err;
   }
 
   try {
@@ -297,15 +277,10 @@ int get_lp_sol(const int node_count, std::vector<int> &support_elist,
       support_elist[2 * i] = fmin(end0, end1);
       support_elist[(2 * i) + 1] = fmax(end0, end1);
     }
-  } catch (std::ios_base::failure &) {
-    PSEP_SET_GOTO(rval, "Problem reading file lines. ");
+  } catch (const exception &e) {
+    cerr << e.what() << " reading support elist/ecap\n";
+    throw err;
   }
-
- CLEANUP:
-  if(rval)
-    std::cerr << "get_lp_sol failed.\n";
-  lp_in.close();
-  return rval;
 }
 
 
