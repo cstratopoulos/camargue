@@ -50,6 +50,9 @@ void Data::make_cut_test(const string &tsp_fname,
   int ncount = 0;
   runtime_error err("Problem in make_cut_test");
 
+  if(inst_p)
+    throw logic_error("Passed non-null Instance ptr to make_cut_test.");
+
   try {
     inst_p = PSEP::make_unique<Data::Instance>(tsp_fname, ncount);
   } catch(const exception &e){
