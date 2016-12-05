@@ -9,11 +9,12 @@
 #include <utility>
 #include <vector>
 
-#include <catch.hpp>
-
 extern "C" {
 #include <concorde/INCLUDE/util.h>
 }
+
+#include <catch.hpp>
+
 
 using std::cout;
 using std::vector;
@@ -28,11 +29,15 @@ SCENARIO("Karp partition cutgraph tests",
   vector<string> probs{
     // "dsj1000", "pr1002",
     // "rl1304", "d2103"
-    // "pcb3038", "rl5915",
-    //"pla7397"//,
+    //"pcb3038"//, "rl5915",
+    "pla7397"//,
     //"usa13509"
-    "lin318", "d493", "att532", "pr1002"
+    //"lin318", "d493", "att532",
+    //"pr1002"
   };
+
+  cout << "Size of tooth: " << sizeof(PSEP::SimpleTooth) << "\n"
+       << "Size of tooth ptr: " << sizeof(PSEP::SimpleTooth::Ptr) << "\n";
   for(string &fname : probs){
     string
       probfile = "problems/" + fname + ".tsp",
@@ -52,7 +57,8 @@ SCENARIO("Karp partition cutgraph tests",
 						    lp_edges, s_dat, inst));
 	  int partcount = 0;
 	  int ncount = g_dat.m_graph.node_count;
-	  int partsize = 0.1 * ncount;
+	  int partsize = 2 * sqrt(ncount);
+	  //int partsize = 0.1 * ncount;
 	  CCsubdiv *subdiv_list = nullptr;
 	  int **part_matrix = nullptr;
 	  auto sg = PSEP::make_guard([&]{
@@ -108,15 +114,45 @@ SCENARIO("Karp partition cutgraph tests",
 
 	      PSEP::DPCutGraph dp_graph(cands);
 	      PSEP::CutQueue<PSEP::dominoparity> dp_q(250);
+	      PSEP::CutTranslate translator(g_dat);
 	      
 	      THEN("We can look for DP cuts in a smaller graph"){
 		double ft = PSEP::zeit();
 		REQUIRE(dp_graph.simple_DP_sep(dp_q) != 1);
 		ft = PSEP::zeit() - ft;
+		int num_found = dp_q.size();
+		int num_tight = 0, num_viol = 0;
+		while(!dp_q.empty()){
+		  vector<int> rmatind;
+		  vector<double> rmatval;
+		  char sense;
+		  double rhs;
+	  
+		  const PSEP::dominoparity &dp_cut = dp_q.peek_front();
+		  vector<int> &bt = b_dat.best_tour_nodes;
+		  double tour_activity, lp_activity;
+
+		  std::set<int> nodes_used;
+
+		  REQUIRE_FALSE(translator.get_sparse_row(dp_cut, bt, rmatind,
+							  rmatval,
+							  sense, rhs));
+
+		  translator.get_activity(tour_activity, b_dat.best_tour_edges,
+					  rmatind, rmatval);
+		  translator.get_activity(lp_activity, lp_edges, rmatind,
+					  rmatval);
+	  
+		  CHECK(lp_activity > rhs);
+		  REQUIRE(tour_activity <= rhs);
+		  num_tight += (tour_activity == rhs);
+		  num_viol += (lp_activity > rhs);
+		  dp_q.pop_front();
+		}
 		cout << "\t"
-		     << fname << ": found " << dp_q.size() << " cuts, took "
-		     << ft << "s\n";
-		CHECK(dp_q.size() > 0);
+		     << fname << ": found " << num_found << " cuts, took "
+		     << ft << "s. "
+		     << num_tight << " tight, " << num_viol << " violated.\n";
 	      }
 	    }
 	  }

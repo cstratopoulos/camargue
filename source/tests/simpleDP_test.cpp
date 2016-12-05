@@ -182,10 +182,12 @@ TEST_CASE ("simple DP cutgraph translator tests",
 
 TEST_CASE ("Printless simple DP cutgraph translator tests",
 	   "[simpleDP][medium]") {
-  vector<string> probs{"lin318", "d493", "att532",
-		       "dsj1000", "pr1002", "rl1304",
-		       "d2103", "u2319",
-		       "pcb3038"};
+  vector<string> probs{// "lin318", "d493", "att532", "u724",
+		       // "dsj1000", "pr1002", "rl1304", "fl1577"
+		       // "d2103", "u2319", "pr2392",
+		       // "pcb3038",
+		       // "rl5915",
+		       "pla7397"};
 
     for(string &fname : probs){
       SECTION(fname){
@@ -205,7 +207,7 @@ TEST_CASE ("Printless simple DP cutgraph translator tests",
 
 	int ncount = g_dat.m_graph.node_count;
       
-	PSEP::CutQueue<PSEP::dominoparity> dp_q(250);
+	PSEP::CutQueue<PSEP::dominoparity> dp_q(2500);
 	PSEP::Cut<PSEP::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
 	
 	REQUIRE_FALSE(dominos.cutcall());
@@ -255,9 +257,11 @@ TEST_CASE ("Printless simple DP cutgraph translator tests",
 	double used_avg = ((double) used_size / (double) primal_found);
 	cout << "\tmin: " << min_used << "\tavg: " << used_avg << "\tmax: "
 	     << max_used << "\n"
+	     << "\tncount: " << ncount
 	     << "\tavg/ncount: " << setprecision(2)
-	     << (used_avg / ncount) << setprecision(6) << "\n";
-	cout << "\n";	
+	     << (used_avg / ncount)  << "\t"
+	     << "avg/sqrt(ncount): " << (used_avg / sqrt(ncount))
+	     << setprecision(6) << "\n";	
       }
     }
 }
