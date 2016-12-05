@@ -52,7 +52,7 @@ try : handle(PSEP::make_unique<CCdatagroup>()) {
     
   CCrandstate rstate;
   int allow_dups = 1;
-  int binary_in = 1;
+  int binary_in = 0;
 
   int tmp_ncount = ncount;
   int tmp_gridsize = gridsize;

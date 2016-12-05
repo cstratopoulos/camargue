@@ -106,9 +106,9 @@ TEST_CASE ("simple DP cutgraph tests", "[cutgraph]") {
 	PSEP::Data::SupportGroup s_dat;
 	std::vector<double> lp_edges;
 	
-	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
-						g_dat, b_dat, lp_edges,
-						s_dat));
+	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
+						  subtourfile, g_dat, b_dat,
+						  lp_edges, s_dat));
 	
 	PSEP::CandidateTeeth cands(g_dat.delta, g_dat.edge_marks,
 				   b_dat.best_tour_nodes, b_dat.perm,
