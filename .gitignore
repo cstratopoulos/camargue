@@ -35,3 +35,7 @@ circo
 #ignore my own notes/orgs
 *.txt
 *.org
+
+#ignore test data and solutions
+*.x
+*.sol
