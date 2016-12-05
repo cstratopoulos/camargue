@@ -35,7 +35,9 @@ int Cut<blossom>::separate(){
       cut_ecap[i] = 1 - support_ecap[i];
   }
 
+#ifndef PSEP_DO_TESTS
   #pragma omp parallel for
+#endif
   for(int i = 0; i < support_indices.size(); ++i){
     if(rval) continue;
 

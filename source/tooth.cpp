@@ -1,4 +1,5 @@
 #include "tooth.hpp"
+#include "tests.hpp"
 
 #include <timsort.hpp>
 
@@ -62,7 +63,9 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
   vector<int> &perm = best_dat.perm;
   vector<int> &tour = best_dat.best_tour_nodes;
 
+#ifndef PSEP_DO_TESTS
   #pragma omp parallel for
+#endif
   for(int root_ind = 0; root_ind < ncount; ++root_ind){
     int actual_vx = tour[root_ind];
     SNode x = G_s.nodelist[actual_vx];
@@ -119,7 +122,9 @@ int CandidateTeeth::merge_and_sort()
   t_sort.start();
   int rval = 0;
 
+#ifndef PSEP_DO_TESTS
   #pragma omp parallel for
+#endif
   for(int root = 0; root < light_teeth.size(); ++root){
     if(rval) continue;
     if(merge_and_sort(root)){
@@ -222,7 +227,9 @@ void CandidateTeeth::complement_elim()
 		 dist.end());
   }
 
+#ifndef PSEP_DO_TESTS
   #pragma omp parallel for
+#endif
   for(root = 1; root < ncount - 1; ++root){
     vector<SimpleTooth::Ptr>
       &right = right_teeth[root], &left = left_teeth[root];
@@ -259,8 +266,9 @@ void CandidateTeeth::complement_elim()
 void CandidateTeeth::unmerged_weak_elim()
 {
   t_elim.start();
-
+#ifndef PSEP_DO_TESTS
   #pragma omp parallel for
+#endif
   for(int root = 0; root < light_teeth.size(); ++root){
     vector<SimpleTooth::Ptr>
       &right = right_teeth[root],
