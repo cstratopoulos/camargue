@@ -39,3 +39,4 @@ circo
 #ignore test data and solutions
 *.x
 *.sol
+test_data
