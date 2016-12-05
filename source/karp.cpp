@@ -24,7 +24,7 @@ KarpPartition::KarpPartition(const int ncount, CCdatagroup *dat,
   CCrandstate rstate;
   int partcount = 0;
    
-  auto cleanup = PSEP::make_guard([&subdiv_list, &part_matrix, partcount] {
+  auto cleanup = PSEP::make_guard([&subdiv_list, &part_matrix, &partcount] {
     CC_IFFREE(subdiv_list, CCsubdiv);
     if(part_matrix){
       for(int i = 0; i < partcount; ++i) CC_IFFREE(part_matrix[i], int);
