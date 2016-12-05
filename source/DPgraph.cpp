@@ -26,7 +26,7 @@ DPCutGraph::DPCutGraph(
   G_s(_cands.supp_dat.G_s), support_elist(_cands.supp_dat.support_elist),
   support_ecap(_cands.supp_dat.support_ecap),
   perm(_cands.best_dat.perm),
-  CC_gh_q(250){ CCcut_GHtreeinit(&gh_tree); }
+  CC_gh_q(2500){ CCcut_GHtreeinit(&gh_tree); }
 
 DPCutGraph::~DPCutGraph(){ CCcut_GHtreefree(&gh_tree); }
 
@@ -43,6 +43,11 @@ int DPCutGraph::simple_DP_sep(CutQueue<dominoparity> &domino_q)
   rval = build_light_tree();
   if(rval) goto CLEANUP;
 
+#ifdef PSEP_DO_VIZ
+  cg_out << "}";
+  cg_out.close();
+#endif
+
   rval = add_web_edges();
   if(rval) goto CLEANUP;
 
@@ -55,10 +60,6 @@ int DPCutGraph::simple_DP_sep(CutQueue<dominoparity> &domino_q)
  CLEANUP:
   if(rval == 1)
     cerr << "Problem in DPCutGraph::simple_DP_sep.\n";
-#ifdef PSEP_DO_VIZ
-  cg_out << "}";
-  cg_out.close();
-#endif
   return rval;
 }
 
@@ -210,9 +211,6 @@ int DPCutGraph::build_light_tree()
 
 int DPCutGraph::add_web_edges()
 {
-#ifdef PSEP_DO_VIZ
-  cg_out << "//Adding nonnegativity edges to cutgraph\n\t";
-#endif
   int rval = 0;
   int start_ecount = cut_ecap.size();
 
@@ -244,10 +242,6 @@ int DPCutGraph::add_web_edges()
       cut_elist.push_back(end0_container);
       cut_elist.push_back(end1_container);
       cut_ecap.push_back(lp_weight);
-#ifdef PSEP_DO_VIZ
-      cg_out << end0_container << "--" << end1_container
-	     << "[label=\"" << lp_weight << "\"];\n\t";
-#endif
     } catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back web edge. "); }
   }
 
@@ -306,8 +300,6 @@ inline void DPCutGraph::dfs_odd_cuts(CC_GHnode *n)
     if(n->ndescendants % 2 == 1 && n->ndescendants > 1 && n->cutval < 0.9) {
       if(CC_gh_q.empty() || n->cutval <= CC_gh_q.peek_front()->cutval)
 	CC_gh_q.push_front(n);
-      // else
-      // 	CC_gh_q.push_back(n);
     }
 
   for(n = n->child; n; n = n->sibling)
