@@ -22,14 +22,24 @@ namespace Cut {
 /** Wrapper for Concorde CCtsp_lpcut_in structure. 
  * This class is meant to provide an extremely limited (but memory safe!) 
  * interface, for no other purpose but to call certain cut separation routines
- * provided by Concorde. 
+ * provided by Concorde. It models unique ownership over a list of cuts. Copy
+ * operations are deleted, and move operations transfer ownership.
  * @warning CCtsp_lpcut_in is a doubly linked list node, but if you pass one to
  * a CCtsp separation routine, it will store the cuts in a SINGLY LINKED queue.
  */
 class LPcutIn {
 public:
-  LPcutIn();
-  ~LPcutIn();
+  LPcutIn() noexcept; /**< Default construct an empty list with null head. */
+  
+  LPcutIn(const LPcutIn &C) = delete; /**< Deleted copy constructor. */
+  
+  LPcutIn(LPcutIn &&C) noexcept; /**< Construct, transferring ownership. */
+
+  LPcutIn &operator=(const LPcutIn &C) = delete; /**< Deleted copy assign. */
+
+  LPcutIn &operator=(LPcutIn &&C) noexcept; /**< Assign, transfer ownership.*/
+  
+  ~LPcutIn(); /**< Traverse the list, freeing every entry. */
 
   /** Deletes all non-primal cuts.
    * @pre This function assumes that Concorde heuristic routines were called

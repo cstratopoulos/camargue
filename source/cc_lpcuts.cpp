@@ -12,7 +12,24 @@ using lpcut_in = CCtsp_lpcut_in;
 namespace CMR {
 namespace Cut {
 
-LPcutIn::LPcutIn() : head_cut((lpcut_in *) NULL), cutcount(0) {}
+LPcutIn::LPcutIn() noexcept : head_cut((lpcut_in *) NULL), cutcount(0) {}
+
+LPcutIn::LPcutIn(LPcutIn &&C) noexcept : head_cut(C.head_cut),
+					 cutcount(C.cutcount)
+{
+  C.head_cut = (lpcut_in *) NULL;
+  C.cutcount = 0;
+}
+
+LPcutIn &LPcutIn::operator=(LPcutIn &&C) noexcept
+{
+  head_cut = C.head_cut;
+  cutcount = C.cutcount;
+  C.head_cut = (lpcut_in *) NULL;
+  C.cutcount = 0;
+
+  return *this;
+}
 
 LPcutIn::~LPcutIn()
 {
