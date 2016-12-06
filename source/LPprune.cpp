@@ -4,16 +4,16 @@
 #include "LPprune.hpp"
 
 using namespace std;
-using namespace PSEP::LP;
+using namespace CMR::LP;
 
 constexpr int MAX_AGE = 100;
 constexpr double EPSILON_PRUNE = 0.000001;
 
 int CutPrune::aggressive_prune(){
-  int numrows = PSEPlp_numrows(&m_lp);
+  int numrows = CMRlp_numrows(&m_lp);
   
-  dual_vars.resize(PSEPlp_numrows(&m_lp) - node_count, 1);
-  ages.resize(PSEPlp_numrows(&m_lp) - node_count, 0);
+  dual_vars.resize(CMRlp_numrows(&m_lp) - node_count, 1);
+  ages.resize(CMRlp_numrows(&m_lp) - node_count, 0);
   delset.resize(numrows, 0);
 
   if(ages.empty()) return 0;
@@ -41,7 +41,7 @@ int CutPrune::aggressive_prune(){
       cout << (i + node_count) << ", age " << ages[i] << "\n";
     }
 
-  if(PSEPlp_delsetrows(&m_lp, &delset[0])){
+  if(CMRlp_delsetrows(&m_lp, &delset[0])){
     cerr << "Problem in CutPrune::aggressive_prune\n";
     return 1;
   }
@@ -55,18 +55,18 @@ int CutPrune::aggressive_prune(){
     delset[j] = 0;
 
   cout << "Aggressive removed "
-       << (numrows - PSEPlp_numrows(&m_lp)) << " cuts from LP\n";
+       << (numrows - CMRlp_numrows(&m_lp)) << " cuts from LP\n";
   return 0;
 }
 
 int CutPrune::prune_cuts(int &num_removed){
   int rval = 0;
   num_removed = 0;
-  int rowcount = PSEPlp_numrows(&m_lp);
+  int rowcount = CMRlp_numrows(&m_lp);
   vector<int> delset(rowcount, 0);
   vector<double> slacks(rowcount - node_count, 0);
 
-  rval = PSEPlp_getslack(&m_lp, &slacks[0], node_count, rowcount - 1);
+  rval = CMRlp_getslack(&m_lp, &slacks[0], node_count, rowcount - 1);
   if(rval){
     cerr << "Problem in CutPrune::prune_cuts with getslack\n";
     return 1;
@@ -79,7 +79,7 @@ int CutPrune::prune_cuts(int &num_removed){
     }
   }
 
-  rval = PSEPlp_delsetrows(&m_lp, &delset[0]);
+  rval = CMRlp_delsetrows(&m_lp, &delset[0]);
   if(rval){
     cerr << "Problem in CutPrune::prune_cuts with delsetrows\n";
     return 1;
@@ -92,14 +92,14 @@ int CutPrune::prune_with_skip(int &num_removed, IntPair skiprange,
 			     vector<int> &delset){
   int rval = 0;
   num_removed = 0;
-  int rowcount = PSEPlp_numrows(&m_lp);
+  int rowcount = CMRlp_numrows(&m_lp);
   delset.clear();
   delset.resize(rowcount, 0);
   int skip_start = skiprange.first;
   int skip_end = skiprange.second;
   vector<double> slacks(rowcount - node_count, 0);
 
-  rval = PSEPlp_getslack(&m_lp, &slacks[0], node_count, rowcount - 1);
+  rval = CMRlp_getslack(&m_lp, &slacks[0], node_count, rowcount - 1);
   if(rval){
     cerr << "Problem in CutPrune::prune_with_skip with getslack\n";
     return 1;
@@ -114,7 +114,7 @@ int CutPrune::prune_with_skip(int &num_removed, IntPair skiprange,
     }
   }
 
-  rval = PSEPlp_delsetrows(&m_lp, &delset[0]);
+  rval = CMRlp_delsetrows(&m_lp, &delset[0]);
   if(rval){
     cerr << "Problem in CutPrune::prune_with_skip with delsetrows\n";
     return 1;
@@ -124,8 +124,8 @@ int CutPrune::prune_with_skip(int &num_removed, IntPair skiprange,
 }
 
 int CutPrune::dual_measure(){
-  if(PSEPlp_getpi(&m_lp, &dual_vars[0], node_count,
-		  PSEPlp_numrows(&m_lp) -1)){
+  if(CMRlp_getpi(&m_lp, &dual_vars[0], node_count,
+		  CMRlp_numrows(&m_lp) -1)){
     cerr << "Problem in CutPrune::dual_measure\n";
     return 1;
   }

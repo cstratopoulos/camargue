@@ -10,11 +10,11 @@ using std::endl;
 using std::vector;
 using std::bad_alloc;
 
-namespace PSEP {
+namespace CMR {
 namespace LP {
 
 bool Core::is_dual_feas(){
-  return PSEPlp_dualfeas(&m_lp);
+  return CMRlp_dualfeas(&m_lp);
 }
 
 inline bool Core::is_integral(){
@@ -38,10 +38,10 @@ int Core::is_best_tour_feas(bool &result){
     }
 
   try { feas_stat.resize(numrows()); } catch(const std::bad_alloc &) {
-    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for feas stat, ");
+    rval = 1; CMR_GOTO_CLEANUP("Out of memory for feas stat, ");
   }
 
-  rval = PSEPlp_getrowinfeas(&m_lp, &best_tour_edges_lp[0], &feas_stat[0],
+  rval = CMRlp_getrowinfeas(&m_lp, &best_tour_edges_lp[0], &feas_stat[0],
 			     0, numrows() - 1);
   if(rval) goto CLEANUP;
 
@@ -60,7 +60,7 @@ int Core::is_best_tour_feas(bool &result){
 }
 
 int Core::factor_basis(){
-  int rval = PSEPlp_no_opt(&m_lp);
+  int rval = CMRlp_no_opt(&m_lp);
   if(rval)
     cerr << "Problem in LPCore::factor_basis\n";
   return rval;
@@ -68,7 +68,7 @@ int Core::factor_basis(){
 
 int Core::single_pivot(){
   int infeasible = 0;
-  int rval = PSEPlp_primal_pivot(&m_lp, &infeasible);
+  int rval = CMRlp_primal_pivot(&m_lp, &infeasible);
 
   if(rval || infeasible)
     cerr << "Problem in LP_Core::single_pivot(), infeasible "
@@ -80,7 +80,7 @@ int Core::nondegenerate_pivot(){
   int infeasible = 0, rval = 0;
   double lowlimit = m_min_tour_value - Epsilon::Zero;
 
-  rval = PSEPlp_primal_nd_pivot(&m_lp, &infeasible, lowlimit);
+  rval = CMRlp_primal_nd_pivot(&m_lp, &infeasible, lowlimit);
   if(rval || infeasible){
     cerr << "Problem in LPCore::nondegenerate_pivot, infeasible: "
 	 << infeasible << "\n";
@@ -92,7 +92,7 @@ int Core::nondegenerate_pivot(){
 int Core::primal_opt(){
   int infeasible = 0;
   double start = zeit();
-  int rval = PSEPlp_primal_opt(&m_lp, &infeasible);
+  int rval = CMRlp_primal_opt(&m_lp, &infeasible);
   start = zeit() - start;
 
   if(rval)
@@ -108,7 +108,7 @@ int Core::primal_opt(){
 
 int Core::pivot_back(){
   bool tour_feas = false;
-  int rval = PSEPlp_copystart(&m_lp, &old_colstat[0], &old_rowstat[0],
+  int rval = CMRlp_copystart(&m_lp, &old_colstat[0], &old_rowstat[0],
 			      &best_tour_edges_lp[0], NULL, NULL, NULL);
   if(rval) goto CLEANUP;
 
@@ -136,7 +136,7 @@ int Core::dual_pivot()
   int infeasible = 0, rval = 0;
   cout << "PRIMAL PIVOTING INSTEAD LOL!!" << endl;
   rval = nondegenerate_pivot();
-  //  rval = PSEPlp_dual_pivot(&m_lp, &infeasible);
+  //  rval = CMRlp_dual_pivot(&m_lp, &infeasible);
 
   if(rval || infeasible){
     cerr << "Problem in LP::Core::dual_pivot(), infeasible "
@@ -148,17 +148,17 @@ int Core::dual_pivot()
   frac_colstat.resize(numcols());
   frac_rowstat.resize(numrows());
   } catch(...) {
-    rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize row/colstat, ");
+    rval = 1; CMR_GOTO_CLEANUP("Couldn't resize row/colstat, ");
   }
 
-  rval = PSEPlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
-  PSEP_CHECK_RVAL(rval, "Couldn't get frac basis, ");
+  rval = CMRlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
+  CMR_CHECK_RVAL(rval, "Couldn't get frac basis, ");
 
   rval = set_edges();
   if(rval) goto CLEANUP;
 
   if(is_integral()){
-    rval = 1; PSEP_GOTO_CLEANUP("LP solution still integral! ");
+    rval = 1; CMR_GOTO_CLEANUP("LP solution still integral! ");
   } else {
     cout << "    Dual pivoted to fractional solution, objval : "
 	 << get_obj_val() << ", infeasible: " << infeasible << endl;
@@ -190,14 +190,14 @@ int Core::add_connect_cuts(PivType &piv_stat)
 			  edge_marks);
 
     try { rmatval.resize(deltacount, 1.0); } catch(...) {
-      rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize rmatval, ");
+      rval = 1; CMR_GOTO_CLEANUP("Couldn't resize rmatval, ");
     }
 
     connect_cut_range.second = numrows();
 
-    rval = PSEPlp_addrows(&m_lp, newrows, deltacount, &rhs, &sense, &rmatbeg,
+    rval = CMRlp_addrows(&m_lp, newrows, deltacount, &rhs, &sense, &rmatbeg,
 			  &delta[0], &rmatval[0]);
-    PSEP_CHECK_RVAL(rval, "Couldn't add subtour row, ");
+    CMR_CHECK_RVAL(rval, "Couldn't add subtour row, ");
 
     rval = nondegenerate_pivot();
     if(rval) goto CLEANUP;
@@ -224,10 +224,10 @@ int Core::add_connect_cuts(PivType &piv_stat)
       frac_colstat.resize(numcols());
       frac_rowstat.resize(numrows());
     } catch(...) {
-      rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize frac stats. ");
+      rval = 1; CMR_GOTO_CLEANUP("Couldn't resize frac stats. ");
     }
     
-    rval = PSEPlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
+    rval = CMRlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
     if(rval) goto CLEANUP;
   }
 
@@ -246,12 +246,12 @@ int Core::del_connect_cut()
   int rval = 0;
   if(connect_cut_range.first < 0){
     rval = 1;
-    PSEP_GOTO_CLEANUP("Tried to delete negative row, ");
+    CMR_GOTO_CLEANUP("Tried to delete negative row, ");
   }
 
-  rval = PSEPlp_delrows(&m_lp, connect_cut_range.first,
+  rval = CMRlp_delrows(&m_lp, connect_cut_range.first,
 			connect_cut_range.second);
-  PSEP_CHECK_RVAL(rval, "Couldn't delete subtour row, ");
+  CMR_CHECK_RVAL(rval, "Couldn't delete subtour row, ");
   cout << "    ...Deleted non-tight connect cut(s)." << endl;
 
  CLEANUP:
@@ -263,7 +263,7 @@ int Core::del_connect_cut()
 
 double Core::get_obj_val(){
   double objval;
-  PSEPlp_objval(&m_lp, &objval);
+  CMRlp_objval(&m_lp, &objval);
   return objval;
 }
 
@@ -273,7 +273,7 @@ double Core::set_edges(){
   if (m_lp_edges.size() != m_graph.edge_count)
     m_lp_edges.resize(m_graph.edge_count);
 
-  rval = PSEPlp_x (&m_lp, &m_lp_edges[0]);
+  rval = CMRlp_x (&m_lp, &m_lp_edges[0]);
   if(rval)
     fprintf(stderr, "failed to set_edges(), rval %d\n", rval);
 
@@ -294,7 +294,7 @@ int Core::rebuild_basis(bool prune){
   for(int i = 0; i < m_lp_edges.size(); i++)
     best_tour_edges_lp[i] = best_tour_edges[i];
 
-  rval = PSEPlp_copystart(&m_lp,
+  rval = CMRlp_copystart(&m_lp,
 			  NULL, NULL,
 			  &best_tour_edges_lp[0], NULL,
 			  NULL, NULL);
@@ -308,7 +308,7 @@ int Core::rebuild_basis(bool prune){
 
   objval = get_obj_val();
   if(fabs(objval - m_min_tour_value) >= Epsilon::Zero){
-    rval = 1; PSEP_GOTO_CLEANUP("Rebuilt basis and got objval " << objval
+    rval = 1; CMR_GOTO_CLEANUP("Rebuilt basis and got objval " << objval
 				<< ". ");
   }
 
@@ -322,7 +322,7 @@ int Core::rebuild_basis(bool prune){
   }
 
 
-  rval = PSEPlp_getbase(&m_lp, &old_colstat[0], NULL);
+  rval = CMRlp_getbase(&m_lp, &old_colstat[0], NULL);
   if(rval) goto CLEANUP;
 
   if(prune){
@@ -349,7 +349,7 @@ int Core::rebuild_basis(int &numremoved, IntPair skiprange,
   vector<int> lp_indices(ecount);
   old_colstat.resize(ecount);
 
-  rval = PSEPlp_getobj(&m_lp, &old_obj[0], ecount);
+  rval = CMRlp_getobj(&m_lp, &old_obj[0], ecount);
   if(rval) goto CLEANUP;
 
   for(int i = 0; i < ecount; i++){
@@ -357,13 +357,13 @@ int Core::rebuild_basis(int &numremoved, IntPair skiprange,
     lp_indices[i] = i;
   }
 
-  rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &tour_obj[0]);
+  rval = CMRlp_chgobj(&m_lp, ecount, &lp_indices[0], &tour_obj[0]);
   if(rval) goto CLEANUP;
 
-  rval = PSEPlp_primal_opt(&m_lp, &infeas);
+  rval = CMRlp_primal_opt(&m_lp, &infeas);
   if(rval) goto CLEANUP;
 
-  rval = PSEPlp_objval(&m_lp, &objval);
+  rval = CMRlp_objval(&m_lp, &objval);
   if(objval != -ncount){
     cerr << "Basis rebuild gave wrong solution, objval: "
 	 << objval << "\n";
@@ -374,7 +374,7 @@ int Core::rebuild_basis(int &numremoved, IntPair skiprange,
   rval = set_edges();
   if(rval) goto CLEANUP;
 
-  rval = PSEPlp_getbase(&m_lp, &old_colstat[0], NULL);
+  rval = CMRlp_getbase(&m_lp, &old_colstat[0], NULL);
   if(rval) goto CLEANUP;
 
 
@@ -383,7 +383,7 @@ int Core::rebuild_basis(int &numremoved, IntPair skiprange,
 
 
 
-  rval = PSEPlp_chgobj(&m_lp, ecount, &lp_indices[0], &old_obj[0]);
+  rval = CMRlp_chgobj(&m_lp, ecount, &lp_indices[0], &old_obj[0]);
   if(rval) goto CLEANUP;
     
  CLEANUP:
@@ -405,7 +405,7 @@ int Core::basis_init(){
 
   try { best_tour_edges_lp.resize(best_tour_edges.size()); }
   catch(const bad_alloc &){
-    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for lp best tour edge, ");
+    rval = 1; CMR_GOTO_CLEANUP("Out of memory for lp best tour edge, ");
   }
   
   for(int i = 0; i < ecount; i++)
@@ -418,7 +418,7 @@ int Core::basis_init(){
       m_graph.edge_lookup.find(IntPair(end0, end1));
     if(edge_it == m_graph.edge_lookup.end()){
       rval = 1;
-      PSEP_GOTO_CLEANUP("Couldn't find " << end0 << ", " << end1 << ", ");
+      CMR_GOTO_CLEANUP("Couldn't find " << end0 << ", " << end1 << ", ");
     }
 
     int edge_index = edge_it->second;
@@ -433,7 +433,7 @@ int Core::basis_init(){
       m_graph.edge_lookup.find(IntPair(end0, end1));
     if(edge_it == m_graph.edge_lookup.end()){
       rval = 1;
-      PSEP_GOTO_CLEANUP("Couldn't find " << end0 << ", " << end1 << ", ");
+      CMR_GOTO_CLEANUP("Couldn't find " << end0 << ", " << end1 << ", ");
     }
 
     //the discarded column, i_{n-1}, i_{n} is at upper
@@ -446,7 +446,7 @@ int Core::basis_init(){
     edge_it = m_graph.edge_lookup.find(IntPair(end0, end1));
     if(edge_it == m_graph.edge_lookup.end()){
       rval = 1;
-      PSEP_GOTO_CLEANUP("Couldn't find " << end0 << ", " << end1 << ", ");
+      CMR_GOTO_CLEANUP("Couldn't find " << end0 << ", " << end1 << ", ");
     }
 
     //the edge i_{1}, i_{n-1} is added
@@ -456,8 +456,8 @@ int Core::basis_init(){
 
   
 
-  //rval = PSEPlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
-  rval = PSEPlp_copystart(&m_lp, &old_colstat[0], &old_rowstat[0],
+  //rval = CMRlp_copybase(&m_lp, &old_colstat[0], &old_rowstat[0]);
+  rval = CMRlp_copystart(&m_lp, &old_colstat[0], &old_rowstat[0],
 			      &best_tour_edges_lp[0], NULL, NULL, NULL);
   if(rval) goto CLEANUP;
 
@@ -534,7 +534,7 @@ int Core::update_best_tour(){
     }
 
   rval = (objval > m_min_tour_value);
-  PSEP_CHECK_RVAL(rval, "New best tour is worse! Objval " << objval << "\n");
+  CMR_CHECK_RVAL(rval, "New best tour is worse! Objval " << objval << "\n");
 
   m_min_tour_value = objval;
 
@@ -543,7 +543,7 @@ int Core::update_best_tour(){
 
   old_rowstat.resize(numrows());
 
-  rval = PSEPlp_getbase(&m_lp, &old_colstat[0], &old_rowstat[0]);
+  rval = CMRlp_getbase(&m_lp, &old_colstat[0], &old_rowstat[0]);
   if(rval) goto CLEANUP;
 
   rval = is_best_tour_feas(newbest_feas);
@@ -578,7 +578,7 @@ int Core::update_best_tour(){
 int Core::pivot_until_change(PivType &pivot_status){
   int rval = 0;
   icount = 0;
-  int rowcount = PSEPlp_numrows(&m_lp);
+  int rowcount = CMRlp_numrows(&m_lp);
   bool integral = false, conn = false, dual_feas = false;
 
   double round_start = zeit();
@@ -590,7 +590,7 @@ int Core::pivot_until_change(PivType &pivot_status){
     if((dual_feas = is_dual_feas()))
       break;
 
-    rval = PSEPlp_getbase(&m_lp, &old_colstat[0], &old_rowstat[0]);
+    rval = CMRlp_getbase(&m_lp, &old_colstat[0], &old_rowstat[0]);
     if(rval) goto CLEANUP;
 
     rval = nondegenerate_pivot();
@@ -622,9 +622,9 @@ int Core::pivot_until_change(PivType &pivot_status){
     }
   } else{
     pivot_status = PivType::Frac;
-    frac_colstat.resize(PSEPlp_numcols(&m_lp));
+    frac_colstat.resize(CMRlp_numcols(&m_lp));
     frac_rowstat.resize(rowcount);
-    rval = PSEPlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
+    rval = CMRlp_getbase(&m_lp, &frac_colstat[0], &frac_rowstat[0]);
   }
 
  CLEANUP:

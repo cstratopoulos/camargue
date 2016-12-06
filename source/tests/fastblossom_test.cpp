@@ -13,7 +13,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-#ifdef PSEP_DO_TESTS
+#ifdef CMR_DO_TESTS
 
 SCENARIO("Primal blossom separation by fast standard heuristics",
 	 "[fast2m]"){
@@ -26,38 +26,38 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
 	blossomfile = "test_data/blossom_lp/" + fname + ".2m.x",
 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-      PSEP::Data::GraphGroup g_dat;
-      PSEP::Data::BestGroup b_dat;
-      PSEP::Data::SupportGroup s_dat;
+      CMR::Data::GraphGroup g_dat;
+      CMR::Data::BestGroup b_dat;
+      CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-      PSEP::Cut::LPcutIn cutq;
+      CMR::Cut::LPcutIn cutq;
 
       WHEN("The tour is good and blossoms exit"){
 	THEN("Primal blossoms are found"){
-	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
+	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
 	
-	  PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
 	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 	  REQUIRE(fb_sep.find_cuts());
 	}
       }
       AND_WHEN("The tour is good but the solution is in the blossom polytope"){
       	THEN("No primal blossoms are found"){
-	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
+	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						  blossomfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
-	  PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
 	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 
 	  REQUIRE_FALSE(fb_sep.find_cuts());
       	}	
@@ -77,39 +77,39 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
 	badsolfile = "test_data/tours/" + fname + ".bad.sol",
 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-      PSEP::Data::GraphGroup g_dat;
-      PSEP::Data::BestGroup b_dat;
-      PSEP::Data::SupportGroup s_dat;
+      CMR::Data::GraphGroup g_dat;
+      CMR::Data::BestGroup b_dat;
+      CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-      PSEP::Cut::LPcutIn cutq;
+      CMR::Cut::LPcutIn cutq;
 
       WHEN("The tour is good"){
 	THEN("Primal blossoms are found"){
-	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
+	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
-	  PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
 	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 	  REQUIRE(fb_sep.find_cuts());
 	}
       }
 
       AND_WHEN("The tour is bad"){
 	THEN("No primal blossoms are found"){
-	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, badsolfile,
+	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, badsolfile,
 						  subtourfile,
 						  g_dat, b_dat, lp_edges,
 						  s_dat));
 
-	  PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
 	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 
 	  REQUIRE_FALSE(fb_sep.find_cuts());
 	}
@@ -120,10 +120,10 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
 
 SCENARIO("Black box testing of tiny fast blossoms",
 	  "[.fast2m][.tiny]"){
-  PSEP::Cut::LPcutIn wrap;
-  PSEP::Data::GraphGroup g_dat;
-  PSEP::Data::BestGroup b_dat;
-  PSEP::Data::SupportGroup s_dat;
+  CMR::Cut::LPcutIn wrap;
+  CMR::Data::GraphGroup g_dat;
+  CMR::Data::BestGroup b_dat;
+  CMR::Data::SupportGroup s_dat;
   std::vector<double> lp_edges;
   
   vector<string> probs{"blossom6", "comb9"};
@@ -136,12 +136,12 @@ SCENARIO("Black box testing of tiny fast blossoms",
 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
       WHEN("The tour is good"){
-	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
+	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
 
-	PSEP::TourGraph TG(b_dat.best_tour_edges,
+	CMR::TourGraph TG(b_dat.best_tour_edges,
 			   g_dat.m_graph.edges,
 			   b_dat.perm);
 	for(int &i : s_dat.support_elist) i = b_dat.perm[i];
@@ -170,12 +170,12 @@ SCENARIO("Black box testing of tiny fast blossoms",
       }
 
       AND_WHEN("The tour is bad"){
-	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, badsolfile,
+	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, badsolfile,
 						subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
 
-	PSEP::TourGraph TG(b_dat.best_tour_edges,
+	CMR::TourGraph TG(b_dat.best_tour_edges,
 			   g_dat.m_graph.edges,
 			   b_dat.perm);
 	for(int &i : s_dat.support_elist) i = b_dat.perm[i];

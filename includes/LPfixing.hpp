@@ -1,20 +1,20 @@
-#ifndef PSEP_LP_FIXING_H
-#define PSEP_LP_FIXING_H
+#ifndef CMR_LP_FIXING_H
+#define CMR_LP_FIXING_H
 
 #include<vector>
 
 #include "lp.hpp"
 #include "datagroups.hpp"
 #include "Graph.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
-namespace PSEP {
+namespace CMR {
   namespace LP {
 class EdgeFix {
  public:
- EdgeFix(PSEP::Data::BestGroup &BestGroup,
-	    PSEP::Data::GraphGroup &GraphGroup,
-	    PSEP::Data::LPGroup &LPGroup) :
+ EdgeFix(CMR::Data::BestGroup &BestGroup,
+	    CMR::Data::GraphGroup &GraphGroup,
+	    CMR::Data::LPGroup &LPGroup) :
   m_min_tour_value(BestGroup.min_tour_value),
     best_tour_edges(BestGroup.best_tour_edges),
     m_graph(GraphGroup.m_graph), edges(GraphGroup.m_graph.edges),
@@ -43,7 +43,7 @@ class EdgeFix {
   IntPairMap &edge_lookup;
   std::vector<int> &delta;
 
-  PSEPlp &m_lp;
+  CMRlp &m_lp;
   std::vector<double> &m_lp_edges;
 
   std::vector<int> edge_delset;

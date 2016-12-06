@@ -1,5 +1,5 @@
 #include "segments.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
 #include<iostream>
 
@@ -11,7 +11,7 @@ using std::vector;
 using std::cout;
 using std::cerr;
 
-namespace PSEP {
+namespace CMR {
 
 int Cut<seg>::linsub_callback(double cut_val, int cut_start, int cut_end,
 			      void *cb_data)
@@ -37,7 +37,7 @@ int Cut<seg>::separate()
   vector<int> cut_elist;
 
   try { cut_elist.resize(support_elist.size()); } catch(std::bad_alloc &) {
-    PSEP_SET_GOTO(rval, "Out of space for cut elist. ");
+    CMR_SET_GOTO(rval, "Out of space for cut elist. ");
   }
 
   for(int i = 0; i < cut_elist.size(); i++)
@@ -46,13 +46,13 @@ int Cut<seg>::separate()
 
   try { endmark = vector<int>(G_s.node_count, CC_LINSUB_BOTH_END); }
   catch(...){
-    rval = 1; PSEP_GOTO_CLEANUP("Couldn't allocate endmark. ");
+    rval = 1; CMR_GOTO_CLEANUP("Couldn't allocate endmark. ");
   }
 
   rval = CCcut_linsub(G_s.node_count, G_s.edge_count, &endmark[0],
 		      &cut_elist[0], &support_ecap[0], 2.0 - Epsilon::Cut,
 		      (void *) this, linsub_callback);
-  PSEP_CHECK_RVAL(rval, "CCcut_linsub failed. ");
+  CMR_CHECK_RVAL(rval, "CCcut_linsub failed. ");
 
   if(local_q.empty())
     rval = 2;
@@ -72,7 +72,7 @@ int Cut<seg>::build_hypergraph(const seg& seg_cut){
     HyperGraph newcut(IntPair(seg_cut.start, seg_cut.end));
     external_q.push_back(newcut);
     } catch (...) {
-      rval = 1; PSEP_GOTO_CLEANUP("Problem adding hypergraph to queue, ");
+      rval = 1; CMR_GOTO_CLEANUP("Problem adding hypergraph to queue, ");
     }
   } else {
     vector<vector<int>> segment_nodes;
@@ -84,7 +84,7 @@ int Cut<seg>::build_hypergraph(const seg& seg_cut){
       HyperGraph newcut(segment_nodes, HyperGraph::CutType::Segment);
       external_q.push_back(newcut);
     } catch (...){
-      rval = 1; PSEP_GOTO_CLEANUP("Problem adding hypergraph to queue, ");
+      rval = 1; CMR_GOTO_CLEANUP("Problem adding hypergraph to queue, ");
     }
   }
 

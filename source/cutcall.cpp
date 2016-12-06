@@ -1,6 +1,6 @@
 #include "cutcall.hpp"
 #include "DPgraph.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
 #include <iomanip>
 #include <algorithm>
@@ -14,7 +14,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-namespace PSEP {
+namespace CMR {
 
 int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
 {
@@ -61,9 +61,9 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
     if(in_sub){
       dptime.resume();
       try {
-	dominos = PSEP::make_unique<Cut<dominoparity>>(graph_data,best_data,
+	dominos = CMR::make_unique<Cut<dominoparity>>(graph_data,best_data,
 						       supp_data, domino_q);
-      } catch(...){ PSEP_SET_GOTO(rval, "Couldn't allocate dominos. "); }
+      } catch(...){ CMR_SET_GOTO(rval, "Couldn't allocate dominos. "); }
 
       dpval = dominos->cutcall();
       if(dpval == 1){ rval = 1; goto CLEANUP; }
@@ -122,7 +122,7 @@ int CutControl::add_primal_cuts()
   int rmatbeg = 0;
 
   LP::Prefs &prefs = LP_data.prefs;
-  PSEPlp *m_lp = &LP_data.m_lp;
+  CMRlp *m_lp = &LP_data.m_lp;
   vector<double> &m_lp_edges = LP_data.m_lp_edges;
 
   while(!segment_q.empty() && seg_added < prefs.max_per_round){
@@ -130,7 +130,7 @@ int CutControl::add_primal_cuts()
 				     rmatind, rmatval, sense, rhs);
     if(rval) goto CLEANUP;
 
-    rval = PSEPlp_addrows(m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
+    rval = CMRlp_addrows(m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
 			  &rmatind[0], &rmatval[0]);
     if(rval) goto CLEANUP;
 
@@ -144,7 +144,7 @@ int CutControl::add_primal_cuts()
 				       rmatind, rmatval, sense, rhs);
       if(rval) goto CLEANUP;
 
-      rval = PSEPlp_addrows(m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
+      rval = CMRlp_addrows(m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
 			    &rmatind[0], &rmatval[0]);
       if(rval) goto CLEANUP;
 
@@ -160,7 +160,7 @@ int CutControl::add_primal_cuts()
       if(rval) goto CLEANUP;
 
       if(is_violated){
-	rval = PSEPlp_addrows(m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
+	rval = CMRlp_addrows(m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
 			      &rmatind[0], &rmatval[0]);
 	if(rval) goto CLEANUP;
 
@@ -183,7 +183,7 @@ int CutControl::add_primal_cuts()
 			    rmatind, rmatval);
 
     if(tour_activity == rhs){
-      rval = PSEPlp_addrows(m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
+      rval = CMRlp_addrows(m_lp, 1, rmatind.size(), &rhs, &sense, &rmatbeg,
 			    &rmatind[0], &rmatval[0]);
       if(rval) goto CLEANUP;
       

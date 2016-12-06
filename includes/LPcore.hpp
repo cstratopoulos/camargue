@@ -1,26 +1,26 @@
-#ifndef PSEP_LPWORK_H
-#define PSEP_LPWORK_H
+#ifndef CMR_LPWORK_H
+#define CMR_LPWORK_H
 
 #include<iostream>
 
 #include "lp.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 #include "Graph.hpp"
 #include "datagroups.hpp"
 #include "LPprune.hpp"
 
-namespace PSEP {
+namespace CMR {
   class PureCut;
   class CutControl;
 }
 
-namespace PSEP {
+namespace CMR {
   namespace LP {
     class Core {
     public:
     Core(Data::LPGroup &LPGroup, Data::GraphGroup &GraphGroup,
 	 Data::SupportGroup &SupportGroup, Data::BestGroup &BestGroup,
-	 PSEP::LP::CutPrune &_LPPrune, PSEP::OutPrefs &_outprefs) :
+	 CMR::LP::CutPrune &_LPPrune, CMR::OutPrefs &_outprefs) :
       LPPrune(_LPPrune),
       m_lp(LPGroup.m_lp), m_graph(GraphGroup.m_graph), prefs(LPGroup.prefs),
       outprefs(_outprefs),
@@ -59,7 +59,7 @@ namespace PSEP {
 			std::vector<int> &delset);
       int basis_init();
   
-      int pivot_until_change(PSEP::LP::PivType &pivot_status);
+      int pivot_until_change(CMR::LP::PivType &pivot_status);
 
 
       double get_obj_val();
@@ -69,24 +69,24 @@ namespace PSEP {
       int update_best_tour();
       bool test_new_tour();
 
-      int numrows(){ return PSEPlp_numrows(&m_lp); }
-      int numcols(){ return PSEPlp_numcols(&m_lp); }
+      int numrows(){ return CMRlp_numrows(&m_lp); }
+      int numcols(){ return CMRlp_numcols(&m_lp); }
 
       void change_pricing();
 
     private:
       int dual_pivot();
       
-      PSEP::LP::CutPrune &LPPrune;
-      PSEPlp &m_lp;
+      CMR::LP::CutPrune &LPPrune;
+      CMRlp &m_lp;
       Graph &m_graph;
 
-      PSEP::LP::Prefs prefs;
-      PSEP::OutPrefs &outprefs;
+      CMR::LP::Prefs prefs;
+      CMR::OutPrefs &outprefs;
 
       friend class TSP_Solver;
-      friend class PSEP::PureCut;
-      friend class PSEP::CutControl;
+      friend class CMR::PureCut;
+      friend class CMR::CutControl;
       std::vector<int> &old_colstat;
       std::vector<int> &old_rowstat;
       std::vector<int> &frac_colstat;

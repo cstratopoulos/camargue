@@ -2,12 +2,12 @@
 
 #include "tsp_solver.hpp"
 #include "lp.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
 using std::vector;
 using std::unique_ptr;
 
-namespace PSEP {
+namespace CMR {
 
 TSPSolver::TSPSolver(const std::string &fname, RandProb &randprob,
 		     OutPrefs _outprefs, LP::Prefs _prefs,
@@ -20,7 +20,7 @@ TSPSolver::TSPSolver(const std::string &fname, RandProb &randprob,
   BestGroup(GraphGroup.m_graph, GraphGroup.delta, dat, outprefs.probname,
 	    randprob.seed, outprefs.save_tour, outprefs.save_tour_edges),
   LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm),
-  PureCut(PSEP::make_unique<PSEP::PureCut>(GraphGroup, BestGroup, LPGroup,
+  PureCut(CMR::make_unique<CMR::PureCut>(GraphGroup, BestGroup, LPGroup,
 					   SupportGroup, outprefs))
 {
 }
@@ -30,10 +30,10 @@ catch (...) {
  }
 
 //ugly temporary workaround, should fix later
-static PSEP::RandProb dummy;
+static CMR::RandProb dummy;
 
 TSPSolver::TSPSolver(const std::string &fname, const std::string &tourname,
-		     PSEP::OutPrefs _outprefs, PSEP::LP::Prefs _prefs,
+		     CMR::OutPrefs _outprefs, CMR::LP::Prefs _prefs,
 		     std::unique_ptr<CCdatagroup> &dat,
 		     const bool sparse, const int quadnearest) try :
   outprefs(_outprefs),
@@ -42,7 +42,7 @@ TSPSolver::TSPSolver(const std::string &fname, const std::string &tourname,
   BestGroup(tourname, GraphGroup.m_graph, GraphGroup.delta, dat,
 	    outprefs.probname, outprefs.save_tour, outprefs.save_tour_edges),
   LPGroup(GraphGroup.m_graph, _prefs, BestGroup.perm),
-  PureCut(PSEP::make_unique<PSEP::PureCut>(GraphGroup, BestGroup, LPGroup,
+  PureCut(CMR::make_unique<CMR::PureCut>(GraphGroup, BestGroup, LPGroup,
 					   SupportGroup, outprefs))
 {
 }
@@ -84,15 +84,15 @@ int TSPSolver::call(SolutionProtocol solmeth, const bool sparse){
     std::vector<double> lower_bounds;
     try{ lower_bounds.resize(ecount); }
     catch(const std::bad_alloc &) {
-      rval = 1; PSEP_GOTO_CLEANUP("Couldn't allocate lower bounds, ");
+      rval = 1; CMR_GOTO_CLEANUP("Couldn't allocate lower bounds, ");
     }
 
-    if(PSEPlp_getlb(&(LPGroup.m_lp), &lower_bounds[0], 0, ecount - 1)){
+    if(CMRlp_getlb(&(LPGroup.m_lp), &lower_bounds[0], 0, ecount - 1)){
       std::cerr << "TSPSolver.call(ABC) failed to get lower bounds\n";
       return 1;
     }
 
-    ABC.reset(new PSEP::ABC(BB::BranchPlan::Main,
+    ABC.reset(new CMR::ABC(BB::BranchPlan::Main,
 			    GraphGroup, BestGroup, LPGroup, SupportGroup,
 			    lower_bounds, *PureCut));
 

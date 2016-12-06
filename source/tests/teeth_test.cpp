@@ -22,13 +22,13 @@ using std::vector;
 using std::string;
 using std::pair;
 
-#ifdef PSEP_DO_TESTS
+#ifdef CMR_DO_TESTS
 
 static int dump_segment(double cut_val, int cut_start, int cut_end,
 			void *u_data)
 {
-  vector<PSEP::tooth_seg> *vec = (vector<PSEP::tooth_seg> *) u_data;
-  vec->emplace_back(PSEP::tooth_seg(cut_start, cut_end, cut_val));
+  vector<CMR::tooth_seg> *vec = (vector<CMR::tooth_seg> *) u_data;
+  vec->emplace_back(CMR::tooth_seg(cut_start, cut_end, cut_val));
 
   return 0;
 }
@@ -53,12 +53,12 @@ TEST_CASE("New tiny candidate teeth with no elim",
 	probfile = "problems/" + fname + ".tsp",
 	solfile = "test_data/tours/" + fname + ".sol",
 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-      PSEP::Data::GraphGroup g_dat;
-      PSEP::Data::BestGroup b_dat;
-      PSEP::Data::SupportGroup s_dat;
+      CMR::Data::GraphGroup g_dat;
+      CMR::Data::BestGroup b_dat;
+      CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
 	
-      REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+      REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile, subtourfile,
 					      g_dat, b_dat, lp_edges,
 					      s_dat));
       int ncount = s_dat.G_s.node_count;
@@ -68,31 +68,31 @@ TEST_CASE("New tiny candidate teeth with no elim",
       cout << "\n";
       
 
-      PSEP::CandidateTeeth cands(g_dat, b_dat, s_dat);
+      CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);
       REQUIRE_FALSE(cands.get_light_teeth());
       
       int numfound = 0;
 
       cout << "\tLEFT ADJACENT TEETH\n";
-      for(vector<PSEP::SimpleTooth::Ptr> &vec : cands.left_teeth){
+      for(vector<CMR::SimpleTooth::Ptr> &vec : cands.left_teeth){
 	numfound += vec.size();
-	for(const PSEP::SimpleTooth::Ptr &T : vec){
+	for(const CMR::SimpleTooth::Ptr &T : vec){
 	  cands.print_tooth(*T, ncount < 20);
 	}
       }
 
       cout << "\tRIGHT ADJACENT TEETH\n";
-      for(vector<PSEP::SimpleTooth::Ptr> &vec : cands.right_teeth){
+      for(vector<CMR::SimpleTooth::Ptr> &vec : cands.right_teeth){
 	numfound += vec.size();
-	for(const PSEP::SimpleTooth::Ptr &T : vec){
+	for(const CMR::SimpleTooth::Ptr &T : vec){
 	  cands.print_tooth(*T, ncount < 20);
 	}
       }
 
       cout << "\tDISTANT TEETH\n";
-      for(vector<PSEP::SimpleTooth::Ptr> &vec : cands.dist_teeth){
+      for(vector<CMR::SimpleTooth::Ptr> &vec : cands.dist_teeth){
 	numfound += vec.size();
-	for(const PSEP::SimpleTooth::Ptr &T : vec){
+	for(const CMR::SimpleTooth::Ptr &T : vec){
 	  cands.print_tooth(*T, ncount < 20);
 	}
       }
@@ -133,17 +133,17 @@ TEST_CASE("New candidate teeth with elim",
 	probfile = "problems/" + fname + ".tsp",
 	solfile = "test_data/tours/" + fname + ".sol",
 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-      PSEP::Data::GraphGroup g_dat;
-      PSEP::Data::BestGroup b_dat;
-      PSEP::Data::SupportGroup s_dat;
+      CMR::Data::GraphGroup g_dat;
+      CMR::Data::BestGroup b_dat;
+      CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
 	
-      REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+      REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile, subtourfile,
 					      g_dat, b_dat, lp_edges,
 					      s_dat));
       int ncount = s_dat.G_s.node_count;
 
-      PSEP::CandidateTeeth cands(g_dat, b_dat, s_dat);
+      CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);
 
       cout << "Did adj zones preprocessing.\n";
       
@@ -180,7 +180,7 @@ TEST_CASE("New candidate teeth with elim",
 
       int s_count = 0;
       for(auto &stat : cands.stats)
-	if(stat == PSEP::ListStat::Full)
+	if(stat == CMR::ListStat::Full)
 	  ++s_count;
       cout << "Did " << s_count << " full sorts ("
 	   << (ncount - s_count) << " untouched!)\n";
@@ -201,17 +201,17 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
 	probfile = "problems/" + fname + ".tsp",
 	solfile = "test_data/tours/" + fname + ".sol",
 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-      PSEP::Data::GraphGroup g_dat;
-      PSEP::Data::BestGroup b_dat;
-      PSEP::Data::SupportGroup s_dat;
+      CMR::Data::GraphGroup g_dat;
+      CMR::Data::BestGroup b_dat;
+      CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
 	
-      REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+      REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile, subtourfile,
 					      g_dat, b_dat, lp_edges,
 					      s_dat));
-      PSEP::SupportGraph &G_s = s_dat.G_s;
+      CMR::SupportGraph &G_s = s_dat.G_s;
       int max_deg = 0;
-      PSEP::CandidateTeeth cands(g_dat, b_dat, s_dat);
+      CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);
       int ncount = g_dat.m_graph.node_count;
 
       if(ncount <= 20){
@@ -241,7 +241,7 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
 	}
       }
 
-      vector<PSEP::tooth_seg> seg_vec;
+      vector<CMR::tooth_seg> seg_vec;
       vector<int> &tour = b_dat.best_tour_nodes;
       vector<int> &perm = b_dat.perm;
       vector<int> endmark(ncount, CC_LINSUB_BOTH_END);
@@ -257,7 +257,7 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
       vector<vector<int>> &zones = cands.adj_zones;
       for(auto s1 = seg_vec.begin(); s1 != seg_vec.end() - 1; ++s1){
 	for(auto s2 = s1 + 1; s2 != seg_vec.end(); ++s2){
-	  PSEP::tooth_seg seg1 = *s1, seg2 = *s2;
+	  CMR::tooth_seg seg1 = *s1, seg2 = *s2;
 	  
 	  int min_start = fmin(seg1.start, seg2.start);
 	  int max_end = fmin(seg1.end, seg2.end);
@@ -268,7 +268,7 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
 	    bool zone_equiv = cands.root_equivalent(root, seg1, seg2);
 	    bool brute_equiv = true;
 	    int actual_vx = tour[root];
-	    PSEP::SNode vx = G_s.nodelist[actual_vx];
+	    CMR::SNode vx = G_s.nodelist[actual_vx];
 
 	    int d = 0, end1 = -1;
 	    for(d = 0; d < vx.s_degree; ++d){
@@ -321,17 +321,17 @@ TEST_CASE("Linsub teeth one root at a time",
 	probfile = "problems/" + fname + ".tsp",
 	solfile = "test_data/tours/" + fname + ".sol",
 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-      PSEP::Data::GraphGroup g_dat;
-      PSEP::Data::BestGroup b_dat;
-      PSEP::Data::SupportGroup s_dat;
+      CMR::Data::GraphGroup g_dat;
+      CMR::Data::BestGroup b_dat;
+      CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
 	
-      REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+      REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile, subtourfile,
 					      g_dat, b_dat, lp_edges,
 					      s_dat));
-      PSEP::SupportGraph &G_s = s_dat.G_s;
+      CMR::SupportGraph &G_s = s_dat.G_s;
       int max_deg = 0;
-      PSEP::CandidateTeeth cands(g_dat, b_dat, s_dat);
+      CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);
       int ncount = g_dat.m_graph.node_count;
 
       if(ncount <= 20){
@@ -344,7 +344,7 @@ TEST_CASE("Linsub teeth one root at a time",
 	cout << "\n";
       }
 
-      vector<PSEP::tooth_seg> seg_vec;
+      vector<CMR::tooth_seg> seg_vec;
       vector<int> &tour = b_dat.best_tour_nodes;
       vector<int> &perm = b_dat.perm;
       vector<int> endmark(ncount, CC_LINSUB_BOTH_END);

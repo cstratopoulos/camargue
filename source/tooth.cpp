@@ -21,7 +21,7 @@ using std::pair;
 using std::unique_ptr;
 using std::inplace_merge;
 
-namespace PSEP {
+namespace CMR {
 
 static inline bool ptr_cmp(const SimpleTooth::Ptr &S, const SimpleTooth::Ptr &T)
 { return S->body_size() < T->body_size(); }
@@ -63,7 +63,7 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
   vector<int> &perm = best_dat.perm;
   vector<int> &tour = best_dat.best_tour_nodes;
 
-#ifndef PSEP_DO_TESTS
+#ifndef CMR_DO_TESTS
   #pragma omp parallel for
 #endif
   for(int root_ind = 0; root_ind < ncount; ++root_ind){
@@ -96,11 +96,11 @@ int CandidateTeeth::get_light_teeth()
   unique_ptr<LinsubCBData> cb_data;
   try {
     cb_data =
-      PSEP::make_unique<LinsubCBData>(right_teeth,left_teeth, dist_teeth,
+      CMR::make_unique<LinsubCBData>(right_teeth,left_teeth, dist_teeth,
 				      adj_zones, graph_dat.edge_marks,
 				      best_dat.best_tour_nodes,
 				      best_dat.perm, supp_dat.G_s); }
-  catch(...){ PSEP_SET_GOTO(rval, "Couldn't allocate CBdata. "); }
+  catch(...){ CMR_SET_GOTO(rval, "Couldn't allocate CBdata. "); }
 
   rval = CCcut_linsub_allcuts(supp_dat.G_s.node_count, supp_dat.G_s.edge_count,
 			      &best_dat.best_tour_nodes[0], &endmark[0],
@@ -122,7 +122,7 @@ int CandidateTeeth::merge_and_sort()
   t_sort.start();
   int rval = 0;
 
-#ifndef PSEP_DO_TESTS
+#ifndef CMR_DO_TESTS
   #pragma omp parallel for
 #endif
   for(int root = 0; root < light_teeth.size(); ++root){
@@ -227,7 +227,7 @@ void CandidateTeeth::complement_elim()
 		 dist.end());
   }
 
-#ifndef PSEP_DO_TESTS
+#ifndef CMR_DO_TESTS
   #pragma omp parallel for
 #endif
   for(root = 1; root < ncount - 1; ++root){
@@ -266,7 +266,7 @@ void CandidateTeeth::complement_elim()
 void CandidateTeeth::unmerged_weak_elim()
 {
   t_elim.start();
-#ifndef PSEP_DO_TESTS
+#ifndef CMR_DO_TESTS
   #pragma omp parallel for
 #endif
   for(int root = 0; root < light_teeth.size(); ++root){
@@ -463,7 +463,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
 
       try {
 	add_tooth(teeth, zones, root, cut_start, cut_end, new_slack);
-      } catch(...){ PSEP_SET_GOTO(rval, "Couldn't push back dist tooth. "); }
+      } catch(...){ CMR_SET_GOTO(rval, "Couldn't push back dist tooth. "); }
     }
   }
 
@@ -490,12 +490,12 @@ inline void CandidateTeeth::add_tooth(vector<SimpleTooth::Ptr> &teeth,
     if(CandidateTeeth::root_equivalent(root, body, old_body, zones)){
       elim = true;
       if(slack < old_slack)
-	teeth.back() = PSEP::make_unique<SimpleTooth>(root, body, slack);
+	teeth.back() = CMR::make_unique<SimpleTooth>(root, body, slack);
     }
   }
 
   if(!elim)
-    teeth.emplace_back(PSEP::make_unique<SimpleTooth>(root, body, slack));
+    teeth.emplace_back(CMR::make_unique<SimpleTooth>(root, body, slack));
 }
 
 string CandidateTeeth::print_label(const SimpleTooth &T)

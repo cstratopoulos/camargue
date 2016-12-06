@@ -23,18 +23,18 @@ using std::unique_ptr;
 using std::string;
 using std::pair;
 
-#ifdef PSEP_DO_TESTS
+#ifdef CMR_DO_TESTS
 
 SCENARIO("Karp partition constructor tests",
 	 "[.karp][valgrind]"){
-  PSEP::Data::GraphGroup g_dat;
-  PSEP::Data::BestGroup b_dat;
-  PSEP::Data::SupportGroup s_dat;
+  CMR::Data::GraphGroup g_dat;
+  CMR::Data::BestGroup b_dat;
+  CMR::Data::SupportGroup s_dat;
   vector<double> lp_edges;
-  unique_ptr<PSEP::Data::Instance> inst;
-  PSEP::Data::KarpPartition kpart;
+  unique_ptr<CMR::Data::Instance> inst;
+  CMR::Data::KarpPartition kpart;
 
-  REQUIRE_NOTHROW(PSEP::Data::make_cut_test("problems/st70.tsp",
+  REQUIRE_NOTHROW(CMR::Data::make_cut_test("problems/st70.tsp",
 					    "test_data/tours/st70.sol",
 					    "test_data/subtour_lp/st70.sub.x",
 					    g_dat, b_dat, lp_edges, s_dat,
@@ -60,28 +60,28 @@ SCENARIO("Karp partition cutgraph tests",
       probfile = "problems/" + fname + ".tsp",
       solfile = "test_data/tours/" + fname + ".sol",
       subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-    PSEP::Data::GraphGroup g_dat;
-    PSEP::Data::BestGroup b_dat;
-    PSEP::Data::SupportGroup s_dat;
+    CMR::Data::GraphGroup g_dat;
+    CMR::Data::BestGroup b_dat;
+    CMR::Data::SupportGroup s_dat;
     vector<double> lp_edges;
-    unique_ptr<PSEP::Data::Instance> inst;
-    PSEP::Data::KarpPartition kpart;
+    unique_ptr<CMR::Data::Instance> inst;
+    CMR::Data::KarpPartition kpart;
 
     GIVEN("The TSPLIB instance " + fname){
       WHEN("The problem is loaded and we have the Instance"){
 	THEN("We can get a Karp partition of the data"){
-	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
+	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						    subtourfile, g_dat, b_dat,
 						    lp_edges, s_dat, inst));
 	  int partcount = 0;
 	  int ncount = g_dat.m_graph.node_count;
 	  
-	  REQUIRE_NOTHROW(kpart = PSEP::Data::KarpPartition(ncount,
+	  REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(ncount,
 							    inst->ptr(), 99));
 
 
 	  
-	  PSEP::CandidateTeeth cands(g_dat, b_dat, s_dat);
+	  CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);
 	      
 	  REQUIRE_FALSE(cands.get_light_teeth());
 	  cands.unmerged_weak_elim();
@@ -115,14 +115,14 @@ SCENARIO("Karp partition cutgraph tests",
 	      cout << "Number of teeth after cropping: "
 		   << cropped_sz << "\n\n";
 
-	      PSEP::DPCutGraph dp_graph(cands);
-	      PSEP::CutQueue<PSEP::dominoparity> dp_q(250);
-	      PSEP::CutTranslate translator(g_dat);
+	      CMR::DPCutGraph dp_graph(cands);
+	      CMR::CutQueue<CMR::dominoparity> dp_q(250);
+	      CMR::CutTranslate translator(g_dat);
 	      
 	      THEN("We can look for DP cuts in a smaller graph"){
-		double ft = PSEP::zeit();
+		double ft = CMR::zeit();
 		REQUIRE(dp_graph.simple_DP_sep(dp_q) != 1);
-		ft = PSEP::zeit() - ft;
+		ft = CMR::zeit() - ft;
 		int num_found = dp_q.size();
 		int num_tight = 0, num_viol = 0;
 		while(!dp_q.empty()){
@@ -131,7 +131,7 @@ SCENARIO("Karp partition cutgraph tests",
 		  char sense;
 		  double rhs;
 	  
-		  const PSEP::dominoparity &dp_cut = dp_q.peek_front();
+		  const CMR::dominoparity &dp_cut = dp_q.peek_front();
 		  vector<int> &bt = b_dat.best_tour_nodes;
 		  double tour_activity, lp_activity;
 
@@ -173,11 +173,11 @@ TEST_CASE ("simple DP cutgraph tests", "[cutgraph]") {
       SECTION(fname){
 
 	
-	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
+	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 	
-	PSEP::CandidateTeeth cands(g_dat.delta, g_dat.edge_marks,
+	CMR::CandidateTeeth cands(g_dat.delta, g_dat.edge_marks,
 				   b_dat.best_tour_nodes, b_dat.perm,
 				   s_dat.G_s, s_dat.support_elist,
 				   s_dat.support_ecap);
@@ -194,4 +194,4 @@ TEST_CASE ("simple DP cutgraph tests", "[cutgraph]") {
 }
 */
 
-#endif //PSEP_DO_TESTS
+#endif //CMR_DO_TESTS

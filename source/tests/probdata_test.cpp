@@ -18,7 +18,7 @@ using std::string;
 using std::to_string;
 using std::pair;
 
-#ifdef PSEP_DO_TESTS
+#ifdef CMR_DO_TESTS
 
 using probpair = pair<string, int>;
 using randpair = pair<int, int>;
@@ -28,7 +28,7 @@ SCENARIO("Instance constructors throw when they fail",
   GIVEN("An input filename that doesn't exist"){
     THEN("The Instance TSPLIB constructor should throw"){
       int ncount = 0;
-      REQUIRE_NOTHROW(PSEP::Data::Instance inst("dksaljfkla", ncount));
+      REQUIRE_NOTHROW(CMR::Data::Instance inst("dksaljfkla", ncount));
     }
   }
 
@@ -37,12 +37,12 @@ SCENARIO("Instance constructors throw when they fail",
     WHEN("Node count is zero"){
       ncount = 0;
       THEN("The Instance constructor should throw"){
-	REQUIRE_NOTHROW(PSEP::Data::Instance inst(seed, ncount, gridsize));
+	REQUIRE_NOTHROW(CMR::Data::Instance inst(seed, ncount, gridsize));
       }
       AND_WHEN("Gridsize is zero"){
 	gridsize = 0;
 	THEN("The Instance constructor should throw"){
-	  REQUIRE_NOTHROW(PSEP::Data::Instance inst(seed, ncount, gridsize));
+	  REQUIRE_NOTHROW(CMR::Data::Instance inst(seed, ncount, gridsize));
 	}
       }
     }
@@ -61,11 +61,11 @@ SCENARIO("Instance constructors initialize data as expected",
     GIVEN("The TSPLIB instance " + pname){
       THEN("Instance constructor works and gets " +
 	   to_string(expect_ncount) + " nodes"){
-	std::unique_ptr<PSEP::Data::Instance> inst;
+	std::unique_ptr<CMR::Data::Instance> inst;
 	int ncount;
 
 	REQUIRE_NOTHROW(inst =
-			PSEP::make_unique<PSEP::Data::Instance>(pfile,
+			CMR::make_unique<CMR::Data::Instance>(pfile,
 								ncount));
 	REQUIRE(ncount == expect_ncount);
       }
@@ -78,11 +78,11 @@ SCENARIO("Instance constructors initialize data as expected",
     GIVEN("A " + to_string(prob.first) + " node instance on a " +
 	  to_string(prob.second) + " squared grid"){
       THEN("The Instance constructor works"){
-	std::unique_ptr<PSEP::Data::Instance> inst;
+	std::unique_ptr<CMR::Data::Instance> inst;
 	int ncount = prob.first;
 	int gsize = prob.second;
 	REQUIRE_NOTHROW(inst =
-			PSEP::make_unique<PSEP::Data::Instance>(99,
+			CMR::make_unique<CMR::Data::Instance>(99,
 							       ncount,
 							       gsize));
       }
@@ -92,19 +92,19 @@ SCENARIO("Instance constructors initialize data as expected",
 
 SCENARIO("Instance constructors copy and move as expected with no leaking",
 	 "[Data][Instance][valgrind]"){
-  //PSEP::Data::Instance instcpy = inst; compiler error, copy construction!
+  //CMR::Data::Instance instcpy = inst; compiler error, copy construction!
   
   GIVEN("A normally constructed instance"){
-    PSEP::Data::Instance inst(99, 100, 1000);
+    CMR::Data::Instance inst(99, 100, 1000);
     THEN("We can make a reference of it"){
-      REQUIRE_NOTHROW(PSEP::Data::Instance &instref = inst);
+      REQUIRE_NOTHROW(CMR::Data::Instance &instref = inst);
     }
   }
 
   GIVEN("Another normally constructed instance"){
-    PSEP::Data::Instance inst(99, 1000, 1000000);
+    CMR::Data::Instance inst(99, 1000, 1000000);
     THEN("We can move construct it, transferring ownership"){
-      REQUIRE_NOTHROW(PSEP::Data::Instance intmv = std::move(inst));
+      REQUIRE_NOTHROW(CMR::Data::Instance intmv = std::move(inst));
     }
   }
 }

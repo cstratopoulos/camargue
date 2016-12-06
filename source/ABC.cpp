@@ -1,8 +1,8 @@
 #include "ABC.hpp"
 
 using namespace std;
-using namespace PSEP;
-using namespace PSEP::BB;
+using namespace CMR;
+using namespace CMR::BB;
 
 int ABC::solve(){
   int rval = 0;

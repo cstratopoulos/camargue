@@ -1,6 +1,6 @@
 #include "datagroups.hpp"
 #include "graph_io.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 #include "Graph.hpp"
 
 #include <iostream>
@@ -27,7 +27,7 @@ using std::runtime_error;
 using std::logic_error;
 using std::exception;
 
-namespace PSEP {
+namespace CMR {
 
 void Data::make_cut_test(const string &tsp_fname,
 			 const string &tour_nodes_fname,
@@ -54,7 +54,7 @@ void Data::make_cut_test(const string &tsp_fname,
     throw logic_error("Passed non-null Instance ptr to make_cut_test.");
 
   try {
-    inst_p = PSEP::make_unique<Data::Instance>(tsp_fname, ncount);
+    inst_p = CMR::make_unique<Data::Instance>(tsp_fname, ncount);
   } catch(const exception &e){
     cerr << e.what() << "\n";
     throw err;

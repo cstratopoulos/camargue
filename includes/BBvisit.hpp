@@ -1,5 +1,5 @@
-#ifndef PSEP_BBVISIT_H
-#define PSEP_BBVISIT_H
+#ifndef CMR_BBVISIT_H
+#define CMR_BBVISIT_H
 
 #include <memory>
 
@@ -10,11 +10,11 @@
 #include "BButils.hpp"
 #include "BBconstraints.hpp"
 
-namespace PSEP {
+namespace CMR {
   namespace BB {
     class Visitor {
     public:
-      Visitor(PSEP::PureCut & _PureCut, PSEP::BB::Constraints &_ConsMgr) :
+      Visitor(CMR::PureCut & _PureCut, CMR::BB::Constraints &_ConsMgr) :
       PureCut(_PureCut), LPPrune(_PureCut.LPPrune), LPCore(_PureCut.LPCore),
 	ConstraintMgr(_ConsMgr), RightBranch(ConstraintMgr.RBranch) {}
 
@@ -24,13 +24,13 @@ namespace PSEP {
       //private:
       int handle_augmentation();
 
-      PSEP::PureCut &PureCut;
+      CMR::PureCut &PureCut;
       
-      PSEP::LP::CutPrune &LPPrune;
-      PSEP::LP::Core &LPCore;
+      CMR::LP::CutPrune &LPPrune;
+      CMR::LP::Core &LPCore;
 
-      PSEP::BB::Constraints &ConstraintMgr;
-      PSEP::BB::RightBranch &RightBranch;
+      CMR::BB::Constraints &ConstraintMgr;
+      CMR::BB::RightBranch &RightBranch;
     };
   }
 }

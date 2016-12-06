@@ -1,5 +1,5 @@
-#ifndef PSEP_ABC_H
-#define PSEP_ABC_H
+#ifndef CMR_ABC_H
+#define CMR_ABC_H
 
 #include<memory>
 #include<stack>
@@ -10,14 +10,14 @@
 #include "BBconstraints.hpp"
 #include "BBvisit.hpp"
 
-namespace PSEP {
+namespace CMR {
   class ABC {
   public:
-  ABC(PSEP::BB::BranchPlan Strategy,
+  ABC(CMR::BB::BranchPlan Strategy,
       Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
       Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup,
       std::vector<double> &lower_bounds,
-      PSEP::PureCut &_PureCut):
+      CMR::PureCut &_PureCut):
     EdgeStats(lower_bounds),
       ConstraintMgr(Strategy, GraphGroup, BestGroup, LPGroup, SupportGroup,
 		    RightBranch, EdgeStats, _PureCut.LPPrune,
@@ -27,11 +27,11 @@ namespace PSEP {
     int solve();
     
   private:
-    std::stack<std::unique_ptr<PSEP::BB::TreeNode> > BBTree;
-    PSEP::BB::EdgeStatuses EdgeStats;
-    PSEP::BB::RightBranch RightBranch;
-    PSEP::BB::Constraints ConstraintMgr;
-    PSEP::BB::Visitor Visitor;
+    std::stack<std::unique_ptr<CMR::BB::TreeNode> > BBTree;
+    CMR::BB::EdgeStatuses EdgeStats;
+    CMR::BB::RightBranch RightBranch;
+    CMR::BB::Constraints ConstraintMgr;
+    CMR::BB::Visitor Visitor;
   };
 }
 

@@ -4,8 +4,8 @@
  *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PSEP_DPGRAPH_HPP
-#define PSEP_DPGRAPH_HPP
+#ifndef CMR_DPGRAPH_HPP
+#define CMR_DPGRAPH_HPP
 
 #include "tooth.hpp"
 #include "cuts.hpp"
@@ -19,7 +19,7 @@ extern "C" {
 }
 
 
-/** @def PSEP_DO_VIZ
+/** @def CMR_DO_VIZ
  * @brief Macro for conditional compilation of graphviz DOT files.
  * If defined, the DPCutGraph constructor must provide an output file name.
  * This will be used to open an output file stream, which will contain a 
@@ -31,9 +31,9 @@ extern "C" {
  * @warning This should be undef'd for all but very small examples in Catch
  * test cases. 
  */
-#undef PSEP_DO_VIZ
+#undef CMR_DO_VIZ
 
-namespace PSEP {
+namespace CMR {
 
 /** Class for building light simple DP witness cutgraphs.
  * As per Fleischer, Letchford, and Lodi (2006), this class will build the 
@@ -44,21 +44,21 @@ namespace PSEP {
 class DPCutGraph {
 public:
   DPCutGraph(
-#ifdef PSEP_DO_VIZ
+#ifdef CMR_DO_VIZ
 	     std::string _ofname,
 #endif
-	     PSEP::CandidateTeeth &_cands);
+	     CMR::CandidateTeeth &_cands);
   ~DPCutGraph();
 
-#ifdef PSEP_DO_VIZ
+#ifdef CMR_DO_VIZ
   std::string ofname;
   std::ofstream cg_out;
 #endif
 
-  int simple_DP_sep(PSEP::CutQueue<PSEP::dominoparity> &domino_q);
+  int simple_DP_sep(CMR::CutQueue<CMR::dominoparity> &domino_q);
 
   //  private:
-  int grab_cuts(PSEP::CutQueue<PSEP::dominoparity> &domino_q);
+  int grab_cuts(CMR::CutQueue<CMR::dominoparity> &domino_q);
 
   int build_light_tree();
   int add_web_edges();
@@ -67,8 +67,8 @@ public:
   void dfs_odd_cuts(CC_GHnode *n);
   void expand_cut(CC_GHnode *n, std::vector<int> &cut_shore_nodes);
   
-  const std::vector<std::vector<PSEP::SimpleTooth::Ptr>> &light_teeth;
-  PSEP::CandidateTeeth &cands;
+  const std::vector<std::vector<CMR::SimpleTooth::Ptr>> &light_teeth;
+  CMR::CandidateTeeth &cands;
 
   const SupportGraph &G_s;
   const std::vector<int> &support_elist;
@@ -76,7 +76,7 @@ public:
   
   const std::vector<int> &perm;
   
-  std::vector<PSEP::SimpleTooth*> cutgraph_nodes;
+  std::vector<CMR::SimpleTooth*> cutgraph_nodes;
   
   std::vector<int> cut_elist;
   std::vector<double> cut_ecap;
@@ -86,7 +86,7 @@ public:
   std::vector<int> cutgraph_delta;
   std::vector<int> cg_delta_marks;
 
-  PSEP::CutQueue<CC_GHnode *> CC_gh_q;
+  CMR::CutQueue<CC_GHnode *> CC_gh_q;
 
   CC_GHtree gh_tree;
 

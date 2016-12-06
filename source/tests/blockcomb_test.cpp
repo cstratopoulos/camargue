@@ -13,7 +13,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-#ifdef PSEP_DO_TESTS
+#ifdef CMR_DO_TESTS
 
 SCENARIO("Primal comb separation by standard block comb heuristics",
 	 "[blkcomb]"){
@@ -26,24 +26,24 @@ SCENARIO("Primal comb separation by standard block comb heuristics",
 	blossomfile = "test_data/blossom_lp/" + fname + ".2m.x",
 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-      PSEP::Data::GraphGroup g_dat;
-      PSEP::Data::BestGroup b_dat;
-      PSEP::Data::SupportGroup s_dat;
+      CMR::Data::GraphGroup g_dat;
+      CMR::Data::BestGroup b_dat;
+      CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-      PSEP::Cut::LPcutIn cutq;
+      CMR::Cut::LPcutIn cutq;
 
       WHEN("Tour is good and solution is in the subtour polytope"){
 	THEN("Primal block combs are found"){
-	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
+	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
 	
-	  PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
 	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  PSEP::Cut::BlockCombs bc_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Cut::BlockCombs bc_sep(g_dat, b_dat, s_dat, TG, cutq);
 	  REQUIRE(bc_sep.find_cuts());
 	}
       }
@@ -62,39 +62,39 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
 	badsolfile = "test_data/tours/" + fname + ".bad.sol",
 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-      PSEP::Data::GraphGroup g_dat;
-      PSEP::Data::BestGroup b_dat;
-      PSEP::Data::SupportGroup s_dat;
+      CMR::Data::GraphGroup g_dat;
+      CMR::Data::BestGroup b_dat;
+      CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-      PSEP::Cut::LPcutIn cutq;
+      CMR::Cut::LPcutIn cutq;
 
       WHEN("The tour is good"){
 	THEN("Primal block combs are found"){
-	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
+	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
-	  PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
 	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 	  REQUIRE(fb_sep.find_cuts());
 	}
       }
 
       AND_WHEN("The tour is bad"){
 	THEN("No primal block combs are found"){
-	  REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, badsolfile,
+	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, badsolfile,
 						  subtourfile,
 						  g_dat, b_dat, lp_edges,
 						  s_dat));
 
-	  PSEP::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
 	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  PSEP::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 
 	  REQUIRE_FALSE(fb_sep.find_cuts());
 	}

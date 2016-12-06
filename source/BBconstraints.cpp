@@ -5,7 +5,7 @@
 #include "BBconstraints.hpp"
 
 using namespace std;
-using namespace PSEP::BB;
+using namespace CMR::BB;
 
 int Constraints::enforce(unique_ptr<TreeNode> &v){
   if(v->type() == NodeType::ROOT){
@@ -158,7 +158,7 @@ int Constraints::add_left_clamp(const int edge){
   double bound = best_tour_edges[edge];
   char lower_or_upper = (bound == 0.0) ? 'U' : 'L';
 
-  int rval = PSEPlp_clampbnd(&m_lp, edge, lower_or_upper, bound);
+  int rval = CMRlp_clampbnd(&m_lp, edge, lower_or_upper, bound);
   if(rval)
     cerr << "Problem in BB::Constraints::add_left_clamp\n";
 
@@ -169,7 +169,7 @@ int Constraints::remove_left_clamp(const int edge){
   double bound = 1 - best_tour_edges[edge];
   char lower_or_upper = (bound == 0.0) ? 'L' : 'U';
 
-  int rval = PSEPlp_clampbnd(&m_lp, edge, lower_or_upper, bound);
+  int rval = CMRlp_clampbnd(&m_lp, edge, lower_or_upper, bound);
   if(rval)
     cerr << "Problem in BB::Constraints::remove_left_clamp\n";
 
@@ -248,7 +248,7 @@ int Constraints::explore_right(const int edge){
 
   char sense = 'E';
 
-  rval = PSEPlp_chgsense(&m_lp, 1, &rownum, &sense);
+  rval = CMRlp_chgsense(&m_lp, 1, &rownum, &sense);
   if(rval)
     cerr << "Problem in BB::Constraints::explore_right\n";
 
@@ -266,7 +266,7 @@ int Constraints::add_main_right_rows(const int edge){
     cerr << "Problem in Constraints::add_main_right_rows\n";
   }
 
-  int range_start = PSEPlp_numrows(&m_lp), range_end;
+  int range_start = CMRlp_numrows(&m_lp), range_end;
   int numrows = range_start; 
   int current_rownum = range_start;
   int newnz = 2, newrows = 1, rmatbeg = 0;
@@ -275,7 +275,7 @@ int Constraints::add_main_right_rows(const int edge){
   double RHS;
   char sense = 'L';
 
-  for(int partner = 0; partner < PSEPlp_numcols(&m_lp); partner++){
+  for(int partner = 0; partner < CMRlp_numcols(&m_lp); partner++){
     if(EdgeStats.Left.count(partner) != 0 ||
        EdgeStats.FixedUp.count(partner) != 0 || partner == edge)
       continue;
@@ -283,7 +283,7 @@ int Constraints::add_main_right_rows(const int edge){
     rmatind[1] = partner;
     compute_right_row(edge, partner, rmatval, RHS);
 
-    if(PSEPlp_addrows(&m_lp, newrows, newnz, &RHS, &sense,
+    if(CMRlp_addrows(&m_lp, newrows, newnz, &RHS, &sense,
 		      &rmatbeg, &rmatind[0], &rmatval[0])){
       cerr << "Problem in BB::Constraints::add_main_right_rows\n";
       return 1;
@@ -293,10 +293,10 @@ int Constraints::add_main_right_rows(const int edge){
   }
 
   RBranch.first_right = edge;
-  range_end = PSEPlp_numrows(&m_lp) - 1;
+  range_end = CMRlp_numrows(&m_lp) - 1;
   RBranch.constraint_range = IntPair(range_start, range_end);
 
-  cout << "  Added " << (PSEPlp_numrows(&m_lp) - numrows) << " rows for "
+  cout << "  Added " << (CMRlp_numrows(&m_lp) - numrows) << " rows for "
        << " the right branch";
   return 0;
 }
@@ -311,7 +311,7 @@ int Constraints::update_right_rows(){
   vector<double> newtour(best_tour_edges.size());
   bool clamp_dif;
 
-  rval = PSEPlp_x(&m_lp, &newtour[0]);
+  rval = CMRlp_x(&m_lp, &newtour[0]);
   if(rval) goto CLEANUP;
 
   clamp_dif = (fabs(best_tour_edges[clamp] - newtour[clamp]) >= Epsilon::Zero);
@@ -325,9 +325,9 @@ int Constraints::update_right_rows(){
       rval = compute_right_update(clamp, partner, rmatval, RHS, newtour);
       if(rval) goto CLEANUP;
 
-      rval = (PSEPlp_chgcoef(&m_lp, rownum, clamp, rmatval[0]) ||
-	      PSEPlp_chgcoef(&m_lp, rownum, partner, rmatval[1]) ||
-	      PSEPlp_chgcoef(&m_lp, rownum, -1, RHS));
+      rval = (CMRlp_chgcoef(&m_lp, rownum, clamp, rmatval[0]) ||
+	      CMRlp_chgcoef(&m_lp, rownum, partner, rmatval[1]) ||
+	      CMRlp_chgcoef(&m_lp, rownum, -1, RHS));
       if(rval) goto CLEANUP;
     }
   }
@@ -353,7 +353,7 @@ int Constraints::remove_right(const int edge){
 
     int rownum = it->second;
     char sense = 'L';
-    if(PSEPlp_chgsense(&m_lp, 1, &rownum, &sense)){
+    if(CMRlp_chgsense(&m_lp, 1, &rownum, &sense)){
       cerr << "Constraints::remove_right couldn't switch sense\n";
       return 1;
     }
@@ -361,7 +361,7 @@ int Constraints::remove_right(const int edge){
     return 0;
   }
 
-  if(PSEPlp_delrows(&m_lp, RBranch.constraint_range.first,
+  if(CMRlp_delrows(&m_lp, RBranch.constraint_range.first,
 		    RBranch.constraint_range.second)){
     cerr << "Constraints::remove_right failed to delete bunch of rows\n";
     return 1;

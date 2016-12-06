@@ -6,13 +6,13 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PSEP_ERRUTIL_HPP
-#define PSEP_ERRUTIL_HPP
+#ifndef CMR_ERRUTIL_HPP
+#define CMR_ERRUTIL_HPP
 
 #include <stdexcept>
 #include <string>
 
-namespace PSEP {
+namespace CMR {
 
 /** Code from Andrei Alexandrescu's ScopeGuard11 slides.
  * This class provides a limited implementation of ScopeGuard. I have not 

@@ -11,7 +11,7 @@ using std::setprecision;
 using std::string;
 using std::chrono::system_clock;
 
-namespace PSEP {
+namespace CMR {
 
 Timer::Timer() :
   timer_name("UNNAMED"),  wall_elapsed(0), cpu_elapsed(0),

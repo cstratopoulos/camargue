@@ -1,5 +1,5 @@
-#ifndef PSEP_SETBANK_HPP
-#define PSEP_SETBANK_HPP
+#ifndef CMR_SETBANK_HPP
+#define CMR_SETBANK_HPP
 
 #include<unordered_set>
 #include<vector>
@@ -7,9 +7,9 @@
 
 #include<boost/functional/hash.hpp>
 
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
-namespace PSEP{
+namespace CMR{
 
 void interactive_test();
 

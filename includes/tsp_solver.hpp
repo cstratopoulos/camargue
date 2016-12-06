@@ -14,10 +14,10 @@
 #include "purecut.hpp"
 #include "ABC.hpp"
 #include "pivplan.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
 
-namespace PSEP{
+namespace CMR{
 
 /** The master class for controlling and invoking solution protocols.
  * TSPSolver is the controller object for this project. It is responsible 
@@ -33,16 +33,16 @@ public:
    *  argument parser is responsible for giving precisely one valid argument.
    * @param[in] fname a TSP instance with `.tsp` suffix using TSPLIB format
    * @param[in] randprob: parameters for generating a random problem; see
-   *    PSEP_util.h for information
-   * @param[in] _outprefs a PSEP::OutPrefs structure, governing the amount
+   *    util.h for information
+   * @param[in] _outprefs a CMR::OutPrefs structure, governing the amount
    * of information to be written to file. 
-   * @param[in] prefs a PSEP::LP::Prefs structure, for parameters related to
+   * @param[in] prefs a CMR::LP::Prefs structure, for parameters related to
    * the LP solver and the addition of cuts.
    * @param[in] dat pointer to an uninitialized `CCdatagroup` object
    * @todo put \p sparse and \p quadnearest in an initial prefs struct
    */
-  TSPSolver(const std::string &fname, PSEP::RandProb &randprob,
-	    PSEP::OutPrefs _outprefs, PSEP::LP::Prefs _prefs,
+  TSPSolver(const std::string &fname, CMR::RandProb &randprob,
+	    CMR::OutPrefs _outprefs, CMR::LP::Prefs _prefs,
 	    std::unique_ptr<CCdatagroup> &dat,
 	    const bool sparse, const int quadnearest);
   
@@ -52,7 +52,7 @@ public:
    * from file and using a random problem. 
    */
   TSPSolver(const std::string &fname, const std::string &tourname,
-	    PSEP::OutPrefs _out_prefs, PSEP::LP::Prefs _prefs,
+	    CMR::OutPrefs _out_prefs, CMR::LP::Prefs _prefs,
 	    std::unique_ptr<CCdatagroup> &dat,
 	    const bool sparse, const int quadnearest);
 
@@ -61,18 +61,18 @@ public:
    * specified by \p solmeth.
    * @returns 0 if success, 1 if failure
    */
-  int call(PSEP::SolutionProtocol solmeth, const bool sparse);
+  int call(CMR::SolutionProtocol solmeth, const bool sparse);
   
 private:
-  PSEP::OutPrefs outprefs;
+  CMR::OutPrefs outprefs;
   
   Data::GraphGroup GraphGroup;
   Data::BestGroup BestGroup;
   Data::SupportGroup SupportGroup;
   Data::LPGroup LPGroup;
 
-  std::unique_ptr<PSEP::PureCut> PureCut;
-  std::unique_ptr<PSEP::ABC> ABC;
+  std::unique_ptr<CMR::PureCut> PureCut;
+  std::unique_ptr<CMR::ABC> ABC;
 };
 }
 

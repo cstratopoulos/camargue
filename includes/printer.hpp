@@ -1,14 +1,14 @@
-#ifndef PSEP_PRINTER_H
-#define PSEP_PRINTER_H
+#ifndef CMR_PRINTER_H
+#define CMR_PRINTER_H
 
 #include <iostream>
 
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
-class PSEP_Printer {
+class CMR_Printer {
  public:
-  PSEP_Printer(std::vector<int> & _tour_nodes, std::vector<int> & _tour_edges,
-	       std::vector<double> & _lp_edges, std::vector<PSEP::Edge> & _edges) :
+  CMR_Printer(std::vector<int> & _tour_nodes, std::vector<int> & _tour_edges,
+	       std::vector<double> & _lp_edges, std::vector<CMR::Edge> & _edges) :
   tour_nodes(_tour_nodes), tour_edges(_tour_edges),
     m_lp_edges(_lp_edges), edges(_edges) {}
 
@@ -33,25 +33,25 @@ class PSEP_Printer {
   
   void lp_edges(){
     for(int i = 0; i < m_lp_edges.size(); i++)
-      if(m_lp_edges[i] > PSEP::Epsilon::Zero){
+      if(m_lp_edges[i] > CMR::Epsilon::Zero){
 	print_edge(i);
 	std::cout << " LP val: " << m_lp_edges[i] << std::endl;
       }
   };
 
-  void pivot(const PSEP::LP::PivType piv_stat){
+  void pivot(const CMR::LP::PivType piv_stat){
     std::cout << "Pivot status: ";
     switch(piv_stat){
-    case(PSEP::LP::PivType::Frac):
+    case(CMR::LP::PivType::Frac):
       std::cout << "Fractional\n";
       break;
-    case(PSEP::LP::PivType::Subtour):
+    case(CMR::LP::PivType::Subtour):
       std::cout << "Integral subtour\n";
       break;
-    case(PSEP::LP::PivType::Tour):
+    case(CMR::LP::PivType::Tour):
       std::cout << "New tour\n";
       break;
-    case(PSEP::LP::PivType::FathomedTour):
+    case(CMR::LP::PivType::FathomedTour):
       std::cout << "Tour fathomed optimal\n";
       break;
     }
@@ -61,7 +61,7 @@ class PSEP_Printer {
   std::vector<int> &tour_nodes;
   std::vector<int> &tour_edges;
   std::vector<double> &m_lp_edges;
-  std::vector<PSEP::Edge> &edges;
+  std::vector<CMR::Edge> &edges;
 };
 
 

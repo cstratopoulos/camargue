@@ -4,10 +4,10 @@
  * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PSEP_DATAGROUP_H
-#define PSEP_DATAGROUP_H
+#ifndef CMR_DATAGROUP_H
+#define CMR_DATAGROUP_H
 
-#include "PSEP_util.hpp"
+#include "util.hpp"
 #include "lp.hpp"
 #include "Graph.hpp"
 
@@ -33,7 +33,7 @@ struct default_delete<CCdatagroup> {
 
 }
 
-namespace PSEP {
+namespace CMR {
 
 /** Namespace for storing data groups.
  * Classes in this namespace store data compartmentalized to specific aspects
@@ -65,7 +65,7 @@ private:
 struct GraphGroup {
   GraphGroup() = default;
   GraphGroup(const std::string &fname, std::string &probname,
-	     PSEP::RandProb &randprob,
+	     CMR::RandProb &randprob,
 	     std::unique_ptr<CCdatagroup> &dat,
 	     const bool sparse, const int quadnearest,
 	     const bool dump_xy); /**< Standard constructor, @see TSPSolver. */
@@ -108,7 +108,7 @@ struct BestGroup {
    * and `perm` have length graph.node_count
    * @post min_tour_value is the length of the tour
    */
-  BestGroup(PSEP::Graph &graph, std::vector<int> &delta,
+  BestGroup(CMR::Graph &graph, std::vector<int> &delta,
 	    std::unique_ptr<CCdatagroup> &dat, const std::string &probname,
 	    const int user_seed, const bool save_tour,
 	    const bool save_tour_edges);
@@ -120,7 +120,7 @@ struct BestGroup {
    * `graph.node_count`
    */
   BestGroup(const std::string &tourfile,
-	    PSEP::Graph &graph, std::vector<int> &delta,
+	    CMR::Graph &graph, std::vector<int> &delta,
 	    std::unique_ptr<CCdatagroup> &dat, const std::string &probname,
 	    const bool write_tour, const bool write_tour_edges);
 
@@ -135,9 +135,9 @@ struct BestGroup {
 
 /* This group stores objects related to the LP solver/LP relaxation */
 struct LPGroup {
-  LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
+  LPGroup(const Graph &m_graph, CMR::LP::Prefs &_prefs,
 	  const std::vector<int> &perm);
-  ~LPGroup(){PSEPlp_free(&m_lp);}
+  ~LPGroup(){CMRlp_free(&m_lp);}
 
   /*
    * m_lp - the LP environment/problem object for use with the routines 
@@ -149,15 +149,15 @@ struct LPGroup {
    * CPX_AT_LOWER, CPX_BASIC, or CPX_AT_UPPER. 
    * The 'old' ones store the basis associated with the current best tour
    * The 'frac' ones store the basis associated with the last LP solution
-   * prefs - see PSEP_util.h for info
+   * prefs - see util.h for info
    */
-  PSEPlp m_lp;  
+  CMRlp m_lp;  
   std::vector<double> m_lp_edges;
   std::vector<int> old_colstat;
   std::vector<int> old_rowstat;
   std::vector<int> frac_colstat;
   std::vector<int> frac_rowstat;
-  PSEP::LP::Prefs prefs;
+  CMR::LP::Prefs prefs;
 };
 
 /* 
@@ -191,16 +191,16 @@ struct SupportGroup  {
  * solution from \p lp_sol_fname. Finally, \p lp_edges and \p graph_data
  * will be used to populate \p supp_data. 
  * @pre \p tsp_fname is the name of a TSPLIB instance.
- * @pre \p tour_nodes_fname is as in PSEP::get_tour_nodes.
- * @pre \p lp_sol_fname is as in PSEP::get_lp_sol.
+ * @pre \p tour_nodes_fname is as in CMR::get_tour_nodes.
+ * @pre \p lp_sol_fname is as in CMR::get_lp_sol.
  */
 void make_cut_test(const std::string &tsp_fname,
 		   const std::string &tour_nodes_fname,
 		   const std::string &lp_sol_fname,
-		   PSEP::Data::GraphGroup &graph_data,
-		   PSEP::Data::BestGroup &best_data,
+		   CMR::Data::GraphGroup &graph_data,
+		   CMR::Data::BestGroup &best_data,
 		   std::vector<double> &lp_edges,
-		   PSEP::Data::SupportGroup &supp_data);
+		   CMR::Data::SupportGroup &supp_data);
 
 /** Load just enough data to run tests, but return the Instance.
  * The documentation is identical to the version without the \p inst_p 
@@ -212,11 +212,11 @@ void make_cut_test(const std::string &tsp_fname,
 void make_cut_test(const std::string &tsp_fname,
 		   const std::string &tour_nodes_fname,
 		   const std::string &lp_sol_fname,
-		   PSEP::Data::GraphGroup &graph_data,
-		   PSEP::Data::BestGroup &best_data,
+		   CMR::Data::GraphGroup &graph_data,
+		   CMR::Data::BestGroup &best_data,
 		   std::vector<double> &lp_edges,
-		   PSEP::Data::SupportGroup &supp_data,
-		   std::unique_ptr<PSEP::Data::Instance> &inst_p);
+		   CMR::Data::SupportGroup &supp_data,
+		   std::unique_ptr<CMR::Data::Instance> &inst_p);
 
 }
 }

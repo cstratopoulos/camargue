@@ -1,9 +1,9 @@
-#ifndef PSEP_TOOTH_HPP
-#define PSEP_TOOTH_HPP
+#ifndef CMR_TOOTH_HPP
+#define CMR_TOOTH_HPP
 
 #include "Graph.hpp"
 #include "datagroups.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 #include "timer.hpp"
 
 #include <memory>
@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include <bitset>
 
-namespace PSEP {
+namespace CMR {
 
 enum class ListStat {None, Merge, Full};
 
@@ -58,9 +58,9 @@ struct SimpleTooth {
 
 class CandidateTeeth {
 public:
-  CandidateTeeth(PSEP::Data::GraphGroup &_graph_dat,
-		 PSEP::Data::BestGroup &_best_dat,
-		 PSEP::Data::SupportGroup &_supp_dat);
+  CandidateTeeth(CMR::Data::GraphGroup &_graph_dat,
+		 CMR::Data::BestGroup &_best_dat,
+		 CMR::Data::SupportGroup &_supp_dat);
 
   int get_light_teeth();
 
@@ -114,7 +114,7 @@ private:
 		 std::vector<int> &_node_marks,
 		 std::vector<int> &_tour_nodes,
 		 std::vector<int> &_perm,
-		 PSEP::SupportGraph &_G_s) :
+		 CMR::SupportGraph &_G_s) :
       r_teeth(_r_teeth), l_teeth(_l_teeth), d_teeth(_d_teeth),
       adj_zones(_adj_zones),
       node_marks(_node_marks),
@@ -133,7 +133,7 @@ private:
     std::vector<int> &node_marks;
     std::vector<int> &tour_nodes, &perm;
 
-    PSEP::SupportGraph &G_s;
+    CMR::SupportGraph &G_s;
 
     tooth_seg old_seg;
     
@@ -141,16 +141,16 @@ private:
     std::vector<std::pair<int, double>> prev_slacks;
   };
 
-  PSEP::Data::GraphGroup &graph_dat;
-  PSEP::Data::BestGroup &best_dat;
-  PSEP::Data::SupportGroup &supp_dat;
+  CMR::Data::GraphGroup &graph_dat;
+  CMR::Data::BestGroup &best_dat;
+  CMR::Data::SupportGroup &supp_dat;
 
-  PSEP::Timer t_all;
-  PSEP::Timer t_zones;
-  PSEP::Timer t_find;
-  PSEP::Timer t_elim;
-  PSEP::Timer t_comp_elim;
-  PSEP::Timer t_sort;
+  CMR::Timer t_all;
+  CMR::Timer t_zones;
+  CMR::Timer t_find;
+  CMR::Timer t_elim;
+  CMR::Timer t_comp_elim;
+  CMR::Timer t_sort;
 };
 
 }

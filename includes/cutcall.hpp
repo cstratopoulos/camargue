@@ -1,5 +1,5 @@
-#ifndef PSEP_CUTCALL_H
-#define PSEP_CUTCALL_H
+#ifndef CMR_CUTCALL_H
+#define CMR_CUTCALL_H
 
 #include <vector>
 #include <memory>
@@ -11,17 +11,17 @@
 #include "simpleDP.hpp"
 #include "safegmi.hpp"
 #include "cuts.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 #include "timer.hpp"
 
 
-namespace PSEP{
+namespace CMR{
 
 class CutControl {
 public:
   CutControl(Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
 	     Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup,
-	     const PSEP::Timer *purecut_timer_p):
+	     const CMR::Timer *purecut_timer_p):
     set_repo(BestGroup.best_tour_nodes, BestGroup.perm),
     translator(GraphGroup),
     segment_q(LPGroup.prefs.max_per_round),
@@ -66,27 +66,27 @@ private:
   int q_has_viol(bool &result, CutQueue<HyperGraph> &pool_q);
 
   
-  PSEP::SetBank set_repo;
-  PSEP::CutTranslate translator;
+  CMR::SetBank set_repo;
+  CMR::CutTranslate translator;
   
-  PSEP::CutQueue<PSEP::HyperGraph> segment_q;
-  PSEP::CutQueue<PSEP::HyperGraph> blossom_q;
+  CMR::CutQueue<CMR::HyperGraph> segment_q;
+  CMR::CutQueue<CMR::HyperGraph> blossom_q;
 
-  PSEP::CutQueue<PSEP::dominoparity> domino_q;
+  CMR::CutQueue<CMR::dominoparity> domino_q;
   
-  PSEP::Cut<PSEP::seg> segments;
-  PSEP::Cut<PSEP::blossom> blossoms;
+  CMR::Cut<CMR::seg> segments;
+  CMR::Cut<CMR::blossom> blossoms;
 
-  std::unique_ptr<PSEP::Cut<PSEP::dominoparity>> dominos;
+  std::unique_ptr<CMR::Cut<CMR::dominoparity>> dominos;
 
-  PSEP::Cut<PSEP::safeGMI> safe_gomory;
+  CMR::Cut<CMR::safeGMI> safe_gomory;
 
-  PSEP::Data::GraphGroup &graph_data;
-  PSEP::Data::LPGroup &LP_data;
-  PSEP::Data::SupportGroup &supp_data;
-  PSEP::Data::BestGroup &best_data;
+  CMR::Data::GraphGroup &graph_data;
+  CMR::Data::LPGroup &LP_data;
+  CMR::Data::SupportGroup &supp_data;
+  CMR::Data::BestGroup &best_data;
 
-  PSEP::Timer segtime, matchtime, dptime, gmitime;
+  CMR::Timer segtime, matchtime, dptime, gmitime;
   int total_segcalls, total_2mcalls, total_gencalls;
 };
 

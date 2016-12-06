@@ -1,13 +1,13 @@
-#ifndef PSEP_LP_PRUNE_H
-#define PSEP_LP_PRUNE_H
+#ifndef CMR_LP_PRUNE_H
+#define CMR_LP_PRUNE_H
 
 #include<vector>
 
 #include "lp.hpp"
 #include "datagroups.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
-namespace PSEP {
+namespace CMR {
   namespace LP {
   class CutPrune {
   public:
@@ -21,7 +21,7 @@ namespace PSEP {
   private:    
     int dual_measure();
     
-    PSEPlp &m_lp;
+    CMRlp &m_lp;
     int node_count;
 
     std::vector<double> dual_vars;

@@ -13,11 +13,11 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#define PSEP_OMP_2MATCH
+#define CMR_OMP_2MATCH
 
-namespace PSEP {
+namespace CMR {
 
-#ifdef PSEP_OMP_2MATCH
+#ifdef CMR_OMP_2MATCH
 
 int Cut<blossom>::separate(){
   int rval = 0;
@@ -25,7 +25,7 @@ int Cut<blossom>::separate(){
 
 
   try { cut_ecap.resize(support_ecap.size()); } catch(...){
-    rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize cut_ecap, ");
+    rval = 1; CMR_GOTO_CLEANUP("Couldn't resize cut_ecap, ");
   }
 
   for(int i = 0; i < support_indices.size(); i++){
@@ -35,7 +35,7 @@ int Cut<blossom>::separate(){
       cut_ecap[i] = 1 - support_ecap[i];
   }
 
-#ifndef PSEP_DO_TESTS
+#ifndef CMR_DO_TESTS
   #pragma omp parallel for
 #endif
   for(int i = 0; i < support_indices.size(); ++i){
@@ -140,7 +140,7 @@ int Cut<blossom>::separate(){
   int ncount = m_graph.node_count;
 
   try { cut_ecap.resize(support_ecap.size()); } catch(...){
-    rval = 1; PSEP_GOTO_CLEANUP("Couldn't resize cut_ecap, ");
+    rval = 1; CMR_GOTO_CLEANUP("Couldn't resize cut_ecap, ");
   }
 
   for(int i = 0; i < support_indices.size(); i++){
@@ -198,7 +198,7 @@ int Cut<blossom>::separate(){
 	  local_q.push_back(new_cut);
 	}
       } catch (...) {
-	rval = 1; PSEP_GOTO_CLEANUP("Problem pushing new cut to queue, ");
+	rval = 1; CMR_GOTO_CLEANUP("Problem pushing new cut to queue, ");
       }      
     }
 
@@ -225,14 +225,14 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
 
   
   try { node_sets.push_back(blossom_cut.handle); } catch (...) {
-    rval = 1; PSEP_GOTO_CLEANUP("Problem pushing back node set, ");
+    rval = 1; CMR_GOTO_CLEANUP("Problem pushing back node set, ");
   }
 
   GraphUtils::get_delta(blossom_cut.handle, edges, &deltacount, delta,
 			edge_marks);
 
   if(deltacount == 0){
-    rval = 1; PSEP_GOTO_CLEANUP("Get delta returned zero handle edges, ");
+    rval = 1; CMR_GOTO_CLEANUP("Get delta returned zero handle edges, ");
   }
 
   switch(best_tour_edges[cutedge]){
@@ -244,7 +244,7 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
 	vector<int> new_tooth{edges[edge_index].end[0],
 	    edges[edge_index].end[1]};
 	try { node_sets.push_back(new_tooth); } catch (...) {
-	  rval = 1; PSEP_GOTO_CLEANUP("Problem pushing back node set, ");
+	  rval = 1; CMR_GOTO_CLEANUP("Problem pushing back node set, ");
 	}
       }
     break;
@@ -257,7 +257,7 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
 	vector<int> new_tooth{edges[edge_index].end[0],
 	    edges[edge_index].end[1]};
 	try { node_sets.push_back(new_tooth); } catch (...) {
-	  rval = 1; PSEP_GOTO_CLEANUP("Problem pushing back node set, ");
+	  rval = 1; CMR_GOTO_CLEANUP("Problem pushing back node set, ");
 	}
       }
   }
@@ -269,7 +269,7 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
       HyperGraph newcut(node_sets, HyperGraph::CutType::Blossom);
       external_q.push_back(newcut);
     } catch (...) {
-      rval = 1; PSEP_GOTO_CLEANUP("Couldn't push to external queue, ");
+      rval = 1; CMR_GOTO_CLEANUP("Couldn't push to external queue, ");
     }
   }
 

@@ -8,7 +8,7 @@ using std::vector;
 using std::cout;
 using std::cerr;
 
-namespace PSEP {
+namespace CMR {
 
 Edge::Edge(int e0, int e1, int _len):
   len(_len),

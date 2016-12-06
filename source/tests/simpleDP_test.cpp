@@ -19,9 +19,9 @@ using std::vector;
 using std::string;
 using std::pair;
 
-#ifdef PSEP_DO_TESTS
+#ifdef CMR_DO_TESTS
 
-//for these tests, consider defining PSEP_DO_TESTS in DPgraph.hpp to generate
+//for these tests, consider defining CMR_DO_TESTS in DPgraph.hpp to generate
 //a DOT file for the witness cutgraph which can be viewed with graphviz or
 //some such
 TEST_CASE ("Tiny simple DP translator tests",
@@ -41,25 +41,25 @@ TEST_CASE ("Tiny simple DP translator tests",
 	  probfile = "problems/" + fname + ".tsp",
 	  solfile = "test_data/tours/" + fname + ".sol",
 	  subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-	PSEP::Data::GraphGroup g_dat;
-	PSEP::Data::BestGroup b_dat;
-	PSEP::Data::SupportGroup s_dat;
+	CMR::Data::GraphGroup g_dat;
+	CMR::Data::BestGroup b_dat;
+	CMR::Data::SupportGroup s_dat;
 	std::vector<double> lp_edges;
 	
-	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile, subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
 	cout << "Best tour: \n";
 	for(int i : b_dat.best_tour_nodes) cout << i << ", ";
 	cout << "\n";
 
-	PSEP::CutQueue<PSEP::dominoparity> dp_q(250);
-	PSEP::Cut<PSEP::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
+	CMR::CutQueue<CMR::dominoparity> dp_q(250);
+	CMR::Cut<CMR::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
 
 	REQUIRE(dominos.cutcall() != 1);
 	CHECK(dp_q.size() == expected_num_cuts);
 
-	PSEP::CutTranslate translator(g_dat);
+	CMR::CutTranslate translator(g_dat);
 	
 	while(!dp_q.empty()){
 	  vector<int> rmatind;
@@ -67,7 +67,7 @@ TEST_CASE ("Tiny simple DP translator tests",
 	  char sense;
 	  double rhs;
 	  
-	  const PSEP::dominoparity &dp_cut = dp_q.peek_front();
+	  const CMR::dominoparity &dp_cut = dp_q.peek_front();
 	  vector<int> &bt = b_dat.best_tour_nodes;
 
 	  cout << "Found dp with....\n";
@@ -78,10 +78,10 @@ TEST_CASE ("Tiny simple DP translator tests",
 	    cout << "(" << bt[e.first] << ", " << bt[e.second] << "), ";
 	  cout << "\n";
 	  cout << "Simple teeth: (" << dp_cut.used_teeth.size() << " total)\n";
-	  for(PSEP::SimpleTooth *T : dp_cut.used_teeth){
+	  for(CMR::SimpleTooth *T : dp_cut.used_teeth){
 	    cout << T->root << ", (" << T->body_start << "..." << T->body_end
 		 << ") -- ";
-	    PSEP::CandidateTeeth::print_tooth(*T, true, b_dat.best_tour_nodes);
+	    CMR::CandidateTeeth::print_tooth(*T, true, b_dat.best_tour_nodes);
 	  }
 
 	  REQUIRE_FALSE(translator.get_sparse_row(dp_cut,
@@ -113,23 +113,23 @@ TEST_CASE ("simple DP cutgraph translator tests",
 	  probfile = "problems/" + fname + ".tsp",
 	  solfile = "test_data/tours/" + fname + ".sol",
 	  subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-	PSEP::Data::GraphGroup g_dat;
-	PSEP::Data::BestGroup b_dat;
-	PSEP::Data::SupportGroup s_dat;
+	CMR::Data::GraphGroup g_dat;
+	CMR::Data::BestGroup b_dat;
+	CMR::Data::SupportGroup s_dat;
 	std::vector<double> lp_edges;
 	bool found_nz = false;
 	
-	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile, subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
 	
 
-	PSEP::CutQueue<PSEP::dominoparity> dp_q(250);
-	PSEP::Cut<PSEP::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
+	CMR::CutQueue<CMR::dominoparity> dp_q(250);
+	CMR::Cut<CMR::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
 	
 	REQUIRE_FALSE(dominos.cutcall());
 
-	PSEP::CutTranslate translator(g_dat);
+	CMR::CutTranslate translator(g_dat);
 
 	
 	while(!dp_q.empty()){
@@ -138,7 +138,7 @@ TEST_CASE ("simple DP cutgraph translator tests",
 	  char sense;
 	  double rhs;
 	  
-	  const PSEP::dominoparity &dp_cut = dp_q.peek_front();
+	  const CMR::dominoparity &dp_cut = dp_q.peek_front();
 	  vector<int> &bt = b_dat.best_tour_nodes;
 	  double tour_activity, lp_activity;
 
@@ -153,10 +153,10 @@ TEST_CASE ("simple DP cutgraph translator tests",
 	  cout << "\n";
 	  cout << "Simple teeth: (" << dp_cut.used_teeth.size()
 	       << " total)\n";
-	  for(PSEP::SimpleTooth *T : dp_cut.used_teeth){
+	  for(CMR::SimpleTooth *T : dp_cut.used_teeth){
 	    cout << "\t" << T->root << ", (" << T->body_start
 		 << "..." << T->body_end << ")\n";
-	    PSEP::CandidateTeeth::print_tooth(*T, true, bt);
+	    CMR::CandidateTeeth::print_tooth(*T, true, bt);
 	    cout << "\n";
 	  }
 	  
@@ -182,12 +182,15 @@ TEST_CASE ("simple DP cutgraph translator tests",
 
 TEST_CASE ("Printless simple DP cutgraph translator tests",
 	   "[simpleDP][medium]") {
-  vector<string> probs{// "lin318", "d493", "att532", "u724",
-		       // "dsj1000", "pr1002", "rl1304", "fl1577"
-		       // "d2103", "u2319", "pr2392",
-		       // "pcb3038",
-		       // "rl5915",
-		       "pla7397"};
+  vector<string> probs{// "lin318",
+    "d493", "att532", "u724",
+    "dsj1000", "pr1002",
+    //"rl1304", "fl1577"
+    // "d2103", "u2319", "pr2392",
+    // "pcb3038",
+    // "rl5915",
+    //"pla7397"
+  };
 
     for(string &fname : probs){
       SECTION(fname){
@@ -195,27 +198,27 @@ TEST_CASE ("Printless simple DP cutgraph translator tests",
 	  probfile = "problems/" + fname + ".tsp",
 	  solfile = "test_data/tours/" + fname + ".sol",
 	  subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-	PSEP::Data::GraphGroup g_dat;
-	PSEP::Data::BestGroup b_dat;
-	PSEP::Data::SupportGroup s_dat;
+	CMR::Data::GraphGroup g_dat;
+	CMR::Data::BestGroup b_dat;
+	CMR::Data::SupportGroup s_dat;
 	std::vector<double> lp_edges;
 
 	
-	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile, subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
 
 	int ncount = g_dat.m_graph.node_count;
       
-	PSEP::CutQueue<PSEP::dominoparity> dp_q(2500);
-	PSEP::Cut<PSEP::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
+	CMR::CutQueue<CMR::dominoparity> dp_q(2500);
+	CMR::Cut<CMR::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
 	
 	REQUIRE_FALSE(dominos.cutcall());
 	int used_size = 0;
 	int min_used = ncount;
 	int max_used = 0;
 
-	PSEP::CutTranslate translator(g_dat);
+	CMR::CutTranslate translator(g_dat);
 	int primal_found = 0;
 	while(!dp_q.empty()){
 	  vector<int> rmatind;
@@ -223,7 +226,7 @@ TEST_CASE ("Printless simple DP cutgraph translator tests",
 	  char sense;
 	  double rhs;
 	  
-	  const PSEP::dominoparity &dp_cut = dp_q.peek_front();
+	  const CMR::dominoparity &dp_cut = dp_q.peek_front();
 	  vector<int> &bt = b_dat.best_tour_nodes;
 	  double tour_activity, lp_activity;
 
@@ -242,7 +245,7 @@ TEST_CASE ("Printless simple DP cutgraph translator tests",
 	  if(tour_activity == rhs && lp_activity > rhs){
 	    ++primal_found;
 	    for(int i : rmatind){
-	      PSEP::Edge e = g_dat.m_graph.edges[i];
+	      CMR::Edge e = g_dat.m_graph.edges[i];
 	      nodes_used.insert(e.end[0]);
 	      nodes_used.insert(e.end[1]);
 	    }
@@ -266,4 +269,4 @@ TEST_CASE ("Printless simple DP cutgraph translator tests",
     }
 }
 
-#endif //PSEP_DO_TESTS
+#endif //CMR_DO_TESTS

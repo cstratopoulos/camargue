@@ -14,8 +14,8 @@
  *       up the PureCut control flow
  *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-#ifndef PSEP_PIVPLAN_H
-#define PSEP_PIVPLAN_H
+#ifndef CMR_PIVPLAN_H
+#define CMR_PIVPLAN_H
 
 #include<cmath>
 #include<vector>
@@ -23,9 +23,9 @@
 #include<iostream>
 #include<iomanip>
 
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
-namespace PSEP {
+namespace CMR {
   class PivotPlan {
   public:
     /*
@@ -78,7 +78,7 @@ namespace PSEP {
     PivotPlan(int _ncount, bool _branch, std::vector<ParamPair> ParamList);
 
     
-    void start_timer() {start_time = PSEP::zeit();}
+    void start_timer() {start_time = CMR::zeit();}
 
     /*
      * condition is used as the termination for the main while() loop in
@@ -135,7 +135,7 @@ namespace PSEP {
 
     bool UnderTimeLimit(){
       if(max_time <= 0) return true;
-      runtime = PSEP::zeit() - start_time;
+      runtime = CMR::zeit() - start_time;
       return runtime  < max_time;
     }
     double runtime;

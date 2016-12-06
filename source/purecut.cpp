@@ -8,7 +8,7 @@ using std::cerr;
 using std::endl;
 using std::setprecision;
 
-namespace PSEP {
+namespace CMR {
 
 int PureCut::solve(PivotPlan &plan, LP::PivType &piv_stat){
   int rval = 0, cut_rval = 0;

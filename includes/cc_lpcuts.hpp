@@ -4,8 +4,8 @@
  * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PSEP_CC_LPCUTS_HPP
-#define PSEP_CC_LPCUTS_HPP
+#ifndef CMR_CC_LPCUTS_HPP
+#define CMR_CC_LPCUTS_HPP
 
 #include "Graph.hpp"
 #include "datagroups.hpp"
@@ -14,7 +14,7 @@ extern "C" {
 #include <concorde/INCLUDE/tsp.h>
 }
 
-namespace PSEP {
+namespace CMR {
 
 /** Classes and functions related to cut separation. */
 namespace Cut {
@@ -35,7 +35,7 @@ public:
    * @pre This function assumes that Concorde heuristic routines were called
    * with the nodes permuted according to the current best tour.
    */
-  void filter_primal(PSEP::TourGraph &TG);
+  void filter_primal(CMR::TourGraph &TG);
 
   int cut_count() const { return cutcount; }
   bool empty() const { return cutcount == 0; }
@@ -64,10 +64,10 @@ private:
  */
 class ConcordeSeparator {
 public:
-  ConcordeSeparator(PSEP::Data::GraphGroup &_graph_dat,
-		    PSEP::Data::BestGroup &_best_dat,
-		    PSEP::Data::SupportGroup &_supp_dat,
-		    PSEP::TourGraph &_TG, PSEP::Cut::LPcutIn &_cutq) :
+  ConcordeSeparator(CMR::Data::GraphGroup &_graph_dat,
+		    CMR::Data::BestGroup &_best_dat,
+		    CMR::Data::SupportGroup &_supp_dat,
+		    CMR::TourGraph &_TG, CMR::Cut::LPcutIn &_cutq) :
     graph_dat(_graph_dat), best_dat(_best_dat), supp_dat(_supp_dat),
     TG(_TG), cutq(_cutq) {}
 
@@ -79,21 +79,21 @@ public:
   
 protected:
   
-  PSEP::Data::GraphGroup &graph_dat;
-  PSEP::Data::BestGroup &best_dat;
-  PSEP::Data::SupportGroup &supp_dat;
+  CMR::Data::GraphGroup &graph_dat;
+  CMR::Data::BestGroup &best_dat;
+  CMR::Data::SupportGroup &supp_dat;
   
-  PSEP::TourGraph &TG;
+  CMR::TourGraph &TG;
   
-  PSEP::Cut::LPcutIn &cutq;
+  CMR::Cut::LPcutIn &cutq;
 };
 
 /** Exact separation of segment cut subtours. */
 class SegmentCuts : public ConcordeSeparator {
 public:
-  SegmentCuts(PSEP::Data::GraphGroup &g_dat, PSEP::Data::BestGroup &b_dat,
-	      PSEP::Data::SupportGroup &s_dat, PSEP::TourGraph &TG,
-	      PSEP::Cut::LPcutIn &cutq) :
+  SegmentCuts(CMR::Data::GraphGroup &g_dat, CMR::Data::BestGroup &b_dat,
+	      CMR::Data::SupportGroup &s_dat, CMR::TourGraph &TG,
+	      CMR::Cut::LPcutIn &cutq) :
     ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
 
   /** Finds subtours arising from intervals of the current best tour. */
@@ -103,9 +103,9 @@ public:
 /** Primal separation of comb ineqalities via standard block comb heuristic. */
 class BlockCombs : public ConcordeSeparator {
 public:
-  BlockCombs(PSEP::Data::GraphGroup &g_dat, PSEP::Data::BestGroup &b_dat,
-	     PSEP::Data::SupportGroup &s_dat, PSEP::TourGraph &TG,
-	     PSEP::Cut::LPcutIn &cutq) :
+  BlockCombs(CMR::Data::GraphGroup &g_dat, CMR::Data::BestGroup &b_dat,
+	     CMR::Data::SupportGroup &s_dat, CMR::TourGraph &TG,
+	     CMR::Cut::LPcutIn &cutq) :
     ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
 
   /** Returns true if block combs are found and some are tight at best tour. */
@@ -115,9 +115,9 @@ public:
 /** Primal separation of blossoms via standard fast blossom heuristics. */
 class FastBlossoms : public ConcordeSeparator {
 public:
-  FastBlossoms(PSEP::Data::GraphGroup &g_dat, PSEP::Data::BestGroup &b_dat,
-	       PSEP::Data::SupportGroup &s_dat, PSEP::TourGraph &TG,
-	       PSEP::Cut::LPcutIn &cutq) :
+  FastBlossoms(CMR::Data::GraphGroup &g_dat, CMR::Data::BestGroup &b_dat,
+	       CMR::Data::SupportGroup &s_dat, CMR::TourGraph &TG,
+	       CMR::Cut::LPcutIn &cutq) :
     ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
 
   /** Returns true if blossoms are found and some are tight at best tour.

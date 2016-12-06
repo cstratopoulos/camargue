@@ -1,5 +1,5 @@
 #include "graph_io.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
 #include <iomanip>
 #include <algorithm>
@@ -17,7 +17,7 @@ using std::cerr;
 using std::endl;
 
 
-namespace PSEP {
+namespace CMR {
 
 void write_tour_nodes(const std::vector<int> &tour_nodes,
 		     const std::string &tour_nodes_fname)
@@ -57,7 +57,7 @@ void write_tour_nodes(const std::vector<int> &tour_nodes,
 }
 
 void write_tour_edges(const std::vector<int> &tour_edges,
-		     const std::vector<PSEP::Edge> &edges,
+		     const std::vector<CMR::Edge> &edges,
 		     const int node_count,
 		     const std::string &tour_edges_fname)
 {

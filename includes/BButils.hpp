@@ -1,5 +1,5 @@
-#ifndef PSEP_BBUTILS_H
-#define PSEP_BBUTILS_H
+#ifndef CMR_BBUTILS_H
+#define CMR_BBUTILS_H
 
 #include<array>
 #include<iostream>
@@ -11,9 +11,9 @@
 
 #include "lp.hpp"
 #include "datagroups.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
-namespace PSEP {
+namespace CMR {
   namespace BB {
     class TreeNode;
     class EdgeStatuses;
@@ -52,7 +52,7 @@ namespace PSEP {
       }
 
     private:
-      friend class PSEP::BB::Visitor;
+      friend class CMR::BB::Visitor;
       
       NType node_type;
       NStat node_stat;
@@ -72,14 +72,14 @@ namespace PSEP {
       }
 
     private:  
-      void add_branch_var(const std::unique_ptr<PSEP::BB::TreeNode> &v){
+      void add_branch_var(const std::unique_ptr<CMR::BB::TreeNode> &v){
 	if(v->type() == BB::NodeType::LEFT)
 	  Left.insert(v->edge());
 	else
 	  Right.insert(v->edge());
       }
 
-      void remove_branch_var(const std::unique_ptr<PSEP::BB::TreeNode> &v){
+      void remove_branch_var(const std::unique_ptr<CMR::BB::TreeNode> &v){
 	if(v->type() == BB::NodeType::LEFT)
 	  Left.erase(v->edge());
 	else
@@ -91,8 +91,8 @@ namespace PSEP {
 	Right.clear();
       }
       
-      friend class PSEP::BB::RightBranch;
-      friend class PSEP::BB::Constraints;
+      friend class CMR::BB::RightBranch;
+      friend class CMR::BB::Constraints;
       std::unordered_set<int> Left;
       std::unordered_set<int> Right;
       std::unordered_set<int> FixedUp;
@@ -144,7 +144,7 @@ namespace PSEP {
       int first_right_edge() const {return first_right;} 
 
     private:
-      friend class PSEP::BB::Constraints;
+      friend class CMR::BB::Constraints;
       std::map<int, int> edge_row_lookup;
       IntPair constraint_range;
       int first_right;  

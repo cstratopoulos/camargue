@@ -4,15 +4,15 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PSEP_BLOSSOMS_H
-#define PSEP_BLOSSOMS_H
+#ifndef CMR_BLOSSOMS_H
+#define CMR_BLOSSOMS_H
 
 #include <vector>
 
 #include "cuts.hpp"
 #include "Graph.hpp"
 
-namespace PSEP {
+namespace CMR {
 
 /** Class for exact primal blossom separation. 
  * This class can be instantiated with data about a best tour and an lp 

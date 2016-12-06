@@ -3,7 +3,7 @@
 CC          := /usr/local/Cellar/gcc49/4.9.3/bin/g++-4.9
 
 #The Target Binary Program
-TARGET      := PSEP
+TARGET      := camargue
 
 #The Directories, Source, Includes, Objects, Binary
 SRCDIR      := source

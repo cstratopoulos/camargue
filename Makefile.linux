@@ -3,7 +3,7 @@
 CC          := /opt/centos/devtoolset-1.1/root/usr/bin/c++
 
 #The Target Binary Program
-TARGET      := PSEP
+TARGET      := camargue
 
 #The Directories, Source, Includes, Objects, Binary
 SRCDIR      := source

@@ -1,5 +1,5 @@
 #include "simpleDP.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
 #include <iostream>
 #include <memory>
@@ -7,7 +7,7 @@
 using std::cerr;
 using std::unique_ptr;
 
-namespace PSEP {
+namespace CMR {
 
 int Cut<dominoparity>::cutcall()
 {
@@ -39,8 +39,8 @@ int Cut<dominoparity>::separate()
   rval = candidates.merge_and_sort();
   if(rval) goto CLEANUP;
     
-  try { witness = PSEP::make_unique<DPCutGraph>(candidates); } catch(...){
-    PSEP_SET_GOTO(rval, "DPCutGraph allocation failed. ");
+  try { witness = CMR::make_unique<DPCutGraph>(candidates); } catch(...){
+    CMR_SET_GOTO(rval, "DPCutGraph allocation failed. ");
   }
 
   rval = witness->simple_DP_sep(dp_q);

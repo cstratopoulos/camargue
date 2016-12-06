@@ -7,8 +7,8 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PSEP_GRAPH_IO_HPP
-#define PSEP_GRAPH_IO_HPP
+#ifndef CMR_GRAPH_IO_HPP
+#define CMR_GRAPH_IO_HPP
 
 #include "Graph.hpp"
 
@@ -17,7 +17,7 @@
 #include <vector>
 #include <string>
 
-namespace PSEP {
+namespace CMR {
 
 /** Writes a tour to file.
  * Writes the tour specified by \p tour_nodes to the file named 
@@ -47,7 +47,7 @@ void write_tour_nodes(const std::vector<int> &tour_nodes,
  * \return 0 if successful, 1 if error
  */
 void write_tour_edges(const std::vector<int> &tour_edges,
-		     const std::vector<PSEP::Edge> &edges,
+		     const std::vector<CMR::Edge> &edges,
 		     const int node_count,
 		     const std::string &tour_edges_fname);
 

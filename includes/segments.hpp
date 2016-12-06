@@ -4,15 +4,15 @@
  *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PSEP_SEGCUTS_H
-#define PSEP_SEGCUTS_H
+#ifndef CMR_SEGCUTS_H
+#define CMR_SEGCUTS_H
 
 #include "cuts.hpp"
 #include "Graph.hpp"
 
 #include<vector>
 
-namespace PSEP {
+namespace CMR {
 
 /** Class for exact primal subtour separation.
  * Can be instantiated with data about a best tour and an lp solution, and used

@@ -1,6 +1,6 @@
 #include "pivplan.hpp"
 
-using namespace PSEP;
+using namespace CMR;
 
 
 PivotPlan::PivotPlan(int _ncount, bool _branch,

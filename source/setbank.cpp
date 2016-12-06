@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace PSEP{
+namespace CMR{
 
 std::size_t hash_value(const IntervalSet &S){
   boost::hash<std::vector<IntPair>> hahser;
@@ -85,7 +85,7 @@ void interactive_test(){
 }
 }
 
-using namespace PSEP;
+using namespace CMR;
 
 SetBank *HyperGraph::source_setbank;
 
@@ -138,7 +138,7 @@ int SetBank::extract_nodelist(const IntervalSet &interval_set,
     for(int j = start_ind; j <= end_ind; j++)
       result_nodelist.push_back(tour_nodes[j]);
     } catch (const bad_alloc &){
-      rval = 1; PSEP_GOTO_CLEANUP("Couldn't push back result nodelist, ");
+      rval = 1; CMR_GOTO_CLEANUP("Couldn't push back result nodelist, ");
     }
   }
 

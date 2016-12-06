@@ -4,7 +4,7 @@
 
 #include "lp.hpp"
 
-int PSEPlp_init (PSEPlp *lp){
+int CMRlp_init (CMRlp *lp){
   int rval = 0;
   
   lp->cplex_lp = (CPXLPptr) NULL;
@@ -12,7 +12,7 @@ int PSEPlp_init (PSEPlp *lp){
 
   if(rval){
     fprintf (stderr, "CPXopenCPLEX failed, return code %d\n", rval);
-    PSEPlp_free(lp);
+    CMRlp_free(lp);
     goto CLEANUP;
   }
 
@@ -25,7 +25,7 @@ int PSEPlp_init (PSEPlp *lp){
   return rval;
 }
 
-void PSEPlp_free (PSEPlp *lp){
+void CMRlp_free (CMRlp *lp){
   if (lp) {
     if (lp->cplex_env){
       if (lp->cplex_lp){
@@ -37,7 +37,7 @@ void PSEPlp_free (PSEPlp *lp){
   }
 }
 
-int PSEPlp_create (PSEPlp *lp, const char *name){
+int CMRlp_create (CMRlp *lp, const char *name){
   int rval = 0;
   char nambuf[32];
   if (!lp->cplex_env){
@@ -54,7 +54,7 @@ int PSEPlp_create (PSEPlp *lp, const char *name){
   return rval;
 }
 
-int PSEPlp_new_row (PSEPlp *lp, char sense, double rhs){
+int CMRlp_new_row (CMRlp *lp, char sense, double rhs){
   int rval = 0;
   char asense[1];
   double arhs[1];
@@ -71,7 +71,7 @@ int PSEPlp_new_row (PSEPlp *lp, char sense, double rhs){
   return rval;
 }
 
-int PSEPlp_addrows (PSEPlp *lp, int newrows, int newnz, double *rhs,
+int CMRlp_addrows (CMRlp *lp, int newrows, int newnz, double *rhs,
 		    char *sense, int *rmatbeg, int *rmatind,
 		    double *rmatval){
   int rval = 0;
@@ -88,7 +88,7 @@ int PSEPlp_addrows (PSEPlp *lp, int newrows, int newnz, double *rhs,
   return rval;
 }
 
-int PSEPlp_getrows(PSEPlp *lp, int *nzcnt_p, int *rmatbeg, int *rmatind,
+int CMRlp_getrows(CMRlp *lp, int *nzcnt_p, int *rmatbeg, int *rmatind,
 		    double *rmatval, int rmatspace, int *surplus_p, int begin,
 		   int end){
   int rval = CPXgetrows(lp->cplex_env, lp->cplex_lp, nzcnt_p, rmatbeg,
@@ -96,39 +96,39 @@ int PSEPlp_getrows(PSEPlp *lp, int *nzcnt_p, int *rmatbeg, int *rmatind,
   /*if(rval){
     if (rval == CPXERR_NEGATIVE_SURPLUS)
       fprintf(stderr, "Insufficient space in rmatind, rmatval ");
-    fprintf(stderr, "PSEPlp_getrows failed\n");
+    fprintf(stderr, "CMRlp_getrows failed\n");
     }*/
 
   return rval;
 }
 
-int PSEPlp_delrows(PSEPlp *lp, int begin, int end){
+int CMRlp_delrows(CMRlp *lp, int begin, int end){
   int rval = CPXdelrows(lp->cplex_env, lp->cplex_lp, begin, end);
   if(rval) {fprintf(stderr, "CPXdelrows failed, rval %d\n", rval);}
   return rval;
 }
 
-int PSEPlp_delsetrows(PSEPlp *lp, int *delstat){
+int CMRlp_delsetrows(CMRlp *lp, int *delstat){
   int rval = CPXdelsetrows(lp->cplex_env, lp->cplex_lp, delstat);
   if(rval) {fprintf(stderr, "CPXdelsetrows failed, rval %d\n", rval);}
   return rval;
 }
 
-int PSEPlp_delsetcols(PSEPlp *lp, int *delstat){
+int CMRlp_delsetcols(CMRlp *lp, int *delstat){
   int rval = CPXdelsetcols(lp->cplex_env, lp->cplex_lp, delstat);
   if(rval) {fprintf(stderr, "CPXdelsetcols failed, rval %d\n", rval);}
   return rval;
 }
 
-int PSEPlp_numrows(PSEPlp *lp){
+int CMRlp_numrows(CMRlp *lp){
   return CPXgetnumrows (lp->cplex_env, lp->cplex_lp);
 }
 
-int PSEPlp_numcols(PSEPlp *lp){
+int CMRlp_numcols(CMRlp *lp){
   return CPXgetnumcols (lp->cplex_env, lp->cplex_lp);
 }
 
-int PSEPlp_addcols (PSEPlp *lp, int newcols, int newnz, double *obj,
+int CMRlp_addcols (CMRlp *lp, int newcols, int newnz, double *obj,
 		    int *cmatbeg, int *cmatind, double *cmatval,
 		    double *lb, double *ub){
   int rval = 0;
@@ -142,7 +142,7 @@ int PSEPlp_addcols (PSEPlp *lp, int newcols, int newnz, double *obj,
   return rval;
 }
 
-int PSEPlp_setbnd (PSEPlp *lp, int col, char lower_or_upper,
+int CMRlp_setbnd (CMRlp *lp, int col, char lower_or_upper,
 		   double bnd){
   int rval = 0;
   int cindex[1];
@@ -163,7 +163,7 @@ int PSEPlp_setbnd (PSEPlp *lp, int col, char lower_or_upper,
   return rval;
 }
 
-int PSEPlp_clampbnd(PSEPlp *lp, int col, char lower_or_upper, double bnd){
+int CMRlp_clampbnd(CMRlp *lp, int col, char lower_or_upper, double bnd){
   int rval = 0, count = 1;
   
   rval = CPXtightenbds(lp->cplex_env, lp->cplex_lp, count, &col,
@@ -173,7 +173,7 @@ int PSEPlp_clampbnd(PSEPlp *lp, int col, char lower_or_upper, double bnd){
   return rval;
 }
 
-int PSEPlp_relaxbds(PSEPlp *lp, int count, int const *indices,
+int CMRlp_relaxbds(CMRlp *lp, int count, int const *indices,
 		    char const *lower_or_upper, double const *bd){
   int rval = CPXtightenbds(lp->cplex_env, lp->cplex_lp, count, indices,
 			   lower_or_upper, bd);
@@ -182,7 +182,7 @@ int PSEPlp_relaxbds(PSEPlp *lp, int count, int const *indices,
   return rval;
 }
 
-int PSEPlp_no_opt (PSEPlp *lp){
+int CMRlp_no_opt (CMRlp *lp){
   int rval = 0, solstat;
 
   rval = CPXsetlongparam(lp->cplex_env, CPXPARAM_Simplex_Limits_Iterations, 0);
@@ -205,7 +205,7 @@ int PSEPlp_no_opt (PSEPlp *lp){
   }
   
   rval = CPXsetlongparam(lp->cplex_env, CPXPARAM_Simplex_Limits_Iterations,
-			 PSEP::LP::DEFAULT_ITLIM);
+			 CMR::LP::DEFAULT_ITLIM);
   if (rval){
     fprintf (stderr, "Failed to revert limit\n");
     goto CLEANUP;
@@ -215,7 +215,7 @@ int PSEPlp_no_opt (PSEPlp *lp){
   return rval;
 }
 
-int PSEPlp_primal_opt (PSEPlp *lp, int *infeasible){
+int CMRlp_primal_opt (CMRlp *lp, int *infeasible){
   int rval = 0, solstat;
 
   *infeasible = 0;
@@ -239,7 +239,7 @@ int PSEPlp_primal_opt (PSEPlp *lp, int *infeasible){
   return rval;
 }
 
-int PSEPlp_dual_opt (PSEPlp *lp, int *infeasible){
+int CMRlp_dual_opt (CMRlp *lp, int *infeasible){
   int rval = 0, solstat;
 
   *infeasible = 0;
@@ -254,7 +254,7 @@ int PSEPlp_dual_opt (PSEPlp *lp, int *infeasible){
   if (solstat == CPX_STAT_INFEASIBLE) {
     if(infeasible)
       *infeasible = 1;
-    fprintf(stderr, "PSEPlp_dual_opt detected infeasibility\n");
+    fprintf(stderr, "CMRlp_dual_opt detected infeasibility\n");
     goto CLEANUP;
   }else if (solstat != CPX_STAT_OPTIMAL &&
 	     solstat != CPX_STAT_OPTIMAL_INFEAS) {
@@ -266,7 +266,7 @@ int PSEPlp_dual_opt (PSEPlp *lp, int *infeasible){
   return rval;
 }
 
-int PSEPlp_primal_pivot (PSEPlp *lp, int *infeasible){
+int CMRlp_primal_pivot (CMRlp *lp, int *infeasible){
   int rval = 0, solstat;
 
   
@@ -300,7 +300,7 @@ int PSEPlp_primal_pivot (PSEPlp *lp, int *infeasible){
   }
 
   rval = CPXsetlongparam(lp->cplex_env, CPXPARAM_Simplex_Limits_Iterations,
-			 PSEP::LP::DEFAULT_ITLIM);
+			 CMR::LP::DEFAULT_ITLIM);
   if (rval){
     fprintf (stderr, "Failed to revert itlimit\n");
     goto CLEANUP;
@@ -312,7 +312,7 @@ int PSEPlp_primal_pivot (PSEPlp *lp, int *infeasible){
   return rval;
 }
 
-int PSEPlp_primal_nd_pivot (PSEPlp *lp, int *infeasible, const double lowlimit){
+int CMRlp_primal_nd_pivot (CMRlp *lp, int *infeasible, const double lowlimit){
   int rval = 0, solstat;
 
   rval = CPXsetdblparam(lp->cplex_env, CPXPARAM_Simplex_Limits_LowerObj,
@@ -345,11 +345,11 @@ int PSEPlp_primal_nd_pivot (PSEPlp *lp, int *infeasible, const double lowlimit){
     
  CLEANUP:
   if(rval)
-    fprintf(stderr, " problem in PSEPlp_primal_nd_pivot\n");
+    fprintf(stderr, " problem in CMRlp_primal_nd_pivot\n");
   return rval;
 }
 
-int PSEPlp_dual_pivot (PSEPlp *lp, int *infeasible){
+int CMRlp_dual_pivot (CMRlp *lp, int *infeasible){
   int rval = 0, solstat;
 
   rval = CPXsetlongparam(lp->cplex_env, CPXPARAM_Simplex_Limits_Iterations, 1);
@@ -382,7 +382,7 @@ int PSEPlp_dual_pivot (PSEPlp *lp, int *infeasible){
   }
 
   rval = CPXsetlongparam(lp->cplex_env, CPXPARAM_Simplex_Limits_Iterations,
-			 PSEP::LP::DEFAULT_ITLIM);
+			 CMR::LP::DEFAULT_ITLIM);
   if (rval){
     fprintf (stderr, "Failed to revert itlimit\n");
     goto CLEANUP;
@@ -394,18 +394,18 @@ int PSEPlp_dual_pivot (PSEPlp *lp, int *infeasible){
 }
 
 
-int PSEPlp_getobj (PSEPlp *lp, double *obj, int numcols){
+int CMRlp_getobj (CMRlp *lp, double *obj, int numcols){
   int rval = CPXgetobj(lp->cplex_env, lp->cplex_lp, obj, 0, numcols - 1);
   if(rval)
     fprintf(stderr, "CPXgetobj failed, rval %d\n", rval);
   return rval;
 }
 
-int PSEPlp_itcount (PSEPlp *lp){
+int CMRlp_itcount (CMRlp *lp){
   return CPXgetitcnt(lp->cplex_env, lp->cplex_lp);
 }
 
-int PSEPlp_objval (PSEPlp *lp, double *obj){
+int CMRlp_objval (CMRlp *lp, double *obj){
   int rval = 0;
 
   rval = CPXgetobjval (lp->cplex_env, lp->cplex_lp, obj);
@@ -417,7 +417,7 @@ int PSEPlp_objval (PSEPlp *lp, double *obj){
   return rval;
 }
 
-int PSEPlp_x (PSEPlp *lp, double *x){
+int CMRlp_x (CMRlp *lp, double *x){
   int rval = 0, ncols;
   ncols = CPXgetnumcols (lp->cplex_env, lp->cplex_lp);
   if (ncols == 0){
@@ -433,7 +433,7 @@ int PSEPlp_x (PSEPlp *lp, double *x){
   return rval;
 }
 
-int PSEPlp_write (PSEPlp *lp, const char *fname){
+int CMRlp_write (CMRlp *lp, const char *fname){
   int rval = 0;
   char nambuf[32], lpbuf[4];
 
@@ -450,7 +450,7 @@ int PSEPlp_write (PSEPlp *lp, const char *fname){
   return rval;
 }
 
-int PSEPlp_dualfeas(PSEPlp *lp){
+int CMRlp_dualfeas(CMRlp *lp){
   int dualfeas, rval = 0, result = 0;
 
   rval = CPXsolninfo (lp->cplex_env, lp->cplex_lp, NULL, NULL, NULL,
@@ -465,11 +465,11 @@ int PSEPlp_dualfeas(PSEPlp *lp){
   return result;
 }
 
-int PSEPlp_solstat(PSEPlp *lp){
+int CMRlp_solstat(CMRlp *lp){
   return CPXgetstat(lp->cplex_env, lp->cplex_lp);
 }
 
-int PSEPlp_chgobj (PSEPlp *lp, int count, int const * indices,
+int CMRlp_chgobj (CMRlp *lp, int count, int const * indices,
 		  double const * values){
   int rval = 0;
   rval = CPXchgobj(lp->cplex_env, lp->cplex_lp, count, indices, values);
@@ -480,16 +480,16 @@ int PSEPlp_chgobj (PSEPlp *lp, int count, int const * indices,
     return rval;
 }
 
-int PSEPlp_chgsense (PSEPlp *lp, const int count, int const * indices,
+int CMRlp_chgsense (CMRlp *lp, const int count, int const * indices,
 		     char const * sense){
   int rval = CPXchgsense(lp->cplex_env, lp->cplex_lp, count, indices, sense);
   if(rval)
-    fprintf(stderr, "PSEPlp_chgsense failed, rval %d\n", rval);
+    fprintf(stderr, "CMRlp_chgsense failed, rval %d\n", rval);
   
   return rval;
 }
 
-int PSEPlp_chgcoef (PSEPlp *lp, const int row, const int col,
+int CMRlp_chgcoef (CMRlp *lp, const int row, const int col,
 		     const double newvalue){
   int rval = CPXchgcoef(lp->cplex_env, lp->cplex_lp, row, col, newvalue);
   if(rval)
@@ -497,7 +497,7 @@ int PSEPlp_chgcoef (PSEPlp *lp, const int row, const int col,
   return rval;
 }
 
-int PSEPlp_copystart (PSEPlp *lp, int const * cstat, int const * rstat,
+int CMRlp_copystart (CMRlp *lp, int const * cstat, int const * rstat,
 		      double const * cprim, double const * rprim,
 		      double const * cdual, double const * rdual){
   int rval = CPXcopystart(lp->cplex_env, lp->cplex_lp,
@@ -505,11 +505,11 @@ int PSEPlp_copystart (PSEPlp *lp, int const * cstat, int const * rstat,
 			  cprim, rprim,
 			  cdual, rdual);
   if(rval)
-    fprintf(stderr, "PSEPlp_copystart failed, rval %d\n", rval);
+    fprintf(stderr, "CMRlp_copystart failed, rval %d\n", rval);
   return rval;
 }
 
-int PSEPlp_copybase (PSEPlp *lp, int *colstat, int *rowstat){
+int CMRlp_copybase (CMRlp *lp, int *colstat, int *rowstat){
   int rval = 0;
   rval = CPXcopybase(lp->cplex_env, lp->cplex_lp, colstat, rowstat);
   if(rval){
@@ -518,7 +518,7 @@ int PSEPlp_copybase (PSEPlp *lp, int *colstat, int *rowstat){
   return rval;
 }
 
-int PSEPlp_getbase (PSEPlp *lp, int * colstat, int * rowstat){
+int CMRlp_getbase (CMRlp *lp, int * colstat, int * rowstat){
   int rval = 0;
   if(!colstat && !rowstat){
     fprintf(stderr, "Passed two null arrays to getbase\n");
@@ -533,7 +533,7 @@ int PSEPlp_getbase (PSEPlp *lp, int * colstat, int * rowstat){
   return rval;
 }
 
-int PSEPlp_getslack(PSEPlp *lp, double *slack, int begin, int end){
+int CMRlp_getslack(CMRlp *lp, double *slack, int begin, int end){
   int rval = 0;
   rval = CPXgetslack(lp->cplex_env, lp->cplex_lp, slack, begin, end);
   if(rval)
@@ -542,14 +542,14 @@ int PSEPlp_getslack(PSEPlp *lp, double *slack, int begin, int end){
   return rval;
 }
 
-int PSEPlp_getpi(PSEPlp *lp, double *pi, int begin, int end){
+int CMRlp_getpi(CMRlp *lp, double *pi, int begin, int end){
   int rval = CPXgetpi(lp->cplex_env, lp->cplex_lp, pi, begin, end);
   if(rval)
-    fprintf(stderr, "PSEPlp_getpi failed, rval %d\n", rval);
+    fprintf(stderr, "CMRlp_getpi failed, rval %d\n", rval);
   return rval;
 }
 
-int PSEPlp_getlb(PSEPlp *lp, double *lb, int begin, int end){
+int CMRlp_getlb(CMRlp *lp, double *lb, int begin, int end){
   int rval = CPXgetlb(lp->cplex_env, lp->cplex_lp, lb, begin, end);
   if(rval)
     fprintf(stderr, "lp_getlb failed, rval %d\n", rval);
@@ -557,7 +557,7 @@ int PSEPlp_getlb(PSEPlp *lp, double *lb, int begin, int end){
   return rval;
 }
 
-int PSEPlp_getrowinfeas(PSEPlp *lp, double const *x, double *feas_stat,
+int CMRlp_getrowinfeas(CMRlp *lp, double const *x, double *feas_stat,
 			int begin, int end){
   int rval = CPXgetrowinfeas(lp->cplex_env, lp->cplex_lp, x, feas_stat,
 			     begin, end);
@@ -567,7 +567,7 @@ int PSEPlp_getrowinfeas(PSEPlp *lp, double const *x, double *feas_stat,
   return rval;
 }
 
-int PSEPlp_bhead (PSEPlp *lp, int *head, double *x){
+int CMRlp_bhead (CMRlp *lp, int *head, double *x){
   int rval = CPXgetbhead(lp->cplex_env, lp->cplex_lp, head, x);
 
   if(rval)
@@ -576,7 +576,7 @@ int PSEPlp_bhead (PSEPlp *lp, int *head, double *x){
   return rval;
 }
 
-int PSEPlp_getsense (PSEPlp *lp, char *sense, int rownum){
+int CMRlp_getsense (CMRlp *lp, char *sense, int rownum){
   int rval = CPXgetsense(lp->cplex_env, lp->cplex_lp, sense, rownum, rownum);
 
   if(rval)
@@ -585,7 +585,7 @@ int PSEPlp_getsense (PSEPlp *lp, char *sense, int rownum){
   return rval;
 }
 
-int PSEPlp_get_redcosts (PSEPlp *lp, double * cost_array){
+int CMRlp_get_redcosts (CMRlp *lp, double * cost_array){
   int rval = 0;
   int numcols = CPXgetnumcols(lp->cplex_env, lp->cplex_lp);
   rval = CPXgetdj(lp->cplex_env, lp->cplex_lp, cost_array, 0, numcols - 1);

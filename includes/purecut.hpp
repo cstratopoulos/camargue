@@ -4,8 +4,8 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PSEP_PURE_CUT_H
-#define PSEP_PURE_CUT_H
+#ifndef CMR_PURE_CUT_H
+#define CMR_PURE_CUT_H
 
 #include <iostream>
 #include <vector>
@@ -13,7 +13,7 @@
 #include "lp.hpp"
 #include "datagroups.hpp"
 #include "Graph.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 #include "cutcall.hpp"
 #include "pivplan.hpp"
 #include "LPcore.hpp"
@@ -21,7 +21,7 @@
 #include "printer.hpp"
 #include "timer.hpp"
 
-namespace PSEP {
+namespace CMR {
 /* Some forward declarations to allow for friend classes to be declared */
 class ABC;
 namespace BB {
@@ -44,7 +44,7 @@ public:
    */
   PureCut(Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
 	  Data::LPGroup &LPGroup, Data::SupportGroup &SupportGroup,
-	  PSEP::OutPrefs &_outprefs):
+	  CMR::OutPrefs &_outprefs):
     print(BestGroup.best_tour_nodes, BestGroup.best_tour_edges,
 	  LPGroup.m_lp_edges, GraphGroup.m_graph.edges),
     pctime("PureCut::solve"),
@@ -60,20 +60,20 @@ public:
    * function stored in the PivType \p final_piv_stat.
    * @returns 0 if successful, 1 if failure.
    */
-  int solve(PSEP::PivotPlan &plan, PSEP::LP::PivType &final_piv_stat);
+  int solve(CMR::PivotPlan &plan, CMR::LP::PivType &final_piv_stat);
   
-  PSEP_Printer print;
+  CMR_Printer print;
   
 private:
-  friend class PSEP::BB::Visitor;
-  friend class PSEP::ABC;
+  friend class CMR::BB::Visitor;
+  friend class CMR::ABC;
 
-  PSEP::Timer pctime;
+  CMR::Timer pctime;
 
-  PSEP::CutControl CutControl; /**< Manages separation routines/cut adding. */
-  PSEP::LP::CutPrune LPPrune; /**< Manages the pruning of cuts from the LP */
-  PSEP::LP::Core LPCore; /**< Carries out fundamental LP operations */
-  PSEP::LP::EdgeFix LPFix; /**< Fixes edges by reduced cost. */
+  CMR::CutControl CutControl; /**< Manages separation routines/cut adding. */
+  CMR::LP::CutPrune LPPrune; /**< Manages the pruning of cuts from the LP */
+  CMR::LP::Core LPCore; /**< Carries out fundamental LP operations */
+  CMR::LP::EdgeFix LPFix; /**< Fixes edges by reduced cost. */
 };
 }
 

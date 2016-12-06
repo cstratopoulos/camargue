@@ -4,7 +4,7 @@ objects
 *.dSYM
 
 #no main executable
-PSEP
+camargue
 
 #no softlink to problems folder or scripts
 problems

@@ -1,6 +1,6 @@
 #include "datagroups.hpp"
 #include "graph_io.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
 #include<algorithm>
 #include<unordered_map>
@@ -28,11 +28,11 @@ using std::exception;
 using std::runtime_error;
 using std::logic_error;
 
-namespace PSEP {
+namespace CMR {
 namespace Data {
 
 Instance::Instance(const string &fname, int &ncount)
-try : handle(PSEP::make_unique<CCdatagroup>()) {
+try : handle(CMR::make_unique<CCdatagroup>()) {
   int tmp_ncount = 0;
     
   if(CCutil_gettsplib(const_cast<char*>(fname.c_str()), &tmp_ncount,
@@ -46,7 +46,7 @@ try : handle(PSEP::make_unique<CCdatagroup>()) {
  }
 
 Instance::Instance(const int seed, const int ncount, const int gridsize)
-try : handle(PSEP::make_unique<CCdatagroup>()) {
+try : handle(CMR::make_unique<CCdatagroup>()) {
   if(ncount <= 0) throw logic_error("Specified bad ncount.");
   if(gridsize <= 0) throw logic_error("Specified bad gridsize.");
     
@@ -81,7 +81,7 @@ GraphGroup::GraphGroup(const string &fname, string &probname,
 
   if(!fname.empty()){
     rval = CCutil_gettsplib(filestring, &(m_graph.node_count), rawdat);
-    PSEP_CHECK_RVAL(rval, "CCutil_gettsplib failed. ");
+    CMR_CHECK_RVAL(rval, "CCutil_gettsplib failed. ");
 
     probname = fname.substr(fname.find_last_of("/") + 1);
     probname = probname.substr(0, probname.find_last_of("."));
@@ -97,7 +97,7 @@ GraphGroup::GraphGroup(const string &fname, string &probname,
     rval = CCutil_getdata((char *) NULL, 1, CC_EUCLIDEAN,
 			  &(m_graph.node_count),
 			  rawdat, use_gridsize, allow_dups, &rstate);
-    if(rval) PSEP_GOTO_CLEANUP("CCutil_getdata randprob failed, ");
+    if(rval) CMR_GOTO_CLEANUP("CCutil_getdata randprob failed, ");
 
     probname = "r" + std::to_string(randprob.nodecount) + "-g"
       + std::to_string(randprob.gridsize) + "-s"
@@ -108,7 +108,7 @@ GraphGroup::GraphGroup(const string &fname, string &probname,
     m_graph.edge_count = (m_graph.node_count * (m_graph.node_count - 1)) / 2;
     try{ m_graph.edges.resize(m_graph.edge_count); }
     catch(const std::bad_alloc &){
-      rval = 1; PSEP_GOTO_CLEANUP("Out of memory for m_graph.edges, ");
+      rval = 1; CMR_GOTO_CLEANUP("Out of memory for m_graph.edges, ");
     }
   
     { int e_index = 0; 
@@ -143,11 +143,11 @@ GraphGroup::GraphGroup(const string &fname, string &probname,
 
     rval = CCedgegen_edges(&plan, m_graph.node_count, rawdat, NULL,
 			   &(m_graph.edge_count), &elist, 1, &rstate);
-    if(rval) PSEP_GOTO_CLEANUP("Problem with CCedgegen_edges, ");
+    if(rval) CMR_GOTO_CLEANUP("Problem with CCedgegen_edges, ");
     
     try{ m_graph.edges.resize(m_graph.edge_count); }
     catch(const std::bad_alloc &){
-      rval = 1; PSEP_GOTO_CLEANUP("Out of memory for m_graph.edges, ");
+      rval = 1; CMR_GOTO_CLEANUP("Out of memory for m_graph.edges, ");
     }
 
     for(int i = 0; i < m_graph.edge_count; i++){
@@ -169,7 +169,7 @@ GraphGroup::GraphGroup(const string &fname, string &probname,
   delta.resize(m_graph.edge_count, 0);
   edge_marks.resize(m_graph.node_count, 0);
   } catch(const std::bad_alloc &){
-    PSEP_SET_GOTO(rval, "Out of memory for dfs vectors, ");
+    CMR_SET_GOTO(rval, "Out of memory for dfs vectors, ");
   }
 
   if(dump_xy){
@@ -177,7 +177,7 @@ GraphGroup::GraphGroup(const string &fname, string &probname,
       std::string xyfile = probname + ".xy";
       write_xy_coords(dat->x, dat->y, m_graph.node_count,
 			     xyfile);
-      PSEP_CHECK_RVAL(rval, "Couldn't dump xy coords to file. ");
+      CMR_CHECK_RVAL(rval, "Couldn't dump xy coords to file. ");
 
       std::cout << "Dumped xy coords to " << xyfile << "\n";
     } else
@@ -224,7 +224,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
 
   cyc = CC_SAFE_MALLOC(ncount, int); 
   if(!cyc){
-    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for cyc, ");
+    rval = 1; CMR_GOTO_CLEANUP("Out of memory for cyc, ");
   }
 
   try {
@@ -232,7 +232,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   perm.resize(ncount);
   best_tour_edges.resize(m_graph.edge_count, 0);
   } catch(const std::bad_alloc &){
-    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for BestGroup vectors, ");
+    rval = 1; CMR_GOTO_CLEANUP("Out of memory for BestGroup vectors, ");
   }
 
   if(!sparse){
@@ -241,30 +241,30 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
     plan.quadnearest = 2;
     rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &ecount,
 			    &elist, silent, &rand_state);
-    if(rval) PSEP_GOTO_CLEANUP("CCedgegen_edges failed, ");
+    if(rval) CMR_GOTO_CLEANUP("CCedgegen_edges failed, ");
     plan.quadnearest = 0;
 
     plan.tour.greedy = 1;
     rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &tcount,
 			    &tlist, silent, &rand_state);
-    if(rval) PSEP_GOTO_CLEANUP("CCedgegen_edges failed, ");
+    if(rval) CMR_GOTO_CLEANUP("CCedgegen_edges failed, ");
 
     if (tcount != ncount) {
-      rval = 1; PSEP_GOTO_CLEANUP("Wrong edgeset from CCedgegen_edges, ");
+      rval = 1; CMR_GOTO_CLEANUP("Wrong edgeset from CCedgegen_edges, ");
     }
 
     rval = CCutil_edge_to_cycle (ncount, tlist, &istour, cyc);
-    if(rval) PSEP_GOTO_CLEANUP("CCutil_edge_to_cycle failed, ");
+    if(rval) CMR_GOTO_CLEANUP("CCutil_edge_to_cycle failed, ");
   
     if (istour == 0) {
-      rval = 1; PSEP_GOTO_CLEANUP("Starting tour has an error, ");
+      rval = 1; CMR_GOTO_CLEANUP("Starting tour has an error, ");
     }
     CC_FREE (tlist, int);
   } else {
     ecount = m_graph.edge_count;
     elist = CC_SAFE_MALLOC(2 * ecount, int);
     if(!elist){
-      rval = 1; PSEP_GOTO_CLEANUP("Out of memory for elist, ");
+      rval = 1; CMR_GOTO_CLEANUP("Out of memory for elist, ");
     }
 
     for(int i = 0; i < ecount; i++){
@@ -279,7 +279,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
 			 &best_tour_nodes[0], &bestval, silent, 0.0, 0.0,
 			 (char *) NULL,
 			 CC_LK_GEOMETRIC_KICK, &rand_state);
-  if(rval) PSEP_GOTO_CLEANUP("CClinkern_tour failed, ");
+  if(rval) CMR_GOTO_CLEANUP("CClinkern_tour failed, ");
   
   //end of copied code (from find_tour)
   std::cout << "LK initial run: " << bestval << ". ";
@@ -294,7 +294,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
     rval = CClinkern_tour(ncount, rawdat, ecount, elist, ncount, kicks,
 			  (int *) NULL, cyc, &val, 1, 0.0, 0.0,
 			  (char *) NULL, CC_LK_GEOMETRIC_KICK, &rand_state);
-  if(rval) PSEP_GOTO_CLEANUP("CClinkern_tour failed, ");
+  if(rval) CMR_GOTO_CLEANUP("CClinkern_tour failed, ");
   
   if(val < bestval){
     for(int j = 0; j < ncount; j++)
@@ -317,7 +317,7 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
 			  &best_tour_nodes[0], cyc, &bestval, 1, 0.0, 0.0,
 			  (char *) NULL,
 			  CC_LK_GEOMETRIC_KICK, &rand_state);
-    if(rval) PSEP_GOTO_CLEANUP("CClinkern_tour failed, ");
+    if(rval) CMR_GOTO_CLEANUP("CClinkern_tour failed, ");
 
     cout << "LK run from best tour: " << bestval << "\n";
     for(int j = 0; j < ncount; j++)
@@ -393,13 +393,13 @@ BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
   CC_IFFREE (tlist, int);
   CCutil_freedatagroup(rawdat);
   if(rval){
-    cerr << "PSEP::BestGroup (LK) constructor failed.\n";
+    cerr << "CMR::BestGroup (LK) constructor failed.\n";
     throw 1;
   }
 }
 
 BestGroup::BestGroup(const std::string &tourfile,
-		     PSEP::Graph &graph, vector<int> &delta,
+		     CMR::Graph &graph, vector<int> &delta,
 		     std::unique_ptr<CCdatagroup> &dat,
 		     const std::string &probname,
 		     const bool save_tour, const bool save_tour_edges)
@@ -413,7 +413,7 @@ BestGroup::BestGroup(const std::string &tourfile,
     perm.resize(ncount);
     best_tour_edges.resize(graph.edge_count, 0);
   } catch (const std::bad_alloc &) {
-    PSEP_SET_GOTO(rval, "Out of memory for BestGroup vectors. ");
+    CMR_SET_GOTO(rval, "Out of memory for BestGroup vectors. ");
   }
 
   for (int i = 0; i < ncount; ++i) perm[best_tour_nodes[i]] = i;
@@ -476,7 +476,7 @@ BestGroup::BestGroup(const std::string &tourfile,
   //   std::string solfile = probname + ".sol";
   //   rval = write_tour_nodes(best_tour_nodes,
   // 			    solfile);
-  //   PSEP_CHECK_RVAL(rval, "Couldn't write initial tour to file. ");
+  //   CMR_CHECK_RVAL(rval, "Couldn't write initial tour to file. ");
 
   //   std::cout << "Wrote initial tour to " << solfile << ".\n";
   // }
@@ -490,12 +490,12 @@ BestGroup::BestGroup(const std::string &tourfile,
 
  CLEANUP:
   if(rval){
-    std::cerr << "PSEP::BestGroup (file) constructor failed.\n";
+    std::cerr << "CMR::BestGroup (file) constructor failed.\n";
     throw 1;
   }
 }
 
-LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
+LPGroup::LPGroup(const Graph &m_graph, CMR::LP::Prefs &_prefs,
 			   const vector<int> &perm){
   int rval = 0;
   int cmatbeg = 0, num_vars = 1, num_non_zero = 2;
@@ -505,16 +505,16 @@ LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
 
   
   //Build the basic LP
-  rval = PSEPlp_init (&m_lp);
+  rval = CMRlp_init (&m_lp);
   if(rval) goto CLEANUP;
 
-  rval = PSEPlp_create (&m_lp, "subtour");
+  rval = CMRlp_create (&m_lp, "subtour");
   if(rval) goto CLEANUP;
 	  
 
   /* Build a row for each degree equation */
   for(int i = 0; i < m_graph.node_count; i++) {
-    rval = PSEPlp_new_row (&m_lp, 'E', 2.0);
+    rval = CMRlp_new_row (&m_lp, 'E', 2.0);
     if(rval) goto CLEANUP;
   }
 
@@ -522,7 +522,7 @@ LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
   for(int j = 0; j < m_graph.edge_count; j++) {
     int *nodes = (int*)m_graph.edges[j].end;
     double objective_val = (double)m_graph.edges[j].len;
-    rval = PSEPlp_addcols (&m_lp, num_vars, num_non_zero, &objective_val,
+    rval = CMRlp_addcols (&m_lp, num_vars, num_non_zero, &objective_val,
 			   &cmatbeg, nodes, coefficients, &lower_bound,
 			   &upper_bound);
     if(rval) goto CLEANUP;
@@ -537,7 +537,7 @@ LPGroup::LPGroup(const Graph &m_graph, PSEP::LP::Prefs &_prefs,
     frac_colstat.resize(m_graph.edge_count);
     frac_rowstat.resize(m_graph.edge_count);
   } catch(const std::bad_alloc &){
-    rval = 1; PSEP_GOTO_CLEANUP("Problem allocating LP vectors, ");
+    rval = 1; CMR_GOTO_CLEANUP("Problem allocating LP vectors, ");
   }
 
  CLEANUP:

@@ -1,10 +1,10 @@
-#ifndef PSEP_TIMER_HPP
-#define PSEP_TIMER_HPP
+#ifndef CMR_TIMER_HPP
+#define CMR_TIMER_HPP
 
 #include <chrono>
 #include <string>
 
-namespace PSEP {
+namespace CMR {
 
 /** A class for recording CPU and wall clock time. */
 class Timer {

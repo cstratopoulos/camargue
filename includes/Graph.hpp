@@ -1,5 +1,5 @@
-#ifndef PSEP_GRAPH_H
-#define PSEP_GRAPH_H
+#ifndef CMR_GRAPH_H
+#define CMR_GRAPH_H
 
 #include <vector>
 #include <queue>
@@ -8,13 +8,13 @@
 
 #include <math.h>
 
-#include "PSEP_util.hpp"
+#include "util.hpp"
 
 extern "C" {
   #include <concorde/INCLUDE/tsp.h>
 }
 
-namespace PSEP {
+namespace CMR {
 
 struct Edge {
   Edge() : removable(false) {}
@@ -86,7 +86,7 @@ struct SupportGraph {
 class TourGraph {
 public:
   TourGraph(const std::vector<int> &tour_edges,
-	    const std::vector<PSEP::Edge> &edges,
+	    const std::vector<CMR::Edge> &edges,
 	    const std::vector<int> &perm);
   ~TourGraph();
 

@@ -9,7 +9,7 @@ using std::cerr;
 
 using lpcut_in = CCtsp_lpcut_in;
 
-namespace PSEP {
+namespace CMR {
 namespace Cut {
 
 LPcutIn::LPcutIn() : head_cut(nullptr), cutcount(0) {}
@@ -26,7 +26,7 @@ LPcutIn::~LPcutIn()
   }
 }
 
-void LPcutIn::filter_primal(PSEP::TourGraph &TG)
+void LPcutIn::filter_primal(CMR::TourGraph &TG)
 {
   if(cutcount == 0 || begin() == nullptr) return;
 

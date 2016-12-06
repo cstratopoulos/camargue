@@ -1,5 +1,5 @@
-#ifndef PSEP_BBCONSTRAINTS_H
-#define PSEP_BBCONSTRAINTS_H
+#ifndef CMR_BBCONSTRAINTS_H
+#define CMR_BBCONSTRAINTS_H
 
 #include<array>
 #include<memory>
@@ -11,17 +11,17 @@
 #include "LPprune.hpp"
 #include "LPcore.hpp"
 
-namespace PSEP {
+namespace CMR {
   namespace BB {
     
     class Constraints {
     public:
-    Constraints(PSEP::BB::BranchPlan _Strategy,
+    Constraints(CMR::BB::BranchPlan _Strategy,
 		Data::GraphGroup &GraphGroup, Data::BestGroup &BestGroup,
 		Data::LPGroup &LPGroup,
 		Data::SupportGroup &SupportGroup,
-		PSEP::BB::RightBranch &_RB, PSEP::BB::EdgeStatuses &_ES,
-		PSEP::LP::CutPrune &_LPPrune, PSEP::LP::Core &_LPCore):
+		CMR::BB::RightBranch &_RB, CMR::BB::EdgeStatuses &_ES,
+		CMR::LP::CutPrune &_LPPrune, CMR::LP::Core &_LPCore):
       ncount(GraphGroup.m_graph.node_count), Strategy(_Strategy),
 	edges(GraphGroup.m_graph.edges),
 	best_tour_edges(BestGroup.best_tour_edges),
@@ -31,14 +31,14 @@ namespace PSEP {
 
     public:
       int compute_branch_edge();
-      int enforce(std::unique_ptr<PSEP::BB::TreeNode> &v);
-      int unenforce(std::unique_ptr<PSEP::BB::TreeNode> &v);
+      int enforce(std::unique_ptr<CMR::BB::TreeNode> &v);
+      int unenforce(std::unique_ptr<CMR::BB::TreeNode> &v);
       const int ncount;
 
     private:
-      friend class PSEP::BB::Visitor;
+      friend class CMR::BB::Visitor;
 
-      PSEP::BB::BranchPlan Strategy;
+      CMR::BB::BranchPlan Strategy;
 
       bool naive_compatible(const int clamp, const int partner);
       
@@ -70,18 +70,18 @@ namespace PSEP {
       std::vector<int> &best_tour_edges;
   
       std::vector<double> &m_lp_edges;
-      PSEPlp &m_lp;
+      CMRlp &m_lp;
 
       std::vector<int> &support_indices;
 
       std::vector<int> naive_branch_candidates;
       int naive_edge_partner;
 
-      PSEP::BB::RightBranch &RBranch;
-      PSEP::BB::EdgeStatuses &EdgeStats;
+      CMR::BB::RightBranch &RBranch;
+      CMR::BB::EdgeStatuses &EdgeStats;
 
-      PSEP::LP::CutPrune &LPPrune;
-      PSEP::LP::Core &LPCore;
+      CMR::LP::CutPrune &LPPrune;
+      CMR::LP::Core &LPCore;
     };
   }
 }

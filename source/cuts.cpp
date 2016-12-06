@@ -10,7 +10,7 @@ using std::map;
 using std::cout;
 using std::cerr;
 
-namespace PSEP {
+namespace CMR {
   
 template<>
 void CutQueue<HyperGraph>::push_front(const HyperGraph &H)
@@ -55,13 +55,13 @@ int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
   
   rval = H.source_setbank->extract_nodelist(*(H.set_refs[0]),
 					    body_nodes);
-  PSEP_CHECK_RVAL(rval, "Couldn't extract nodelist, ");
+  CMR_CHECK_RVAL(rval, "Couldn't extract nodelist, ");
   
 
   
   GraphUtils::get_delta(body_nodes, edges, &deltacount, delta, edge_marks);
   rval = (deltacount == 0);
-  PSEP_CHECK_RVAL(rval, "Body nodes gave empty delta, cut type: "
+  CMR_CHECK_RVAL(rval, "Body nodes gave empty delta, cut type: "
 		  << ((H.cut_type == HyperGraph::CutType::Segment) ?
 		      "segment" : "blossom. "));
   
@@ -73,7 +73,7 @@ int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
       coef_map[delta[i]] = 1.0;
   }
   catch(const std::bad_alloc &){
-    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for sparse row, ");
+    rval = 1; CMR_GOTO_CLEANUP("Out of memory for sparse row, ");
   }
 
   switch(H.cut_type){
@@ -92,10 +92,10 @@ int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
       IntPairMap::iterator find_it;
       
       rval = H.source_setbank->extract_nodelist(*(H.set_refs[i]), edge_tooth);
-      PSEP_CHECK_RVAL(rval, "Couldn't extract blossom tooth, ");
+      CMR_CHECK_RVAL(rval, "Couldn't extract blossom tooth, ");
 
       if(edge_tooth.size() != 2){
-	rval = 1; PSEP_GOTO_CLEANUP("Blossom tooth has " << edge_tooth.size()
+	rval = 1; CMR_GOTO_CLEANUP("Blossom tooth has " << edge_tooth.size()
 				    << "nodes! ");
       }
 
@@ -103,7 +103,7 @@ int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
       find_it = edge_lookup.find(IntPair(fmin(edge_tooth[0], edge_tooth[1]),
 					 fmax(edge_tooth[0], edge_tooth[1])));
       rval = (find_it == edge_lookup.end());
-      PSEP_CHECK_RVAL(rval, "Couldn't find tooth in edge lookup, ");
+      CMR_CHECK_RVAL(rval, "Couldn't find tooth in edge lookup, ");
             
       edge_index = find_it->second;
       coef_map[edge_index] = -1.0;
@@ -146,7 +146,7 @@ int CutTranslate::get_sparse_row(const dominoparity &dp_cut,
   sense = 'L';
 
   try { coeff_buff.resize(edges.size(), 0.0); } catch(...){
-    PSEP_SET_GOTO(rval, "Couldn't allocate coefficient buffer. ");
+    CMR_SET_GOTO(rval, "Couldn't allocate coefficient buffer. ");
   }
 
   //parse the handle
@@ -213,7 +213,7 @@ int CutTranslate::get_sparse_row(const dominoparity &dp_cut,
     IntPairMap::const_iterator it = edge_lookup.find(IntPair(end0, end1));
     
     if(it == edge_lookup.end()){
-      PSEP_SET_GOTO(rval, "Tried to lookup invalid edge. ");
+      CMR_SET_GOTO(rval, "Tried to lookup invalid edge. ");
     }
 
     coeff_buff[it->second] -= 1.0;
@@ -225,7 +225,7 @@ int CutTranslate::get_sparse_row(const dominoparity &dp_cut,
 	rmatind.push_back(i);
 	rmatval.push_back(coeff_buff[i]);
       }
-  } catch(...){ PSEP_SET_GOTO(rval, "Couldn't get sparse row from buffer. "); }
+  } catch(...){ CMR_SET_GOTO(rval, "Couldn't get sparse row from buffer. "); }
 
   rhs /= 2;
   rhs = floor(rhs);
@@ -267,7 +267,7 @@ int CutTranslate::get_sparse_row_if(bool &violated, const HyperGraph &H,
   double activity;
 
   rval = get_sparse_row(H, rmatind, rmatval, sense, rhs);
-  PSEP_CHECK_RVAL(rval, "Couldn't get sparse row, ");
+  CMR_CHECK_RVAL(rval, "Couldn't get sparse row, ");
 
   get_activity(activity, x, rmatind, rmatval);
 
@@ -280,7 +280,7 @@ int CutTranslate::get_sparse_row_if(bool &violated, const HyperGraph &H,
     break;
   default:
     rval = 1;
-    PSEP_GOTO_CLEANUP("Uncaught row sense " << sense << ", ");
+    CMR_GOTO_CLEANUP("Uncaught row sense " << sense << ", ");
   }
 
  CLEANUP:
@@ -307,7 +307,7 @@ int CutTranslate::is_cut_violated(bool &violated, const HyperGraph &H,
   violated = false;
 
   rval = get_sparse_row_if(violated, H, x, rmatind, rmatval, sense, rhs);
-  PSEP_CHECK_RVAL(rval, "Couldn't test violation, ");
+  CMR_CHECK_RVAL(rval, "Couldn't test violation, ");
 
  CLEANUP:
   if(rval)

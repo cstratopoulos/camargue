@@ -15,10 +15,10 @@ using std::vector;
 using std::string;
 using std::pair;
 
-#ifdef PSEP_DO_TESTS
+#ifdef CMR_DO_TESTS
 
 /*
-//for these tests, consider defining PSEP_DO_TESTS in DPgraph.hpp to generate
+//for these tests, consider defining CMR_DO_TESTS in DPgraph.hpp to generate
 //a DOT file for the witness cutgraph which can be viewed with graphviz or
 //some such
 TEST_CASE ("Tiny simple DP cutgraph tests",
@@ -38,38 +38,38 @@ TEST_CASE ("Tiny simple DP cutgraph tests",
 	  probfile = "problems/" + fname + ".tsp",
 	  solfile = "test_data/tours/" + fname + ".sol",
 	  subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-	PSEP::Data::GraphGroup g_dat;
-	PSEP::Data::BestGroup b_dat;
-	PSEP::Data::SupportGroup s_dat;
+	CMR::Data::GraphGroup g_dat;
+	CMR::Data::BestGroup b_dat;
+	CMR::Data::SupportGroup s_dat;
 	std::vector<double> lp_edges;
 	
-	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile, subtourfile,
+	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile, subtourfile,
 						g_dat, b_dat, lp_edges,
 						s_dat));
 	cout << "Best tour: ";
 	for(int i : b_dat.best_tour_nodes) cout << i << ", "; cout << "\n";
 
 	  
-	PSEP::CandidateTeeth cands(g_dat, b_dat, s_dat);	
+	CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);	
 	
 	REQUIRE_FALSE(cands.get_light_teeth());
 	cands.weak_elim();
 	
 	cands.print_collection();
 
-	PSEP::DPCutGraph dp_graph(
-#ifdef PSEP_DO_VIZ
+	CMR::DPCutGraph dp_graph(
+#ifdef CMR_DO_VIZ
 				  fname,
 #endif
 				  cands);
-	PSEP::CutQueue<PSEP::dominoparity> dp_q;
+	CMR::CutQueue<CMR::dominoparity> dp_q;
 
 	REQUIRE(dp_graph.simple_DP_sep(dp_q) != 1);
 
 	REQUIRE(dp_q.size() == expected_num_cuts);
 
 	while(!dp_q.empty()){
-	  PSEP::dominoparity dp = dp_q.peek_front();
+	  CMR::dominoparity dp = dp_q.peek_front();
 	  vector<int> &bt = b_dat.best_tour_nodes;
 
 	  cout << "Found dp with....\n";
@@ -80,7 +80,7 @@ TEST_CASE ("Tiny simple DP cutgraph tests",
 	    cout << "(" << bt[e.first] << ", " << bt[e.second] << "), ";
 	  cout << "\n";
 	  cout << "Simple teeth: (" << dp.used_teeth.size() << " total)\n";
-	  for(PSEP::SimpleTooth *T : dp.used_teeth)
+	  for(CMR::SimpleTooth *T : dp.used_teeth)
 	    cands.print_tooth(*T, true);
 
 	  dp_q.pop_front();
@@ -91,7 +91,7 @@ TEST_CASE ("Tiny simple DP cutgraph tests",
 }
 
 //these tests on medium sized examples should not be done with DO_VIZ. 
-#ifndef PSEP_DO_VIZ
+#ifndef CMR_DO_VIZ
 TEST_CASE ("simple DP cutgraph tests", "[cutgraph]") {
   vector<string> probs{"d2103", "pr1002", "rl1304"};
 
@@ -101,16 +101,16 @@ TEST_CASE ("simple DP cutgraph tests", "[cutgraph]") {
 	  probfile = "problems/" + fname + ".tsp",
 	  solfile = "test_data/tours/" + fname + ".sol",
 	  subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-	PSEP::Data::GraphGroup g_dat;
-	PSEP::Data::BestGroup b_dat;
-	PSEP::Data::SupportGroup s_dat;
+	CMR::Data::GraphGroup g_dat;
+	CMR::Data::BestGroup b_dat;
+	CMR::Data::SupportGroup s_dat;
 	std::vector<double> lp_edges;
 	
-	REQUIRE_NOTHROW(PSEP::Data::make_cut_test(probfile, solfile,
+	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 	
-	PSEP::CandidateTeeth cands(g_dat.delta, g_dat.edge_marks,
+	CMR::CandidateTeeth cands(g_dat.delta, g_dat.edge_marks,
 				   b_dat.best_tour_nodes, b_dat.perm,
 				   s_dat.G_s, s_dat.support_elist,
 				   s_dat.support_ecap);
@@ -118,8 +118,8 @@ TEST_CASE ("simple DP cutgraph tests", "[cutgraph]") {
 	REQUIRE_FALSE(cands.get_light_teeth());
 	cands.weak_elim();
       
-	PSEP::DPCutGraph dp_graph(cands);
-	PSEP::CutQueue<PSEP::dominoparity> dp_q;
+	CMR::DPCutGraph dp_graph(cands);
+	CMR::CutQueue<CMR::dominoparity> dp_q;
 	
 	REQUIRE(dp_graph.simple_DP_sep(dp_q) == 0);
 	cout << "\n";
@@ -127,6 +127,6 @@ TEST_CASE ("simple DP cutgraph tests", "[cutgraph]") {
     }
 }
 
-#endif //PSEP_DO_VIZ
+#endif //CMR_DO_VIZ
 */
-#endif //PSEP_TEST_TOOTH
+#endif //CMR_TEST_TOOTH

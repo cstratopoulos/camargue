@@ -4,8 +4,8 @@
  *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PSEP_SAFEGMI_H
-#define PSEP_SAFEGMI_H
+#ifndef CMR_SAFEGMI_H
+#define CMR_SAFEGMI_H
 
 #include<vector>
 #include<memory>
@@ -17,7 +17,7 @@
 #include "lp.hpp"
 #include "cuts.hpp"
 
-namespace PSEP {
+namespace CMR {
 
 /** Wrapper class for using cuts from the safemir code. */
 struct cut_obj {
@@ -55,7 +55,7 @@ inline static bool operator >(const cut_obj &a, const cut_obj &b) {
 template<> class Cut<safeGMI> {
 public:
   Cut<safeGMI>(std::vector<int> &_best_tour_edges,
-	       PSEPlp &_m_lp, std::vector<double> &_m_lp_edges,
+	       CMRlp &_m_lp, std::vector<double> &_m_lp_edges,
 	       std::vector<int> &_frac_cstat,
 	       std::vector<int> &_frac_rstat,
 	       std::vector<int> &_support_indices,
@@ -79,15 +79,15 @@ private:
 
   std::vector<int> &best_tour_edges;
     
-  PSEPlp &m_lp;
+  CMRlp &m_lp;
   std::vector<double> &m_lp_edges;
   std::vector<int> &frac_colstat;
   std::vector<int> &frac_rowstat;
   std::vector<int> &support_indices;
 
   struct SafeMIRGroup {
-    SafeMIRGroup(PSEPlp &m_lp):
-      vartype(PSEPlp_numcols(&m_lp), 'B'),
+    SafeMIRGroup(CMRlp &m_lp):
+      vartype(CMRlp_numcols(&m_lp), 'B'),
       basis_info((SLVRbasisInfo_t *) NULL),
       constraint_matrix((CUTSsystem_t<double> *) NULL),
       tableau_rows((CUTSsystem_t<double> *) NULL),

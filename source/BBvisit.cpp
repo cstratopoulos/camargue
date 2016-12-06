@@ -2,12 +2,12 @@
 #include<vector>
 
 #include "BBvisit.hpp"
-#include "PSEP_util.hpp"
+#include "util.hpp"
 #include "pivplan.hpp"
 
 using namespace std;
-using namespace PSEP;
-using namespace PSEP::BB;
+using namespace CMR;
+using namespace CMR::BB;
 
 int Visitor::previsit(unique_ptr<TreeNode> &v){
   if(v->type() == NodeType::ROOT){

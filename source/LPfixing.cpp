@@ -6,7 +6,7 @@
 #include "LPfixing.hpp"
 
 using namespace std;
-using namespace PSEP::LP;
+using namespace CMR::LP;
 
 int EdgeFix::price(int *clamptotal, int *deltotal){
   int rval = 0;
@@ -22,23 +22,23 @@ int EdgeFix::price(int *clamptotal, int *deltotal){
     redcosts.resize(ecount);
     edge_delset.resize(ecount);
   } catch(const bad_alloc &){
-    rval = 1; PSEP_GOTO_CLEANUP("Out of memory for redcosts/delset, ");
+    rval = 1; CMR_GOTO_CLEANUP("Out of memory for redcosts/delset, ");
   }
 
   opt_time = zeit();
-  rval = PSEPlp_primal_opt(&m_lp, &infeasible);
+  rval = CMRlp_primal_opt(&m_lp, &infeasible);
   if(rval) goto CLEANUP;
   opt_time = zeit() - opt_time;
   cout << "Optimized LP in "
        << setprecision(0) << opt_time << "s, " << setprecision(6);
 
-  rval = PSEPlp_objval(&m_lp, &lp_LB);
+  rval = CMRlp_objval(&m_lp, &lp_LB);
   if(rval) goto CLEANUP;
 
   GAP = m_min_tour_value - lp_LB;
   cout << "integrality gap: " << GAP << ".\n";
 
-  rval = PSEPlp_get_redcosts(&m_lp, &redcosts[0]);
+  rval = CMRlp_get_redcosts(&m_lp, &redcosts[0]);
   if(rval) goto CLEANUP;
   
   for(int i = 0; i < ecount; i++){
@@ -79,7 +79,7 @@ int EdgeFix::fixup(){
 
   for(int i = 0; i < edge_delset.size(); i++){
     if(edge_delset[i] == FixStats::FIXED){
-      rval = PSEPlp_clampbnd(&m_lp, i, 'L', 1.0);
+      rval = CMRlp_clampbnd(&m_lp, i, 'L', 1.0);
       if(rval) goto CLEANUP;
       edge_delset[i] = FixStats::LEAVE;
     }
@@ -94,7 +94,7 @@ int EdgeFix::fixup(){
 }
 
 int EdgeFix::delete_cols(){
-  int rval = PSEPlp_delsetcols(&m_lp, &edge_delset[0]);
+  int rval = CMRlp_delsetcols(&m_lp, &edge_delset[0]);
   if(rval)
     cerr << "Error entry point: LPfix::delete_cols \n";
   return rval;

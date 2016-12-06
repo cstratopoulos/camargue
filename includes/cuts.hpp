@@ -7,19 +7,19 @@
  * for use by the Cutcontrol class
  *                                                                            
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-#ifndef PSEP_CUTS_H
-#define PSEP_CUTS_H
+#ifndef CMR_CUTS_H
+#define CMR_CUTS_H
 
 #include <memory>
 #include <vector>
 
-#include "PSEP_util.hpp"
+#include "util.hpp"
 #include "setbank.hpp"
 #include "datagroups.hpp"
 #include "Graph.hpp"
 #include "tooth.hpp"
 
-namespace PSEP {
+namespace CMR {
 
 /** Structure for storing segment cuts.
  * Segment cuts are subtour inequalities arising from segments of the current
@@ -71,14 +71,14 @@ struct fastblossom {
  */
 struct dominoparity {
   dominoparity() = default;
-  dominoparity(std::vector<PSEP::SimpleTooth*> &_used_teeth,
+  dominoparity(std::vector<CMR::SimpleTooth*> &_used_teeth,
 	       std::vector<int> &_degree_nodes,
 	       std::vector<IntPair> &_nonneg_edges) :
     used_teeth(_used_teeth), degree_nodes(_degree_nodes),
     nonneg_edges(_nonneg_edges) {}
 
   /** Simple tooth inequalities to be aggregated to get the simple DP ineq. */
-  std::vector<PSEP::SimpleTooth*> used_teeth;
+  std::vector<CMR::SimpleTooth*> used_teeth;
 
   /** The handle of the inequality, nodes where the degree eqns are used. */
   std::vector<int> degree_nodes;
@@ -174,19 +174,19 @@ public:
     edge_marks(GraphGroup.edge_marks),
     edge_lookup(GraphGroup.m_graph.edge_lookup) {}
 
-  int get_sparse_row(const PSEP::HyperGraph &H, std::vector<int> &rmatind,
+  int get_sparse_row(const CMR::HyperGraph &H, std::vector<int> &rmatind,
 		     std::vector<double> &rmatval, char &sense, double &rhs);
   
-  int get_sparse_row(const PSEP::dominoparity &dp_cut,
+  int get_sparse_row(const CMR::dominoparity &dp_cut,
 		     const std::vector<int> &tour_nodes,
 		     std::vector<int> &rmatind, std::vector<double> &rmatval,
 		     char &sense, double &rhs);
   
-  int get_sparse_row_if(bool &violated, const PSEP::HyperGraph &H,
+  int get_sparse_row_if(bool &violated, const CMR::HyperGraph &H,
 			const std::vector<double> &x,
 			std::vector<int> &rmatind, std::vector<double> &rmatval,
 			char &sense, double &rhs);
-  int is_cut_violated(bool &violated, const PSEP::HyperGraph &H,
+  int is_cut_violated(bool &violated, const CMR::HyperGraph &H,
 		      std::vector<double> &x);
   
   template<typename number_t>
