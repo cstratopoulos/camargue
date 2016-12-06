@@ -14,10 +14,51 @@ extern "C" {
 #include <concorde/INCLUDE/tsp.h>
 }
 
+#include <memory>
+
+namespace std {
+
+template<>
+struct default_delete<CCtsp_lpcut_in> {
+  void operator()(CCtsp_lpcut_in *cut) const {
+    for(auto it = cut; it; it = cut){
+      cut = it->next;
+      CCtsp_free_lpcut_in(it);
+      CC_IFFREE(it, CCtsp_lpcut_in);
+    }
+  }
+};
+
+}
+
+
 namespace CMR {
 
 /** Classes and functions related to cut separation. */
 namespace Cut {
+
+class LPcutList {
+public:
+  LPcutList() noexcept;
+  LPcutList(CCtsp_lpcut_in *head, int count) noexcept;
+  LPcutList(LPcutList &&L) noexcept;
+  LPcutList(const LPcutList &L) = delete;
+
+  LPcutList &operator=(LPcutList &&L) noexcept;
+  LPcutList &operator=(const LPcutList &L) = delete;
+
+  int size() const { return cutcount; }
+  bool empty() const { return cutcount == 0; }
+  
+  CCtsp_lpcut_in* begin() { return head_cut.get(); }
+
+  void filter_primal(CMR::TourGraph &TG);
+  
+private:  
+  std::unique_ptr<CCtsp_lpcut_in> head_cut;
+  int cutcount;
+};
+
 
 /** Wrapper for Concorde CCtsp_lpcut_in structure. 
  * This class is meant to provide an extremely limited (but memory safe!) 
@@ -77,7 +118,7 @@ public:
   ConcordeSeparator(CMR::Data::GraphGroup &_graph_dat,
 		    CMR::Data::BestGroup &_best_dat,
 		    CMR::Data::SupportGroup &_supp_dat,
-		    CMR::TourGraph &_TG, CMR::Cut::LPcutIn &_cutq) :
+		    CMR::TourGraph &_TG, CMR::Cut::LPcutList &_cutq) :
     graph_dat(_graph_dat), best_dat(_best_dat), supp_dat(_supp_dat),
     TG(_TG), cutq(_cutq) {}
 
@@ -95,7 +136,7 @@ protected:
   
   CMR::TourGraph &TG;
   
-  CMR::Cut::LPcutIn &cutq;
+  CMR::Cut::LPcutList &cutq;
 };
 
 /** Exact separation of segment cut subtours. */
@@ -103,7 +144,7 @@ class SegmentCuts : public ConcordeSeparator {
 public:
   SegmentCuts(CMR::Data::GraphGroup &g_dat, CMR::Data::BestGroup &b_dat,
 	      CMR::Data::SupportGroup &s_dat, CMR::TourGraph &TG,
-	      CMR::Cut::LPcutIn &cutq) :
+	      CMR::Cut::LPcutList &cutq) :
     ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
 
   /** Finds subtours arising from intervals of the current best tour. */
@@ -115,7 +156,7 @@ class BlockCombs : public ConcordeSeparator {
 public:
   BlockCombs(CMR::Data::GraphGroup &g_dat, CMR::Data::BestGroup &b_dat,
 	     CMR::Data::SupportGroup &s_dat, CMR::TourGraph &TG,
-	     CMR::Cut::LPcutIn &cutq) :
+	     CMR::Cut::LPcutList &cutq) :
     ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
 
   /** Returns true if block combs are found and some are tight at best tour. */
@@ -127,7 +168,7 @@ class FastBlossoms : public ConcordeSeparator {
 public:
   FastBlossoms(CMR::Data::GraphGroup &g_dat, CMR::Data::BestGroup &b_dat,
 	       CMR::Data::SupportGroup &s_dat, CMR::TourGraph &TG,
-	       CMR::Cut::LPcutIn &cutq) :
+	       CMR::Cut::LPcutList &cutq) :
     ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
 
   /** Returns true if blossoms are found and some are tight at best tour.
