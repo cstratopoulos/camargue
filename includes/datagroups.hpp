@@ -45,6 +45,11 @@ namespace CMR {
  */
 namespace Data {
 
+/** Class for storing raw TSP instance data.
+ * This class is a handle to the Concorde CCdatagroup structure, modeling 
+ * unique_ptr-style sole ownership over a datagroup. Move and copy operations
+ * are essentially those which exist on the underlying unique_ptr.
+ */
 class Instance {
 public:
   Instance() noexcept; /**< Default construct an instance with null handle. */
