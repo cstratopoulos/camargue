@@ -47,10 +47,28 @@ namespace Data {
 
 class Instance {
 public:
-  Instance() = default;
-  Instance(const std::string &fname, int &ncount);
-  Instance(const int seed, const int ncount, const int gridsize);
+  Instance() noexcept; /**< Default construct an instance with null handle. */
 
+  /** Construct an instance from a TSPLIB file.
+   * If \p fname is the path to a TSPLIB file from the executable directory,
+   * constructs an Instance specifying the data in \p fname.
+   */
+  Instance(const std::string &fname, int &ncount);
+
+  /** Construct a geometric random TSP instance.
+   * The instance will have \p ncount nodes distributed uniform randomly over
+   * the \p gridsize by \p gridsize grid, with random seed \p seed.
+   */
+  Instance(const int seed, const int ncount, const int gridsize);
+  
+  Instance(const Instance &I) = delete; /**< Deleted copy constructor. */
+  Instance(Instance &&I) noexcept; /**< Move constructor. */
+
+  
+  Instance &operator=(const Instance &I) = delete; /**< Deleted copy assign. */
+  Instance &operator=(Instance &&I) noexcept; /**< Move assign. */
+  
+  /** Access the raw pointer to the data, for use by Concorde routines. */
   CCdatagroup* ptr() { return handle.get(); }
   
 private:
@@ -217,6 +235,15 @@ void make_cut_test(const std::string &tsp_fname,
 		   std::vector<double> &lp_edges,
 		   CMR::Data::SupportGroup &supp_data,
 		   std::unique_ptr<CMR::Data::Instance> &inst_p);
+
+void make_cut_test(const std::string &tsp_fname,
+		   const std::string &tour_nodes_fname,
+		   const std::string &lp_sol_fname,
+		   CMR::Data::GraphGroup &graph_data,
+		   CMR::Data::BestGroup &best_data,
+		   std::vector<double> &lp_edges,
+		   CMR::Data::SupportGroup &supp_data,
+		   CMR::Data::Instance &inst_p);
 
 }
 }

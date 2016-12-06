@@ -39,11 +39,11 @@ SCENARIO("Instance constructors throw when they fail",
       THEN("The Instance constructor should throw"){
 	REQUIRE_NOTHROW(CMR::Data::Instance inst(seed, ncount, gridsize));
       }
-      AND_WHEN("Gridsize is zero"){
-	gridsize = 0;
-	THEN("The Instance constructor should throw"){
-	  REQUIRE_NOTHROW(CMR::Data::Instance inst(seed, ncount, gridsize));
-	}
+    }
+    WHEN("Gridsize is zero"){
+      gridsize = 0;
+      THEN("The Instance constructor should throw"){
+	REQUIRE_NOTHROW(CMR::Data::Instance inst(seed, ncount, gridsize));
       }
     }
   }

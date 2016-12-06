@@ -2,18 +2,18 @@
 #include "graph_io.hpp"
 #include "util.hpp"
 
-#include<algorithm>
-#include<unordered_map>
-#include<iostream>
-#include<iomanip>
-#include<vector>
+#include <algorithm>
+#include <unordered_map>
+#include <iostream>
+#include <iomanip>
+#include <utility>
+#include <vector>
 #include <stdexcept>
 
-#include<cmath>
+#include <cmath>
 
 extern "C" {
 #include <concorde/INCLUDE/linkern.h>
-#include <concorde/INCLUDE/util.h>
 #include <concorde/INCLUDE/edgegen.h>
 }
 
@@ -30,6 +30,8 @@ using std::logic_error;
 
 namespace CMR {
 namespace Data {
+
+Instance::Instance() noexcept : handle(nullptr) {}
 
 Instance::Instance(const string &fname, int &ncount)
 try : handle(CMR::make_unique<CCdatagroup>()) {
@@ -65,6 +67,12 @@ try : handle(CMR::make_unique<CCdatagroup>()) {
   cerr << e.what() << "\n";
   throw runtime_error("Instance constructor failed.");
  }
+
+Instance::Instance(Instance &&I) noexcept : handle(std::move(I.handle)) {}
+
+Instance &Instance::operator=(Instance &&I) noexcept {
+  handle = std::move(I.handle);
+}
 
 GraphGroup::GraphGroup(const string &fname, string &probname,
 		       RandProb &randprob,
