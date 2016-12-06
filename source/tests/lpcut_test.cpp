@@ -44,6 +44,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
     }
   }
 
+  /*
   GIVEN("d493 with some cuts primal but not others"){
     WHEN("Cuts are found but some are not primal"){
       THEN("Cutcount matches non-null count"){
@@ -66,6 +67,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
       }
     }
   }
+  */
 }
 
 TEST_CASE("Basic member tests",

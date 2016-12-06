@@ -41,7 +41,7 @@ public:
   bool empty() const { return cutcount == 0; }
 
   CCtsp_lpcut_in* begin() { return head_cut; } /**< Start of list iterator. */
-  CCtsp_lpcut_in* end() { return nullptr; } /**< nullptr for end of list. */
+  CCtsp_lpcut_in* end() { return (CCtsp_lpcut_in *) NULL; } /**< List end. */
   
   /** Passes address of member pointer for use by separation routines. */
   CCtsp_lpcut_in** pass_ptr() { return &head_cut; }

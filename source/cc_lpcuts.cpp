@@ -12,23 +12,23 @@ using lpcut_in = CCtsp_lpcut_in;
 namespace CMR {
 namespace Cut {
 
-LPcutIn::LPcutIn() : head_cut(nullptr), cutcount(0) {}
+LPcutIn::LPcutIn() : head_cut((lpcut_in *) NULL), cutcount(0) {}
 
 LPcutIn::~LPcutIn()
 {
   lpcut_in *it = head_cut;
   
-  while(it != nullptr){
+  while(it != end()){
     head_cut = head_cut->next;
     CCtsp_free_lpcut_in(it);
-    delete(it);
+    CC_IFFREE(it, lpcut_in);
     it = head_cut;
   }
 }
 
 void LPcutIn::filter_primal(CMR::TourGraph &TG)
 {
-  if(cutcount == 0 || begin() == nullptr) return;
+  if(cutcount == 0 || begin() == end()) return;
 
   lpcut_in *current = begin();
   lpcut_in *prev = begin();
@@ -43,12 +43,12 @@ void LPcutIn::filter_primal(CMR::TourGraph &TG)
 	current = current->next;
 	prev = current;
 	CCtsp_free_lpcut_in(head_cut);
-	delete(head_cut);
+	CC_IFFREE(head_cut, lpcut_in);
 	head_cut = current;
       } else {
 	prev->next = current->next;
 	CCtsp_free_lpcut_in(current);
-	delete(current);
+	CC_IFFREE(head_cut, lpcut_in);
 	current = prev->next;
       }
       continue;

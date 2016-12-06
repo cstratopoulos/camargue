@@ -83,15 +83,15 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
 	}
       }
 
-      AND_WHEN("The tour is bad"){
+      WHEN("The tour is bad"){
 	THEN("No primal block combs are found"){
 	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, badsolfile,
-						  subtourfile,
-						  g_dat, b_dat, lp_edges,
-						  s_dat));
+						   subtourfile,
+						   g_dat, b_dat, lp_edges,
+						   s_dat));
 
 	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
-			     b_dat.perm);
+			    b_dat.perm);
 	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
 	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
