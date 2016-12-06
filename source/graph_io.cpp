@@ -185,20 +185,20 @@ void get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
     throw logic_error("Specified empty filename. ");
 
   try { tour_in.open(tour_nodes_fname); } catch (const exception &e) {
-    cerr << e.what() << " trying to open infile stream\n";
+    cerr << e.what() << " trying to open tour_in ifstream\n";
     throw err;
   }
 
   if(!tour_in.good())
-    throw logic_error("Bad infile. ");
+    throw logic_error("tour_in is not good. ");
 
   try { tour_in >> file_ncount; } catch(const exception &e) {
-    cerr << e.what() << " trying to read infile nodecount\n";
+    cerr << e.what() << " trying to read tour_in nodecount\n";
     throw err;
   }
 
   if(file_ncount != node_count)
-    throw logic_error("File node count does not match specified count. ");
+    throw logic_error("tour_in node count does not match specified count. ");
 
   try {
     tour_nodes.reserve(node_count);
