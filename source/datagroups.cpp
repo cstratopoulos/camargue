@@ -72,6 +72,7 @@ Instance::Instance(Instance &&I) noexcept : handle(std::move(I.handle)) {}
 
 Instance &Instance::operator=(Instance &&I) noexcept {
   handle = std::move(I.handle);
+  return *this;
 }
 
 GraphGroup::GraphGroup(const string &fname, string &probname,
