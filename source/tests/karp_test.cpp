@@ -31,7 +31,7 @@ SCENARIO("Karp partition constructor tests",
   CMR::Data::BestGroup b_dat;
   CMR::Data::SupportGroup s_dat;
   vector<double> lp_edges;
-  unique_ptr<CMR::Data::Instance> inst;
+  CMR::Data::Instance inst;
   CMR::Data::KarpPartition kpart;
 
   REQUIRE_NOTHROW(CMR::Data::make_cut_test("problems/st70.tsp",
@@ -64,7 +64,7 @@ SCENARIO("Karp partition cutgraph tests",
     CMR::Data::BestGroup b_dat;
     CMR::Data::SupportGroup s_dat;
     vector<double> lp_edges;
-    unique_ptr<CMR::Data::Instance> inst;
+    CMR::Data::Instance inst;
     CMR::Data::KarpPartition kpart;
 
     GIVEN("The TSPLIB instance " + fname){
@@ -77,7 +77,7 @@ SCENARIO("Karp partition cutgraph tests",
 	  int ncount = g_dat.m_graph.node_count;
 	  
 	  REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(ncount,
-							    inst->ptr(), 99));
+							    inst.ptr(), 99));
 
 
 	  

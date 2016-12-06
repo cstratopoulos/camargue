@@ -225,22 +225,6 @@ void make_cut_test(const std::string &tsp_fname,
 		   std::vector<double> &lp_edges,
 		   CMR::Data::SupportGroup &supp_data);
 
-/** Load just enough data to run tests, but return the Instance.
- * The documentation is identical to the version without the \p inst_p 
- * parameter. 
- * @pre \p inst_p points to a null Instance pointer.
- * @post \p inst_p points to an Instance with the data loaded by the rest of
- * the routine. 
- */
-void make_cut_test(const std::string &tsp_fname,
-		   const std::string &tour_nodes_fname,
-		   const std::string &lp_sol_fname,
-		   CMR::Data::GraphGroup &graph_data,
-		   CMR::Data::BestGroup &best_data,
-		   std::vector<double> &lp_edges,
-		   CMR::Data::SupportGroup &supp_data,
-		   std::unique_ptr<CMR::Data::Instance> &inst_p);
-
 void make_cut_test(const std::string &tsp_fname,
 		   const std::string &tour_nodes_fname,
 		   const std::string &lp_sol_fname,
