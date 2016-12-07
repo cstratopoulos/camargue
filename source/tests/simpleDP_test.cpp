@@ -183,11 +183,11 @@ TEST_CASE ("simple DP cutgraph translator tests",
 TEST_CASE ("Printless simple DP cutgraph translator tests",
 	   "[simpleDP][medium]") {
   vector<string> probs{// "lin318",
-    "d493", "att532", "u724",
-    "dsj1000", "pr1002",
+    // "d493", "att532", "u724",
+    // "dsj1000", "pr1002",
     //"rl1304", "fl1577"
     // "d2103", "u2319", "pr2392",
-    // "pcb3038",
+    "pcb3038"
     // "rl5915",
     //"pla7397"
   };

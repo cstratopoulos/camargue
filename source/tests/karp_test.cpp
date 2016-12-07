@@ -46,13 +46,13 @@ SCENARIO("Karp partition cutgraph tests",
 	 "[karp][cutgraph]"){
   vector<string> probs{
     "st70"
-    // "dsj1000", "pr1002",
-    // "rl1304", "d2103"
-    //"pcb3038"//, "rl5915",
-    //"pla7397"//,
-    //"usa13509"
-    //"lin318", "d493", "att532",
-    //"pr1002"
+    "dsj1000", "pr1002",
+    "rl1304", "d2103"
+    "pcb3038"//, "rl5915",
+    "pla7397"//,
+    "usa13509"
+    "lin318", "d493", "att532",
+    "pr1002"
   };
   
   for(string &fname : probs){
