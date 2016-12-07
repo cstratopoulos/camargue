@@ -1,4 +1,5 @@
 #include "blossoms.hpp"
+#include "tests.hpp"
 
 extern "C" {
   #include <concorde/INCLUDE/cut.h>
@@ -13,11 +14,10 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#define CMR_OMP_2MATCH
 
 namespace CMR {
 
-#ifdef CMR_OMP_2MATCH
+#ifdef CMR_USE_OMP
 
 int Cut<blossom>::separate(){
   int rval = 0;
