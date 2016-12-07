@@ -25,7 +25,7 @@ using std::pair;
 #ifdef CMR_DO_TESTS
 
 SCENARIO("Finding simple DP inequalities via karp partition witnesses",
-         "[karp][simpleDP][DPwitness]") {
+         "[karp][.simpleDP][DPwitness]") {
   vector<string> probs {
     // "lin318", "d493", "att532", "u724",
     // "dsj1000", "pr1002",

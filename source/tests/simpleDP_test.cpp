@@ -21,9 +21,7 @@ using std::pair;
 
 #ifdef CMR_DO_TESTS
 
-//for these tests, consider defining CMR_DO_TESTS in DPgraph.hpp to generate
-//a DOT file for the witness cutgraph which can be viewed with graphviz or
-//some such
+/*
 TEST_CASE ("Tiny simple DP translator tests",
 	   "[tiny][simpleDP]") {
 
@@ -46,9 +44,9 @@ TEST_CASE ("Tiny simple DP translator tests",
 	CMR::Data::SupportGroup s_dat;
 	std::vector<double> lp_edges;
 	
-	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile, subtourfile,
-						g_dat, b_dat, lp_edges,
-						s_dat));
+	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
+                                                 subtourfile, g_dat, b_dat,
+                                                 lp_edges, s_dat));
 	cout << "Best tour: \n";
 	for(int i : b_dat.best_tour_nodes) cout << i << ", ";
 	cout << "\n";
@@ -102,171 +100,75 @@ TEST_CASE ("Tiny simple DP translator tests",
       }
     }
 }
+*/
 
-TEST_CASE ("simple DP cutgraph translator tests",
-	   "[small][simpleDP]") {
-  vector<string> probs{"st70", "gr48", "bays29", "swiss42"};
-
-    for(string &fname : probs){
-      SECTION(fname){
-	string
-	  probfile = "problems/" + fname + ".tsp",
-	  solfile = "test_data/tours/" + fname + ".sol",
-	  subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-	CMR::Data::GraphGroup g_dat;
-	CMR::Data::BestGroup b_dat;
-	CMR::Data::SupportGroup s_dat;
-	std::vector<double> lp_edges;
-	bool found_nz = false;
-	
-	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile, subtourfile,
-						g_dat, b_dat, lp_edges,
-						s_dat));
-	
-
-	CMR::CutQueue<CMR::dominoparity> dp_q(250);
-	CMR::Cut<CMR::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
-	
-	REQUIRE_FALSE(dominos.cutcall());
-
-	CMR::CutTranslate translator(g_dat);
-
-	
-	while(!dp_q.empty()){
-	  vector<int> rmatind;
-	  vector<double> rmatval;
-	  char sense;
-	  double rhs;
-	  
-	  const CMR::dominoparity &dp_cut = dp_q.peek_front();
-	  vector<int> &bt = b_dat.best_tour_nodes;
-	  double tour_activity, lp_activity;
-
-	  cout << "|||||\n";
-	  cout << "Considering dp with....\n";
-	  cout << "Handle: ";
-	  for(int i : dp_cut.degree_nodes)
-	    cout << bt[i] << ", "; cout << "\n";
-	  cout << "Nonneg edges: ";
-	  for(const IntPair &e : dp_cut.nonneg_edges)
-	    cout << "(" << bt[e.first] << ", " << bt[e.second] << "), ";
-	  cout << "\n";
-	  cout << "Simple teeth: (" << dp_cut.used_teeth.size()
-	       << " total)\n";
-	  for(CMR::SimpleTooth *T : dp_cut.used_teeth){
-	    cout << "\t" << T->root << ", (" << T->body_start
-		 << "..." << T->body_end << ")\n";
-	    CMR::CandidateTeeth::print_tooth(*T, true, bt);
-	    cout << "\n";
-	  }
-	  
-	  
-	  REQUIRE_FALSE(translator.get_sparse_row(dp_cut,
-						  b_dat.best_tour_nodes,
-						  rmatind, rmatval, sense,
-						  rhs));
-
-	  translator.get_activity(tour_activity, b_dat.best_tour_edges,
-				  rmatind, rmatval);
-	  translator.get_activity(lp_activity, lp_edges, rmatind, rmatval);
-	  
-	  REQUIRE(lp_activity > rhs);
-	  REQUIRE(tour_activity <= rhs);
-
-	  dp_q.pop_front();
-	}
-	cout << "\n";	
-      }
-    }
-}
-
-TEST_CASE ("Printless simple DP cutgraph translator tests",
-	   "[simpleDP][medium]") {
-  vector<string> probs{// "lin318",
-    // "d493", "att532", "u724",
+SCENARIO("Wrapping simple DP separation in SimpleDP class",
+         "[simpleDP]"){
+  vector<string> probs {
+    "lin318", "d493", "att532", "u724",
     // "dsj1000", "pr1002",
-    //"rl1304", "fl1577"
-    // "d2103", "u2319", "pr2392",
-    "pcb3038"
-    // "rl5915",
-    //"pla7397"
+    // "d2103", "pr2392"// ,
+    // "pcb3038",
+    // "rl5915", "pla7397",
+    // "usa13509"
   };
 
-    for(string &fname : probs){
-      SECTION(fname){
-	string
-	  probfile = "problems/" + fname + ".tsp",
-	  solfile = "test_data/tours/" + fname + ".sol",
-	  subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-	CMR::Data::GraphGroup g_dat;
-	CMR::Data::BestGroup b_dat;
-	CMR::Data::SupportGroup s_dat;
-	std::vector<double> lp_edges;
+  for(string &fname : probs){
+    string
+    probfile = "problems/" + fname + ".tsp",
+    solfile = "test_data/tours/" + fname + ".sol",
+    subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
+    CMR::Data::GraphGroup g_dat;
+    CMR::Data::BestGroup b_dat;
+    CMR::Data::SupportGroup s_dat;
+    vector<double> lp_edges;
+    CMR::Data::Instance inst;
+    CMR::Data::KarpPartition kpart;
 
-	
-	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile, subtourfile,
-						g_dat, b_dat, lp_edges,
-						s_dat));
+    GIVEN("A subtour polytope LP solution for " + fname){
+      THEN("We can get light simple DP inequalities"){
+        REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
+                                                 subtourfile, g_dat, b_dat,
+                                                 lp_edges, s_dat, inst));
+        int ncount = g_dat.m_graph.node_count;
 
-	int ncount = g_dat.m_graph.node_count;
-      
-	CMR::CutQueue<CMR::dominoparity> dp_q(2500);
-	CMR::Cut<CMR::dominoparity> dominos(g_dat, b_dat, s_dat, dp_q);
-	
-	REQUIRE_FALSE(dominos.cutcall());
-	int used_size = 0;
-	int min_used = ncount;
-	int max_used = 0;
+        REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(ncount,
+                                                         inst.ptr(), 99));
+        CMR::CutTranslate translator(g_dat);
+        CMR::CutQueue<CMR::dominoparity> dp_q(100);
 
-	CMR::CutTranslate translator(g_dat);
-	int primal_found = 0;
-	while(!dp_q.empty()){
-	  vector<int> rmatind;
-	  vector<double> rmatval;
-	  char sense;
-	  double rhs;
+        CMR::Sep::SimpleDP sDP(g_dat, kpart, b_dat, s_dat, dp_q);
+
+        REQUIRE(sDP.find_cuts());
+        // int primal_found = 0;
+        
+        // while(!dp_q.empty()){
+        //   vector<int> rmatind;
+        //   vector<double> rmatval;
+        //   char sense;
+        //   double rhs;
 	  
-	  const CMR::dominoparity &dp_cut = dp_q.peek_front();
-	  vector<int> &bt = b_dat.best_tour_nodes;
-	  double tour_activity, lp_activity;
+        //   const CMR::dominoparity &dp_cut = dp_q.peek_front();
+        //   vector<int> &bt = b_dat.best_tour_nodes;
+        //   double tour_activity, lp_activity;
+        //   REQUIRE_FALSE(translator.get_sparse_row(dp_cut, bt, rmatind,
+        //                                           rmatval, sense, rhs));
 
-	  std::set<int> nodes_used;
-
-	  REQUIRE_FALSE(translator.get_sparse_row(dp_cut, bt, rmatind, rmatval,
-						  sense, rhs));
-
-	  translator.get_activity(tour_activity, b_dat.best_tour_edges,
-				  rmatind, rmatval);
-	  translator.get_activity(lp_activity, lp_edges, rmatind, rmatval);
+        //   translator.get_activity(tour_activity, b_dat.best_tour_edges,
+        //                           rmatind, rmatval);
+        //   translator.get_activity(lp_activity, lp_edges, rmatind, rmatval);
 	  
-	  CHECK(lp_activity > rhs);
-	  CHECK(tour_activity <= rhs);
+        //   REQUIRE(tour_activity <= rhs);
 	  
-	  if(tour_activity == rhs && lp_activity > rhs){
-	    ++primal_found;
-	    for(int i : rmatind){
-	      CMR::Edge e = g_dat.m_graph.edges[i];
-	      nodes_used.insert(e.end[0]);
-	      nodes_used.insert(e.end[1]);
-	    }
-	    used_size += nodes_used.size();
-	    if(nodes_used.size() < min_used) min_used = nodes_used.size();
-	    if(nodes_used.size() > max_used) max_used = nodes_used.size();
-	  }
+        //   if(tour_activity == rhs && lp_activity > rhs)
+        //     ++primal_found;
 	  
-	  dp_q.pop_front();
-	}
-	cout << "\t" << primal_found << " primal violated cuts found\n";
-	double used_avg = ((double) used_size / (double) primal_found);
-	cout << "\tmin: " << min_used << "\tavg: " << used_avg << "\tmax: "
-	     << max_used << "\n"
-	     << "\tncount: " << ncount
-	     << "\tavg/ncount: " << setprecision(2)
-	     << (used_avg / ncount)  << "\t"
-	     << "avg/sqrt(ncount): " << (used_avg / sqrt(ncount))
-	     << setprecision(6) << "\n";	
+        //   dp_q.pop_front();
+        // }
+        //cout << "\t" << primal_found << " primal violated cuts found.\n";
       }
     }
+  }
 }
 
 #endif //CMR_DO_TESTS
