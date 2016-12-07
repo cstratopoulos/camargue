@@ -49,7 +49,7 @@ KarpPartition::KarpPartition(const int ncount, CCdatagroup *dat,
   throw runtime_error("KarpPartition constructor failed.");
  }
 
-int KarpPartition::bucket_size(const int ncount) { return 2 * sqrt(ncount); }
+int KarpPartition::bucket_size(const int ncount) { return 4 * sqrt(ncount); }
 
 }
 }
