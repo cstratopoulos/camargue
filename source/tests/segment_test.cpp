@@ -30,7 +30,7 @@ SCENARIO("Exact primal separation of subtours",
       CMR::Data::BestGroup b_dat;
       CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-      CMR::Cut::LPcutIn cutq;
+      CMR::Cut::LPcutList cutq;
 
       WHEN("The tour is good but the solution is in the subtour polytope"){
       	THEN("No segment cuts are found"){

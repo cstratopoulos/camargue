@@ -30,7 +30,7 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
       CMR::Data::BestGroup b_dat;
       CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-      CMR::Cut::LPcutIn cutq;
+      CMR::Cut::LPcutList cutq;
 
       WHEN("The tour is good and blossoms exit"){
 	THEN("Primal blossoms are found"){
@@ -81,7 +81,7 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
       CMR::Data::BestGroup b_dat;
       CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-      CMR::Cut::LPcutIn cutq;
+      CMR::Cut::LPcutList cutq;
 
       WHEN("The tour is good"){
 	THEN("Primal blossoms are found"){
@@ -118,9 +118,10 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
   }
 }
 
+/*
 SCENARIO("Black box testing of tiny fast blossoms",
 	  "[.fast2m][.tiny]"){
-  CMR::Cut::LPcutIn wrap;
+  CMR::Cut::LPcutList wrap;
   CMR::Data::GraphGroup g_dat;
   CMR::Data::BestGroup b_dat;
   CMR::Data::SupportGroup s_dat;
@@ -152,9 +153,9 @@ SCENARIO("Black box testing of tiny fast blossoms",
 					  s_dat.G_s.edge_count,
 					  &s_dat.support_elist[0],
 					  &s_dat.support_ecap[0]));
-	  REQUIRE(wrap.cut_count() == 2);
+	  REQUIRE(wrap.size() == 2);
 	  wrap.filter_primal(TG);
-	  REQUIRE(wrap.cut_count() == 2);
+	  REQUIRE(wrap.size() == 2);
 	}
 
 	AND_THEN("Grostschel-Holland blossoms found, all are primal"){
@@ -163,9 +164,9 @@ SCENARIO("Black box testing of tiny fast blossoms",
 					    s_dat.G_s.edge_count,
 					    &s_dat.support_elist[0],
 					    &s_dat.support_ecap[0]));
-	  REQUIRE(wrap.cut_count() == 2);
+	  REQUIRE(wrap.size() == 2);
 	  wrap.filter_primal(TG);
-	  REQUIRE(wrap.cut_count() == 2);
+	  REQUIRE(wrap.size() == 2);
 	}
       }
 
@@ -186,9 +187,9 @@ SCENARIO("Black box testing of tiny fast blossoms",
 					  s_dat.G_s.edge_count,
 					  &s_dat.support_elist[0],
 					  &s_dat.support_ecap[0]));
-	  REQUIRE(wrap.cut_count() == 2);
+	  REQUIRE(wrap.size() == 2);
 	  wrap.filter_primal(TG);
-	  REQUIRE(wrap.cut_count() == 0);
+	  REQUIRE(wrap.size() == 0);
 	}
 
 	AND_THEN("Grostschel-Holland blossoms found, none are primal"){
@@ -197,13 +198,14 @@ SCENARIO("Black box testing of tiny fast blossoms",
 					    s_dat.G_s.edge_count,
 					    &s_dat.support_elist[0],
 					    &s_dat.support_ecap[0]));
-	  REQUIRE(wrap.cut_count() == 2);
+	  REQUIRE(wrap.size() == 2);
 	  wrap.filter_primal(TG);
-	  REQUIRE(wrap.cut_count() == 0);
+	  REQUIRE(wrap.size() == 0);
 	}
       }
     }
   }
 }
+*/
 
 #endif

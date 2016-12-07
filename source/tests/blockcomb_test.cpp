@@ -30,7 +30,7 @@ SCENARIO("Primal comb separation by standard block comb heuristics",
       CMR::Data::BestGroup b_dat;
       CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-      CMR::Cut::LPcutIn cutq;
+      CMR::Cut::LPcutList cutq;
 
       WHEN("Tour is good and solution is in the subtour polytope"){
 	THEN("Primal block combs are found"){
@@ -66,7 +66,7 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
       CMR::Data::BestGroup b_dat;
       CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-      CMR::Cut::LPcutIn cutq;
+      CMR::Cut::LPcutList cutq;
 
       WHEN("The tour is good"){
 	THEN("Primal block combs are found"){
