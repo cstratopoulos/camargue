@@ -1,9 +1,10 @@
 #ifndef CMR_WITNESS_H
 #define CMR_WITNESS_H
 
+#include "datagroups.hpp"
 #include "tooth.hpp"
 #include "cuts.hpp"
-#include "datagroups.hpp"
+
 
 #include <vector>
 

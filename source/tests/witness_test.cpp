@@ -1,6 +1,8 @@
 #include "tests.hpp"
-#include "karp.hpp"
-#include "datagroups.hpp"
+
+#include "datagroups.hpp" //If the order of these includes is reversed, the 
+#include "karp.hpp"       //project may not compile
+
 #include "tooth.hpp"
 #include "cuts.hpp"
 #include "witness.hpp"
