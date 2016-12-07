@@ -77,8 +77,6 @@ private:
   CMR::Cut<CMR::seg> segments;
   CMR::Cut<CMR::blossom> blossoms;
 
-  std::unique_ptr<CMR::Cut<CMR::dominoparity>> dominos;
-
   CMR::Cut<CMR::safeGMI> safe_gomory;
 
   CMR::Data::GraphGroup &graph_data;

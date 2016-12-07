@@ -51,7 +51,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
   
   total_2mcalls++;
 
-  
+  /*
   if(segval == 2 && matchval == 2 && stat != LP::PivType::Subtour){
     bool in_sub = false;
     
@@ -93,6 +93,7 @@ int CutControl::primal_sep(const int augrounds, const LP::PivType stat)
       }
     }
   }
+  */
 
   if(segval == 2 && matchval == 2 && dpval == 2)
     rval = 2;
