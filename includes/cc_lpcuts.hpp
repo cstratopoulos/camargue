@@ -16,21 +16,6 @@ extern "C" {
 
 #include <memory>
 
-namespace std {
-
-template<>
-struct default_delete<CCtsp_lpcut_in> {
-  void operator()(CCtsp_lpcut_in *cut) const {
-    for(auto it = cut; it; it = cut){
-      cut = it->next;
-      CCtsp_free_lpcut_in(it);
-      CC_IFFREE(it, CCtsp_lpcut_in);
-    }
-  }
-};
-
-}
-
 
 namespace CMR {
 
@@ -54,58 +39,20 @@ public:
 
   void filter_primal(CMR::TourGraph &TG);
   
-private:  
-  std::unique_ptr<CCtsp_lpcut_in> head_cut;
+private:
+  struct hungry_delete {
+    void operator()(CCtsp_lpcut_in *cut) const {
+      for(auto it = cut; it; it = cut){
+	cut = it->next;
+	CCtsp_free_lpcut_in(it);
+	CC_IFFREE(it, CCtsp_lpcut_in);
+      }
+    }
+  };
+  std::unique_ptr<CCtsp_lpcut_in, hungry_delete> head_cut;
   int cutcount;
 };
 
-
-/** Wrapper for Concorde CCtsp_lpcut_in structure. 
- * This class is meant to provide an extremely limited (but memory safe!) 
- * interface, for no other purpose but to call certain cut separation routines
- * provided by Concorde. It models unique ownership over a list of cuts. Copy
- * operations are deleted, and move operations transfer ownership.
- * @warning CCtsp_lpcut_in is a doubly linked list node, but if you pass one to
- * a CCtsp separation routine, it will store the cuts in a SINGLY LINKED queue.
- */
-class LPcutIn {
-public:
-  LPcutIn() noexcept; /**< Default construct an empty list with null head. */
-  
-  LPcutIn(const LPcutIn &C) = delete; /**< Deleted copy constructor. */
-  
-  LPcutIn(LPcutIn &&C) noexcept; /**< Construct, transferring ownership. */
-
-  LPcutIn &operator=(const LPcutIn &C) = delete; /**< Deleted copy assign. */
-
-  LPcutIn &operator=(LPcutIn &&C) noexcept; /**< Assign, transfer ownership.*/
-  
-  ~LPcutIn(); /**< Traverse the list, freeing every entry. */
-
-  /** Deletes all non-primal cuts.
-   * @pre This function assumes that Concorde heuristic routines were called
-   * with the nodes permuted according to the current best tour.
-   */
-  void filter_primal(CMR::TourGraph &TG);
-
-  int cut_count() const { return cutcount; }
-  bool empty() const { return cutcount == 0; }
-
-  CCtsp_lpcut_in* begin() { return head_cut; } /**< Start of list iterator. */
-  CCtsp_lpcut_in* end() { return (CCtsp_lpcut_in *) NULL; } /**< List end. */
-  
-  /** Passes address of member pointer for use by separation routines. */
-  CCtsp_lpcut_in** pass_ptr() { return &head_cut; }
-
-  /** Passes address of cut count for use by separation routines. */
-  int* count_ptr() { return &cutcount; }
-  
-private:
-  void del_cut(CCtsp_lpcut_in *cut);
-  
-  CCtsp_lpcut_in *head_cut; /**< The raw pointer to the Concorde struct. */
-  int cutcount; /**< Number of cuts in the linked list starting at head_cut. */
-};
 
 /** Abstract base class for calling Concorde separation routines. 
  * Separator classes based on separation routines from Concorde should derive

@@ -12,7 +12,7 @@
 #include "Graph.hpp"
 
 extern "C" {
-  #include <concorde/INCLUDE/util.h>
+#include <concorde/INCLUDE/util.h>
 }
 
 #include <vector>
@@ -27,7 +27,7 @@ template<>
 struct default_delete<CCdatagroup> {
   void operator()(CCdatagroup *dat) const {
     if(dat) CCutil_freedatagroup(dat);
-    delete dat;    
+    CC_IFFREE(dat, CCdatagroup);
   }
 };
 
