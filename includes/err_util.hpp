@@ -11,6 +11,11 @@
 
 #include <stdexcept>
 #include <string>
+#include <iostream>
+
+#define CMR_CATCH_PRINT_THROW( msg, new_ex )  catch(const std::exception &e)  \
+  { std::cerr << e.what() << " " << msg << ".\n"; throw new_ex; }
+
 
 namespace CMR {
 

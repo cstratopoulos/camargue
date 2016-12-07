@@ -95,6 +95,7 @@ public:
 
 private:
   friend class DPCutGraph;
+  friend class DPwitness;
   
   std::vector<int> endmark;
   
