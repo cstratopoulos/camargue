@@ -15,5 +15,24 @@
  */
 #define CMR_DO_TESTS
 
+#ifndef CMR_DO_TESTS
+
+/** Preprocessor definition for use of OpenMP parallelism.
+ * The use of this macro is twofold. 
+ * 1. The OpenMP (OMP) specification guarantees that if the compiler does not
+ * support OMP, then the pragmas are simply ignored and the result is still
+ * valid code. However with some functions there is some extra overhead
+ * related to  error handling or memory allocation that only occurs in the
+ * parallel version, and it is possible to write a cleaner serial version, so
+ * this one should be preferred.
+ * 2. Camargue uses the Catch unit testing framework, which is not currently
+ * threadsafe. On some tests, valgrind will show leaks related to thread
+ * creation/deletion if parallelism is used. Thus, this macro's definition is
+ * contingent on CMR_DO_TESTS being undefined. 
+ */
+#define CMR_USE_OMP
+
+#endif
+
 
 #endif
