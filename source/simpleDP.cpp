@@ -1,55 +1,52 @@
 #include "simpleDP.hpp"
 #include "util.hpp"
+#include "err_util.hpp"
+#include "tests.hpp"
 
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 
+using std::cout;
 using std::cerr;
+
 using std::unique_ptr;
+
+using std::runtime_error;
+using std::logic_error;
+using std::exception;
 
 namespace CMR {
 
-int Cut<dominoparity>::cutcall()
-{
-  int rval = 0;
-
-  rval = separate();
-  if(rval) goto CLEANUP;
-
-  //rval = add_external
-
- CLEANUP:
-  if(rval == 1)
-    cerr << "Problem in Cut<dominoparity>::cutcall.\n";
-  return rval;
+Sep::SimpleDP::SimpleDP(CMR::Data::GraphGroup &graph_dat,
+                        CMR::Data::KarpPartition &_kpart,
+                        CMR::Data::BestGroup &best_dat,
+                        CMR::Data::SupportGroup &supp_dat,
+                        CMR::CutQueue<dominoparity> &_dp_q) try :
+  candidates(graph_dat, best_dat, supp_dat), kpart(_kpart), dp_q(_dp_q)
+  {} catch(const exception &e){
+  cerr << e.what() << " constructing SimpleDP.\n";
+  throw runtime_error("SimpleDP constructor failed.");
 }
 
-int Cut<dominoparity>::separate()
+bool Sep::SimpleDP::find_cuts()
 {
-  int rval = 0;
-  unique_ptr<DPCutGraph> witness;
+  runtime_error err("Problem in SimpleDP::find_cuts.");
 
-  rval = candidates.get_light_teeth();
-  if(rval) goto CLEANUP;
+  try {
+    candidates.get_light_teeth();
+    candidates.unmerged_weak_elim();
+    candidates.merge_and_sort();
+  } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
 
-  candidates.unmerged_weak_elim();
-
-  candidates.complement_elim();
-  
-  rval = candidates.merge_and_sort();
-  if(rval) goto CLEANUP;
-    
-  try { witness = CMR::make_unique<DPCutGraph>(candidates); } catch(...){
-    CMR_SET_GOTO(rval, "DPCutGraph allocation failed. ");
+  for(int i = 0; i < kpart.num_parts(); ++i){
+    try {
+      CMR::DPwitness cutgraph(candidates, kpart[i]);
+      cutgraph.simple_DP_sep(dp_q);
+    } CMR_CATCH_PRINT_THROW("making a mini cutgraph sep call", err);
   }
 
-  rval = witness->simple_DP_sep(dp_q);
-  if(rval) goto CLEANUP;
-
- CLEANUP:
-  if(rval == 1)
-    cerr << "Problem in Cut<dominoparity>::separate.\n";
-  return rval;
+  return(!dp_q.empty());
 }
 
 }
