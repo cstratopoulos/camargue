@@ -190,7 +190,7 @@ void get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
   }
 
   if(!tour_in.good())
-    throw logic_error("Bad infile. ");
+    throw logic_error("tour_in is not good. ");
 
   try { tour_in >> file_ncount; } catch(const exception &e) {
     cerr << e.what() << " trying to read infile nodecount\n";
