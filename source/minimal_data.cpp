@@ -151,5 +151,6 @@ void make_cut_test(const string &tsp_fname,
 			       lp_edges, &supp_data.G_s))
     throw err;
 }
+
 }
 }
