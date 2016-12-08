@@ -325,7 +325,7 @@ int DPCutGraph::grab_cuts(CutQueue<dominoparity> &domino_q)
     int deltacount = 0;
     
     vector<int> handle_nodes;
-    vector<SimpleTooth*> used_teeth;
+    vector<SimpleTooth> used_teeth;
     vector<IntPair> nonneg_edges;
 
     try { expand_cut(CC_gh_q.peek_front(), cut_shore_nodes); } catch (...) {
@@ -350,7 +350,7 @@ int DPCutGraph::grab_cuts(CutQueue<dominoparity> &domino_q)
 	  continue;
 	}
 
-	try { used_teeth.push_back(T1); } catch (...) {
+	try { used_teeth.push_back(*T1); } catch (...) {
 	  CMR_SET_GOTO(rval, "Couldn't push back used tooth. ");
 	}
 
@@ -373,7 +373,7 @@ int DPCutGraph::grab_cuts(CutQueue<dominoparity> &domino_q)
       }
 
       //at this point precisely one of T1, T2 is non-null
-      try { used_teeth.push_back( T2 ? T2 : T1 ); } catch (...) {
+      try { used_teeth.push_back( T2 ? *T2 : *T1 ); } catch (...) {
 	CMR_SET_GOTO(rval, "Couldn't push back used tooth. ");
       }
     }
