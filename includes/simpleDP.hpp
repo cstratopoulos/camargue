@@ -15,6 +15,7 @@
 namespace CMR {
 namespace Sep {
 
+/** Class for separation of simple domino parity inequalities. */
 class SimpleDP {
 public:
   SimpleDP(CMR::Data::GraphGroup &graph_dat,

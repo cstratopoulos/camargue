@@ -29,6 +29,8 @@ Sep::SimpleDP::SimpleDP(CMR::Data::GraphGroup &graph_dat,
   throw runtime_error("SimpleDP constructor failed.");
 }
 
+#ifndef CMR_USE_OMP
+/////////////////////// SERIAL IMPLEMENTATION //////////////////////////////////
 bool Sep::SimpleDP::find_cuts()
 {
   runtime_error err("Problem in SimpleDP::find_cuts.");
@@ -40,13 +42,67 @@ bool Sep::SimpleDP::find_cuts()
   } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
 
   for (int i = 0; i < kpart.num_parts(); ++i) {
-    try {
-      CMR::DPwitness cutgraph(candidates, kpart[i]);
-      cutgraph.simple_DP_sep(dp_q);
-    } CMR_CATCH_PRINT_THROW("making a mini cutgraph sep call", err);
+      CutQueue<dominoparity> mini_q(25);
+      
+      try {
+          DPwitness cutgraph(candidates, kpart[i]);      
+          cutgraph.simple_DP_sep(mini_q);
+      } CMR_CATCH_PRINT_THROW("making a mini cutgraph sep call", err);
+
+      dp_q.splice(mini_q);
+      if(dp_q.size() >= 25)
+          break;
   }
 
   return(!dp_q.empty());
 }
+
+#else
+/////////////////////// OMP PARALLEL IMPLEMENTATION ////////////////////////////
+bool Sep::SimpleDP::find_cuts()
+{
+    runtime_error err("Problem in SimpleDP::find_cuts.");
+    
+    bool at_capacity = false;
+    bool caught_exception = false;
+
+    try {
+        candidates.get_light_teeth();
+        candidates.unmerged_weak_elim();
+        candidates.merge_and_sort();
+    } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
+
+    for (int i = 0; i < kpart.num_parts(); ++i) {
+        if(at_capacity || caught_exception)
+            continue;
+        CutQueue<dominoparity> mini_q(25);
+        
+        try {
+            DPwitness cutgraph(candidates, kpart[i]);
+
+            cutgraph.simple_DP_sep(mini_q);
+        } catch (const exception &e) {
+            #pragma omp critical
+            {
+                cerr << "Caught " << e.what() << " in witness subproblem.\n";
+                caught_exception = true;                
+            }
+        }
+
+        if(caught_exception)
+            continue;
+
+        #pragma omp critical
+        {
+            dp_q.splice(mini_q);
+            // if(dp_q.size() >= 25)
+            //     at_capacity = true;
+        }
+    }
+
+    return (!dp_q.empty());
+}
+
+#endif
 
 }

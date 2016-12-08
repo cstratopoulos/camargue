@@ -173,8 +173,8 @@ SCENARIO("Separating simple DP inequalities in medium instances",
 SCENARIO("Separating simple DP inequalities in large instances",
          "[simpleDP][large]") {
   vector<string> probs {
-    "rl5915", // "pla7397",
-    // "usa13509"
+      //"rl5915", "pla7397",
+    "usa13509"
   };
 
   for (string &fname : probs) {
