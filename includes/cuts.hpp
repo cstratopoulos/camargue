@@ -12,6 +12,7 @@
 
 #include <memory>
 #include <vector>
+#include <limits>
 
 #include "util.hpp"
 #include "setbank.hpp"
@@ -28,13 +29,13 @@ namespace CMR {
  * solution and \f$ S \f$ is the segment, \p cutval is \f$ x^*(\delta(S)) \f$ .
  */
 struct seg {
-  seg() = default;
-  seg(int _start, int _end, double _cutval) :
-    start(_start), end(_end), cutval(_cutval) {}
+    seg() = default;
+    seg(int _start, int _end, double _cutval) :
+        start(_start), end(_end), cutval(_cutval) {}
 
-  int start;
-  int end;
-  double cutval;
+    int start;
+    int end;
+    double cutval;
 };
 
 /** Structure for storing blossom inequalities from exact primal separation.
@@ -43,24 +44,15 @@ struct seg {
  * Revisited. 
  */
 struct blossom {
-  blossom(std::vector<int> &_handle, int _cut_edge, double _val) :
-    handle(_handle), cut_edge(_cut_edge), cut_val(_val){}
+    blossom(std::vector<int> &_handle, int _cut_edge, double _val) :
+        handle(_handle), cut_edge(_cut_edge), cut_val(_val){}
 
   
-  std::vector<int> handle;
+    std::vector<int> handle;
   
-  int cut_edge;
+    int cut_edge;
 
-  double cut_val;
-};
-
-/** Structure for storing blossoms found by fast heuristics. */
-struct fastblossom {
-  fastblossom(std::vector<int> &_handle, std::vector<int> &_edge_indices) :
-    handle(_handle), edge_indices(_edge_indices) {}
-
-  std::vector<int> handle;
-  std::vector<int> edge_indices;
+    double cut_val;
 };
 
 /** Structure for storing simple DP inequalities.
@@ -70,35 +62,35 @@ struct fastblossom {
  * `tour_nodes[i], tour_nodes[j]`.
  */
 struct dominoparity {
-  dominoparity() = default;
-  dominoparity(std::vector<CMR::SimpleTooth> &_used_teeth,
-	       std::vector<int> &_degree_nodes,
-	       std::vector<IntPair> &_nonneg_edges) :
-    used_teeth(_used_teeth), degree_nodes(_degree_nodes),
-    nonneg_edges(_nonneg_edges) {}
+    dominoparity() = default;
+    dominoparity(std::vector<CMR::SimpleTooth> &_used_teeth,
+                 std::vector<int> &_degree_nodes,
+                 std::vector<IntPair> &_nonneg_edges) :
+        used_teeth(_used_teeth), degree_nodes(_degree_nodes),
+        nonneg_edges(_nonneg_edges) {}
 
-  /** Simple tooth inequalities to be aggregated to get the simple DP ineq. */
-  std::vector<CMR::SimpleTooth> used_teeth;
+    /** Simple tooth inequalities to be aggregated to get the simple DP ineq. */
+    std::vector<CMR::SimpleTooth> used_teeth;
 
-  /** The handle of the inequality, nodes where the degree eqns are used. */
-  std::vector<int> degree_nodes;
+    /** The handle of the inequality, nodes where the degree eqns are used. */
+    std::vector<int> degree_nodes;
 
-  /** Edges \f$ e \f$ for which \f$ x_e \ge 0 \f$ is used. */
-  std::vector<IntPair> nonneg_edges;
+    /** Edges \f$ e \f$ for which \f$ x_e \ge 0 \f$ is used. */
+    std::vector<IntPair> nonneg_edges;
 };
 
 /* cut mimicking the parameters used to add a row in CPLEX; used for safe
  * Gomory cut separation
  */
 struct safeGMI {
-  safeGMI(std::vector<int> &_rmatind, std::vector<double> &_rmatval,
-	  char _sense, double _RHS) :
-    rmatind(_rmatind), rmatval(_rmatval), sense(_sense), RHS(_RHS) {}
+    safeGMI(std::vector<int> &_rmatind, std::vector<double> &_rmatval,
+            char _sense, double _RHS) :
+        rmatind(_rmatind), rmatval(_rmatval), sense(_sense), RHS(_RHS) {}
 
-  std::vector<int> rmatind;
-  std::vector<double> rmatval;
-  char sense;
-  double RHS;
+    std::vector<int> rmatind;
+    std::vector<double> rmatval;
+    char sense;
+    double RHS;
 };
 
 
@@ -114,11 +106,11 @@ struct safeGMI {
  */
 template<typename cut_t> class Cut {
 public:
-  virtual int cutcall();// = 0;
+    virtual int cutcall();// = 0;
 
 protected:
-  virtual int separate();// = 0;
-  virtual int add_cuts();// = 0;
+    virtual int separate();// = 0;
+    virtual int add_cuts();// = 0;
 };
 
 
@@ -129,84 +121,93 @@ protected:
  * DP inequalities (see dominos.hpp, simpleDP.hpp), or the locally used 
  * structure from within a separator (see segments.cpp, blossoms.cpp)
  */
-  
+
+/** Class template for dealing with a queue of cuts of some representation. */
 template<typename cut_rep>
 class CutQueue {
 public:
-  CutQueue() : q_capacity(INFINITY), q_fresh(true) {}
-  CutQueue(const int cap) : q_capacity(cap), q_fresh(true) {}
-  
-  //the max number of cuts to be stored in the queue
-  const int q_capacity;
+    /** Construct a CutQueue with unlimited capacity. */
+    CutQueue() : q_capacity(std::numeric_limits<int>::max()), q_fresh(true) {}
 
-  //returns a reference to the most recently added cut
-  const cut_rep &peek_front() const { return cut_q.front(); }
+    /** Construct a CutQueue with capacity \p cap. */
+    CutQueue(const int cap) : q_capacity(cap), q_fresh(true) {}
   
-  //pushes a new cut to the front of the queue, popping the oldest one from
-  //the back if we are at capacity
-  void push_front(const cut_rep &H)
-  {
-    cut_q.push_front(H);
-    if(cut_q.size() > q_capacity) cut_q.pop_back();
-  }
+    const int q_capacity; /**< How many cuts can be stored in the queue. */
 
-  void push_back(const cut_rep &H)
-  {
-    if(cut_q.size() >= q_capacity) cut_q.pop_back();
-    cut_q.push_back(H);
-  }
+    /** A reference to the most recently added cut. */
+    const cut_rep &peek_front() const { return cut_q.front(); }
   
-  void pop_front() { cut_q.pop_front(); }  
-  bool empty() const { return cut_q.empty(); }
-  int size() const { return cut_q.size(); }
+    /** Push a new cut to the front, popping from the back if at capacity. */
+    void push_front(const cut_rep &H)
+        {
+            cut_q.push_front(H);
+            if(cut_q.size() > q_capacity) cut_q.pop_back();
+        }
 
-  bool q_fresh;
+    /** Push to the back, popping from back first if at capacity. */
+    void push_back(const cut_rep &H)
+        {
+            if(cut_q.size() >= q_capacity) cut_q.pop_back();
+            cut_q.push_back(H);
+        }
+    
+    void pop_front() { cut_q.pop_front(); }  /**< Pop the front cut. */
+
+    /** Add the cuts in Q to this list, emptying Q. */
+    void splice(CutQueue<cut_rep> &Q){ cut_q.splice(cut_q.end(), Q.cut_q); }
+
+    
+    bool empty() const { return cut_q.empty(); } /**< Is the queue empty. */
+    int size() const { return cut_q.size(); } /**< Number of cuts in queue. */
+
+    bool q_fresh;
 
 private:
-  std::list<cut_rep> cut_q;
+    std::list<cut_rep> cut_q;
 };
 
 class CutTranslate {
 public:
-  CutTranslate(Data::GraphGroup &GraphGroup) :
-    edges(GraphGroup.m_graph.edges),
-    delta(GraphGroup.delta),
-    edge_marks(GraphGroup.edge_marks),
-    edge_lookup(GraphGroup.m_graph.edge_lookup) {}
+    CutTranslate(Data::GraphGroup &GraphGroup) :
+        edges(GraphGroup.m_graph.edges),
+        delta(GraphGroup.delta),
+        edge_marks(GraphGroup.edge_marks),
+        edge_lookup(GraphGroup.m_graph.edge_lookup) {}
 
-  int get_sparse_row(const CMR::HyperGraph &H, std::vector<int> &rmatind,
-		     std::vector<double> &rmatval, char &sense, double &rhs);
+    int get_sparse_row(const CMR::HyperGraph &H, std::vector<int> &rmatind,
+                       std::vector<double> &rmatval, char &sense, double &rhs);
   
-  int get_sparse_row(const CMR::dominoparity &dp_cut,
-		     const std::vector<int> &tour_nodes,
-		     std::vector<int> &rmatind, std::vector<double> &rmatval,
-		     char &sense, double &rhs);
+    int get_sparse_row(const CMR::dominoparity &dp_cut,
+                       const std::vector<int> &tour_nodes,
+                       std::vector<int> &rmatind, std::vector<double> &rmatval,
+                       char &sense, double &rhs);
   
-  int get_sparse_row_if(bool &violated, const CMR::HyperGraph &H,
-			const std::vector<double> &x,
-			std::vector<int> &rmatind, std::vector<double> &rmatval,
-			char &sense, double &rhs);
-  int is_cut_violated(bool &violated, const CMR::HyperGraph &H,
-		      std::vector<double> &x);
+    int get_sparse_row_if(bool &violated, const CMR::HyperGraph &H,
+                          const std::vector<double> &x,
+                          std::vector<int> &rmatind,
+                          std::vector<double> &rmatval,
+                          char &sense, double &rhs);
+    
+    int is_cut_violated(bool &violated, const CMR::HyperGraph &H,
+                        std::vector<double> &x);
   
-  template<typename number_t>
-  void get_activity(double &activity, const std::vector<number_t> &x,
-		    const std::vector<int> &rmatind,
-		    const std::vector<double> &rmatval)
-  {
-    activity = 0;
-    for(int i = 0; i < rmatind.size(); i++){
-      int index = rmatind[i];
-      activity += x[index] * rmatval[i];
-    }
-  }
+    template<typename number_t>
+    void get_activity(double &activity, const std::vector<number_t> &x,
+                      const std::vector<int> &rmatind,
+                      const std::vector<double> &rmatval)
+        {
+            activity = 0;
+            for(int i = 0; i < rmatind.size(); i++){
+                int index = rmatind[i];
+                activity += x[index] * rmatval[i];
+            }
+        }
 
-private:
-  
-  std::vector<Edge> &edges;
-  std::vector<int> &delta;
-  std::vector<int> &edge_marks;
-  IntPairMap &edge_lookup;
+private:  
+    std::vector<Edge> &edges;
+    std::vector<int> &delta;
+    std::vector<int> &edge_marks;
+    IntPairMap &edge_lookup;
 };
 
 /*
