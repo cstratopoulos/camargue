@@ -19,17 +19,17 @@ namespace CMR {
 
 #ifdef CMR_USE_OMP
 
-int Cut<blossom>::separate(){
+int Cut<blossom>::separate() {
   int rval = 0;
   int ncount = m_graph.node_count;
 
 
-  try { cut_ecap.resize(support_ecap.size()); } catch(...){
+  try { cut_ecap.resize(support_ecap.size()); } catch (...) {
     rval = 1; CMR_GOTO_CLEANUP("Couldn't resize cut_ecap, ");
   }
 
-  for(int i = 0; i < support_indices.size(); i++){
-    if(best_tour_edges[support_indices[i]] == 0)
+  for (int i = 0; i < support_indices.size(); i++) {
+    if (best_tour_edges[support_indices[i]] == 0)
       cut_ecap[i] = support_ecap[i];
     else
       cut_ecap[i] = 1 - support_ecap[i];
@@ -38,8 +38,8 @@ int Cut<blossom>::separate(){
 #ifndef CMR_DO_TESTS
   #pragma omp parallel for
 #endif
-  for(int i = 0; i < support_indices.size(); ++i){
-    if(rval) continue;
+  for (int i = 0; i < support_indices.size(); ++i) {
+    if (rval) continue;
 
     int cut_edge_index = support_indices[i];
     int best_tour_entry = best_tour_edges[cut_edge_index];
@@ -52,7 +52,7 @@ int Cut<blossom>::separate(){
 
     vector<double> current_ecap;
 
-    try { current_ecap = cut_ecap; } catch(...) {
+    try { current_ecap = cut_ecap; } catch (...) {
       #pragma omp critical
       {
 	cerr << "Couldn't allocate current ecap\n";
@@ -61,7 +61,7 @@ int Cut<blossom>::separate(){
       }
     }				      
 
-    if(rval) continue;
+    if (rval) continue;
     
     current_ecap[i] = best_tour_entry ? support_ecap[i] : 1 - support_ecap[i];
 
@@ -69,7 +69,7 @@ int Cut<blossom>::separate(){
 				  &support_elist[0], &current_ecap[0],
 				  end0, end1,
 				  &cutval, &cut_nodes, &cutcount);
-    if(cc_rval){
+    if (cc_rval) {
       cutval = 1.0;
 
       #pragma omp critical
@@ -80,16 +80,16 @@ int Cut<blossom>::separate(){
       }
     }
 
-    if(cutval < 1.0 - Epsilon::Cut && cutcount >= 3 &&
-       cutcount <= (ncount - 3)){
+    if (cutval < 1.0 - Epsilon::Cut && cutcount >= 3 &&
+       cutcount <= (ncount - 3)) {
       
       vector<int> handle;
       int handle_rval = 0;
 
       try {
-	for(int j = 0; j < cutcount; j++)
+	for (int j = 0; j < cutcount; j++)
 	  handle.push_back(cut_nodes[j]);	
-      } catch(...) {
+      } catch (...) {
 	#pragma omp critical
 	{
 	  cerr << "Couldn't allocate handle nodes\n";
@@ -99,13 +99,13 @@ int Cut<blossom>::separate(){
 	}
       }
 
-      if(!handle_rval) {
+      if (!handle_rval) {
 	blossom new_cut(handle, cut_edge_index, cutval);
 
         #pragma omp critical
 	{
 	try { //if it is a better cut it goes to the front for immediate adding
-	  if(local_q.empty() || cutval <= local_q.peek_front().cut_val){
+	  if (local_q.empty() || cutval <= local_q.peek_front().cut_val) {
 	    local_q.push_front(new_cut);
 	  }
 	  else { //it goes to the back for use in the pool if applicable
@@ -123,34 +123,34 @@ int Cut<blossom>::separate(){
     CC_IFFREE(cut_nodes, int);
   }
 
-  if(rval) goto CLEANUP;
-  if(local_q.empty()) rval = 2;
+  if (rval) goto CLEANUP;
+  if (local_q.empty()) rval = 2;
 
 
  CLEANUP:
-  if(rval == 1)
+  if (rval == 1)
     cerr << "Problem in Cuts<blossom>::separate.\n";
   return rval;
 }
 
 #else
 
-int Cut<blossom>::separate(){
+int Cut<blossom>::separate() {
   int rval = 0;
   int ncount = m_graph.node_count;
 
-  try { cut_ecap.resize(support_ecap.size()); } catch(...){
+  try { cut_ecap.resize(support_ecap.size()); } catch (...) {
     rval = 1; CMR_GOTO_CLEANUP("Couldn't resize cut_ecap, ");
   }
 
-  for(int i = 0; i < support_indices.size(); i++){
-    if(best_tour_edges[support_indices[i]] == 0)
+  for (int i = 0; i < support_indices.size(); i++) {
+    if (best_tour_edges[support_indices[i]] == 0)
       cut_ecap[i] = support_ecap[i];
     else
       cut_ecap[i] = 1 - support_ecap[i];
   }
 
-  for(int i = 0; i < support_indices.size(); i++){
+  for (int i = 0; i < support_indices.size(); i++) {
     int cut_edge_index = support_indices[i];
     int best_tour_entry = best_tour_edges[cut_edge_index];
     int end0 = support_elist[2 * i];
@@ -160,7 +160,7 @@ int Cut<blossom>::separate(){
     int *cut_nodes = (int *) NULL;
     double orig_weight = 1.0, changed_weight = 1.0, cutval = 1.0;
 
-    switch(best_tour_entry){
+    switch (best_tour_entry) {
     case(0):
       orig_weight = support_ecap[i];
       changed_weight = 1 - support_ecap[i];
@@ -175,23 +175,23 @@ int Cut<blossom>::separate(){
     rval = CCcut_mincut_st(ncount, support_indices.size(),
 			   &support_elist[0], &cut_ecap[0], end0, end1,
 			   &cutval, &cut_nodes, &cutcount);
-    if(rval){
+    if (rval) {
       cerr << "Problem in blossom::separate w st-cut\n";
       goto CLEANUP;
     }
 
-    if(cutval < 1.0 - Epsilon::Cut && cutcount >= 3 &&
-       cutcount <= (ncount - 3)){
+    if (cutval < 1.0 - Epsilon::Cut && cutcount >= 3 &&
+       cutcount <= (ncount - 3)) {
       
       vector<int> handle;
-      for(int j = 0; j < cutcount; j++){
+      for (int j = 0; j < cutcount; j++) {
 	handle.push_back(cut_nodes[j]);
       }
 
       blossom new_cut(handle, cut_edge_index, cutval);
 
       try { //if it is a better cut it goes to the front for immediate adding
-	if(local_q.empty() || cutval <= local_q.peek_front().cut_val){
+	if (local_q.empty() || cutval <= local_q.peek_front().cut_val) {
 	  local_q.push_front(new_cut);
 	}
 	else { //it goes to the back for use in the pool if applicable
@@ -206,7 +206,7 @@ int Cut<blossom>::separate(){
     CC_IFFREE(cut_nodes, int);
   }
 
-  if(local_q.empty()) rval = 2;
+  if (local_q.empty()) rval = 2;
 
 
  CLEANUP:
@@ -215,7 +215,7 @@ int Cut<blossom>::separate(){
 
 #endif
 
-int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
+int Cut<blossom>::build_hypergraph(const blossom &blossom_cut) {
   int rval = 0;
   int cutedge = blossom_cut.cut_edge;
   int num_teeth = 0;
@@ -231,15 +231,15 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
   GraphUtils::get_delta(blossom_cut.handle, edges, &deltacount, delta,
 			edge_marks);
 
-  if(deltacount == 0){
+  if (deltacount == 0) {
     rval = 1; CMR_GOTO_CLEANUP("Get delta returned zero handle edges, ");
   }
 
-  switch(best_tour_edges[cutedge]){
+  switch (best_tour_edges[cutedge]) {
   case 0:
-    for(int i = 0; i < deltacount; i++)
-      if(m_lp_edges[delta[i]] > Epsilon::Zero &&
-	 (best_tour_edges[delta[i]] == 1 || delta[i] == cutedge)){
+    for (int i = 0; i < deltacount; i++)
+      if (m_lp_edges[delta[i]] > Epsilon::Zero &&
+	 (best_tour_edges[delta[i]] == 1 || delta[i] == cutedge)) {
 	int edge_index = delta[i];
 	vector<int> new_tooth{edges[edge_index].end[0],
 	    edges[edge_index].end[1]};
@@ -250,9 +250,9 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
     break;
 
   case 1:
-    for(int i = 0; i < deltacount; i++)
-      if(m_lp_edges[delta[i]] > Epsilon::Zero &&
-	 (best_tour_edges[delta[i]] == 1 && delta[i] != cutedge)){
+    for (int i = 0; i < deltacount; i++)
+      if (m_lp_edges[delta[i]] > Epsilon::Zero &&
+	 (best_tour_edges[delta[i]] == 1 && delta[i] != cutedge)) {
 	int edge_index = delta[i];
 	vector<int> new_tooth{edges[edge_index].end[0],
 	    edges[edge_index].end[1]};
@@ -264,7 +264,7 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
 
   num_teeth = node_sets.size() - 1;
 
-  if(num_teeth %2 == 1){
+  if (num_teeth %2 == 1) {
     try {
       HyperGraph newcut(node_sets, HyperGraph::CutType::Blossom);
       external_q.push_back(newcut);
@@ -274,40 +274,40 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut){
   }
 
  CLEANUP:
-  if(rval)
+  if (rval)
     cerr << "Cut<blossom>::build_hypergraph failed\n";
   return rval;
 }
 
-int Cut<blossom>::add_cuts(){
+int Cut<blossom>::add_cuts() {
   int rval = 0;
   
-  while(!local_q.empty()){
+  while (!local_q.empty()) {
     rval = build_hypergraph(local_q.peek_front());
-    if(rval) goto CLEANUP;
+    if (rval) goto CLEANUP;
     
     local_q.pop_front();
   }
 
-  if(external_q.empty()) rval = 2;
+  if (external_q.empty()) rval = 2;
 
  CLEANUP:
-  if(rval == 1)
+  if (rval == 1)
     cerr << "problem in Cut<blossom>::add_cuts\n";
   return rval;
 }
 
-int Cut<blossom>::cutcall(){
+int Cut<blossom>::cutcall() {
   int rval = 0;
 
   rval = separate();
-  if(rval) goto CLEANUP;
+  if (rval) goto CLEANUP;
 
   rval = add_cuts();
-  if(rval) goto CLEANUP;
+  if (rval) goto CLEANUP;
 
  CLEANUP:
-  if(rval == 1)
+  if (rval == 1)
     cerr << "Problem in Cuts<blossom>::cutcall\n";
   return rval;
 }

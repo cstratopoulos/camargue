@@ -30,10 +30,10 @@ TEST_CASE ("Tiny simple DP cutgraph tests",
 			 ProbPair("comb9", 2), //one blossom, one comb
 			 ProbPair("ulysses16", 0)}; //no dp inequalities
 
-  for(ProbPair &t_case : tests){
+  for (ProbPair &t_case : tests) {
     string fname = t_case.first;
     int expected_num_cuts = t_case.second;
-      SECTION(fname){
+      SECTION(fname) {
 	string
 	  probfile = "problems/" + fname + ".tsp",
 	  solfile = "test_data/tours/" + fname + ".sol",
@@ -47,7 +47,7 @@ TEST_CASE ("Tiny simple DP cutgraph tests",
 						g_dat, b_dat, lp_edges,
 						s_dat));
 	cout << "Best tour: ";
-	for(int i : b_dat.best_tour_nodes) cout << i << ", "; cout << "\n";
+	for (int i : b_dat.best_tour_nodes) cout << i << ", "; cout << "\n";
 
 	  
 	CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);	
@@ -68,19 +68,19 @@ TEST_CASE ("Tiny simple DP cutgraph tests",
 
 	REQUIRE(dp_q.size() == expected_num_cuts);
 
-	while(!dp_q.empty()){
+	while (!dp_q.empty()) {
 	  CMR::dominoparity dp = dp_q.peek_front();
 	  vector<int> &bt = b_dat.best_tour_nodes;
 
 	  cout << "Found dp with....\n";
 	  cout << "Handle: ";
-	  for(int i : dp.degree_nodes) cout << bt[i] << ", "; cout << "\n";
+	  for (int i : dp.degree_nodes) cout << bt[i] << ", "; cout << "\n";
 	  cout << "Nonneg edges: ";
-	  for(IntPair &e : dp.nonneg_edges)
+	  for (IntPair &e : dp.nonneg_edges)
 	    cout << "(" << bt[e.first] << ", " << bt[e.second] << "), ";
 	  cout << "\n";
 	  cout << "Simple teeth: (" << dp.used_teeth.size() << " total)\n";
-	  for(CMR::SimpleTooth *T : dp.used_teeth)
+	  for (CMR::SimpleTooth *T : dp.used_teeth)
 	    cands.print_tooth(*T, true);
 
 	  dp_q.pop_front();
@@ -95,8 +95,8 @@ TEST_CASE ("Tiny simple DP cutgraph tests",
 TEST_CASE ("simple DP cutgraph tests", "[cutgraph]") {
   vector<string> probs{"d2103", "pr1002", "rl1304"};
 
-    for(string &fname : probs){
-      SECTION(fname){
+    for (string &fname : probs) {
+      SECTION(fname) {
 	string
 	  probfile = "problems/" + fname + ".tsp",
 	  solfile = "test_data/tours/" + fname + ".sol",

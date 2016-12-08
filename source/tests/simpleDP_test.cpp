@@ -24,11 +24,11 @@ using std::pair;
 #ifdef CMR_DO_TESTS
 
 SCENARIO("Separating simple DP inequalities in small instances",
-         "[simpleDP][small]"){
+         "[simpleDP][small]") {
   vector<string> probs {"dantzig42", "swiss42", "gr48", "hk48", "eil51",
                         "st70", "pr76", "lin105"};
 
-  for(string &fname : probs){
+  for (string &fname : probs) {
     string
     probfile = "problems/" + fname + ".tsp",
     solfile = "test_data/tours/" + fname + ".sol",
@@ -40,8 +40,8 @@ SCENARIO("Separating simple DP inequalities in small instances",
     CMR::Data::Instance inst;
     CMR::Data::KarpPartition kpart;
 
-    GIVEN("A subtour polytope LP solution for " + fname){
-      THEN("We can get light simple DP inequalities"){
+    GIVEN("A subtour polytope LP solution for " + fname) {
+      THEN("We can get light simple DP inequalities") {
         REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
                                                  subtourfile, g_dat, b_dat,
                                                  lp_edges, s_dat, inst));
@@ -58,7 +58,7 @@ SCENARIO("Separating simple DP inequalities in small instances",
         cout << "Cut queue now has size: " << dp_q.size() << "\n";
 
         int primal_found = 0;
-        while(!dp_q.empty()){
+        while (!dp_q.empty()) {
           vector<int> rmatind;
           vector<double> rmatval;
           char sense;
@@ -77,7 +77,7 @@ SCENARIO("Separating simple DP inequalities in small instances",
           CHECK(lp_activity > rhs);
           REQUIRE(tour_activity <= rhs);
 	  
-          if(tour_activity == rhs && lp_activity > rhs)
+          if (tour_activity == rhs && lp_activity > rhs)
             ++primal_found;
 	  
           dp_q.pop_front();
@@ -89,7 +89,7 @@ SCENARIO("Separating simple DP inequalities in small instances",
 }
 
 SCENARIO("Separating simple DP inequalities in medium instances",
-         "[simpleDP][medium]"){
+         "[simpleDP][medium]") {
   vector<string> probs {
     "lin318",
     "d493", "att532", "u724",
@@ -98,7 +98,7 @@ SCENARIO("Separating simple DP inequalities in medium instances",
     "pcb3038",
   };
 
-  for(string &fname : probs){
+  for (string &fname : probs) {
     string
     probfile = "problems/" + fname + ".tsp",
     solfile = "test_data/tours/" + fname + ".sol",
@@ -110,8 +110,8 @@ SCENARIO("Separating simple DP inequalities in medium instances",
     CMR::Data::Instance inst;
     CMR::Data::KarpPartition kpart;
 
-    GIVEN("A subtour polytope LP solution for " + fname){
-      THEN("We can get light simple DP inequalities"){
+    GIVEN("A subtour polytope LP solution for " + fname) {
+      THEN("We can get light simple DP inequalities") {
         REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
                                                  subtourfile, g_dat, b_dat,
                                                  lp_edges, s_dat, inst));
@@ -128,7 +128,7 @@ SCENARIO("Separating simple DP inequalities in medium instances",
         cout << "Cut queue now has size: " << dp_q.size() << "\n";
 
         int primal_found = 0;
-        while(!dp_q.empty()){
+        while (!dp_q.empty()) {
           vector<int> rmatind;
           vector<double> rmatval;
           char sense;
@@ -148,18 +148,18 @@ SCENARIO("Separating simple DP inequalities in medium instances",
           CHECK(lp_activity > rhs);
           REQUIRE(tour_activity <= rhs);
 
-          if(lp_activity <= rhs){
+          if (lp_activity <= rhs) {
             cout << "Found non-violated cut....\n";
             cout << "\tHandle:" << dp_cut.degree_nodes.size() << " nodes\n";
             cout << "\tNon-neg edges:\n";
-            for(const IntPair &e : dp_cut.nonneg_edges)
+            for (const IntPair &e : dp_cut.nonneg_edges)
               cout << bt[e.first] << ", " << bt[e.second] << "\n";
             cout << "\tUsed teeth:\n";
-            for(const CMR::SimpleTooth &T : dp_cut.used_teeth)
+            for (const CMR::SimpleTooth &T : dp_cut.used_teeth)
               CMR::CandidateTeeth::print_tooth(T, false, bt);
           }
 	  
-          if(tour_activity == rhs && lp_activity > rhs){
+          if (tour_activity == rhs && lp_activity > rhs) {
             ++primal_found;
 	  }
           dp_q.pop_front();
@@ -171,13 +171,13 @@ SCENARIO("Separating simple DP inequalities in medium instances",
 }
 
 SCENARIO("Separating simple DP inequalities in large instances",
-         "[simpleDP][large]"){
+         "[simpleDP][large]") {
   vector<string> probs {
     "rl5915", // "pla7397",
     // "usa13509"
   };
 
-  for(string &fname : probs){
+  for (string &fname : probs) {
     string
     probfile = "problems/" + fname + ".tsp",
     solfile = "test_data/tours/" + fname + ".sol",
@@ -189,8 +189,8 @@ SCENARIO("Separating simple DP inequalities in large instances",
     CMR::Data::Instance inst;
     CMR::Data::KarpPartition kpart;
 
-    GIVEN("A subtour polytope LP solution for " + fname){
-      THEN("We can get light simple DP inequalities"){
+    GIVEN("A subtour polytope LP solution for " + fname) {
+      THEN("We can get light simple DP inequalities") {
         REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
                                                  subtourfile, g_dat, b_dat,
                                                  lp_edges, s_dat, inst));
@@ -207,7 +207,7 @@ SCENARIO("Separating simple DP inequalities in large instances",
         cout << "Cut queue now has size: " << dp_q.size() << "\n";
 
         int primal_found = 0;
-        while(!dp_q.empty()){
+        while (!dp_q.empty()) {
           vector<int> rmatind;
           vector<double> rmatval;
           char sense;
@@ -226,7 +226,7 @@ SCENARIO("Separating simple DP inequalities in large instances",
           CHECK(lp_activity > rhs);
           REQUIRE(tour_activity <= rhs);
 	  
-          if(tour_activity == rhs && lp_activity > rhs)
+          if (tour_activity == rhs && lp_activity > rhs)
             ++primal_found;
 	  
           dp_q.pop_front();

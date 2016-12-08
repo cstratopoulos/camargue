@@ -4,19 +4,19 @@ using namespace std;
 using namespace CMR;
 using namespace CMR::BB;
 
-int ABC::solve(){
+int ABC::solve() {
   int rval = 0;
   BBTree.push(unique_ptr<TreeNode>(new TreeNode));
 
-  while(!BBTree.empty()){
-    if(BBTree.top()->status() == NodeStat::UNVISITED){
+  while (!BBTree.empty()) {
+    if (BBTree.top()->status() == NodeStat::UNVISITED) {
       rval = Visitor.previsit(BBTree.top());
-      if(rval) goto CLEANUP;
+      if (rval) goto CLEANUP;
 
-      if(BBTree.top()->status() != NodeStat::FATHOMED){
+      if (BBTree.top()->status() != NodeStat::FATHOMED) {
 	int newedge = ConstraintMgr.compute_branch_edge();
 	rval = (newedge == -1);
-	if(rval){
+	if (rval) {
 	  cerr << "No new branch edge found\n";
 	  Visitor.PureCut.print.lp_edges();
 	  goto CLEANUP;
@@ -32,12 +32,12 @@ int ABC::solve(){
     }
 
     rval = Visitor.postvisit(BBTree.top());
-    if(rval) goto CLEANUP;
+    if (rval) goto CLEANUP;
     BBTree.pop();
   }
 
  CLEANUP:
-  if(rval)
+  if (rval)
     cerr << "Problem in ABC::solve\n";
   return rval;
 }

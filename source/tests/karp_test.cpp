@@ -26,7 +26,7 @@ using std::pair;
 #ifdef CMR_DO_TESTS
 
 SCENARIO("Karp partition constructor tests",
-	 "[.karp][valgrind]"){
+	 "[.karp][valgrind]") {
   CMR::Data::GraphGroup g_dat;
   CMR::Data::BestGroup b_dat;
   CMR::Data::SupportGroup s_dat;
@@ -42,9 +42,9 @@ SCENARIO("Karp partition constructor tests",
 }
 
 SCENARIO("Karp partitions for too small instances",
-         "[.karp][tiny][.small]"){
+         "[.karp][tiny][.small]") {
   vector<string> probs{"blossom6", "fleisA9", "dantzig42"};
-  for(string &fname : probs){
+  for (string &fname : probs) {
     string
     probfile = "problems/" + fname + ".tsp",
     solfile = "test_data/tours/" + fname + ".sol",
@@ -56,8 +56,8 @@ SCENARIO("Karp partitions for too small instances",
     CMR::Data::Instance inst;
     CMR::Data::KarpPartition kpart;
 
-    GIVEN("The TSPLIB instance " + fname){
-      THEN("The Karp partition is trivial bc there are too few nodes."){
+    GIVEN("The TSPLIB instance " + fname) {
+      THEN("The Karp partition is trivial bc there are too few nodes.") {
         REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
                                                  subtourfile, g_dat, b_dat,
                                                  lp_edges, s_dat, inst));

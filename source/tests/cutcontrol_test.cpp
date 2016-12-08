@@ -21,8 +21,8 @@ TEST_CASE("Concorde subtour solutions are in subtour poly",
   vector<string> probs{"dantzig42", "pr1002", "lin105", "rl1304", "d2103",
 		       "fleisA9", "fleisB9"};
 
-  for(string &fname : probs){
-    SECTION(fname){
+  for (string &fname : probs) {
+    SECTION(fname) {
       string
 	probfile = "problems/" + fname + ".tsp",
 	solfile = "test_data/tours/" + fname + ".sol",

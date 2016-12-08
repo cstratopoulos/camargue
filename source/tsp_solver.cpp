@@ -51,16 +51,16 @@ catch (...) {
   throw 1;
  }  
 
-int TSPSolver::call(SolutionProtocol solmeth, const bool sparse){
+int TSPSolver::call(SolutionProtocol solmeth, const bool sparse) {
   LP::PivType piv_status;
   int rval = 0;
   
-  if(solmeth == SolutionProtocol::PURECUT){
+  if (solmeth == SolutionProtocol::PURECUT) {
     PivotPlan plan;
-    if(sparse)
+    if (sparse)
       plan = PivotPlan(GraphGroup.m_graph.node_count, PivPresets::SPARSE);      
    
-    if(PureCut->solve(plan, piv_status)){
+    if (PureCut->solve(plan, piv_status)) {
       std::cerr << "TSPSolver.call(PURECUT) failed\n";
       return 1;
     }
@@ -69,13 +69,13 @@ int TSPSolver::call(SolutionProtocol solmeth, const bool sparse){
     
   } else {
     PivotPlan plan(GraphGroup.m_graph.node_count, PivPresets::ROOT);
-    if(PureCut->solve(plan, piv_status)){
+    if (PureCut->solve(plan, piv_status)) {
       std::cerr << "TSPSolver.call(ABC) failed to call PureCut at root\n";
       return 1;
     }
 
-    if(piv_status == LP::PivType::FathomedTour) return 0;
-    if(piv_status == LP::PivType::Subtour){
+    if (piv_status == LP::PivType::FathomedTour) return 0;
+    if (piv_status == LP::PivType::Subtour) {
       std::cerr << "Terminated with inseparable subtour inequality\n";
       return 1;
     }
@@ -83,11 +83,11 @@ int TSPSolver::call(SolutionProtocol solmeth, const bool sparse){
     int ecount = GraphGroup.m_graph.edge_count;
     std::vector<double> lower_bounds;
     try{ lower_bounds.resize(ecount); }
-    catch(const std::bad_alloc &) {
+    catch (const std::bad_alloc &) {
       rval = 1; CMR_GOTO_CLEANUP("Couldn't allocate lower bounds, ");
     }
 
-    if(CMRlp_getlb(&(LPGroup.m_lp), &lower_bounds[0], 0, ecount - 1)){
+    if (CMRlp_getlb(&(LPGroup.m_lp), &lower_bounds[0], 0, ecount - 1)) {
       std::cerr << "TSPSolver.call(ABC) failed to get lower bounds\n";
       return 1;
     }
@@ -100,7 +100,7 @@ int TSPSolver::call(SolutionProtocol solmeth, const bool sparse){
   }
 
  CLEANUP:
-  if(rval)
+  if (rval)
     std::cerr << "TSPSolver.call failed\n";
   return rval;
 }

@@ -15,29 +15,29 @@ using std::vector;
 #ifdef CMR_DO_TESTS
 
 SCENARIO("Filtering primal cuts frees and deletes cuts from list",
-	 "[LPcutList][filter_primal]"){
+	 "[LPcutList][filter_primal]") {
   CMR::Data::GraphGroup g_dat;
   CMR::Data::BestGroup b_dat;
   CMR::Data::SupportGroup s_dat;
   std::vector<double> lp_edges;
   CMR::Cut::LPcutList cutq;
 
-  GIVEN("Blossom 6 with no cuts primal"){
-    WHEN("Cuts are found but none are primal"){
-      THEN("Cutcount matches non-null count"){
+  GIVEN("Blossom 6 with no cuts primal") {
+    WHEN("Cuts are found but none are primal") {
+      THEN("Cutcount matches non-null count") {
 	REQUIRE_NOTHROW(CMR::Data::make_cut_test("problems/blossom6.tsp",
 						"test_data/tours/blossom6.bad.sol",
 						"test_data/subtour_lp/blossom6.sub.x",
 						g_dat, b_dat, lp_edges, s_dat));
 	CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			   b_dat.perm);
-	for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
 	CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 
       REQUIRE_FALSE(fb_sep.find_cuts());
 	int nncount = 0;
-	for(auto it = cutq.begin(); it; it = it->next)
+	for (auto it = cutq.begin(); it; it = it->next)
 	  ++nncount;
 	REQUIRE(nncount == cutq.size());
       }
@@ -45,9 +45,9 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
   }
 
   /*
-  GIVEN("d493 with some cuts primal but not others"){
-    WHEN("Cuts are found but some are not primal"){
-      THEN("Cutcount matches non-null count"){
+  GIVEN("d493 with some cuts primal but not others") {
+    WHEN("Cuts are found but some are not primal") {
+      THEN("Cutcount matches non-null count") {
 	REQUIRE_NOTHROW(CMR::Data::make_cut_test("problems/d493.tsp",
 						"test_data/tours/d493.sol",
 						"test_data/subtour_lp/d493.sub.x",
@@ -55,13 +55,13 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 						s_dat));
 	CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			   b_dat.perm);
-	for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
 	CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
       REQUIRE(fb_sep.find_cuts());
       
 	int nncount = 0;
-	for(auto it = cutq.begin(); it; it = it->next)
+	for (auto it = cutq.begin(); it; it = it->next)
 	  ++nncount;
 	REQUIRE(nncount == cutq.size());
       }
@@ -71,17 +71,17 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 }
 
 // TEST_CASE("Basic member tests",
-// 	  "[LPcutList]"){
+// 	  "[LPcutList]") {
 //   CMR::Cut::LPcutList wrap;
 //   CMR::Data::GraphGroup g_dat;
 //   CMR::Data::BestGroup b_dat;
 //   CMR::Data::SupportGroup s_dat;
 //   std::vector<double> lp_edges;
   
-//   SECTION("Cutcount changes appropriately"){
+//   SECTION("Cutcount changes appropriately") {
 //     vector<string> probs{"blossom6", "comb9", "lin318"};
-//     for(string &fname : probs){
-//       SECTION(fname){
+//     for (string &fname : probs) {
+//       SECTION(fname) {
 // 	string
 // 	  probfile = "problems/" + fname + ".tsp",
 // 	  solfile = "test_data/tours/" + fname + ".sol",
@@ -91,7 +91,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 // 						g_dat, b_dat, lp_edges,
 // 						s_dat));
 
-// 	SECTION("Cuts found makes cut count positive"){
+// 	SECTION("Cuts found makes cut count positive") {
 // 	  CMR::Data::FastBlossoms fb(g_dat, b_dat, s_dat, TG, wrap);
 // 	  REQUIRE_FALSE(CCtsp_fastblossom(wrap.pass_ptr(), wrap.count_ptr(),
 // 					  s_dat.G_s.node_count,
@@ -101,7 +101,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 // 	  REQUIRE(wrap.size() > 0);
 // 	}
 
-// 	SECTION("No cuts means zero cut count"){
+// 	SECTION("No cuts means zero cut count") {
 // 	  REQUIRE_FALSE(CCtsp_connect_cuts(wrap.pass_ptr(), wrap.count_ptr(),
 // 					   s_dat.G_s.node_count,
 // 					   s_dat.G_s.edge_count,

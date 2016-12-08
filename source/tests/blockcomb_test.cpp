@@ -16,10 +16,10 @@ using std::vector;
 #ifdef CMR_DO_TESTS
 
 SCENARIO("Primal comb separation by standard block comb heuristics",
-	 "[blkcomb]"){
+	 "[blkcomb]") {
   vector<string> probs{"pr76", "lin318", "d493", "pr1002", "d2103"};
-  for(string &fname : probs){
-    GIVEN("TSP instance " + fname){
+  for (string &fname : probs) {
+    GIVEN("TSP instance " + fname) {
       string
 	probfile = "problems/" + fname + ".tsp",
 	solfile = "test_data/tours/" + fname + ".sol",
@@ -32,8 +32,8 @@ SCENARIO("Primal comb separation by standard block comb heuristics",
       std::vector<double> lp_edges;
       CMR::Cut::LPcutList cutq;
 
-      WHEN("Tour is good and solution is in the subtour polytope"){
-	THEN("Primal block combs are found"){
+      WHEN("Tour is good and solution is in the subtour polytope") {
+	THEN("Primal block combs are found") {
 	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
@@ -41,7 +41,7 @@ SCENARIO("Primal comb separation by standard block comb heuristics",
 	
 	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
-	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
 	  CMR::Cut::BlockCombs bc_sep(g_dat, b_dat, s_dat, TG, cutq);
 	  REQUIRE(bc_sep.find_cuts());
@@ -52,10 +52,10 @@ SCENARIO("Primal comb separation by standard block comb heuristics",
 }
 
 SCENARIO("Primal heuristic block comb sep in tiny instances",
-	 "[blkcomb][tiny]"){
+	 "[blkcomb][tiny]") {
   vector<string> probs{"blossom6", "comb9"};
-  for(string &fname : probs){
-    GIVEN("TSP instance " + fname){
+  for (string &fname : probs) {
+    GIVEN("TSP instance " + fname) {
       string
 	probfile = "problems/" + fname + ".tsp",
 	solfile = "test_data/tours/" + fname + ".sol",
@@ -68,23 +68,23 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
       std::vector<double> lp_edges;
       CMR::Cut::LPcutList cutq;
 
-      WHEN("The tour is good"){
-	THEN("Primal block combs are found"){
+      WHEN("The tour is good") {
+	THEN("Primal block combs are found") {
 	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
 	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
-	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
 	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 	  REQUIRE(fb_sep.find_cuts());
 	}
       }
 
-      WHEN("The tour is bad"){
-	THEN("No primal block combs are found"){
+      WHEN("The tour is bad") {
+	THEN("No primal block combs are found") {
 	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, badsolfile,
 						   subtourfile,
 						   g_dat, b_dat, lp_edges,
@@ -92,7 +92,7 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
 
 	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			    b_dat.perm);
-	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
 	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 

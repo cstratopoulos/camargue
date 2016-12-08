@@ -35,7 +35,7 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
     "usa13509"
   };
 
-  for(string &fname : probs){
+  for (string &fname : probs) {
     string
     probfile = "problems/" + fname + ".tsp",
     solfile = "test_data/tours/" + fname + ".sol",
@@ -47,8 +47,8 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
     CMR::Data::Instance inst;
     CMR::Data::KarpPartition kpart;
 
-    GIVEN("A karp partition and candidate teeth for " + fname){
-      THEN("We can get simple DP inequalities in a mini cutgraph"){
+    GIVEN("A karp partition and candidate teeth for " + fname) {
+      THEN("We can get simple DP inequalities in a mini cutgraph") {
         REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
                                                  subtourfile, g_dat, b_dat,
                                                  lp_edges, s_dat, inst));
@@ -66,7 +66,7 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
         tt = CMR::zeit() - tt;
 	      
         int orig_sz = 0;
-        for(auto &vec : cands.light_teeth) orig_sz += vec.size();
+        for (auto &vec : cands.light_teeth) orig_sz += vec.size();
         cout << "Got collection of " << orig_sz << " light teeth in "
              << tt << "s\n";
 
@@ -74,20 +74,20 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
         int total_count = 0;
         double total_time = 0;
         
-        for(int i = 0; i < kpart.num_parts(); ++i){
+        for (int i = 0; i < kpart.num_parts(); ++i) {
           double sep = CMR::zeit();
           CMR::DPwitness dpgraph(cands, kpart[i]);
           CMR::CutQueue<CMR::dominoparity> dp_q(25);
           
           REQUIRE_NOTHROW(dpgraph.simple_DP_sep(dp_q));          
           sep = CMR::zeit() - sep;
-          if(dp_q.empty()){
+          if (dp_q.empty()) {
             total_time += sep;
             continue;
           }
 
           int primal_found = 0;
-          while(!dp_q.empty()){
+          while (!dp_q.empty()) {
             vector<int> rmatind;
             vector<double> rmatval;
             char sense;
@@ -105,14 +105,14 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
 	  
             REQUIRE(tour_activity <= rhs);
 	  
-            if(tour_activity == rhs && lp_activity > rhs)
+            if (tour_activity == rhs && lp_activity > rhs)
               ++primal_found;
 	  
             dp_q.pop_front();
           }
 
           total_count += primal_found; total_time += sep;
-          if(total_count > 25){
+          if (total_count > 25) {
             cout << "Breaking on part " << i << "\n"; break;
           }
         }

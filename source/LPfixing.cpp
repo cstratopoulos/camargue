@@ -8,7 +8,7 @@
 using namespace std;
 using namespace CMR::LP;
 
-int EdgeFix::price(int *clamptotal, int *deltotal){
+int EdgeFix::price(int *clamptotal, int *deltotal) {
   int rval = 0;
   int ecount = m_graph.edge_count;
   vector<double> redcosts;
@@ -21,66 +21,66 @@ int EdgeFix::price(int *clamptotal, int *deltotal){
   try {
     redcosts.resize(ecount);
     edge_delset.resize(ecount);
-  } catch(const bad_alloc &){
+  } catch (const bad_alloc &) {
     rval = 1; CMR_GOTO_CLEANUP("Out of memory for redcosts/delset, ");
   }
 
   opt_time = zeit();
   rval = CMRlp_primal_opt(&m_lp, &infeasible);
-  if(rval) goto CLEANUP;
+  if (rval) goto CLEANUP;
   opt_time = zeit() - opt_time;
   cout << "Optimized LP in "
        << setprecision(0) << opt_time << "s, " << setprecision(6);
 
   rval = CMRlp_objval(&m_lp, &lp_LB);
-  if(rval) goto CLEANUP;
+  if (rval) goto CLEANUP;
 
   GAP = m_min_tour_value - lp_LB;
   cout << "integrality gap: " << GAP << ".\n";
 
   rval = CMRlp_get_redcosts(&m_lp, &redcosts[0]);
-  if(rval) goto CLEANUP;
+  if (rval) goto CLEANUP;
   
-  for(int i = 0; i < ecount; i++){
+  for (int i = 0; i < ecount; i++) {
     cur_red = redcosts[i];
     cur_abs = fabs(cur_red);
-    if(cur_abs <= GAP - 1){
+    if (cur_abs <= GAP - 1) {
       edge_delset[i] = FixStats::LEAVE;
       continue;
     }
 
-    if(cur_red > 0 && best_tour_edges[i] != 1){
+    if (cur_red > 0 && best_tour_edges[i] != 1) {
       edge_delset[i] = FixStats::DELETE;
       (*deltotal)++;
       continue;
     }
 
-    if(cur_red < 0){
+    if (cur_red < 0) {
       edge_delset[i] = FixStats::FIXED;
       (*clamptotal)++;
     }
   }
 
-  if(*clamptotal != 0)
+  if (*clamptotal != 0)
     cout << *clamptotal << " edges fixable, ";
-  if(*deltotal != 0)
+  if (*deltotal != 0)
     cout << *deltotal << " edges removable. ";
   
 
  CLEANUP:
-  if(rval)
+  if (rval)
     cerr << "Error entry point: LPfixing::price() \n";
   return rval;
 }
 
-int EdgeFix::fixup(){
+int EdgeFix::fixup() {
   int rval = 0;
   int total_time = zeit();
 
-  for(int i = 0; i < edge_delset.size(); i++){
-    if(edge_delset[i] == FixStats::FIXED){
+  for (int i = 0; i < edge_delset.size(); i++) {
+    if (edge_delset[i] == FixStats::FIXED) {
       rval = CMRlp_clampbnd(&m_lp, i, 'L', 1.0);
-      if(rval) goto CLEANUP;
+      if (rval) goto CLEANUP;
       edge_delset[i] = FixStats::LEAVE;
     }
   }
@@ -88,31 +88,31 @@ int EdgeFix::fixup(){
   total_time += zeit() - total_time;
   
  CLEANUP:
-  if(rval)
+  if (rval)
     cerr << "Error entry point: LPfix::fixup \n";
   return rval;
 }
 
-int EdgeFix::delete_cols(){
+int EdgeFix::delete_cols() {
   int rval = CMRlp_delsetcols(&m_lp, &edge_delset[0]);
-  if(rval)
+  if (rval)
     cerr << "Error entry point: LPfix::delete_cols \n";
   return rval;
 }
 
-void EdgeFix::delete_edges(){
+void EdgeFix::delete_edges() {
   double total_time = zeit();
-  for(int i = 0; i < m_graph.edge_count; i++){
+  for (int i = 0; i < m_graph.edge_count; i++) {
     IntPairMap::iterator edge_it = edge_lookup.find(IntPair(edges[i].end[0],
 							    edges[i].end[1]));
-    if(edge_delset[i] == - 1)
+    if (edge_delset[i] == - 1)
       edge_lookup.erase(edge_it);
     else
       edge_it->second = edge_delset[i];
   }
 
-  for(int i = 0; i < edge_delset.size(); i++)
-    if(edge_delset[i] == -1){
+  for (int i = 0; i < edge_delset.size(); i++)
+    if (edge_delset[i] == -1) {
       edges[i].removable = true;
       best_tour_edges[i] = -1;
       m_lp_edges[i] = -1;
@@ -123,8 +123,8 @@ void EdgeFix::delete_edges(){
 			best_tour_edges.end());
   m_lp_edges.erase(remove(m_lp_edges.begin(), m_lp_edges.end(), -1),
 		   m_lp_edges.end());
-  edges.erase(remove_if(edges.begin(), edges.end(),
-			[](Edge &e){ return e.removable; }),
+  edges.erase(remove_if (edges.begin(), edges.end(),
+			[](Edge &e) { return e.removable; }),
 	      edges.end());
   
 
@@ -141,26 +141,26 @@ void EdgeFix::delete_edges(){
 }
 
 
-int EdgeFix::redcost_fixing(){
+int EdgeFix::redcost_fixing() {
   int rval = 0;
   int clamptotal = 0, deltotal = 0;
 
   rval = price(&clamptotal, &deltotal);
-  if(rval) goto CLEANUP;
+  if (rval) goto CLEANUP;
 
-  if(clamptotal > 0){
+  if (clamptotal > 0) {
     rval = fixup();
-    if(rval) goto CLEANUP;
+    if (rval) goto CLEANUP;
   }
 
-  if(deltotal > 0){
+  if (deltotal > 0) {
     rval = delete_cols();
-    if(rval) goto CLEANUP;
+    if (rval) goto CLEANUP;
     delete_edges();
   }
 
  CLEANUP:
-  if(rval)
+  if (rval)
     cerr << "Problem in LPfix::redcost_fixing.\n";
   cout << setprecision(6);
   return rval;

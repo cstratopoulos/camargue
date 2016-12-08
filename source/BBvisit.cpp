@@ -9,8 +9,8 @@ using namespace std;
 using namespace CMR;
 using namespace CMR::BB;
 
-int Visitor::previsit(unique_ptr<TreeNode> &v){
-  if(v->type() == NodeType::ROOT){
+int Visitor::previsit(unique_ptr<TreeNode> &v) {
+  if (v->type() == NodeType::ROOT) {
     v->node_stat = NodeStat::VISITED;
     return 0;
   }
@@ -20,26 +20,26 @@ int Visitor::previsit(unique_ptr<TreeNode> &v){
   PivotPlan plan(ConstraintMgr.ncount, PivPresets::BRANCH);
 
   rval = ConstraintMgr.enforce(v);
-  if(rval) goto CLEANUP;
+  if (rval) goto CLEANUP;
 
-  if(v->type() == NodeType::RIGHT){
+  if (v->type() == NodeType::RIGHT) {
     rval = ConstraintMgr.prune();
-    if(rval) goto CLEANUP;
+    if (rval) goto CLEANUP;
   }
 
-  while(true){
+  while (true) {
     rval = PureCut.solve(plan, piv_status);
 
-    if(piv_status == LP::PivType::Tour){
+    if (piv_status == LP::PivType::Tour) {
       rval = handle_augmentation();
-      if(rval) goto CLEANUP;
+      if (rval) goto CLEANUP;
       continue;
     }
 
     break;
   }
 
-  switch(piv_status){
+  switch (piv_status) {
   case LP::PivType::FathomedTour:
     v->node_stat = NodeStat::FATHOMED;
     break;
@@ -53,36 +53,36 @@ int Visitor::previsit(unique_ptr<TreeNode> &v){
   }
 
  CLEANUP:
-  if(rval)
+  if (rval)
     cerr << "Problem in Visitor::previsit\n";
   return rval;
 }
 
-int Visitor::postvisit(unique_ptr<TreeNode> &v){
+int Visitor::postvisit(unique_ptr<TreeNode> &v) {
   int rval = ConstraintMgr.unenforce(v);
 
-  if(rval)
+  if (rval)
     cerr << "Problem in Visitor::postvisit\n";
   return rval;
 }
 
-int Visitor::handle_augmentation(){
+int Visitor::handle_augmentation() {
   int rval = 0;
 
-  if(RightBranch.active()){
+  if (RightBranch.active()) {
     rval = ConstraintMgr.update_right_rows();
-    if(rval) goto CLEANUP;
+    if (rval) goto CLEANUP;
   }
 
   rval = LPCore.update_best_tour();
-  if(rval) goto CLEANUP;
+  if (rval) goto CLEANUP;
 
   rval = ConstraintMgr.prune();
-  if(rval) goto CLEANUP;
+  if (rval) goto CLEANUP;
 
 
  CLEANUP:
-  if(rval)
+  if (rval)
     cerr << "Problem in Visitor::handle_augmentation\n";
   return rval;
 }

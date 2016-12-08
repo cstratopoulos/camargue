@@ -16,10 +16,10 @@ using std::vector;
 #ifdef CMR_DO_TESTS
 
 SCENARIO("Primal blossom separation by fast standard heuristics",
-	 "[fast2m]"){
+	 "[fast2m]") {
   vector<string> probs{"pr76", "d493", "pr1002"};
-  for(string &fname : probs){
-    GIVEN("TSP instance " + fname){
+  for (string &fname : probs) {
+    GIVEN("TSP instance " + fname) {
       string
 	probfile = "problems/" + fname + ".tsp",
 	solfile = "test_data/tours/" + fname + ".sol",
@@ -32,8 +32,8 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
       std::vector<double> lp_edges;
       CMR::Cut::LPcutList cutq;
 
-      WHEN("The tour is good and blossoms exit"){
-	THEN("Primal blossoms are found"){
+      WHEN("The tour is good and blossoms exit") {
+	THEN("Primal blossoms are found") {
 	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
@@ -41,21 +41,21 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
 	
 	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
-	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
 	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 	  REQUIRE(fb_sep.find_cuts());
 	}
       }
-      AND_WHEN("The tour is good but the solution is in the blossom polytope"){
-      	THEN("No primal blossoms are found"){
+      AND_WHEN("The tour is good but the solution is in the blossom polytope") {
+      	THEN("No primal blossoms are found") {
 	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						  blossomfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
 	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
-	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
 	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 
@@ -67,10 +67,10 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
 }
 
 SCENARIO("Primal heuristic fast blossom sep in tiny instances",
-	 "[fast2m][tiny]"){
+	 "[fast2m][tiny]") {
   vector<string> probs{"blossom6", "comb9"};
-  for(string &fname : probs){
-    GIVEN("TSP instance " + fname){
+  for (string &fname : probs) {
+    GIVEN("TSP instance " + fname) {
       string
 	probfile = "problems/" + fname + ".tsp",
 	solfile = "test_data/tours/" + fname + ".sol",
@@ -83,23 +83,23 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
       std::vector<double> lp_edges;
       CMR::Cut::LPcutList cutq;
 
-      WHEN("The tour is good"){
-	THEN("Primal blossoms are found"){
+      WHEN("The tour is good") {
+	THEN("Primal blossoms are found") {
 	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
 	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
-	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
 	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 	  REQUIRE(fb_sep.find_cuts());
 	}
       }
 
-      AND_WHEN("The tour is bad"){
-	THEN("No primal blossoms are found"){
+      AND_WHEN("The tour is bad") {
+	THEN("No primal blossoms are found") {
 	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, badsolfile,
 						  subtourfile,
 						  g_dat, b_dat, lp_edges,
@@ -107,7 +107,7 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
 
 	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
-	  for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
 	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 
@@ -120,7 +120,7 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
 
 /*
 SCENARIO("Black box testing of tiny fast blossoms",
-	  "[.fast2m][.tiny]"){
+	  "[.fast2m][.tiny]") {
   CMR::Cut::LPcutList wrap;
   CMR::Data::GraphGroup g_dat;
   CMR::Data::BestGroup b_dat;
@@ -128,15 +128,15 @@ SCENARIO("Black box testing of tiny fast blossoms",
   std::vector<double> lp_edges;
   
   vector<string> probs{"blossom6", "comb9"};
-  for(string &fname : probs){
-    GIVEN("TSP instance " + fname){
+  for (string &fname : probs) {
+    GIVEN("TSP instance " + fname) {
       string
 	probfile = "problems/" + fname + ".tsp",
 	solfile = "test_data/tours/" + fname + ".sol",
 	badsolfile = "test_data/tours/" + fname + ".bad.sol",
 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-      WHEN("The tour is good"){
+      WHEN("The tour is good") {
 	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
 						subtourfile,
 						g_dat, b_dat, lp_edges,
@@ -145,9 +145,9 @@ SCENARIO("Black box testing of tiny fast blossoms",
 	CMR::TourGraph TG(b_dat.best_tour_edges,
 			   g_dat.m_graph.edges,
 			   b_dat.perm);
-	for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	THEN("Odd component blossoms found, all are primal"){
+	THEN("Odd component blossoms found, all are primal") {
 	  REQUIRE_FALSE(CCtsp_fastblossom(wrap.pass_ptr(), wrap.count_ptr(),
 					  s_dat.G_s.node_count,
 					  s_dat.G_s.edge_count,
@@ -158,7 +158,7 @@ SCENARIO("Black box testing of tiny fast blossoms",
 	  REQUIRE(wrap.size() == 2);
 	}
 
-	AND_THEN("Grostschel-Holland blossoms found, all are primal"){
+	AND_THEN("Grostschel-Holland blossoms found, all are primal") {
 	  REQUIRE_FALSE(CCtsp_ghfastblossom(wrap.pass_ptr(), wrap.count_ptr(),
 					    s_dat.G_s.node_count,
 					    s_dat.G_s.edge_count,
@@ -170,7 +170,7 @@ SCENARIO("Black box testing of tiny fast blossoms",
 	}
       }
 
-      AND_WHEN("The tour is bad"){
+      AND_WHEN("The tour is bad") {
 	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, badsolfile,
 						subtourfile,
 						g_dat, b_dat, lp_edges,
@@ -179,9 +179,9 @@ SCENARIO("Black box testing of tiny fast blossoms",
 	CMR::TourGraph TG(b_dat.best_tour_edges,
 			   g_dat.m_graph.edges,
 			   b_dat.perm);
-	for(int &i : s_dat.support_elist) i = b_dat.perm[i];
+	for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	THEN("Odd component blossoms found, none are primal"){
+	THEN("Odd component blossoms found, none are primal") {
 	  REQUIRE_FALSE(CCtsp_fastblossom(wrap.pass_ptr(), wrap.count_ptr(),
 					  s_dat.G_s.node_count,
 					  s_dat.G_s.edge_count,
@@ -192,7 +192,7 @@ SCENARIO("Black box testing of tiny fast blossoms",
 	  REQUIRE(wrap.size() == 0);
 	}
 
-	AND_THEN("Grostschel-Holland blossoms found, none are primal"){
+	AND_THEN("Grostschel-Holland blossoms found, none are primal") {
 	  REQUIRE_FALSE(CCtsp_ghfastblossom(wrap.pass_ptr(), wrap.count_ptr(),
 					    s_dat.G_s.node_count,
 					    s_dat.G_s.edge_count,

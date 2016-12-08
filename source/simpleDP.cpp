@@ -24,7 +24,7 @@ Sep::SimpleDP::SimpleDP(CMR::Data::GraphGroup &graph_dat,
                         CMR::Data::SupportGroup &supp_dat,
                         CMR::CutQueue<dominoparity> &_dp_q) try :
   candidates(graph_dat, best_dat, supp_dat), kpart(_kpart), dp_q(_dp_q)
-  {} catch(const exception &e){
+  {} catch (const exception &e) {
   cerr << e.what() << " constructing SimpleDP.\n";
   throw runtime_error("SimpleDP constructor failed.");
 }
@@ -39,7 +39,7 @@ bool Sep::SimpleDP::find_cuts()
     candidates.merge_and_sort();
   } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
 
-  for(int i = 0; i < kpart.num_parts(); ++i){
+  for (int i = 0; i < kpart.num_parts(); ++i) {
     try {
       CMR::DPwitness cutgraph(candidates, kpart[i]);
       cutgraph.simple_DP_sep(dp_q);

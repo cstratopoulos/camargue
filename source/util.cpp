@@ -19,7 +19,7 @@ LP::Prefs::Prefs(LP::Pricing _price, int _dp_threshold, int max_round,
   price_method(_price),
   dp_threshold(_dp_threshold),
   max_per_round(max_round),
-  q_max_size(q_max){}
+  q_max_size(q_max) {}
 
 
 /* zeit function for recording times */

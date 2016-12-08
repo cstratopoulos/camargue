@@ -12,8 +12,8 @@ PivotPlan::PivotPlan(int _ncount, bool _branch,
   max_time(0),
   max_augrounds(0),
   goal_ratio(1) {
-  while(!ParamList.empty()){
-    switch(ParamList.back().first)
+  while (!ParamList.empty()) {
+    switch (ParamList.back().first)
       {
       case Params::TimeLimit:
 	max_time = ParamList.back().second;
@@ -39,8 +39,8 @@ PivotPlan::PivotPlan(int _ncount, Presets preset) :
   branch(false),
   max_time(0),
   max_augrounds(0),
-  goal_ratio(1){
-  switch(preset){
+  goal_ratio(1) {
+  switch (preset) {
   case Presets::BASH_ON:
     bash_on_regardless = true;
     break;

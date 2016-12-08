@@ -30,7 +30,7 @@ static int initial_parse(int ac, char **av, std::string &fname,
 
 static void usage(const std::string &fname);
 
-int main(int argc, char* argv[]){
+int main(int argc, char* argv[]) {
   CMR::LP::Prefs prefs;
   CMR::OutPrefs o_prefs;
   CMR::RandProb randprob;
@@ -41,8 +41,8 @@ int main(int argc, char* argv[]){
   int qnearest = 0;
   /**@todo probably put this somewhere else */
 
-  if(initial_parse(argc, argv, probfile, tourfile, randprob, prefs, o_prefs,
-  		   do_sparse, qnearest)){
+  if (initial_parse(argc, argv, probfile, tourfile, randprob, prefs, o_prefs,
+  		   do_sparse, qnearest)) {
     std::cerr << "Problem parsing arguments\n";
     exit(1);
   }
@@ -56,7 +56,7 @@ int main(int argc, char* argv[]){
   
 
   try {
-    if(tourfile.empty())
+    if (tourfile.empty())
       solver = CMR::make_unique<CMR::TSPSolver>(probfile, randprob,
 						  o_prefs, prefs, dat,
 						  do_sparse, qnearest);
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]){
       solver = CMR::make_unique<CMR::TSPSolver>(probfile, tourfile,
 						  o_prefs, prefs, dat,
 						  do_sparse, qnearest);
-  } catch(...) {
+  } catch (...) {
     return 1;
   }
 
@@ -84,7 +84,7 @@ static int initial_parse(int ac, char **av, std::string &fname,
 			 CMR::RandProb &randprob,
 			 CMR::LP::Prefs &prefs, CMR::OutPrefs &o_prefs,
 			 bool &sparseflag,
-			 int &qnearest){
+			 int &qnearest) {
   bool rand = false;
   int pricing_choice = 0;
   int dp_factor = -1;
@@ -98,13 +98,13 @@ static int initial_parse(int ac, char **av, std::string &fname,
 
   int c;
 
-  if(ac == 1){
+  if (ac == 1) {
     usage(av[0]);
     return 1;
   }
 
-  while((c = getopt(ac, av, "ad:c:q:p:RSXg:n:s:t:u:o:")) != EOF) {
-    switch(c) {
+  while ((c = getopt(ac, av, "ad:c:q:p:RSXg:n:s:t:u:o:")) != EOF) {
+    switch (c) {
     case 'd':
       dp_factor = atoi(optarg);
       break;
@@ -151,20 +151,20 @@ static int initial_parse(int ac, char **av, std::string &fname,
     }
   }
 
-  if(optind < ac)
+  if (optind < ac)
     fname = av[optind++];
-  if(optind != ac){
+  if (optind != ac) {
     usage(av[0]);
     return 1;
   }
 
-  if(fname.empty() && ncount == 0){
+  if (fname.empty() && ncount == 0) {
     printf("Must specify a problem file or nodecount for random prob\n");
     usage(av[0]);
     return 1;
   }
 
-  if(!fname.empty() && rand){
+  if (!fname.empty() && rand) {
     printf("Cannot specify both filename and random problem\n");
     usage(av[0]);
     return 1;
@@ -174,7 +174,7 @@ static int initial_parse(int ac, char **av, std::string &fname,
   randprob.gridsize = gridsize;
   randprob.seed = seed;
 
-  switch(pricing_choice){
+  switch (pricing_choice) {
   case 0:
     prefs.price_method = CMR::LP::Pricing::Devex;
     std::cout << "Devex pricing\n";
@@ -194,11 +194,11 @@ static int initial_parse(int ac, char **av, std::string &fname,
   }
 
   prefs.dp_threshold = 5 * dp_factor;
-  if(dp_factor >= 0)
+  if (dp_factor >= 0)
     std::cout << "DP separation will be tried every "
 	 << prefs.dp_threshold << " non-degenerate pivots w no augmentation\n";
 
-  if(cuts_per_round < 1 || max_q_size < 1 || max_q_size < cuts_per_round){
+  if (cuts_per_round < 1 || max_q_size < 1 || max_q_size < cuts_per_round) {
     std::cerr << "Invalid cuts per round or queue capacity\n";
     usage(av[0]);
     return 1;
@@ -206,13 +206,13 @@ static int initial_parse(int ac, char **av, std::string &fname,
   prefs.max_per_round = cuts_per_round;
   prefs.q_max_size = max_q_size;
 
-  if(qnearest < 0 || qnearest > 10){
+  if (qnearest < 0 || qnearest > 10) {
     std::cerr << "Invalid choice of quad-nearest density\n";
     usage(av[0]);
     return 1;
   }
 
-  switch(tourprefs) {
+  switch (tourprefs) {
   case 3:
     o_prefs.save_tour = false;
     o_prefs.save_tour_edges = false;
@@ -233,7 +233,7 @@ static int initial_parse(int ac, char **av, std::string &fname,
   return 0;
 }
 
-static void usage(const std::string &fname){
+static void usage(const std::string &fname) {
   fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", fname.data());
   fprintf(stderr, "-------FLAG OPTIONS ------------------------------------\n");
   fprintf(stderr, "-R    generate random problem\n");

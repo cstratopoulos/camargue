@@ -53,7 +53,7 @@ void make_cut_test(const string &tsp_fname,
 
   try {
     inst = Instance(tsp_fname, ncount);
-  } catch(const exception &e){
+  } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw err;
   }
@@ -74,9 +74,9 @@ void make_cut_test(const string &tsp_fname,
     get_tour_nodes(ncount, best_data.best_tour_nodes, tour_nodes_fname);
     get_lp_sol(ncount, supp_data.support_elist, supp_data.support_ecap,
 	       lp_sol_fname);
-  } catch(const exception &e) { cerr << e.what() << "\n"; throw err; }
+  } catch (const exception &e) { cerr << e.what() << "\n"; throw err; }
   
-  for(int i = 0; i < ncount; ++i){//add the best tour edges
+  for (int i = 0; i < ncount; ++i) {//add the best tour edges
     best_data.perm[best_data.best_tour_nodes[i]] = i;
     int
       end0 = fmin(best_data.best_tour_nodes[i],
@@ -108,7 +108,7 @@ void make_cut_test(const string &tsp_fname,
   }
 
   //add the lp edges, growing graph_data if necessary
-  for(int i = 0; i < supp_data.support_ecap.size(); ++i){
+  for (int i = 0; i < supp_data.support_ecap.size(); ++i) {
     vector<int> &sup_elist = supp_data.support_elist;
     vector<double> &sup_ecap = supp_data.support_ecap;
     int end0 = sup_elist[2 * i], end1 = sup_elist[(2 * i) + 1];
@@ -118,7 +118,7 @@ void make_cut_test(const string &tsp_fname,
     IntPairMap::iterator
       edge_it = graph.edge_lookup.find(IntPair(end0, end1));
 
-    if(edge_it == graph.edge_lookup.end()){
+    if (edge_it == graph.edge_lookup.end()) {
       Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, inst.ptr()));
 
       try {
@@ -138,15 +138,15 @@ void make_cut_test(const string &tsp_fname,
   }
 
   try {
-    for(int i = 0; i < lp_edges.size(); ++i)
-      if(lp_edges[i] >= Epsilon::Zero)
+    for (int i = 0; i < lp_edges.size(); ++i)
+      if (lp_edges[i] >= Epsilon::Zero)
 	supp_data.support_indices.push_back(i);
-  } catch(const exception &e) {
+  } catch (const exception &e) {
     cerr << e.what() << " pushing back sup inds\n";
     throw err;
   }
 
-  if(GraphUtils::build_s_graph(ncount, graph_data.m_graph.edges,
+  if (GraphUtils::build_s_graph(ncount, graph_data.m_graph.edges,
 				   supp_data.support_indices,
 			       lp_edges, &supp_data.G_s))
     throw err;

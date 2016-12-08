@@ -53,17 +53,17 @@ void Timer::report(bool show_cpu)
   cout << name_pad << timer_name << ": ";
   
   printf("%.6fs wall \t", wall_elapsed.count());
-  if(ratio_timer)
+  if (ratio_timer)
     printf("(%04.1f%% of %s)",
 	   (100 * (wall_elapsed.count() / ratio_timer->wall_elapsed.count())),
 	   ratio_timer->timer_name.c_str());
   printf("\n");
 
-  if(show_cpu){
+  if (show_cpu) {
     string cpu_pad(22, ' ');
     cout << cpu_pad;
     printf("%.6fs CPU \t", cpu_elapsed);
-    if(ratio_timer)
+    if (ratio_timer)
       printf("(%04.1f%% of %s)",
 	     (100 * (cpu_elapsed / ratio_timer->cpu_elapsed)),
 	     ratio_timer->timer_name.c_str());

@@ -12,8 +12,8 @@ namespace CMR {
 
 Edge::Edge(int e0, int e1, int _len):
   len(_len),
-  removable(false){
-  if(e0 < e1){
+  removable(false) {
+  if (e0 < e1) {
     end[0] = e0;
     end[1] = e1;
   } else {
@@ -37,36 +37,36 @@ try {
   int ecount = 0;
   int ncount = perm.size();
   
-  for(int i = 0; i < tour_edges.size(); ++i)
-    if(tour_edges[i]){
+  for (int i = 0; i < tour_edges.size(); ++i)
+    if (tour_edges[i]) {
       ++ecount;
       Edge e = edges[i];
       tour_elist.push_back(perm[e.end[0]]);
       tour_elist.push_back(perm[e.end[1]]);
     }
 
-  for(int i : tour_edges) d_tour.push_back(i);
+  for (int i : tour_edges) d_tour.push_back(i);
 
   CCtsp_init_lpgraph_struct(&L);
   CCtsp_build_lpgraph(&L, ncount, ecount, &tour_elist[0], (int *) NULL);
   CCtsp_build_lpadj(&L, 0, ecount);
- } catch(const std::exception &e){
+ } catch (const std::exception &e) {
   cerr << "Caught exception" << e.what() << "\n";
   throw std::runtime_error("TourGraph constructor failed.");
  }
 
-TourGraph::~TourGraph(){ CCtsp_free_lpgraph(&L); }
+TourGraph::~TourGraph() { CCtsp_free_lpgraph(&L); }
 
 int GraphUtils::connected(SupportGraph *G, int *icount,
 			  std::vector<int> &island,
-			  int starting_node){
+			  int starting_node) {
   *icount = 0;
-  for(int i = 0; i < G->node_count; i++)
+  for (int i = 0; i < G->node_count; i++)
     G->nodelist[i].mark = 0;
 
   dfs(starting_node, G, icount, island);
 
-  if(*icount == G->node_count)
+  if (*icount == G->node_count)
     return 1;
   else
     return 0;
@@ -84,9 +84,9 @@ void GraphUtils::dfs(int n, SupportGraph *G, int *icount,
   pn = &G->nodelist[n];
   pn->mark = 1;
 
-  for(int i = 0; i < pn->s_degree; i++){
+  for (int i = 0; i < pn->s_degree; i++) {
     neighbor = pn->adj_objs[i].other_end;
-    if(G->nodelist[neighbor].mark == 0)
+    if (G->nodelist[neighbor].mark == 0)
       dfs(neighbor, G, icount, island);
   }
 }
@@ -94,23 +94,23 @@ void GraphUtils::dfs(int n, SupportGraph *G, int *icount,
 void GraphUtils::get_delta (const std::vector<int> &nodelist,
 			    std::vector<Edge> &elist,
 			    int *deltacount_p, std::vector<int> &delta,
-			    std::vector<int> &marks){
-  for(int i = 0; i < nodelist.size(); i++)
+			    std::vector<int> &marks) {
+  for (int i = 0; i < nodelist.size(); i++)
     marks[nodelist[i]] = 1;
 
   int k = 0;
-  for(int i = 0; i < elist.size(); i++)
-    if(marks[elist[i].end[0]] + marks[elist[i].end[1]] == 1)
+  for (int i = 0; i < elist.size(); i++)
+    if (marks[elist[i].end[0]] + marks[elist[i].end[1]] == 1)
       delta[k++] = i;
 
   *deltacount_p = k;
   
-  for(int i = 0; i < nodelist.size(); i++)
+  for (int i = 0; i < nodelist.size(); i++)
     marks[nodelist[i]] = 0;
 }
 
 void GraphUtils::get_delta (int nsize, int *nlist, int ecount, int *elist,
-			 int *deltacount, int *delta, int *marks){
+			 int *deltacount, int *delta, int *marks) {
   int i, k = 0;
 
   for (i = 0; i < nsize; i++) marks[nlist[i]] = 1;
@@ -132,17 +132,17 @@ void GraphUtils::get_delta(const int interval_start, const int interval_end,
 			   int &deltacount, vector<int> &delta,
 			   vector<int> &edge_marks)
 {
-  for(int i = interval_start; i <= interval_end; i++)
+  for (int i = interval_start; i <= interval_end; i++)
     edge_marks[tour_nodes[i]] = 1;
 
   int k = 0;
 
-  for(int i = 0; i < elist.size() / 2; i++){
-    if(edge_marks[elist[2 * i]] + edge_marks[elist[(2 * i) + 1]] == 1)
+  for (int i = 0; i < elist.size() / 2; i++) {
+    if (edge_marks[elist[2 * i]] + edge_marks[elist[(2 * i) + 1]] == 1)
       delta[k++] = i;
   }
 
-  for(int i = interval_start; i <= interval_end; i++)
+  for (int i = interval_start; i <= interval_end; i++)
     edge_marks[tour_nodes[i]] = 0;  
 }
 
@@ -156,19 +156,19 @@ int GraphUtils::build_s_graph (int node_count,
   s_adjobj *p;
   int edge_count = support_indices.size();
 
-  if(G_s->nodelist) free(G_s->nodelist);
-  if(G_s->adjspace) free(G_s->adjspace);
+  if (G_s->nodelist) free(G_s->nodelist);
+  if (G_s->adjspace) free(G_s->adjspace);
   G_s->nodelist = (SNode *) malloc(node_count * sizeof(SNode));
   G_s->adjspace = (s_adjobj *) malloc(2 * edge_count * sizeof(SNode));
-  if(!G_s->nodelist || !G_s->adjspace){
+  if (!G_s->nodelist || !G_s->adjspace) {
     fprintf(stderr, "Out of memory for support nodelist or adjspace\n");
     return 1;
   }
 
-  for(i = 0; i < node_count; i++)
+  for (i = 0; i < node_count; i++)
     G_s->nodelist[i].s_degree = 0;
 
-  for(i = 0; i < edge_count; i++){
+  for (i = 0; i < edge_count; i++) {
     ind = support_indices[i];
     a = edges[ind].end[0]; b = edges[ind].end[1];
     G_s->nodelist[a].s_degree++;
@@ -176,13 +176,13 @@ int GraphUtils::build_s_graph (int node_count,
   }
 
   p = G_s->adjspace;
-  for(i = 0; i < node_count; i++){
+  for (i = 0; i < node_count; i++) {
     G_s->nodelist[i].adj_objs = p;
     p += G_s->nodelist[i].s_degree;
     G_s->nodelist[i].s_degree = 0;
   }
 
-  for(i = 0; i < edge_count; i++){
+  for (i = 0; i < edge_count; i++) {
     ind = support_indices[i];
     a = edges[ind].end[0]; b = edges[ind].end[1];
     n = &G_s->nodelist[a];

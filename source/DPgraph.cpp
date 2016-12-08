@@ -26,9 +26,9 @@ DPCutGraph::DPCutGraph(
   G_s(_cands.supp_dat.G_s), support_elist(_cands.supp_dat.support_elist),
   support_ecap(_cands.supp_dat.support_ecap),
   perm(_cands.best_dat.perm),
-  CC_gh_q(2500){ CCcut_GHtreeinit(&gh_tree); }
+  CC_gh_q(2500) { CCcut_GHtreeinit(&gh_tree); }
 
-DPCutGraph::~DPCutGraph(){ CCcut_GHtreefree(&gh_tree); }
+DPCutGraph::~DPCutGraph() { CCcut_GHtreefree(&gh_tree); }
 
 
 int DPCutGraph::simple_DP_sep(CutQueue<dominoparity> &domino_q)
@@ -41,7 +41,7 @@ int DPCutGraph::simple_DP_sep(CutQueue<dominoparity> &domino_q)
   int rval = 0;
 
   rval = build_light_tree();
-  if(rval) goto CLEANUP;
+  if (rval) goto CLEANUP;
 
 #ifdef CMR_DO_VIZ
   cg_out << "}";
@@ -49,16 +49,16 @@ int DPCutGraph::simple_DP_sep(CutQueue<dominoparity> &domino_q)
 #endif
 
   rval = add_web_edges();
-  if(rval) goto CLEANUP;
+  if (rval) goto CLEANUP;
 
   rval = call_concorde_gomoryhu();
-  if(rval) goto CLEANUP;
+  if (rval) goto CLEANUP;
 
   rval = grab_cuts(domino_q);
-  if(rval) goto CLEANUP;
+  if (rval) goto CLEANUP;
 
  CLEANUP:
-  if(rval == 1)
+  if (rval == 1)
     cerr << "Problem in DPCutGraph::simple_DP_sep.\n";
   return rval;
 }
@@ -70,13 +70,13 @@ int DPCutGraph::build_light_tree()
 
 
   try { //nullptrs represent the degree eqn on each root
-    for(int i = 0; i < light_teeth.size(); i++){
+    for (int i = 0; i < light_teeth.size(); i++) {
       cutgraph_nodes.push_back(nullptr);
 #ifdef CMR_DO_VIZ
       cg_out << i << "[color=aquamarine3];\n\t";
 #endif
     }
-  } catch(...){ CMR_SET_GOTO(rval, "Couldn't push back degree eqn nodes. "); }
+  } catch (...) { CMR_SET_GOTO(rval, "Couldn't push back degree eqn nodes. "); }
 
   current_index = cutgraph_nodes.size();
 
@@ -84,8 +84,8 @@ int DPCutGraph::build_light_tree()
   cg_out << "//numbering and labelling cutgraph node for each tooth\n\t";
 #endif
   try {
-    for(const vector<SimpleTooth::Ptr> &t_vec : light_teeth)
-      for(auto it = t_vec.rbegin(); it != t_vec.rend(); ++it){
+    for (const vector<SimpleTooth::Ptr> &t_vec : light_teeth)
+      for (auto it = t_vec.rbegin(); it != t_vec.rend(); ++it) {
 	cutgraph_nodes.push_back(it->get());
 	(*it)->cutgraph_index = current_index++;
 #ifdef CMR_DO_VIZ
@@ -94,7 +94,7 @@ int DPCutGraph::build_light_tree()
 		  << "\"];\n\t";
 #endif
       }
-  } catch(...){ CMR_SET_GOTO(rval, "Couldn't add tooth ineqs. " ); }
+  } catch (...) { CMR_SET_GOTO(rval, "Couldn't add tooth ineqs. " ); }
 
 
   cutgraph_nodes.push_back(nullptr);
@@ -106,7 +106,7 @@ int DPCutGraph::build_light_tree()
   cg_out << "root=" << star_index << ";\n\t";
 #endif
 
-  try { node_marks.resize(num_cutnodes, false); } catch(...){
+  try { node_marks.resize(num_cutnodes, false); } catch (...) {
     CMR_SET_GOTO(rval, "Couldn't initialize cut marks bool. ");
   }
 
@@ -114,7 +114,7 @@ int DPCutGraph::build_light_tree()
   cg_out << "//adding degree eqn nodes between root and star\n\t";
 #endif
   try {//add edges between every root and central node for degree eqns
-    for(int i = 0; i < light_teeth.size(); ++i){
+    for (int i = 0; i < light_teeth.size(); ++i) {
       cut_elist.push_back(i);
       cut_elist.push_back(star_index);
       cut_ecap.push_back(0);
@@ -122,21 +122,21 @@ int DPCutGraph::build_light_tree()
       cg_out << star_index << "--" << i << "[label=\"d" << i << "\"];\n\t";
 #endif
     }
-  } catch(...){ CMR_SET_GOTO(rval, "Couldn't add degree eqn edges. "); }
+  } catch (...) { CMR_SET_GOTO(rval, "Couldn't add degree eqn edges. "); }
 
   try {
-  for(int i = 0; i < light_teeth.size(); ++i){
-    if(light_teeth[i].empty()) continue;
+  for (int i = 0; i < light_teeth.size(); ++i) {
+    if (light_teeth[i].empty()) continue;
 
-    for(auto child = light_teeth[i].begin();
-	child != light_teeth[i].end(); ++child){
+    for (auto child = light_teeth[i].begin();
+	child != light_teeth[i].end(); ++child) {
       int child_index = (*child)->cutgraph_index;
       double child_slack = (*child)->slack;
       bool found_parent = false;
       
-      for(auto parent = child + 1; parent != light_teeth[i].end(); ++parent){
+      for (auto parent = child + 1; parent != light_teeth[i].end(); ++parent) {
 	found_parent = (*child)->is_subset_of(**parent);
-	if(found_parent){
+	if (found_parent) {
 	  int parent_index = (*parent)->cutgraph_index;
 
 	  cut_elist.push_back(child_index);
@@ -156,7 +156,7 @@ int DPCutGraph::build_light_tree()
 	}
       }
 
-      if(!found_parent){
+      if (!found_parent) {
 	cut_elist.push_back(child_index);
 	cut_elist.push_back(i);
 #ifdef CMR_DO_VIZ
@@ -172,29 +172,29 @@ int DPCutGraph::build_light_tree()
       }
     }
   }
-  } catch(...) { CMR_SET_GOTO(rval, "Problem building light cuttree. "); }
+  } catch (...) { CMR_SET_GOTO(rval, "Problem building light cuttree. "); }
 
   try {
-    for(int i = 0; i < node_marks.size(); i++)
-      if(node_marks[i]){
+    for (int i = 0; i < node_marks.size(); i++)
+      if (node_marks[i]) {
 	odd_nodes_list.push_back(i);
 #ifdef CMR_DO_VIZ
 	cg_out << i << "[color=red];\n\t";
 #endif
       }
-  } catch(...){ CMR_SET_GOTO(rval, "Couldn't set gomoryhu marked nodes. "); }
+  } catch (...) { CMR_SET_GOTO(rval, "Couldn't set gomoryhu marked nodes. "); }
 
   
   {
     int num_teeth = 0;
-    for(const vector<SimpleTooth::Ptr> &vec : light_teeth)
+    for (const vector<SimpleTooth::Ptr> &vec : light_teeth)
       num_teeth += vec.size();
     
-    if(cutgraph_nodes.size() != G_s.node_count + num_teeth + 1){
+    if (cutgraph_nodes.size() != G_s.node_count + num_teeth + 1) {
       CMR_SET_GOTO(rval, "Wrong light tree node count. ");
     }
 
-    if(cut_ecap.size() != G_s.node_count + num_teeth){
+    if (cut_ecap.size() != G_s.node_count + num_teeth) {
       CMR_SET_GOTO(rval, "Wrong light tree edge count. ");
     }
   }
@@ -204,7 +204,7 @@ int DPCutGraph::build_light_tree()
   }
   
  CLEANUP:
-  if(rval)
+  if (rval)
     cerr << "DPCutGraph::build_light_tree failed\n";
   return rval;
 }
@@ -214,38 +214,38 @@ int DPCutGraph::add_web_edges()
   int rval = 0;
   int start_ecount = cut_ecap.size();
 
-  for(int i = 0; i < support_ecap.size(); ++i){
+  for (int i = 0; i < support_ecap.size(); ++i) {
     double lp_weight = support_ecap[i];
     int end0 = perm[support_elist[2 * i]];
     int end1 = perm[support_elist[(2 * i) + 1]];
     int end0_container = -1, end1_container = -1;
 
     //search subtree root w  end0 for smallest (end0, S) with end1 in S
-    for(const SimpleTooth::Ptr &T : light_teeth[end0]){
-      if(T->body_contains(end1)){
+    for (const SimpleTooth::Ptr &T : light_teeth[end0]) {
+      if (T->body_contains(end1)) {
 	end1_container = T->cutgraph_index;
 	break;
       }
     }
-    if(end1_container == -1) end1_container = end0;
+    if (end1_container == -1) end1_container = end0;
 
     //search subtree w root end1 for smallest (end1, S) with end0 in S
-    for(const SimpleTooth::Ptr &T : light_teeth[end1]){
-      if(T->body_contains(end0)){
+    for (const SimpleTooth::Ptr &T : light_teeth[end1]) {
+      if (T->body_contains(end0)) {
 	end0_container = T->cutgraph_index;
 	break;
       }
     }
-    if(end0_container == -1) end0_container = end1;
+    if (end0_container == -1) end0_container = end1;
 
     try {
       cut_elist.push_back(end0_container);
       cut_elist.push_back(end1_container);
       cut_ecap.push_back(lp_weight);
-    } catch(...){ CMR_SET_GOTO(rval, "Couldn't push back web edge. "); }
+    } catch (...) { CMR_SET_GOTO(rval, "Couldn't push back web edge. "); }
   }
 
-  if(cut_ecap.size() != start_ecount + G_s.edge_count){
+  if (cut_ecap.size() != start_ecount + G_s.edge_count) {
     CMR_SET_GOTO(rval, "Wrong number of web edges added. ");
   } 
 
@@ -254,7 +254,7 @@ int DPCutGraph::add_web_edges()
   }
 
  CLEANUP:
-  if(rval)
+  if (rval)
     cerr << "DPCutGraph::add_web_edges failed.\n";
   return rval;
 }
@@ -286,32 +286,32 @@ int DPCutGraph::call_concorde_gomoryhu()
   cout << "Done odd cut dfs in " << (zeit() - dfs_time)  <<  "s, "
        << CC_gh_q.size() << " cuts in queue.\n";
 
-  if(CC_gh_q.empty()) rval = 2;
+  if (CC_gh_q.empty()) rval = 2;
 
  CLEANUP:
-  if(rval == 1)
+  if (rval == 1)
     cerr << "Problem in DPCutGraph::call_concorde_gomoryhu\n";
   return rval;
 }
 
 inline void DPCutGraph::dfs_odd_cuts(CC_GHnode *n)
 {
-  if(n->parent)
-    if(n->ndescendants % 2 == 1 && n->ndescendants > 1 && n->cutval < 0.9) {
-      if(CC_gh_q.empty() || n->cutval <= CC_gh_q.peek_front()->cutval)
+  if (n->parent)
+    if (n->ndescendants % 2 == 1 && n->ndescendants > 1 && n->cutval < 0.9) {
+      if (CC_gh_q.empty() || n->cutval <= CC_gh_q.peek_front()->cutval)
 	CC_gh_q.push_front(n);
     }
 
-  for(n = n->child; n; n = n->sibling)
+  for (n = n->child; n; n = n->sibling)
     dfs_odd_cuts(n);
 }
 
 inline void DPCutGraph::expand_cut(CC_GHnode *n, vector<int> &cut_nodes)
 {
-  for(int i = 0; i < n->listcount; ++i)
+  for (int i = 0; i < n->listcount; ++i)
     cut_nodes.push_back(n->nlist[i]);
 
-  for(n = n->child; n; n = n->sibling)
+  for (n = n->child; n; n = n->sibling)
     expand_cut(n, cut_nodes);
 }
 
@@ -320,7 +320,7 @@ int DPCutGraph::grab_cuts(CutQueue<dominoparity> &domino_q)
   int rval = 0;
   int special_ind = cutgraph_nodes.size() - 1;
 
-   while(!CC_gh_q.empty()){
+   while (!CC_gh_q.empty()) {
     vector<int> cut_shore_nodes;
     int deltacount = 0;
     
@@ -336,15 +336,15 @@ int DPCutGraph::grab_cuts(CutQueue<dominoparity> &domino_q)
 			  cut_ecap.size(), &cut_elist[0], &deltacount,
 			  &cutgraph_delta[0], &cg_delta_marks[0]);
 
-    for(int i = 0; i < deltacount; ++i){
+    for (int i = 0; i < deltacount; ++i) {
       int edge_ind = cutgraph_delta[i];
       int end0 = cut_elist[2 * edge_ind], end1 = cut_elist[(2 * edge_ind) + 1];
 
       SimpleTooth *T1 = cutgraph_nodes[end0];
       SimpleTooth *T2 = cutgraph_nodes[end1];
 
-      if(T1 && T2){
-	if(T1->root != T2->root){
+      if (T1 && T2) {
+	if (T1->root != T2->root) {
 	  try { nonneg_edges.push_back(IntPair(T1->root, T2->root)); }
 	  catch (...) { CMR_SET_GOTO(rval, "Couldn't add nonneg edge. "); }
 	  continue;
@@ -357,8 +357,8 @@ int DPCutGraph::grab_cuts(CutQueue<dominoparity> &domino_q)
 	continue;
       }
 
-      if(!T1 && !T2){
-	if(end0 != special_ind && end1 != special_ind){
+      if (!T1 && !T2) {
+	if (end0 != special_ind && end1 != special_ind) {
 	  try { nonneg_edges.push_back(IntPair(end0, end1)); } catch (...) {
 	    CMR_SET_GOTO(rval, "Couldn't add nonneg edge. ");
 	  }
@@ -387,7 +387,7 @@ int DPCutGraph::grab_cuts(CutQueue<dominoparity> &domino_q)
   }
 
  CLEANUP:
-  if(rval)
+  if (rval)
     cerr << "Problem in DPCutGraph::grab_cuts.\n";
 
   return rval;
