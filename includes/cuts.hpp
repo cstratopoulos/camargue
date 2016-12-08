@@ -71,14 +71,14 @@ struct fastblossom {
  */
 struct dominoparity {
   dominoparity() = default;
-  dominoparity(std::vector<CMR::SimpleTooth*> &_used_teeth,
+  dominoparity(std::vector<CMR::SimpleTooth> &_used_teeth,
 	       std::vector<int> &_degree_nodes,
 	       std::vector<IntPair> &_nonneg_edges) :
     used_teeth(_used_teeth), degree_nodes(_degree_nodes),
     nonneg_edges(_nonneg_edges) {}
 
   /** Simple tooth inequalities to be aggregated to get the simple DP ineq. */
-  std::vector<CMR::SimpleTooth*> used_teeth;
+  std::vector<CMR::SimpleTooth> used_teeth;
 
   /** The handle of the inequality, nodes where the degree eqns are used. */
   std::vector<int> degree_nodes;

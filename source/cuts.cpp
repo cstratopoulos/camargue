@@ -170,13 +170,13 @@ int CutTranslate::get_sparse_row(const dominoparity &dp_cut,
     edge_marks[tour_nodes[node]] = 0;
 
   //parse the used teeth
-  for(const SimpleTooth *T : dp_cut.used_teeth){
-    // cout << "\t PARSING USED TOOTH " << tour_nodes[T->root] << " ("
-    // 	 << tour_nodes[T->body_start] << "..." << tour_nodes[T->body_end]
+  for(const SimpleTooth &T : dp_cut.used_teeth){
+    // cout << "\t PARSING USED TOOTH " << tour_nodes[T.root] << " ("
+    // 	 << tour_nodes[T.body_start] << "..." << tour_nodes[T.body_end]
     // 	 << ")\n";
-    for(int i = T->body_start; i <= T->body_end; ++i)
+    for(int i = T.body_start; i <= T.body_end; ++i)
       edge_marks[tour_nodes[i]] = 1;
-    edge_marks[tour_nodes[T->root]] = -2;
+    edge_marks[tour_nodes[T.root]] = -2;
 
     for(int i = 0; i < edges.size(); ++i){
       Edge e = edges[i];
@@ -195,12 +195,12 @@ int CutTranslate::get_sparse_row(const dominoparity &dp_cut,
       }
     }
 
-    rhs += (2 * (T->body_end - T->body_start + 1)) - 1;
+    rhs += (2 * (T.body_end - T.body_start + 1)) - 1;
     //cout << "\trhs now: " << rhs << "\n";
     
-    for(int i = T->body_start; i <= T->body_end; ++i)
+    for(int i = T.body_start; i <= T.body_end; ++i)
       edge_marks[tour_nodes[i]] = 0;
-    edge_marks[tour_nodes[T->root]] = 0; 
+    edge_marks[tour_nodes[T.root]] = 0; 
   }
 
   //parse nonnegativity edges
