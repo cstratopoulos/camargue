@@ -214,14 +214,12 @@ int CutTranslate::get_sparse_row(const dominoparity &dp_cut,
   rhs /= 2;
   rhs = floor(rhs);
   
-  {int i = 0;
-  for(double &coeff : rmatval){
+  for (double &coeff : rmatval) {
     if(fabs(coeff >= Epsilon::Cut)){
       coeff /= 2;
       coeff = floor(coeff);
     }
     i++;
-  }
   }
 
  CLEANUP:
