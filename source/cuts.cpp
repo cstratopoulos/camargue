@@ -149,8 +149,6 @@ int CutTranslate::get_sparse_row(const dominoparity &dp_cut,
     CMR_SET_GOTO(rval, "Couldn't allocate coefficient buffer. ");
   }
 
-  //parse the handle
-  //  cout << "\t PARSING HANDLE\n";
   for(const int node : dp_cut.degree_nodes)
     edge_marks[tour_nodes[node]] = 1;
 
@@ -158,22 +156,14 @@ int CutTranslate::get_sparse_row(const dominoparity &dp_cut,
     Edge e = edges[i];
     int sum = edge_marks[e.end[0]] + edge_marks[e.end[1]];
     coeff_buff[i] += sum;
-    // if(sum)
-    //   cout << "Added " << sum << " * [" << e.end[0] << ", " << e.end[1]
-    // 	   << "]\n";
   }
 
   rhs += 2 * dp_cut.degree_nodes.size();
-  //  cout << "\trhs now " << rhs << "\n";
 
   for(const int node : dp_cut.degree_nodes)
     edge_marks[tour_nodes[node]] = 0;
 
-  //parse the used teeth
   for(const SimpleTooth &T : dp_cut.used_teeth){
-    // cout << "\t PARSING USED TOOTH " << tour_nodes[T.root] << " ("
-    // 	 << tour_nodes[T.body_start] << "..." << tour_nodes[T.body_end]
-    // 	 << ")\n";
     for(int i = T.body_start; i <= T.body_end; ++i)
       edge_marks[tour_nodes[i]] = 1;
     edge_marks[tour_nodes[T.root]] = -2;
@@ -184,11 +174,9 @@ int CutTranslate::get_sparse_row(const dominoparity &dp_cut,
       switch(sum){
       case 2:
 	coeff_buff[i] += 2;
-	//cout << "Added 2 * [" << e.end[0] << ", " << e.end[1] << "]\n";
 	break;
       case -1:
 	coeff_buff[i] += 1;
-	//cout << "Added 1 * [" << e.end[0] << ", " << e.end[1] << "]\n";
 	break;
       default:
 	break;
@@ -196,16 +184,12 @@ int CutTranslate::get_sparse_row(const dominoparity &dp_cut,
     }
 
     rhs += (2 * (T.body_end - T.body_start + 1)) - 1;
-    //cout << "\trhs now: " << rhs << "\n";
     
     for(int i = T.body_start; i <= T.body_end; ++i)
       edge_marks[tour_nodes[i]] = 0;
     edge_marks[tour_nodes[T.root]] = 0; 
   }
 
-  //parse nonnegativity edges
-  // if(dp_cut.nonneg_edges.size())
-  //   cout << "\t PARSING NONNEG EDGES\n";
   for(const IntPair &ends : dp_cut.nonneg_edges){
     int end0 = fmin(tour_nodes[ends.first], tour_nodes[ends.second]);
     int end1 = fmax(tour_nodes[ends.first], tour_nodes[ends.second]);
@@ -229,21 +213,15 @@ int CutTranslate::get_sparse_row(const dominoparity &dp_cut,
 
   rhs /= 2;
   rhs = floor(rhs);
-  //cout << "rhs halved and rounded to: " << rhs << "\n";
-
-  //cout << "Final aggregated coeffs....\n";
+  
   {int i = 0;
   for(double &coeff : rmatval){
     if(fabs(coeff >= Epsilon::Cut)){
       coeff /= 2;
       coeff = floor(coeff);
-      // cout << coeff << "[" << edges[i].end[0] << "," << edges[i].end[1]
-      // 	   << "] + ";
-      // if(i % 8 == 0 && i) cout << "\n";
     }
     i++;
   }
-  //cout << "\n";
   }
 
  CLEANUP:

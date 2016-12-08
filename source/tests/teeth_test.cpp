@@ -33,18 +33,8 @@ static int dump_segment(double cut_val, int cut_start, int cut_end,
   return 0;
 }
 
-static int new_cb(double cut_val, int start, int end, void *u_data)
-{
-  int *count = (int *) u_data;
-  //   if(!(start <= 12 && 12 <= end)){
-  ++(*count);
-  cout << "\t " << start << ", " << end << " val: " << cut_val << "\n";
-  //}
-  return 0;
-}
-
 TEST_CASE("New tiny candidate teeth with no elim",
-	  "[.][tooth][tiny]") {
+	  "[.tooth][tiny]") {
   vector<string> tests{"fleisA9", "fleisB9", "comb9", "ulysses16"};
 
   for(string &fname : tests){
@@ -192,7 +182,7 @@ TEST_CASE("New candidate teeth with elim",
 }
 
 TEST_CASE("New tiny tooth constructor with brute force tests",
-	  "[.zones][.tiny]") {
+	  "[zones][.tiny][.tooth]") {
   vector<string> tests{"fleisA9", "fleisB9", "comb9", "ulysses16"};
   
   for(string &fname : tests){
@@ -309,64 +299,5 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
     }
   }
 }
-
-TEST_CASE("Linsub teeth one root at a time",
-	  "[.newtooth]") {
-  vector<string> tests{"lin105"// , "st70", "pr76"
-  };
-  
-  for(string &fname : tests){
-    SECTION(fname){
-      string
-	probfile = "problems/" + fname + ".tsp",
-	solfile = "test_data/tours/" + fname + ".sol",
-	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-      CMR::Data::GraphGroup g_dat;
-      CMR::Data::BestGroup b_dat;
-      CMR::Data::SupportGroup s_dat;
-      std::vector<double> lp_edges;
-	
-      REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile, subtourfile,
-					      g_dat, b_dat, lp_edges,
-					      s_dat));
-      CMR::SupportGraph &G_s = s_dat.G_s;
-      int max_deg = 0;
-      CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);
-      int ncount = g_dat.m_graph.node_count;
-
-      if(ncount <= 20){
-	cout << "Best tour:\n";
-	for(int i : b_dat.best_tour_nodes){
-	  cout << " " << i << ", "; 
-	  if(G_s.nodelist[i].s_degree > max_deg)
-	    max_deg = G_s.nodelist[i].s_degree;
-	}
-	cout << "\n";
-      }
-
-      vector<CMR::tooth_seg> seg_vec;
-      vector<int> &tour = b_dat.best_tour_nodes;
-      vector<int> &perm = b_dat.perm;
-      vector<int> endmark(ncount, CC_LINSUB_BOTH_END);
-      
-      vector<int> &sup_elist = s_dat.support_elist;
-      vector<double> &sup_ecap = s_dat.support_ecap;
-
-      int count = 0;
-
-      for(int i = 0; i < sup_ecap.size(); ++i){
-      	if(perm[sup_elist[2*i]] == 12 || perm[sup_elist[(2*i) + 1]] == 12)
-      	  sup_ecap[i] = -sup_ecap[i];
-      }
-      endmark[12] = CC_LINSUB_NO_END;
-
-      CCcut_linsub_allcuts(ncount, sup_ecap.size(), &perm[0], &endmark[0],
-			   &sup_elist[0], &sup_ecap[0], 2.999, &count, new_cb);
-      cout << "\tFound " << count << "\n";
-      
-    }
-  }
-}
-
 
 #endif

@@ -19,6 +19,14 @@ namespace Data{
 
 KarpPartition::KarpPartition(const int ncount, CCdatagroup *dat,
 			     const int seed) try {
+  if(ncount < 100){
+    part_list.resize(1);
+    part_list[0].resize(ncount);
+    for(int i = 0; i < ncount; ++i)
+      part_list[0][i] = i;
+    return;
+  }
+  
   CCsubdiv *subdiv_list = nullptr;
   int **part_matrix = nullptr;
   CCrandstate rstate;

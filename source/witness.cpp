@@ -21,7 +21,7 @@ DPwitness::DPwitness(CandidateTeeth &cands,
                           const vector<int> &partition_nodes)
 try :
   light_teeth(vector<vector<SimpleTooth>>(cands.light_teeth.size())),
-  supp_dat(cands.supp_dat), perm(cands.best_dat.perm), CC_gh_q(25)
+  supp_dat(cands.supp_dat), perm(cands.best_dat.perm), CC_gh_q(1000)
   {
     CCcut_GHtreeinit(&gh_tree);
 
@@ -152,6 +152,7 @@ void DPwitness::build_light_tree()
 void DPwitness::add_web_edges()
 {
   runtime_error err("Problem in DPwitness::add_web_edges.");
+  
   const vector<int> &support_elist = supp_dat.support_elist;
   const vector<double> &support_ecap = supp_dat.support_ecap;
 
