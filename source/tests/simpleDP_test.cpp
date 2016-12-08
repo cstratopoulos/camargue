@@ -15,6 +15,8 @@
 
 using std::cout;
 using std::setprecision;
+using std::endl;
+
 using std::vector;
 using std::string;
 using std::pair;
@@ -140,32 +142,33 @@ SCENARIO("Wrapping simple DP separation in SimpleDP class",
         CMR::Sep::SimpleDP sDP(g_dat, kpart, b_dat, s_dat, dp_q);
 
         REQUIRE(sDP.find_cuts());
-        // int primal_found = 0;
-        
-        // while(!dp_q.empty()){
-        //   vector<int> rmatind;
-        //   vector<double> rmatval;
-        //   char sense;
-        //   double rhs;
-	  
-        //   const CMR::dominoparity &dp_cut = dp_q.peek_front();
-        //   vector<int> &bt = b_dat.best_tour_nodes;
-        //   double tour_activity, lp_activity;
-        //   REQUIRE_FALSE(translator.get_sparse_row(dp_cut, bt, rmatind,
-        //                                           rmatval, sense, rhs));
+        cout << "Cut queue now has size: " << dp_q.size() << "\n";
 
-        //   translator.get_activity(tour_activity, b_dat.best_tour_edges,
-        //                           rmatind, rmatval);
-        //   translator.get_activity(lp_activity, lp_edges, rmatind, rmatval);
+        int primal_found = 0;
+        while(!dp_q.empty()){
+          vector<int> rmatind;
+          vector<double> rmatval;
+          char sense;
+          double rhs;
 	  
-        //   REQUIRE(tour_activity <= rhs);
+          const CMR::dominoparity &dp_cut = dp_q.peek_front();
+          vector<int> &bt = b_dat.best_tour_nodes;
+          double tour_activity, lp_activity;
+          REQUIRE_FALSE(translator.get_sparse_row(dp_cut, bt, rmatind,
+                                                  rmatval, sense, rhs));
+
+          translator.get_activity(tour_activity, b_dat.best_tour_edges,
+                                  rmatind, rmatval);
+          translator.get_activity(lp_activity, lp_edges, rmatind, rmatval);
 	  
-        //   if(tour_activity == rhs && lp_activity > rhs)
-        //     ++primal_found;
+          REQUIRE(tour_activity <= rhs);
 	  
-        //   dp_q.pop_front();
-        // }
-        //cout << "\t" << primal_found << " primal violated cuts found.\n";
+          if(tour_activity == rhs && lp_activity > rhs)
+            ++primal_found;
+	  
+          dp_q.pop_front();
+        }
+        cout << "\t" << primal_found << " primal violated cuts found.\n";
       }
     }
   }

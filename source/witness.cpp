@@ -223,7 +223,7 @@ void DPwitness::grab_dominos(CutQueue<dominoparity> &dp_q)
     int deltacount = 0;
     
     vector<int> handle_nodes;
-    vector<SimpleTooth*> used_teeth;
+    vector<SimpleTooth> used_teeth;
     vector<IntPair> nonneg_edges;
 
     try { expand_cut(CC_gh_q.peek_front(), cut_shore_nodes); }
@@ -247,7 +247,7 @@ void DPwitness::grab_dominos(CutQueue<dominoparity> &dp_q)
 	  continue;
 	}
 
-	try { used_teeth.push_back(T1); }
+	try { used_teeth.push_back(*T1); }
         CMR_CATCH_PRINT_THROW("pushing back used tooth", err);
 
 	continue;
@@ -268,7 +268,7 @@ void DPwitness::grab_dominos(CutQueue<dominoparity> &dp_q)
     }
 
       //at this point precisely one of T1, T2 is non-null
-      try { used_teeth.push_back( T2 ? T2 : T1 ); }
+      try { used_teeth.push_back( T2 ? *T2 : *T1 ); }
       CMR_CATCH_PRINT_THROW("pushing back used tooth", err);
     }
 
