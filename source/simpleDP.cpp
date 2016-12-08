@@ -95,8 +95,8 @@ bool Sep::SimpleDP::find_cuts()
         #pragma omp critical
         {
             dp_q.splice(mini_q);
-            // if(dp_q.size() >= 25)
-            //     at_capacity = true;
+            if(dp_q.size() >= 25)
+                at_capacity = true;
         }
     }
 
