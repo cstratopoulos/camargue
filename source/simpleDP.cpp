@@ -72,6 +72,7 @@ bool Sep::SimpleDP::find_cuts()
         candidates.merge_and_sort();
     } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
 
+    #pragma omp parallel for
     for (int i = 0; i < kpart.num_parts(); ++i) {
         if(at_capacity || caught_exception)
             continue;
