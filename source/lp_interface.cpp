@@ -34,9 +34,10 @@ Relaxation::Relaxation() try
     
     rval = CPXsetintparam(cplex_env, CPX_PARAM_PREIND, CPX_OFF);
 
-    if (rval)
+    if (rval) {
+        CPXcloseCPLEX(&cplex_env);
         throw cpx_err(rval, "CPXsetintparam presolve");
-
+    }
     char unused;
 
     cplex_lp = CPXcreateprob(cplex_env, &rval, &unused);

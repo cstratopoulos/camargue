@@ -33,3 +33,25 @@ SCENARIO ("Constructing LP Relaxations",
         }
     }
 }
+
+SCENARIO ("Failures in constructing LP Relaxations",
+          "[.LP][.Relaxaton][!shouldfail][valgrind]") {
+    GIVEN ("The raw data structures in an LP Relaxation") {
+        WHEN ("A nonzero rval occurs in the constructor") {
+            THEN ("No memory is leaked") {
+                int rval = 0;
+        
+                CPXLPptr cplex_lp = (CPXLPptr) NULL;
+                CPXENVptr cplex_env = CPXopenCPLEX(&rval);
+
+                rval = 5;
+
+                if (rval) {
+                    CPXcloseCPLEX(&cplex_env);
+                    REQUIRE_NOTHROW(throw std::runtime_error("rval"));
+                }
+            }
+        }
+    }
+}
+
