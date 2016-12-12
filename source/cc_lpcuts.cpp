@@ -11,7 +11,7 @@ using std::cerr;
 using lpcut_in = CCtsp_lpcut_in;
 
 namespace CMR {
-namespace Cut {
+namespace Sep {
 
 LPcutList::LPcutList() noexcept : head_cut(), cutcount(0) {}
 
