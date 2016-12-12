@@ -12,13 +12,15 @@
 #include <vector>
 
 namespace CMR {
-
 namespace LP {
 
-/** Class for storing the lp relaxation of a TSP instance. 
+/** Class for storing an lp relaxation via interface to an lp solver. 
  * This structure stores the environment and lp data structures of the lp 
  * solver, and contains methods for modifying the relaxation in the sense of
  * adding/removing constraints and variables.
+ * @remark This is implemented as an interface to CPLEX 12, but use of 
+ * other solvers could be supported by re-implementing the protected members
+ * and changing private members appropriately. 
  */
 class Relaxation {
 public:
@@ -36,12 +38,15 @@ public:
     
     ///@}
 
+protected:
+
     /**@name Row and column queries/operations. */
     ///@{
 
     int num_rows();
     int num_cols();
 
+    void new_row(const char sense, const double rhs);
     void new_rows(const std::vector<char> &sense,
                   const std::vector<double> &rhs);
     
@@ -60,13 +65,10 @@ public:
 
     void del_set_rows(std::vector<int> &delstat);
 
-    void new_cols(const std::vector<double> &objfun,
-                  const std::vector<int> &cmatbeg,
-                  const std::vector<int> &cmatind,
-                  const std::vector<double> &cmatval,
-                  const std::vector<double> &lb,
-                  const std::vector<double> &ub);
-    
+    void add_col(const double objval,
+                 const std::vector<int> &indices,
+                 const std::vector<double> &coeffs,
+                 const double lb, const double ub);
     
     ///@}
 

@@ -106,6 +106,14 @@ int Relaxation::num_rows() { return CPXgetnumrows(cplex_env, cplex_lp); }
 
 int Relaxation::num_cols() { return CPXgetnumcols(cplex_env, cplex_lp); }
 
+void Relaxation::new_row(const char sense, const double rhs)
+{
+    int rval = CPXnewrows(cplex_env, cplex_lp, 1, &rhs, &sense, NULL, NULL);
+
+    if (rval)
+        throw cpx_err(rval, "CPXnewrows");
+}
+
 void Relaxation::new_rows(const vector<char> &sense,
                           const vector<double> &rhs)
 {
@@ -157,20 +165,22 @@ void Relaxation::get_row_infeas(const std::vector<double> &x,
         throw cpx_err(rval, "CPXgetrowinfeas");
 }
 
-void Relaxation::new_cols(const vector<double> &objfun,
-                          const vector<int> &cmatbeg,
-                          const vector<int> &cmatind,
-                          const vector<double> &cmatval,
-                          const vector<double> &lb, const vector<double> &ub)
+void Relaxation::add_col(const double objval, const vector<int> &indices,
+                         const vector<double> &coeffs, const double lb,
+                         const double ub)
 {
-    int rval = CPXnewcols(cplex_env, cplex_lp, cmatbeg.size(),
-                          &objfun[0], &lb[0], &ub[0], (char *) NULL,
-                          (char **) NULL);
+    int cmatbeg = 0;
+    int newcols = 1;
+
+    int rval = CPXaddcols(cplex_env, cplex_lp, newcols, coeffs.size(),
+                          &objval, &cmatbeg, &indices[0], &coeffs[0],
+                          &lb, &ub, (char **) NULL);
     if (rval)
-        throw cpx_err(rval, "CPXnewcols");
+        throw cpx_err(rval, "CPXaddcols");
 }
 
-void Relaxation::get_base(vector<int> &colstat, vector<int> &rowstat)
+void Relaxation::get_base(vector<int> &colstat,
+                          vector<int> &rowstat)
 {
     colstat.resize(num_cols());
     rowstat.resize(num_rows());
