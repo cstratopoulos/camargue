@@ -37,9 +37,9 @@ Relaxation::Relaxation() try
     if (rval)
         throw cpx_err(rval, "CPXsetintparam presolve");
 
-    char buf[32];
+    char unused;
 
-    cplex_lp = CPXcreateprob(cplex_env, &rval, buf);
+    cplex_lp = CPXcreateprob(cplex_env, &rval, &unused);
 
     if (rval) {
         CPXcloseCPLEX(&cplex_env);
@@ -55,12 +55,33 @@ Relaxation::Relaxation() try
 Relaxation::Relaxation(Relaxation &&lp) noexcept : cplex_env(lp.cplex_env),
                                        cplex_lp(lp.cplex_lp)
 {
+    if (cplex_env) {
+        if (cplex_lp) {
+            CPXfreeprob(cplex_env, &cplex_lp);
+            cplex_lp = (CPXLPptr) NULL;
+        }
+        CPXcloseCPLEX(&cplex_env);
+        cplex_env = (CPXENVptr) NULL;
+    }    
+    
+    cplex_env = lp.cplex_env;
+    cplex_lp = lp.cplex_lp;
+
     lp.cplex_env = (CPXENVptr) NULL;
     lp.cplex_lp = (CPXLPptr) NULL;
 }
 
 Relaxation& Relaxation::operator=(Relaxation &&lp) noexcept
 {
+    if (cplex_env) {
+        if (cplex_lp) {
+            CPXfreeprob(cplex_env, &cplex_lp);
+            cplex_lp = (CPXLPptr) NULL;
+        }
+        CPXcloseCPLEX(&cplex_env);
+        cplex_env = (CPXENVptr) NULL;
+    }
+    
     cplex_env = lp.cplex_env;
     cplex_lp = lp.cplex_lp;
     lp.cplex_env = (CPXENVptr) NULL;
