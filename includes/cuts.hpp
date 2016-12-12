@@ -17,6 +17,7 @@
 #include "util.hpp"
 #include "setbank.hpp"
 #include "datagroups.hpp"
+#include "cc_lpcuts.hpp"
 #include "Graph.hpp"
 #include "tooth.hpp"
 
@@ -173,6 +174,12 @@ public:
         delta(GraphGroup.delta),
         edge_marks(GraphGroup.edge_marks),
         edge_lookup(GraphGroup.m_graph.edge_lookup) {}
+
+    void get_sparse_row(const CCtsp_lpcut_in &cc_cut,
+                        const std::vector<int> &perm,
+                        std::vector<int> &rmatind,
+                        std::vector<double> &rmatval, char &sense,
+                        double &rhs);
 
     int get_sparse_row(const CMR::HyperGraph &H, std::vector<int> &rmatind,
                        std::vector<double> &rmatval, char &sense, double &rhs);

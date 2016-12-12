@@ -1,12 +1,15 @@
 #include "cuts.hpp"
 
 #include <map>
+#include <utility>
 #include <iostream>
 
 #include <cmath>
 
 using std::vector;
 using std::map;
+using std::pair;
+
 using std::cout;
 using std::cerr;
 
@@ -37,6 +40,48 @@ void CutQueue<HyperGraph>::pop_front()
 {
     cut_q.front().delete_refs();
     cut_q.pop_front();
+}
+
+void CutTranslate::get_sparse_row(const CCtsp_lpcut_in &cc_cut,
+                                  const std::vector<int> &perm,
+                                  vector<int> &rmatind,
+                                  vector<double> &rmatval, char &sense,
+                                  double &rhs)
+{
+    rmatind.clear();
+    rmatval.clear();
+    sense = cc_cut.sense;
+    rhs = cc_cut.rhs;
+
+    int ncount = perm.size();
+    map<int, double> coeff_map;
+
+    for (int i = 0; i < cc_cut.cliquecount; ++i) {
+        vector<bool> node_marks(ncount, false);
+        CCtsp_lpclique &clq = cc_cut.cliques[i];
+
+        for (int j = 0; j < clq.segcount; ++j) {
+            CCtsp_segment &seg = clq.nodes[j];
+
+            for (int k = seg.lo; k <= seg.hi; ++k)
+                node_marks[k] = true;
+        }
+
+        for (int j = 0; j < edges.size(); ++j) {
+            if (node_marks[perm[edges[j].end[0]]] !=
+                node_marks[perm[edges[j].end[1]]])
+                coeff_map[j] += 1.0;
+        }
+    }
+
+    rmatind.reserve(coeff_map.size());
+    rmatval.reserve(coeff_map.size());
+
+        for(pair<const int, double> &kv : coeff_map) {
+            rmatind.push_back(kv.first);
+            rmatval.push_back(kv.second);
+        }
+    
 }
 
 int CutTranslate::get_sparse_row(const HyperGraph &H, vector<int> &rmatind,
