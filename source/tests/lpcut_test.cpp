@@ -20,7 +20,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
   CMR::Data::BestGroup b_dat;
   CMR::Data::SupportGroup s_dat;
   std::vector<double> lp_edges;
-  CMR::Cut::LPcutList cutq;
+  CMR::Sep::LPcutList cutq;
 
   GIVEN("Blossom 6 with no cuts primal") {
     WHEN("Cuts are found but none are primal") {
@@ -33,7 +33,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 			   b_dat.perm);
 	for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	CMR::Sep::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 
       REQUIRE_FALSE(fb_sep.find_cuts());
 	int nncount = 0;
@@ -57,7 +57,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 			   b_dat.perm);
 	for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	CMR::Sep::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
       REQUIRE(fb_sep.find_cuts());
       
 	int nncount = 0;
@@ -72,7 +72,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 
 // TEST_CASE("Basic member tests",
 // 	  "[LPcutList]") {
-//   CMR::Cut::LPcutList wrap;
+//   CMR::Sep::LPcutList wrap;
 //   CMR::Data::GraphGroup g_dat;
 //   CMR::Data::BestGroup b_dat;
 //   CMR::Data::SupportGroup s_dat;

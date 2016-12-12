@@ -30,7 +30,7 @@ SCENARIO("Primal comb separation by standard block comb heuristics",
       CMR::Data::BestGroup b_dat;
       CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-      CMR::Cut::LPcutList cutq;
+      CMR::Sep::LPcutList cutq;
 
       WHEN("Tour is good and solution is in the subtour polytope") {
 	THEN("Primal block combs are found") {
@@ -43,7 +43,7 @@ SCENARIO("Primal comb separation by standard block comb heuristics",
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  CMR::Cut::BlockCombs bc_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Sep::BlockCombs bc_sep(g_dat, b_dat, s_dat, TG, cutq);
 	  REQUIRE(bc_sep.find_cuts());
 	}
       }
@@ -66,7 +66,7 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
       CMR::Data::BestGroup b_dat;
       CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-      CMR::Cut::LPcutList cutq;
+      CMR::Sep::LPcutList cutq;
 
       WHEN("The tour is good") {
 	THEN("Primal block combs are found") {
@@ -78,7 +78,7 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Sep::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 	  REQUIRE(fb_sep.find_cuts());
 	}
       }
@@ -94,7 +94,7 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
 			    b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  CMR::Cut::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Sep::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
 
 	  REQUIRE_FALSE(fb_sep.find_cuts());
 	}

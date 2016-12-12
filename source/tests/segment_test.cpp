@@ -30,7 +30,7 @@ SCENARIO("Exact primal separation of subtours",
       CMR::Data::BestGroup b_dat;
       CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
-      CMR::Cut::LPcutList cutq;
+      CMR::Sep::LPcutList cutq;
 
       WHEN("The tour is good but the solution is in the subtour polytope") {
       	THEN("No segment cuts are found") {
@@ -42,7 +42,7 @@ SCENARIO("Exact primal separation of subtours",
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  CMR::Cut::SegmentCuts seg_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Sep::SegmentCuts seg_sep(g_dat, b_dat, s_dat, TG, cutq);
 
 	  REQUIRE_FALSE(seg_sep.find_cuts());
       	}	
