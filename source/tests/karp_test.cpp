@@ -1,3 +1,5 @@
+#include <catch.hpp>
+
 #include "tests.hpp"
 #include "datagroups.hpp"
 #include "karp.hpp"
@@ -14,7 +16,7 @@ extern "C" {
 #include <concorde/INCLUDE/util.h>
 }
 
-#include <catch.hpp>
+
 
 
 using std::cout;
