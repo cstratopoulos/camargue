@@ -15,6 +15,7 @@
 #include <vector>
 #include <iostream>
 #include <type_traits>
+#include <limits>
 
 #include <boost/functional/hash.hpp>
 
@@ -194,6 +195,22 @@ std::unique_ptr<T> make_unique( Args&& ...args )
 {
     return std::unique_ptr<T>( new T( std::forward<Args>(args)... ) );
 }
+
+template <typename T>
+struct C_resource_deleter {
+    void operator()(T* ptr) const {
+        if(ptr) free(ptr);
+        ptr = nullptr;
+    }
+};
+
+typedef std::unique_ptr<int, C_resource_deleter<int>> c_array_ptr;
+
+constexpr int IntMax = std::numeric_limits<int>::max();
+constexpr int IntMin = std::numeric_limits<int>::min();
+
+constexpr double DoubleMax = std::numeric_limits<double>::max();
+constexpr double DoubleMin = std::numeric_limits<double>::min();
     
 }
 
