@@ -53,6 +53,14 @@ ScopeGuard<act_type> make_guard(act_type f)
 {
   return ScopeGuard<act_type>(std::move(f));
 }
+
+
+
+struct retcode_error : public std::runtime_error {
+    retcode_error(const int rval, const char* func_name) :
+        std::runtime_error(std::string{func_name} + " failed with rval " +
+                           std::to_string(rval)) {}
+};
   
 }
 
