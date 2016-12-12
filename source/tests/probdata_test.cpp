@@ -27,8 +27,7 @@ SCENARIO("Instance constructors throw when they fail",
 	 "[!shouldfail][.Data][.Instance]") {
   GIVEN("An input filename that doesn't exist") {
     THEN("The Instance TSPLIB constructor should throw") {
-      int ncount = 0;
-      REQUIRE_NOTHROW(CMR::Data::Instance inst("dksaljfkla", ncount));
+      REQUIRE_NOTHROW(CMR::Data::Instance inst("dksaljfkla", 0));
     }
   }
 
@@ -62,12 +61,10 @@ SCENARIO("Instance constructors initialize data as expected",
       THEN("Instance constructor works and gets " +
 	   to_string(expect_ncount) + " nodes") {
 	std::unique_ptr<CMR::Data::Instance> inst;
-	int ncount;
 
 	REQUIRE_NOTHROW(inst =
-			CMR::make_unique<CMR::Data::Instance>(pfile,
-								ncount));
-	REQUIRE(ncount == expect_ncount);
+			CMR::make_unique<CMR::Data::Instance>(pfile, 0));
+	REQUIRE(inst->node_count() == expect_ncount);
       }
     }
   }
