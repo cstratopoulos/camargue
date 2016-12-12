@@ -21,9 +21,16 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::setprecision;
+
 using std::string;
+using std::to_string;
+
 using std::vector;
 using std::unique_ptr;
+
+using std::min;
+using std::max;
+
 using std::exception;
 using std::runtime_error;
 using std::logic_error;
@@ -33,24 +40,32 @@ namespace Data {
 
 Instance::Instance() noexcept : handle(nullptr) {}
 
-Instance::Instance(const string &fname, int &ncount)
-try : handle(CMR::make_unique<CCdatagroup>()) {
-  int tmp_ncount = 0;
+Instance::Instance(const string &fname, const int seed)
+try : handle(CMR::make_unique<CCdatagroup>()),
+      random_seed(seed) {
     
-  if (CCutil_gettsplib(const_cast<char*>(fname.c_str()), &tmp_ncount,
-		      ptr()))
-    throw runtime_error("CCutil_gettsplib failed.");
+    if (CCutil_gettsplib(const_cast<char*>(fname.c_str()), &nodecount,
+                         ptr()))
+        throw runtime_error("CCutil_gettsplib failed.");
     
-  ncount = tmp_ncount;
+    pname = fname.substr(fname.find_last_of("/") + 1);
+    pname = pname.substr(0, pname.find_last_of("."));
 } catch (const exception &e) {
-  cerr << e.what() << "\n";
-  throw runtime_error("Instance constructor failed.");
+    cerr << e.what() << "\n";
+    throw runtime_error("Instance constructor failed.");
  }
 
 Instance::Instance(const int seed, const int ncount, const int gridsize)
-try : handle(CMR::make_unique<CCdatagroup>()) {
-  if (ncount <= 0) throw logic_error("Specified bad ncount.");
-  if (gridsize <= 0) throw logic_error("Specified bad gridsize.");
+try : handle(CMR::make_unique<CCdatagroup>()),
+      nodecount(ncount),
+      random_seed(seed),
+      pname("rand_s" + to_string(seed) + "n" + to_string(ncount) + "g"
+            + to_string(gridsize)) {
+  if (ncount <= 0)
+      throw logic_error("Specified bad ncount.");
+  
+  if (gridsize <= 0)
+      throw logic_error("Specified bad gridsize.");
     
   CCrandstate rstate;
   int allow_dups = 1;
@@ -68,441 +83,235 @@ try : handle(CMR::make_unique<CCdatagroup>()) {
   throw runtime_error("Instance constructor failed.");
  }
 
-Instance::Instance(Instance &&I) noexcept : handle(std::move(I.handle)) {}
+Instance::Instance(Instance &&I) noexcept :
+    handle(std::move(I.handle)), nodecount(I.nodecount),
+    random_seed(I.random_seed), pname(I.pname)
+{}
 
 Instance &Instance::operator=(Instance &&I) noexcept {
   handle = std::move(I.handle);
+  nodecount = I.nodecount;
+  random_seed = I.random_seed;
+  pname = I.pname;
   return *this;
 }
 
-GraphGroup::GraphGroup(const string &fname, string &probname,
-		       RandProb &randprob,
-		       unique_ptr<CCdatagroup> &dat,
-		       const bool sparse, const int quadnearest,
-		       const bool dump_xy) {
-  int rval = 0;
-  CCdatagroup *rawdat = dat.get();
-  char *filestring = const_cast<char *>(fname.data());
-  int *elist = (int *) NULL;
+GraphGroup::GraphGroup(const Instance &inst)
+try     
+{
+    int ncount = inst.node_count();
+    m_graph.node_count = ncount;
 
-  CCutil_init_datagroup(rawdat);
-  if (randprob.seed == 0) randprob.seed = (int) real_zeit();
-
-  if (!fname.empty()) {
-    rval = CCutil_gettsplib(filestring, &(m_graph.node_count), rawdat);
-    CMR_CHECK_RVAL(rval, "CCutil_gettsplib failed. ");
-
-    probname = fname.substr(fname.find_last_of("/") + 1);
-    probname = probname.substr(0, probname.find_last_of("."));
-  }
-  else {
-    m_graph.node_count = randprob.nodecount;
-    CCrandstate rstate;
-    int use_gridsize = randprob.gridsize;
-    int allow_dups = 1;
-
-    cout << "Random seed: " << randprob.seed << "\n";
-    CCutil_sprand(randprob.seed, &rstate);
-    rval = CCutil_getdata((char *) NULL, 1, CC_EUCLIDEAN,
-			  &(m_graph.node_count),
-			  rawdat, use_gridsize, allow_dups, &rstate);
-    if (rval) CMR_GOTO_CLEANUP("CCutil_getdata randprob failed, ");
-
-    probname = "r" + std::to_string(randprob.nodecount) + "-g"
-      + std::to_string(randprob.gridsize) + "-s"
-      + std::to_string(randprob.seed);
-  }
-
-  if (!sparse) {  
-    m_graph.edge_count = (m_graph.node_count * (m_graph.node_count - 1)) / 2;
-    try{ m_graph.edges.resize(m_graph.edge_count); }
-    catch (const std::bad_alloc &) {
-      rval = 1; CMR_GOTO_CLEANUP("Out of memory for m_graph.edges, ");
-    }
-  
-    { int e_index = 0; 
-      for (int i = 0; i < m_graph.node_count; i++) {
-	for (int j = i+1; j < m_graph.node_count; j++) {
-	  Edge e(i, j, CCutil_dat_edgelen(i, j, rawdat));
-	  
-	  m_graph.edges[e_index] = e;
-	  m_graph.edge_lookup.emplace(IntPair(i,j), e_index);
-	  e_index++;
-	}
-      }}
-  } else {
-    cout << "    GENERATING SPARSE GRAPH ONLY, ";
     CCedgegengroup plan;
     CCrandstate rstate;
-    int edgegen_seed = randprob.seed;
-    
-    CCutil_sprand(edgegen_seed, &rstate);
+
+    CCutil_sprand(inst.seed(), &rstate);
     CCedgegen_init_edgegengroup(&plan);
-    plan.linkern.count = 10;
-    plan.linkern.quadnearest = 5;
+
+    plan.linkern.count = 9;
+    plan.linkern.quadnearest = 2;
     plan.linkern.greedy_start = 0;
-    plan.linkern.nkicks = (m_graph.node_count / 100) + 1;
-    plan.quadnearest = quadnearest;
+    plan.linkern.nkicks = (ncount / 100) + 1;
 
-    cout << plan.linkern.count << " LK tours, "
-	 << plan.quadnearest << " quad-nearest, "
-      //	 << plan.nearest << "-nearest, "
-	 << "seed " << edgegen_seed
-	 << "\n";
+    int *elist = (int *) NULL;
 
-    rval = CCedgegen_edges(&plan, m_graph.node_count, rawdat, NULL,
-			   &(m_graph.edge_count), &elist, 1, &rstate);
-    if (rval) CMR_GOTO_CLEANUP("Problem with CCedgegen_edges, ");
-    
-    try{ m_graph.edges.resize(m_graph.edge_count); }
-    catch (const std::bad_alloc &) {
-      rval = 1; CMR_GOTO_CLEANUP("Out of memory for m_graph.edges, ");
+    if(CCedgegen_edges(&plan, ncount, inst.ptr(), NULL,
+                       &(m_graph.edge_count), &elist, 1, &rstate))
+        throw runtime_error("CCedgegen_edges failed.");
+
+    c_array_ptr edge_handle(elist);
+    int ecount = m_graph.edge_count;
+
+    for (int i = 0; i < ecount; ++i) {
+        int end0 = min(elist[2 * i], elist[(2 * i) + 1]);
+        int end1 = max(elist[2 * i], elist[(2 * i) + 1]);
+
+        m_graph.edges.emplace_back(end0, end1,
+                                   CCutil_dat_edgelen(end0, end1, inst.ptr()));
+        m_graph.edge_lookup.emplace(IntPair(end0, end1), i);
     }
 
-    for (int i = 0; i < m_graph.edge_count; i++) {
-      Edge e(elist[2 * i], elist[(2 * i) + 1],
-	     CCutil_dat_edgelen(elist[2 * i], elist[(2 * i) + 1], rawdat));
-      
-      m_graph.edges[i] = e;
-      m_graph.edge_lookup.emplace(IntPair(e.end[0], e.end[1]), i);
-    }
-
-    cout << "    " << m_graph.edge_count
-	 << " edges in sparse graph, ratio to nodes: " << setprecision(2)
-	 << ((double) m_graph.edge_count / m_graph.node_count)
-	 << setprecision(6) << "\n";
-  }
-
-  try{
-  island.resize(m_graph.node_count);
-  delta.resize(m_graph.edge_count, 0);
-  edge_marks.resize(m_graph.node_count, 0);
-  } catch (const std::bad_alloc &) {
-    CMR_SET_GOTO(rval, "Out of memory for dfs vectors, ");
-  }
-
-  if (dump_xy) {
-    if (dat->x && dat->y) {
-      std::string xyfile = probname + ".xy";
-      write_xy_coords(dat->x, dat->y, m_graph.node_count,
-			     xyfile);
-      CMR_CHECK_RVAL(rval, "Couldn't dump xy coords to file. ");
-
-      std::cout << "Dumped xy coords to " << xyfile << "\n";
-    } else
-      std::cout << "Problem type does not permit xy coord dump\n";
-  }
-
-
- CLEANUP:
-  if (elist) free(elist);
-  if (rval) {
-    cerr << "Problem in GraphGroup constructor\n";
-    m_graph.node_count = 0;
-    throw 1;
-  }
+    island.resize(ncount);
+    delta.resize(ecount, 0);
+    edge_marks.resize(ncount, 0);
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("GraphGroup constructor failed.");
 }
 
-BestGroup::BestGroup(Graph &m_graph, vector<int> &delta,
-		     unique_ptr<CCdatagroup> &dat,
-		     const std::string &probname,
-		     const int user_seed,
-		     const bool save_tour, const bool save_tour_edges) {
-  int rval = 0;
-  CCrandstate rand_state;
-  CCedgegengroup plan;
-  CCdatagroup *rawdat = dat.get();
-  int ncount = m_graph.node_count;
-  int ecount = 0;
-  int *elist = (int *) NULL;
-  int tcount = 0;
-  int *tlist = (int *) NULL;
-  int *cyc = (int *) NULL;
-  double bestval, val;
-  int trials = 10;
-  int silent = 1;
-  int kicks = 1000;
-  int istour;
-  int seed = (user_seed == 0) ? ((int) real_zeit()) : user_seed;
-  bool sparse = (m_graph.edge_count < (ncount * (ncount - 1)) / 2);
-
-  bestval = INFINITY;
-
-  //code copies from static int find_tour from concorde
-  CCutil_sprand(seed, &rand_state);
-
-  cyc = CC_SAFE_MALLOC(ncount, int); 
-  if (!cyc) {
-    rval = 1; CMR_GOTO_CLEANUP("Out of memory for cyc, ");
-  }
-
-  try {
-  best_tour_nodes.resize(ncount);
-  perm.resize(ncount);
-  best_tour_edges.resize(m_graph.edge_count, 0);
-  } catch (const std::bad_alloc &) {
-    rval = 1; CMR_GOTO_CLEANUP("Out of memory for BestGroup vectors, ");
-  }
-
-  if (!sparse) {
-    cout << "Doing non-sparse quad-nearest and greedy tour\n";
-    CCedgegen_init_edgegengroup (&plan);
-    plan.quadnearest = 2;
-    rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &ecount,
-			    &elist, silent, &rand_state);
-    if (rval) CMR_GOTO_CLEANUP("CCedgegen_edges failed, ");
-    plan.quadnearest = 0;
-
-    plan.tour.greedy = 1;
-    rval = CCedgegen_edges (&plan, ncount, rawdat, (double *) NULL, &tcount,
-			    &tlist, silent, &rand_state);
-    if (rval) CMR_GOTO_CLEANUP("CCedgegen_edges failed, ");
-
-    if (tcount != ncount) {
-      rval = 1; CMR_GOTO_CLEANUP("Wrong edgeset from CCedgegen_edges, ");
-    }
-
-    rval = CCutil_edge_to_cycle (ncount, tlist, &istour, cyc);
-    if (rval) CMR_GOTO_CLEANUP("CCutil_edge_to_cycle failed, ");
-  
-    if (istour == 0) {
-      rval = 1; CMR_GOTO_CLEANUP("Starting tour has an error, ");
-    }
-    CC_FREE (tlist, int);
-  } else {
-    ecount = m_graph.edge_count;
-    elist = CC_SAFE_MALLOC(2 * ecount, int);
-    if (!elist) {
-      rval = 1; CMR_GOTO_CLEANUP("Out of memory for elist, ");
-    }
-
-    for (int i = 0; i < ecount; i++) {
-      elist[2 * i] = m_graph.edges[i].end[0];
-      elist[(2 * i) + 1] = m_graph.edges[i].end[1];
-    }
-  }
-
-  //in a sparse graph we do not bother putting a greedy tour as incycle
-  rval = CClinkern_tour (ncount, rawdat, ecount, elist, ncount, kicks,
-			 sparse ? (int *) NULL : cyc, //
-			 &best_tour_nodes[0], &bestval, silent, 0.0, 0.0,
-			 (char *) NULL,
-			 CC_LK_GEOMETRIC_KICK, &rand_state);
-  if (rval) CMR_GOTO_CLEANUP("CClinkern_tour failed, ");
-  
-  //end of copied code (from find_tour)
-  std::cout << "LK initial run: " << bestval << ". ";
-
-  if (trials > 0) {
-    std::cout << "Performing " << trials << " more trials. (";
-    std::cout.flush();
-  }
-
-  //begin copied code from find_good_tour in tsp_call.c  
-  for (int i = 0; i < trials; i++) {
-    rval = CClinkern_tour(ncount, rawdat, ecount, elist, ncount, kicks,
-			  (int *) NULL, cyc, &val, 1, 0.0, 0.0,
-			  (char *) NULL, CC_LK_GEOMETRIC_KICK, &rand_state);
-  if (rval) CMR_GOTO_CLEANUP("CClinkern_tour failed, ");
-  
-  if (val < bestval) {
-    for (int j = 0; j < ncount; j++)
-      best_tour_nodes[j] = cyc[j];
-    bestval = val;
-    std::cout << "!";
-    std::cout.flush();
-  } else {
-    std::cout << ".";
-    std::cout.flush();
-  }
-  }
-
-  if (trials > 0)
-    std::cout << ")";
-  std::cout << "\n";
-  
-  if (trials > 0) {
-    rval = CClinkern_tour(ncount, rawdat, ecount, elist, ncount, 2 * kicks,
-			  &best_tour_nodes[0], cyc, &bestval, 1, 0.0, 0.0,
-			  (char *) NULL,
-			  CC_LK_GEOMETRIC_KICK, &rand_state);
-    if (rval) CMR_GOTO_CLEANUP("CClinkern_tour failed, ");
-
-    cout << "LK run from best tour: " << bestval << "\n";
-    for (int j = 0; j < ncount; j++)
-      best_tour_nodes[j] = cyc[j];
-  }
-
-  for (int i = 0; i < m_graph.node_count; i++)
-    perm[best_tour_nodes[i]] = i;
-  
-  min_tour_value = bestval;
-
-  { int missing = 0;
-  for (int i = 0; i < ncount; ++i) {
-    int end0 = fmin(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
-    int end1 = fmax(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
-    IntPairMap::const_iterator edge_it =
-      m_graph.edge_lookup.find(IntPair(end0, end1));
-    
-    if (edge_it == m_graph.edge_lookup.end()) {
-      missing++;
-
-      Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, rawdat));
-
-      m_graph.edges.push_back(e);
-      m_graph.edge_lookup[IntPair(end0, end1)] = m_graph.edges.size() - 1;
-      m_graph.edge_count += 1;
-      best_tour_edges.push_back(0);
-      delta.push_back(0);
-      edge_it = m_graph.edge_lookup.find(IntPair(end0, end1));
-    }
-
-    int edge_index = edge_it->second;    
-    best_tour_edges[edge_index] = 1;
-  }
-  std::cout << "Added " << missing << " additional edges. ";
-  }
-
-  if ((ncount % 2) == 0) {
-    int end0 = fmin(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
-    int end1 = fmax(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
-    IntPairMap::const_iterator edge_it =
-      m_graph.edge_lookup.find(IntPair(end0, end1));
-
-    if (edge_it == m_graph.edge_lookup.end()) {
-      std::cout << "Adding extra edge just for basis.";
-      Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, rawdat));
-
-      m_graph.edges.push_back(e);
-      m_graph.edge_lookup[IntPair(end0, end1)] = m_graph.edges.size() - 1;
-      m_graph.edge_count += 1;
-      best_tour_edges.push_back(0);
-      delta.push_back(0);
-    }    
-  }
-  std::cout << "\n";
-
-  if (save_tour) {
-    std::string solfile = probname + ".sol";
-    write_tour_nodes(best_tour_nodes, solfile);
-    std::cout << "Wrote initial tour to " << solfile << ".\n";
-  }
-  
-  if (save_tour_edges) {
-  std::string edgefile = probname + "_tour.x";
-  write_tour_edges(best_tour_edges, m_graph.edges, m_graph.node_count,
-		   edgefile);
-  std::cout << "Wrote initial tour edges to " << edgefile << ".\n";
-  }
-
- CLEANUP:
-  CC_IFFREE (cyc, int);
-  CC_IFFREE (elist, int);
-  CC_IFFREE (tlist, int);
-  CCutil_freedatagroup(rawdat);
-  if (rval) {
-    cerr << "CMR::BestGroup (LK) constructor failed.\n";
-    throw 1;
-  }
-}
-
-BestGroup::BestGroup(const std::string &tourfile,
-		     CMR::Graph &graph, vector<int> &delta,
-		     std::unique_ptr<CCdatagroup> &dat,
-		     const std::string &probname,
-		     const bool save_tour, const bool save_tour_edges)
+BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
+    best_tour_edges(std::vector<int>(graph_data.m_graph.edge_count, 0)),
+    best_tour_nodes(std::vector<int>(graph_data.m_graph.node_count)),
+    perm(best_tour_nodes.size()),
+    min_tour_value(DoubleMax)
 {
-  int rval = 0;
-  int ncount = graph.node_count;
-  
-  get_tour_nodes(ncount, best_tour_nodes, tourfile);
-  
-  try {
-    perm.resize(ncount);
-    best_tour_edges.resize(graph.edge_count, 0);
-  } catch (const std::bad_alloc &) {
-    CMR_SET_GOTO(rval, "Out of memory for BestGroup vectors. ");
-  }
 
-  for (int i = 0; i < ncount; ++i) perm[best_tour_nodes[i]] = i;
+    CCrandstate rstate;
+    CCutil_sprand(inst.seed(), &rstate);
 
-  { int missing = 0;
-    for (int i = 0; i < ncount; ++i) {
-      int end0 = fmin(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
-      int end1 = fmax(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
-      IntPairMap::const_iterator edge_it =
-	graph.edge_lookup.find(IntPair(end0, end1));
-    
-      if (edge_it == graph.edge_lookup.end()) {
-	missing++;
+    Graph &graph = graph_data.m_graph;
+    int ncount = graph.node_count;
+    int ecount = graph.edge_count;
+    vector<int> elist;
 
-	Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, dat.get()));
-
-	graph.edges.push_back(e);
-	graph.edge_lookup[IntPair(end0, end1)] = graph.edges.size() - 1;
-	graph.edge_count += 1;
-	best_tour_edges.push_back(0);
-	delta.push_back(0);
-	edge_it = graph.edge_lookup.find(IntPair(end0, end1));
-      }
-
-      int edge_index = edge_it->second;    
-      best_tour_edges[edge_index] = 1;
+    for(Edge &e : graph.edges) {
+        elist.push_back(e.end[0]);
+        elist.push_back(e.end[1]);
     }
-    std::cout << "Added " << missing << " additional edges. ";
-  }
 
-  if ((ncount % 2) == 0) {
-    int end0 = fmin(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
-    int end1 = fmax(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
-    IntPairMap::const_iterator edge_it =
-      graph.edge_lookup.find(IntPair(end0, end1));
+    int kicks = 1000;
+    int trials = 10;
+    
+    if (CClinkern_tour(ncount, inst.ptr(), ecount, &elist[0], ncount, kicks,
+                       (int *) NULL, &best_tour_nodes[0], &min_tour_value,
+                       1, 0.0, 0.0, (char *) NULL, CC_LK_GEOMETRIC_KICK,
+                       &rstate))
+        throw runtime_error("CClinkern_tour failed.");
 
-    if (edge_it == graph.edge_lookup.end()) {
-      std::cout << "Adding extra edge just for basis.";
-      Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, dat.get()));
+    cout << "LK initial run: " << min_tour_value << ". Performing"
+         << trials << " more trials. (";
 
-      graph.edges.push_back(e);
-      graph.edge_lookup[IntPair(end0, end1)] = graph.edges.size() - 1;
-      graph.edge_count += 1;
-      best_tour_edges.push_back(0);
-      delta.push_back(0);
-    }    
-  }
-  std::cout << "\n";
+    vector<int> cyc(ncount);
+    double tourlen(DoubleMax);
 
-  min_tour_value = 0;
+    for (int i = 0; i < trials; ++i) {
+        if (CClinkern_tour(ncount, inst.ptr(), ecount, &elist[0], ncount,
+                           kicks, (int *) NULL, &cyc[0], &tourlen, 1, 0.0, 0.0,
+                           (char *) NULL, CC_LK_GEOMETRIC_KICK, &rstate))
+            throw runtime_error("CClinkern_tour failed.");
 
-  for (int i = 0; i < best_tour_edges.size(); i++)
-    if (best_tour_edges[i] == 1)
-      min_tour_value += graph.edges[i].len;
+        if (tourlen < min_tour_value) {
+            best_tour_nodes = cyc;
+            min_tour_value = tourlen;
+            cout << "!";
+        } else
+            cout << ".";
+        cout.flush();
+    }
 
-  std::cout << "Intialized best tour from file, length " << min_tour_value
-	    << "\n";
+    cout << ")\n";
 
-  // if (save_tour) {
-  //   std::string solfile = probname + ".sol";
-  //   rval = write_tour_nodes(best_tour_nodes,
-  // 			    solfile);
-  //   CMR_CHECK_RVAL(rval, "Couldn't write initial tour to file. ");
+    if (CClinkern_tour(ncount, inst.ptr(), ecount, &elist[0], ncount,
+                       2 * kicks, &best_tour_nodes[0], &cyc[0], &min_tour_value,
+                       1, 0.0, 0.0, (char *) NULL, CC_LK_GEOMETRIC_KICK,
+                       &rstate))
+        throw runtime_error("CClinkern_tour failed.");
 
-  //   std::cout << "Wrote initial tour to " << solfile << ".\n";
-  // }
-  
-  if (save_tour_edges) {
-    std::string edgefile = probname + "_tour.x";
-    write_tour_edges(best_tour_edges, graph.edges, graph.node_count,
-			    edgefile);
-    std::cout << "Wrote initial tour edges to " << edgefile << ".\n";
-  }
+    best_tour_nodes = cyc;
+    cout << "LK run from best tour: " << min_tour_value << "\n";
 
- CLEANUP:
-  if (rval) {
-    std::cerr << "CMR::BestGroup (file) constructor failed.\n";
-    throw 1;
-  }
+    for (int i : best_tour_nodes)
+        perm[i] = i;
+
+    vector<int> &delta = graph_data.delta;
+
+    for (int i = 0; i < ncount; ++i) {
+        int end0 = min(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
+        int end1 = min(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
+        IntPair find_pair(end0, end1);
+        IntPairMap::iterator edge_it = graph.edge_lookup.find(find_pair);
+
+        if (edge_it == graph.edge_lookup.end()) {
+            Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, inst.ptr()));
+
+            graph.edges.push_back(e);
+            graph.edge_lookup[find_pair] = graph.edges.size() - 1;
+            graph.edge_count += 1;
+            best_tour_edges.push_back(0);
+            delta.push_back(0);
+            edge_it = graph.edge_lookup.find(find_pair);
+        }
+
+        int edge_index = edge_it->second;
+        best_tour_edges[edge_index] = 1;
+    }
+
+    if ((ncount % 2) == 0) {
+        int end0 = fmin(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
+        int end1 = fmax(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
+        IntPair find_pair(end0, end1);
+        IntPairMap::iterator edge_it = graph.edge_lookup.find(find_pair);
+
+        if (edge_it == graph.edge_lookup.end()) {
+            Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, inst.ptr()));
+
+            graph.edges.push_back(e);
+            graph.edge_lookup[find_pair] = graph.edges.size() - 1;
+            graph.edge_count += 1;
+            best_tour_edges.push_back(0);
+            delta.push_back(0);
+        }
+    }
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("BestGroup LK constructor failed.");
 }
+
+BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
+          const std::string &tourfile) try :
+    best_tour_edges(std::vector<int>(graph_data.m_graph.edge_count, 0)),
+    best_tour_nodes(std::vector<int>(graph_data.m_graph.node_count)),
+    perm(best_tour_nodes.size()),
+    min_tour_value(DoubleMax)
+{
+    Graph &graph = graph_data.m_graph;
+    int ncount = graph.node_count;
+
+    get_tour_nodes(ncount, best_tour_nodes, tourfile);
+
+    for (int i : best_tour_nodes)
+        perm[i] = i;
+
+    vector<int> &delta = graph_data.delta;
+
+    for (int i = 0; i < ncount; ++i) {
+        int end0 = min(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
+        int end1 = min(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
+        IntPair find_pair(end0, end1);
+        IntPairMap::iterator edge_it = graph.edge_lookup.find(find_pair);
+
+        if (edge_it == graph.edge_lookup.end()) {
+            Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, inst.ptr()));
+
+            graph.edges.push_back(e);
+            graph.edge_lookup[find_pair] = graph.edges.size() - 1;
+            graph.edge_count += 1;
+            best_tour_edges.push_back(0);
+            delta.push_back(0);
+            edge_it = graph.edge_lookup.find(find_pair);
+        }
+
+        int edge_index = edge_it->second;
+        best_tour_edges[edge_index] = 1;
+    }
+
+    if ((ncount % 2) == 0) {
+        int end0 = fmin(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
+        int end1 = fmax(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
+        IntPair find_pair(end0, end1);
+        IntPairMap::iterator edge_it = graph.edge_lookup.find(find_pair);
+
+        if (edge_it == graph.edge_lookup.end()) {
+            Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, inst.ptr()));
+
+            graph.edges.push_back(e);
+            graph.edge_lookup[find_pair] = graph.edges.size() - 1;
+            graph.edge_count += 1;
+            best_tour_edges.push_back(0);
+            delta.push_back(0);
+        }
+    }
+
+    min_tour_value = 0;
+
+    for (int i = 0; i < best_tour_edges.size(); ++i)
+        if (best_tour_edges[i] == 1)
+            min_tour_value += graph.edges[i].len;
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("BestGroup file constructor failed.");
+}
+
 
 LPGroup::LPGroup(const Graph &m_graph, CMR::LP::Prefs &_prefs,
 			   const vector<int> &perm) {
