@@ -159,7 +159,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
         elist.push_back(e.end[1]);
     }
 
-    int kicks = 1000;
+    int kicks = 500;
     int trials = 10;
     
     if (CClinkern_tour(ncount, inst.ptr(), ecount, &elist[0], ncount, kicks,
@@ -168,7 +168,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
                        &rstate))
         throw runtime_error("CClinkern_tour failed.");
 
-    cout << "LK initial run: " << min_tour_value << ". Performing"
+    cout << "LK initial run: " << min_tour_value << ". Performing "
          << trials << " more trials. (";
 
     vector<int> cyc(ncount);
@@ -207,7 +207,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
 
     for (int i = 0; i < ncount; ++i) {
         int end0 = min(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
-        int end1 = min(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
+        int end1 = max(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
         IntPair find_pair(end0, end1);
         IntPairMap::iterator edge_it = graph.edge_lookup.find(find_pair);
 
@@ -266,7 +266,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
 
     for (int i = 0; i < ncount; ++i) {
         int end0 = min(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
-        int end1 = min(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
+        int end1 = max(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
         IntPair find_pair(end0, end1);
         IntPairMap::iterator edge_it = graph.edge_lookup.find(find_pair);
 
