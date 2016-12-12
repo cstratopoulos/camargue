@@ -173,65 +173,67 @@ void write_xy_coords(const double *x, const double *y, const int node_count,
 void get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
 		   const std::string &tour_nodes_fname)
 {
-  std::ifstream tour_in;
-  std::string current_line;
-  std::vector<int> uniq_vec;
-  int file_ncount;
-  runtime_error err("Problem in get_tour_nodes");
+    std::ifstream tour_in;
+    std::string current_line;
+    int file_ncount;
+    runtime_error err("Problem in get_tour_nodes");
 
-  if (node_count == 0) throw logic_error( "Specified zero nodes. ");
+    if (node_count == 0) throw logic_error( "Specified zero nodes. ");
 
-  if (tour_nodes_fname.empty())
-    throw logic_error("Specified empty filename. ");
+    if (tour_nodes_fname.empty())
+        throw logic_error("Specified empty filename. ");
 
-  try { tour_in.open(tour_nodes_fname); } catch (const exception &e) {
-    cerr << e.what() << " trying to open tour_in ifstream\n";
-    throw err;
-  }
-
-  if (!tour_in.good())
-    throw logic_error("tour_in is not good. ");
-
-  try { tour_in >> file_ncount; } catch (const exception &e) {
-    cerr << e.what() << " trying to read tour_in nodecount\n";
-    throw err;
-  }
-
-  if (file_ncount != node_count)
-    throw logic_error("tour_in node count does not match specified count. ");
-
-  try {
-    tour_nodes.reserve(node_count);
-    uniq_vec.reserve(node_count);
-  } catch (std::bad_alloc &e) {
-    cerr << e.what() << " allocating tour vectors\n";
-    throw err;
-  }
-
-  try {
-    while (std::getline(tour_in, current_line)) {
-      std::stringstream line_stream(current_line);
-      int current_node;
-
-      while (line_stream >> current_node)
-	tour_nodes.push_back(current_node);
+    try { tour_in.open(tour_nodes_fname); } catch (const exception &e) {
+        cerr << e.what() << " trying to open tour_in ifstream\n";
+        throw err;
     }
-  } catch (const exception &e) {
-    cerr << e.what() << " reading tour nodes\n"; throw err;
-  }
 
-  if (tour_nodes.size() != node_count)
-    throw logic_error("Tour nodes size mismatch. ");
+    if (!tour_in.good())
+        throw logic_error("tour_in is not good. ");
 
-  uniq_vec = tour_nodes;
+    try { tour_in >> file_ncount; } catch (const exception &e) {
+        cerr << e.what() << " trying to read tour_in nodecount\n";
+        throw err;
+    }
 
-  std::sort(uniq_vec.begin(), uniq_vec.end());
+    if (file_ncount != node_count)
+        throw logic_error("tour_in node count doesn't match specified count. ");
 
-  if (std::unique(uniq_vec.begin(), uniq_vec.end()) != uniq_vec.end())
-    throw logic_error("Tour input file contains duplicate nodes. ");
+    try {
+        tour_nodes.resize(node_count);
+    } catch (std::bad_alloc &e) {
+        cerr << e.what() << " allocating tour vectors\n";
+        throw err;
+    }
 
-  if (uniq_vec.front() != 0 || uniq_vec.back() != node_count - 1)
-    throw logic_error("Tour input file contains nodes out of range. ");
+    try {
+        int i = 0;
+        while (std::getline(tour_in, current_line)) {
+            std::stringstream line_stream(current_line);
+            int current_node;
+
+            while (line_stream >> current_node)
+                tour_nodes[i++] = current_node;
+                // tour_nodes.push_back(current_node);
+        }
+    } catch (const exception &e) {
+        cerr << e.what() << " reading tour nodes\n"; throw err;
+    }
+
+    if (tour_nodes.size() != node_count) {
+        cerr << "Tour nodes size: " << tour_nodes.size() << ", node count: "
+             << node_count << "\n";
+        throw logic_error("Tour nodes size mismatch. ");
+    }
+    std::vector<int> uniq_vec = tour_nodes;
+
+    std::sort(uniq_vec.begin(), uniq_vec.end());
+
+    if (std::unique(uniq_vec.begin(), uniq_vec.end()) != uniq_vec.end())
+        throw logic_error("Tour input file contains duplicate nodes. ");
+
+    if (uniq_vec.front() != 0 || uniq_vec.back() != node_count - 1)
+        throw logic_error("Tour input file contains nodes out of range. ");
 }
 
 void get_lp_sol(const int node_count, std::vector<int> &support_elist,
