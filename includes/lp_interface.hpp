@@ -38,13 +38,44 @@ public:
     
     ///@}
 
-protected:
-
-    /**@name Row and column queries/operations. */
+    /**@name Methods for querying the relaxation. */
     ///@{
 
-    int num_rows();
-    int num_cols();
+    bool dual_feas() const;
+
+
+    int num_rows() const;
+    int num_cols() const;
+
+    void get_row_infeas(const std::vector<double> &x,
+                        std::vector<double> &feas_stat, int begin,
+                        int end) const;
+
+    double get_objval() const;
+    
+    void get_x(std::vector<double> &x) const;
+    std::vector<double> lp_vec() const;
+
+    void get_base(std::vector<int> &colstat,
+                  std::vector<int> &rowstat) const;
+
+
+    void get_row_slacks(std::vector<double> &slack, int begin,
+                        int end) const;
+    std::vector<double> row_slacks(int begin, int end) const;
+    
+    void get_pi(std::vector<double> &pi, int begin, int end) const;
+    std::vector<double> pi(int begin, int end) const;
+
+
+    ///@}
+
+
+
+protected:
+
+    /**@name Row and column operations. */
+    ///@{
 
     void new_row(const char sense, const double rhs);
     void new_rows(const std::vector<char> &sense,
@@ -60,8 +91,6 @@ protected:
                   const std::vector<int> &rmatind,
                   const std::vector<double> &rmatval);
 
-    void get_row_infeas(const std::vector<double> &x,
-                        std::vector<double> &feas_stat, int begin, int end);
 
     void del_set_rows(std::vector<int> &delstat);
 
@@ -72,10 +101,9 @@ protected:
     
     ///@}
 
-    /**@name Basis queries/operations. */
+    /**@name Basis operations. */
     ///@{
 
-    void get_base(std::vector<int> &colstat, std::vector<int> &rowstat);
     
     void copy_start(const std::vector<double> &x);
     void copy_start(const std::vector<double> &x,
@@ -90,19 +118,6 @@ protected:
     ///@{
 
     void nondegen_pivot(const double lowlimit);
-    
-    ///@}
-
-    /**@name Solution queries. */
-    ///@{
-
-    double get_objval();
-    void get_x(std::vector<double> &x);
-
-    bool dual_feas();
-
-    void get_row_slacks(std::vector<double> &slack, int begin, int end);
-    void get_pi(std::vector<double> &pi, int begin, int end);
     
     ///@}
 
