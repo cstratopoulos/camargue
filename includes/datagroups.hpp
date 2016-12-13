@@ -129,50 +129,30 @@ struct BestGroup {
   double min_tour_value;
 };
 
-/* This group stores objects related to the LP solver/LP relaxation */
-struct LPGroup {
-  LPGroup(const Graph &m_graph, CMR::LP::Prefs &_prefs,
-	  const std::vector<int> &perm);
-  ~LPGroup(){CMRlp_free(&m_lp);}
-
-  /*
-   * m_lp - the LP environment/problem object for use with the routines 
-   *    in lp.h
-   * m_lp_edges - vector of length graph.edge_count:
-   *    the most recently computed LP solution with entries corresponding
-   *    to weights assigned in the solution
-   * The colstat vectors have entries equal to the symbolic constants
-   * CPX_AT_LOWER, CPX_BASIC, or CPX_AT_UPPER. 
-   * The 'old' ones store the basis associated with the current best tour
-   * The 'frac' ones store the basis associated with the last LP solution
-   * prefs - see util.h for info
-   */
-  CMRlp m_lp;  
-  std::vector<double> m_lp_edges;
-  std::vector<int> old_colstat;
-  std::vector<int> old_rowstat;
-  std::vector<int> frac_colstat;
-  std::vector<int> frac_rowstat;
-  CMR::LP::Prefs prefs;
-};
-
 /* 
  * SupportGroup is the structure responsible for managing a support graph
  * and the information about the associated LP solution
  */
 struct SupportGroup  {
-  /*
-   * G_s - a graph whose edges are the edges from GraphGroup::m_graph
-   *     for which the corresponding entry of m_lp_edges is nonnegative
-   * support_indices - a list of the nonnegative edge indices
-   * support_elist - the edges in support_indices, in node node format
-   * support_ecap - the value assigned to the edges in support_elist in the
-   *    current LP solution
-   */
-  SupportGraph G_s;
-  std::vector<int> support_indices;
-  std::vector<int> support_elist;
-  std::vector<double> support_ecap;
+    void reset(const int node_count, const std::vector<CMR::Edge> &edges,
+               const std::vector<double> &lp_x,
+               std::vector<int> &island);
+    
+    /*
+     * G_s - a graph whose edges are the edges from GraphGroup::m_graph
+     *     for which the corresponding entry of m_lp_edges is nonnegative
+     * support_indices - a list of the nonnegative edge indices
+     * support_elist - the edges in support_indices, in node node format
+     * support_ecap - the value assigned to the edges in support_elist in the
+     *    current LP solution
+     */
+    SupportGraph G_s;
+    std::vector<int> support_indices;
+    std::vector<int> support_elist;
+    std::vector<double> support_ecap;
+
+    bool connected;
+    bool integral;
 };
 
 /** Load just enough Data to test cut separation routines.

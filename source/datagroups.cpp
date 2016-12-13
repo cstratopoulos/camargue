@@ -1,6 +1,7 @@
 #include "datagroups.hpp"
 #include "graph_io.hpp"
 #include "util.hpp"
+#include "err_util.hpp"
 
 #include <algorithm>
 #include <unordered_map>
@@ -312,57 +313,37 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
     throw runtime_error("BestGroup file constructor failed.");
 }
 
+void SupportGroup::reset(const int ncount, const vector<CMR::Edge> &edges,
+                         const vector<double> &lp_x,
+                         vector<int> &island)
+{
+    runtime_error err("Problem in SupportGroup::reset.");
+    
+    support_indices.clear();
+    support_elist.clear();
+    support_ecap.clear();
 
-LPGroup::LPGroup(const Graph &m_graph, CMR::LP::Prefs &_prefs,
-			   const vector<int> &perm) {
-  int rval = 0;
-  int cmatbeg = 0, num_vars = 1, num_non_zero = 2;
-  double coefficients[2] = {1.0, 1.0};
-  double lower_bound = 0.0;
-  double upper_bound = 1.0;
+    integral = true;
 
-  
-  //Build the basic LP
-  rval = CMRlp_init (&m_lp);
-  if (rval) goto CLEANUP;
+    try {
+        for (int i = 0; i < lp_x.size(); ++i)
+            if (lp_x[i] >= CMR::Epsilon::Zero) {
+                support_indices.push_back(i);
+                support_ecap.push_back(lp_x[i]);
+                support_elist.push_back(edges[i].end[0]);
+                support_elist.push_back(edges[i].end[1]);
 
-  rval = CMRlp_create (&m_lp, "subtour");
-  if (rval) goto CLEANUP;
-	  
+                if (lp_x[i] <= 1 - CMR::Epsilon::Zero)
+                    integral = false;
+            }
+    } CMR_CATCH_PRINT_THROW("pushing back new support data", err);
 
-  /* Build a row for each degree equation */
-  for (int i = 0; i < m_graph.node_count; i++) {
-    rval = CMRlp_new_row (&m_lp, 'E', 2.0);
-    if (rval) goto CLEANUP;
-  }
+    if (CMR::GraphUtils::build_s_graph(ncount, edges, support_indices, lp_x,
+                                       &G_s))
+        throw err;
 
-  /* Build a column for each edge of the Graph */
-  for (int j = 0; j < m_graph.edge_count; j++) {
-    int *nodes = (int*)m_graph.edges[j].end;
-    double objective_val = (double)m_graph.edges[j].len;
-    rval = CMRlp_addcols (&m_lp, num_vars, num_non_zero, &objective_val,
-			   &cmatbeg, nodes, coefficients, &lower_bound,
-			   &upper_bound);
-    if (rval) goto CLEANUP;
-  }
-
-  prefs = _prefs;
-
-  try {
-    m_lp_edges.resize(m_graph.edge_count);
-    old_colstat.resize(m_graph.edge_count, CPX_AT_LOWER);
-    old_rowstat.resize(m_graph.node_count, CPX_AT_LOWER);
-    frac_colstat.resize(m_graph.edge_count);
-    frac_rowstat.resize(m_graph.edge_count);
-  } catch (const std::bad_alloc &) {
-    rval = 1; CMR_GOTO_CLEANUP("Problem allocating LP vectors, ");
-  }
-
- CLEANUP:
-  if (rval) {
-    cerr << "LPGroup constructor failed\n";
-    throw 1;
-  }
+    int icount = 0;
+    connected = CMR::GraphUtils::connected(&G_s, &icount, island, 0);
 }
 
 }
