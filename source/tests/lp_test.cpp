@@ -20,16 +20,33 @@ using std::pair;
 
 SCENARIO ("Consructing a Core LP",
           "[LP][CoreLP]") {
-    vector<string> probs{"dantzig42", "lin318", "pr1002", "pcb3038"};
+    vector<string> probs{"dantzig42", "lin318", "d493", "pr1002", "pcb3038"};
 
     for (string& prob : probs) {
         GIVEN ("The TSP instance " + prob) {
             WHEN ("A core LP is constructed") {
+                CMR::Data::Instance inst("problems/" + prob + ".tsp", 99);
+                CMR::Data::GraphGroup g_dat(inst);
+                CMR::Data::BestGroup b_dat(inst, g_dat);
                 THEN ("Its constructor doesn't throw.") {
-                    CMR::Data::Instance inst("problems/" + prob + ".tsp", 99);
-                    CMR::Data::GraphGroup g_dat(inst);
-                    CMR::Data::BestGroup b_dat(inst, g_dat);
                     REQUIRE_NOTHROW(CMR::LP::CoreLP core(g_dat, b_dat));
+                }
+
+                AND_THEN ("The degree LP is feasible at the best tour") {
+                    CMR::LP::CoreLP core(g_dat, b_dat);
+                    vector<double> feas;
+                    vector<double> tour = core.lp_vec();
+                    REQUIRE_NOTHROW(core.get_row_infeas(tour, feas, 0,
+                                                        core.num_rows() - 1));
+                    bool found_infeas = false;
+                    for(double &stat : feas) {
+                        if (stat) {
+                            found_infeas = true;
+                            break;
+                        }
+                    }
+
+                    REQUIRE_FALSE(found_infeas);
                 }
             }
         }

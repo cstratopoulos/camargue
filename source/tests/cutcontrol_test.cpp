@@ -1,6 +1,6 @@
 #include "tests.hpp"
 #include "datagroups.hpp"
-#include "cutcall.hpp"
+//#include "cutcall.hpp"
 
 #include <vector>
 #include <string>
@@ -12,6 +12,7 @@ using std::string;
 
 #ifdef CMR_DO_TESTS
 
+/*
 TEST_CASE("Concorde subtour solutions are in subtour poly",
 	  "[cutcontrol][in_subtour_poly]") {
   int rval = 0;
@@ -47,5 +48,6 @@ TEST_CASE("Concorde subtour solutions are in subtour poly",
     }
   }
 }
+*/
 
 #endif //CMR_DO_TESTS
