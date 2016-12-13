@@ -328,6 +328,12 @@ void Relaxation::get_x(vector<double> &x) const
                  num_cols() - 1);
 }
 
+vector<double> Relaxation::lp_vec() const
+{
+    return info_vec(CPXgetx, "CPXgetx", cplex_env, cplex_lp, 0,
+                    num_cols() - 1);
+}
+
 
 bool Relaxation::dual_feas() const
 {
