@@ -118,9 +118,9 @@ void get_delta (const int interval_start, const int interval_end,
 
 //TODO: This should just be a member function of SupportGraph
 int build_s_graph (int node_count,
-		   std::vector<Edge> &edges,
-		   std::vector<int> &support_indices,
-		   std::vector<double> &m_lp_edges,
+		   const std::vector<Edge> &edges,
+		   const std::vector<int> &support_indices,
+		   const std::vector<double> &m_lp_edges,
 		   SupportGraph *G_s);
 }
 }

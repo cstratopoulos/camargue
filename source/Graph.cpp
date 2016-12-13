@@ -147,9 +147,10 @@ void GraphUtils::get_delta(const int interval_start, const int interval_end,
 }
 
 int GraphUtils::build_s_graph (int node_count,
-			       vector<Edge> &edges,
-			       vector<int> &support_indices,
-			       vector<double> &m_lp_edges, SupportGraph *G_s)
+			       const vector<Edge> &edges,
+			       const vector<int> &support_indices,
+			       const vector<double> &m_lp_edges,
+                               SupportGraph *G_s)
 {
   int i, ind, a, b;
   SNode *n;
