@@ -134,6 +134,37 @@ CoreLP::TourBasis::TourBasis(CMR::Graph &graph,
 CMR::LP::PivType CoreLP::primal_pivot()
 {
     runtime_error err("Problem in CoreLP::primal_pivot.");
+
+    double low_limit = best_data.min_tour_value - CMR::Epsilon::Zero;
+    CMR::Graph &graph = graph_data.m_graph;
+
+    try {
+        get_base(tour_base.colstat, tour_base.rowstat);
+    } CMR_CATCH_PRINT_THROW("getting base before pivoting", err);
+
+
+    try {
+        nondegen_pivot(low_limit);
+        
+        get_x(lp_edges);
+        
+        supp_data.reset(graph.node_count, graph.edges, lp_edges,
+                        graph_data.island);
+        
+    } CMR_CATCH_PRINT_THROW("pivoting and setting x", err);
+
+    bool integral = supp_data.integral;
+    bool connected = supp_data.connected;
+
+    if (integral) {
+        if (connected) {
+            return dual_feas() ? PivType::FathomedTour : PivType::Tour;
+        } else {
+            return PivType::Subtour;
+        }
+    } else {
+        return PivType::Frac;
+    }    
 }
 
 }
