@@ -4,10 +4,13 @@
 #include <stdexcept>
 #include <iostream>
 #include <limits>
+#include <typeinfo>
+#include <string>
 
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::to_string;
 
 using std::runtime_error;
 using std::logic_error;
@@ -20,6 +23,34 @@ using cpx_err = CMR::retcode_error;
 
 namespace CMR {
 namespace LP {
+
+template <typename cplex_query>
+std::vector<double> info_vec(cplex_query F, const char* Fname,
+                             const CPXENVptr cplex_env,
+                             const CPXLPptr cplex_lp,
+                             int begin, int end)
+{
+    std::vector<double> result(end - begin + 1);
+
+    int rval = F(const_cast<CPXENVptr>(cplex_env),
+                 const_cast<CPXLPptr>(cplex_lp), &result[0], begin, end);
+    if (rval)
+        throw cpx_err(rval, Fname);
+
+    return result;
+}
+
+template <typename cplex_query>
+void set_info_vec(cplex_query F, const char *Fname,
+                  const CPXENVptr cplex_env, const CPXLPptr cplex_lp,
+                  vector<double> &info_vec, int begin, int end)
+{
+    info_vec.resize(end - begin + 1);
+
+    int rval = F(cplex_env, cplex_lp, &info_vec[0], begin, end);
+    if (rval)
+        throw cpx_err(rval, Fname);
+}
 
 Relaxation::Relaxation() try
 {
@@ -102,9 +133,9 @@ Relaxation::~Relaxation()
     }
 }
 
-int Relaxation::num_rows() { return CPXgetnumrows(cplex_env, cplex_lp); }
+int Relaxation::num_rows() const { return CPXgetnumrows(cplex_env, cplex_lp); }
 
-int Relaxation::num_cols() { return CPXgetnumcols(cplex_env, cplex_lp); }
+int Relaxation::num_cols() const { return CPXgetnumcols(cplex_env, cplex_lp); }
 
 void Relaxation::new_row(const char sense, const double rhs)
 {
@@ -154,7 +185,7 @@ void Relaxation::add_cuts(const vector<double> &rhs,
 
 void Relaxation::get_row_infeas(const std::vector<double> &x,
                                 std::vector<double> &feas_stat,
-                                int begin, int end)
+                                int begin, int end) const
 {
     feas_stat.resize(end - begin + 1);
 
@@ -180,7 +211,7 @@ void Relaxation::add_col(const double objval, const vector<int> &indices,
 }
 
 void Relaxation::get_base(vector<int> &colstat,
-                          vector<int> &rowstat)
+                          vector<int> &rowstat) const
 {
     colstat.resize(num_cols());
     rowstat.resize(num_rows());
@@ -279,7 +310,7 @@ void Relaxation::nondegen_pivot(const double lowlimit)
     }    
 }
 
-double Relaxation::get_objval()
+double Relaxation::get_objval() const
 {
     double result = std::numeric_limits<double>::max();
     
@@ -290,16 +321,15 @@ double Relaxation::get_objval()
     return result;    
 }
 
-void Relaxation::get_x(vector<double> &x)
+void Relaxation::get_x(vector<double> &x) const
 {
-    x.resize(num_cols());
-    
-    int rval = CPXgetx(cplex_env, cplex_lp, &x[0], 0, num_cols() - 1);
-    if (rval)
-        throw cpx_err(rval, "CPXgetx");
+
+    set_info_vec(CPXgetx, "CPXgetx", cplex_env, cplex_lp, x, 0,
+                 num_cols() - 1);
 }
 
-bool Relaxation::dual_feas()
+
+bool Relaxation::dual_feas() const
 {
     int result = 0;
 
@@ -311,22 +341,27 @@ bool Relaxation::dual_feas()
     return result;
 }
 
-void Relaxation::get_row_slacks(vector<double> &slack, int begin, int end)
+void Relaxation::get_row_slacks(vector<double> &slack, int begin,
+                                int end) const
 {
-    slack.resize(end - begin + 1);
-
-    int rval = CPXgetslack(cplex_env, cplex_lp, &slack[0], begin, end);
-    if (rval)
-        throw cpx_err(rval, "CPXgetslack");
+    set_info_vec(CPXgetslack, "CPXgetslack", cplex_env, cplex_lp,
+                 slack, begin, end);
 }
 
-void Relaxation::get_pi(vector<double> &pi, int begin, int end)
+vector<double> Relaxation::row_slacks(int begin, int end) const
 {
-    pi.resize(end - begin + 1);
+    return info_vec(CPXgetslack, "CPXgetslack", cplex_env, cplex_lp,
+                    begin, end);
+}
 
-    int rval = CPXgetpi(cplex_env, cplex_lp, &pi[0], begin, end);
-    if (rval)
-        throw cpx_err(rval, "CPXgetpi");
+void Relaxation::get_pi(vector<double> &pi, int begin, int end) const
+{
+    set_info_vec(CPXgetpi, "CPXgetpi", cplex_env, cplex_lp, pi, begin, end);
+}
+
+vector<double> Relaxation::pi(int begin, int end) const
+{
+    return info_vec(CPXgetpi, "CPXgetpi", cplex_env, cplex_lp, begin, end);
 }
 
 }
