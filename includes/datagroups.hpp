@@ -8,7 +8,6 @@
 #define CMR_DATAGROUP_H
 
 #include "util.hpp"
-#include "lp.hpp"
 #include "Graph.hpp"
 
 extern "C" {
