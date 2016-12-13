@@ -19,7 +19,7 @@ namespace LP {
  * This class contains the edges and constraints currently under consideration
  * in an lp relaxation of a TSP instance. 
  */
-class CoreLP : Relaxation {
+class CoreLP : public Relaxation {
 public:
     CoreLP(CMR::Data::GraphGroup &graph_data_,
            CMR::Data::BestGroup &best_data_);
