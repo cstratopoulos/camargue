@@ -1,6 +1,7 @@
 #include "tests.hpp"
-#include "cliq.hpp"
 #include "util.hpp"
+#include "cliq.hpp"
+
 
 #include <algorithm>
 #include <vector>
