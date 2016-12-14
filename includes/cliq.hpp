@@ -39,12 +39,15 @@ public:
     
     Clique(const CCtsp_lpclique &cc_cliq,
            const std::vector<int> &saved_tour,
+           const std::vector<int> &saved_perm,
            const std::vector<int> & current_tour);
 
-    Clique(const std::vector<int> &nodes,
+    Clique(std::vector<int> &nodes,
            const std::vector<int> &perm);
 
-    using RefPtr = std::shared_ptr<Clique>;
+    using Ptr = std::shared_ptr<Clique>;
+
+    int seg_count() const { return seglist.size(); }
 
     const std::vector<CMR::Sep::segment> &seg_list() const { return seglist; }
     std::vector<int> node_list(const std::vector<int> &saved_tour) const;
@@ -79,13 +82,26 @@ struct hash<CMR::Sep::Clique> {
 namespace CMR {
 namespace Sep {
 
+/** Storage of a repository of Cliques, for use in building a HyperGraph. */
 class CliqueBank {
 public:
-    CliqueBank(const std::vector<int> &tour);
+    CliqueBank(const std::vector<int> &tour, const std::vector<int> &perm);
 
+    CMR::Sep::Clique::Ptr& add_clique(const CMR::Sep::Clique &clq);
+    
+    CMR::Sep::Clique::Ptr& add_clique(const CCtsp_lpclique &cc_cliq,
+                                      const std::vector<int> &tour);
+    
+    CMR::Sep::Clique::Ptr& add_clique(std::vector<int> &nodes);
+    
+    void del_clique(CMR::Sep::Clique::Ptr &clq_ptr);
+
+    using Itr = std::unordered_map<CMR::Sep::Clique,
+                                    CMR::Sep::Clique::Ptr>::iterator;
 private:
     const std::vector<int> saved_tour;
-    std::unordered_map<CMR::Sep::Clique, CMR::Sep::Clique::RefPtr> bank;
+    const std::vector<int> saved_perm;
+    std::unordered_map<CMR::Sep::Clique, CMR::Sep::Clique::Ptr> bank;
 };
 
 
