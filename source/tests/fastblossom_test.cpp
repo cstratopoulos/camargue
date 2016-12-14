@@ -44,7 +44,7 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  CMR::Sep::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
 	  REQUIRE(fb_sep.find_cuts());
 
           vector<int> &perm = b_dat.perm;
@@ -79,7 +79,7 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  CMR::Sep::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
 
 	  REQUIRE_FALSE(fb_sep.find_cuts());
       	}	
@@ -115,7 +115,7 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  CMR::Sep::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
 	  REQUIRE(fb_sep.find_cuts());
 
           vector<int> &perm = b_dat.perm;
@@ -152,7 +152,7 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  CMR::Sep::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
 
 	  REQUIRE_FALSE(fb_sep.find_cuts());
 	}

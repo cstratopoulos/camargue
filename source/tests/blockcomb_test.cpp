@@ -16,7 +16,7 @@ using std::vector;
 #ifdef CMR_DO_TESTS
 
 SCENARIO("Primal comb separation by standard block comb heuristics",
-	 "[blkcomb]") {
+	 "[blkcomb][Sep]") {
   vector<string> probs{"pr76", "lin318", "d493", "pr1002", "d2103"};
   for (string &fname : probs) {
     GIVEN("TSP instance " + fname) {
@@ -43,7 +43,7 @@ SCENARIO("Primal comb separation by standard block comb heuristics",
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  CMR::Sep::BlockCombs bc_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Sep::BlockCombs bc_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
 	  REQUIRE(bc_sep.find_cuts());
 	}
       }
@@ -52,7 +52,7 @@ SCENARIO("Primal comb separation by standard block comb heuristics",
 }
 
 SCENARIO("Primal heuristic block comb sep in tiny instances",
-	 "[blkcomb][tiny]") {
+	 "[blkcomb][tiny][Sep]") {
   vector<string> probs{"blossom6", "comb9"};
   for (string &fname : probs) {
     GIVEN("TSP instance " + fname) {
@@ -78,7 +78,7 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  CMR::Sep::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Sep::BlockCombs fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
 	  REQUIRE(fb_sep.find_cuts());
 	}
       }
@@ -94,7 +94,7 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
 			    b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  CMR::Sep::FastBlossoms fb_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Sep::BlockCombs fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
 
 	  REQUIRE_FALSE(fb_sep.find_cuts());
 	}

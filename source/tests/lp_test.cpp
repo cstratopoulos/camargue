@@ -18,6 +18,50 @@ using std::pair;
 
 #ifdef CMR_DO_TESTS
 
+SCENARIO ("Performing single pivots",
+          "[LP][CoreLP][primal_pivot]") {
+    vector<string> probs{"pr76", "a280", "p654", "pr1002", "rl1304"};
+
+    for (string &prob : probs) {
+        GIVEN ("The TSP instance " + prob) {
+            WHEN ("We pivot to a new solution") {
+                THEN ("The LP vector changes") {
+                    CMR::Data::Instance inst("problems/" + prob + ".tsp", 99);
+                    CMR::Data::GraphGroup g_dat(inst);
+                    CMR::Data::BestGroup b_dat(inst, g_dat);
+                    CMR::LP::CoreLP core(g_dat, b_dat);
+
+                    vector<double> tourx = core.lp_vec();
+                    double tourlen = core.get_objval();
+
+                    CMR::LP::PivType piv;
+
+                    REQUIRE_NOTHROW(piv = core.primal_pivot());
+
+                    vector<double> pivx = core.lp_vec();
+                    double pval = core.get_objval();
+
+                    REQUIRE(pval != tourlen);
+                    bool samevec = (tourx == pivx);
+                    REQUIRE_FALSE(samevec);
+
+                    AND_WHEN("We pivot back") {
+                        THEN("The tour vector changes back.") {
+                            REQUIRE_NOTHROW(core.pivot_back());
+                            pivx = core.lp_vec();
+                            pval = core.get_objval();
+
+                            REQUIRE(pval == tourlen);
+                            samevec = (tourx == pivx);
+                            REQUIRE(samevec);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 SCENARIO ("Consructing a Core LP",
           "[LP][CoreLP]") {
     vector<string> probs{"dantzig42", "lin318", "d493", "pr1002", "pcb3038"};

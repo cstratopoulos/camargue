@@ -42,7 +42,8 @@ SCENARIO("Exact primal separation of subtours",
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  CMR::Sep::SegmentCuts seg_sep(g_dat, b_dat, s_dat, TG, cutq);
+	  CMR::Sep::SegmentCuts seg_sep(s_dat.support_elist,
+                                        s_dat.support_ecap, TG, cutq);
 
 	  REQUIRE_FALSE(seg_sep.find_cuts());
       	}	
