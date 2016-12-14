@@ -69,8 +69,12 @@ void CutTranslate::get_sparse_row(const CCtsp_lpcut_in &cc_cut,
 
         for (int j = 0; j < edges.size(); ++j) {
             if (node_marks[perm[edges[j].end[0]]] !=
-                node_marks[perm[edges[j].end[1]]])
-                coeff_map[j] += 1.0;
+                node_marks[perm[edges[j].end[1]]]) {
+                if (coeff_map.count(j))
+                    coeff_map[j] += 1.0;
+                else
+                    coeff_map[j] = 1.0;
+            }
         }
     }
 
