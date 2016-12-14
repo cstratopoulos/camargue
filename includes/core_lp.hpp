@@ -28,6 +28,9 @@ public:
     void pivot_back();
 
 private:
+    void handle_aug();
+    void handle_fathom();
+    
     CMR::Data::GraphGroup &graph_data;
     CMR::Data::BestGroup &best_data;
     CMR::Data::SupportGroup supp_data;
