@@ -7,6 +7,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <cmath>
+
 using std::cout;
 using std::cerr;
 
@@ -21,6 +23,8 @@ using std::exception;
 
 namespace CMR {
 namespace LP {
+
+constexpr double EpsZero = CMR::Epsilon::Zero;
 
 CoreLP::CoreLP(CMR::Data::GraphGroup &graph_data_,
                CMR::Data::BestGroup &best_data_) try :
@@ -131,11 +135,11 @@ CoreLP::TourBasis::TourBasis(CMR::Graph &graph,
     throw runtime_error("TourBasis constructor failed.");
 }
 
-CMR::LP::PivType CoreLP::primal_pivot()
+PivType CoreLP::primal_pivot()
 {
     runtime_error err("Problem in CoreLP::primal_pivot.");
 
-    double low_limit = best_data.min_tour_value - CMR::Epsilon::Zero;
+    double low_limit = best_data.min_tour_value - EpsZero;
     CMR::Graph &graph = graph_data.m_graph;
 
     try {
@@ -155,16 +159,66 @@ CMR::LP::PivType CoreLP::primal_pivot()
 
     bool integral = supp_data.integral;
     bool connected = supp_data.connected;
+    PivType result;
 
     if (integral) {
         if (connected) {
-            return dual_feas() ? PivType::FathomedTour : PivType::Tour;
+            result =  dual_feas() ? PivType::FathomedTour : PivType::Tour;
         } else {
-            return PivType::Subtour;
+            result =  PivType::Subtour;
         }
     } else {
-        return PivType::Frac;
-    }    
+        result = PivType::Frac;
+    }
+
+    if (result == PivType::Tour) {
+        try {
+            handle_aug();
+        } CMR_CATCH_PRINT_THROW("handling augmentation", err);
+    }
+
+    return result;
+}
+
+void CoreLP::pivot_back()
+{
+    try {
+        copy_start(tour_base.best_tour_edges, tour_base.colstat,
+                   tour_base.rowstat);
+
+        factor_basis();
+        
+    } catch (const exception &e) {
+        cerr << e.what() << "\n";
+        throw runtime_error("Problem in CoreLP::pivot_back.");
+    }
+}
+
+void CoreLP::handle_aug()
+{
+    double objval = 0;
+
+    best_data.best_tour_nodes = graph_data.island;
+    tour_base.best_tour_edges = lp_edges;
+
+    for (int i = 0; i < lp_edges.size(); ++i)
+        if (lp_edges[i] < EpsZero)
+            best_data.best_tour_edges[i] = 0;
+        else {
+            best_data.best_tour_edges[i] = 1;
+            objval += graph_data.m_graph.edges[i].len;
+        }
+
+    if (objval > best_data.min_tour_value)
+        throw runtime_error("Tried to update best tour with worse objval!");
+
+    if (fabs(objval - get_objval()) > EpsZero)
+        throw runtime_error("Disagreement in new best tour objval with lp.");
+
+    for (int i : best_data.best_tour_nodes)
+        best_data.perm[i] = i;
+
+    get_base(tour_base.colstat, tour_base.rowstat);
 }
 
 }
