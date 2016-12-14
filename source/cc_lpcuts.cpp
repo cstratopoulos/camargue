@@ -60,6 +60,12 @@ void LPcutList::filter_primal(CMR::TourGraph &TG)
   }
 }
 
+void LPcutList::clear()
+{
+    cutcount = 0;
+    head_cut.reset();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                        CONCORDE SEPARATORS                                //
 ///////////////////////////////////////////////////////////////////////////////
@@ -69,16 +75,25 @@ bool SegmentCuts::find_cuts()
   int cutcount = 0;
   lpcut_in *head = (lpcut_in *) NULL;
   
-  if (CCtsp_segment_cuts(&head, &cutcount,
-			supp_dat.G_s.node_count, supp_dat.G_s.edge_count,
-			&supp_dat.support_elist[0],
-			&supp_dat.support_ecap[0]))
+  if (CCtsp_segment_cuts(&head, &cutcount, TG.node_count(), ecap.size(),
+                         &elist[0], &ecap[0]))
     throw std::runtime_error("CCtsp_segment_cuts failed.");
 
-  if (cutcount == 0) return false;
+  cutq = LPcutList(head, cutcount);
+  
+  return(!cutq.empty());
+}
+
+bool ConnectCuts::find_cuts()
+{
+  int cutcount = 0;
+  lpcut_in *head = (lpcut_in *) NULL;
+  
+  if (CCtsp_connect_cuts(&head, &cutcount, TG.node_count(), ecap.size(),
+			&elist[0], &ecap[0]))
+    throw std::runtime_error("CCtsp_segment_cuts failed.");
 
   cutq = LPcutList(head, cutcount);
-  cutq.filter_primal(TG);
   
   return(!cutq.empty());
 }
@@ -88,10 +103,8 @@ bool BlockCombs::find_cuts()
   int cutcount = 0;
   lpcut_in *head = (lpcut_in *) NULL;
   
-  if (CCtsp_block_combs(&head, &cutcount,
-		       supp_dat.G_s.node_count, supp_dat.G_s.edge_count,
-		       &supp_dat.support_elist[0],
-		       &supp_dat.support_ecap[0], 1))
+  if (CCtsp_block_combs(&head, &cutcount, TG.node_count(), ecap.size(),
+		       &elist[0], &ecap[0], 1))
     throw std::runtime_error("CCtsp_block_combs failed.");
 
   if (cutcount == 0) return false;
@@ -107,10 +120,8 @@ bool FastBlossoms::find_cuts()
   int cutcount = 0;
   lpcut_in *head = (lpcut_in *) NULL;
   
-  if (CCtsp_fastblossom(&head, &cutcount,
-		       supp_dat.G_s.node_count, supp_dat.G_s.edge_count,
-		       &supp_dat.support_elist[0],
-		       &supp_dat.support_ecap[0]))
+  if (CCtsp_fastblossom(&head, &cutcount, TG.node_count(), ecap.size(),
+		       &elist[0], &ecap[0]))
     throw std::runtime_error("CCtsp_fastblossom failed.");
 
   if (cutcount == 0) return false;
@@ -122,10 +133,8 @@ bool FastBlossoms::find_cuts()
   cutcount = 0;
   head = (lpcut_in *) NULL;
 
-  if (CCtsp_ghfastblossom(&head, &cutcount,
-			 supp_dat.G_s.node_count, supp_dat.G_s.edge_count,
-			 &supp_dat.support_elist[0],
-			 &supp_dat.support_ecap[0]))
+  if (CCtsp_ghfastblossom(&head, &cutcount, TG.node_count(), ecap.size(),
+			 &elist[0], &ecap[0]))
     throw std::runtime_error("CCtsp_ghfastblossom failed.");
 
   cutq = LPcutList(head, cutcount);

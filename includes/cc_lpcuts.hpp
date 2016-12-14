@@ -24,20 +24,22 @@ namespace Sep {
 
 class LPcutList {
 public:
-  LPcutList() noexcept;
-  LPcutList(CCtsp_lpcut_in *head, int count) noexcept;
-  LPcutList(LPcutList &&L) noexcept;
-  LPcutList(const LPcutList &L) = delete;
+    LPcutList() noexcept;
+    LPcutList(CCtsp_lpcut_in *head, int count) noexcept;
+    LPcutList(LPcutList &&L) noexcept;
+    LPcutList(const LPcutList &L) = delete;
 
-  LPcutList &operator=(LPcutList &&L) noexcept;
-  LPcutList &operator=(const LPcutList &L) = delete;
+    LPcutList &operator=(LPcutList &&L) noexcept;
+    LPcutList &operator=(const LPcutList &L) = delete;
 
-  int size() const { return cutcount; }
-  bool empty() const { return cutcount == 0; }
+    int size() const { return cutcount; }
+    bool empty() const { return cutcount == 0; }
   
-  CCtsp_lpcut_in* begin() { return head_cut.get(); }
+    CCtsp_lpcut_in* begin() { return head_cut.get(); }
 
-  void filter_primal(CMR::TourGraph &TG);
+    void filter_primal(CMR::TourGraph &TG);
+
+    void clear();
   
 private:
   struct hungry_delete {
@@ -62,67 +64,71 @@ private:
  */
 class ConcordeSeparator {
 public:
-  ConcordeSeparator(CMR::Data::GraphGroup &_graph_dat,
-		    CMR::Data::BestGroup &_best_dat,
-		    CMR::Data::SupportGroup &_supp_dat,
-		    CMR::TourGraph &_TG, CMR::Sep::LPcutList &_cutq) :
-    graph_dat(_graph_dat), best_dat(_best_dat), supp_dat(_supp_dat),
-    TG(_TG), cutq(_cutq) {}
+    ConcordeSeparator(std::vector<int> &supp_elist,
+                      std::vector<double> &supp_ecap,
+                      CMR::TourGraph &_TG, CMR::Sep::LPcutList &_cutq) :
+        elist(supp_elist), ecap(supp_ecap), TG(_TG), cutq(_cutq) {}
 
-  /** The call to the separation routine.
-   * @returns `true` if cuts are found, `false` otherwise. 
-   * @throws std::runtime_error if a call to a concorde routine fails.
-   */
-  virtual bool find_cuts() = 0;
+    /** The call to the separation routine.
+     * @returns `true` if cuts are found, `false` otherwise. 
+     * @throws std::runtime_error if a call to a concorde routine fails.
+     */
+    virtual bool find_cuts() = 0;
   
-protected:
+protected:  
+    std::vector<int> &elist;
+    std::vector<double> &ecap;
   
-  CMR::Data::GraphGroup &graph_dat;
-  CMR::Data::BestGroup &best_dat;
-  CMR::Data::SupportGroup &supp_dat;
+    CMR::TourGraph &TG;
   
-  CMR::TourGraph &TG;
-  
-  CMR::Sep::LPcutList &cutq;
+    CMR::Sep::LPcutList &cutq;
 };
 
 /** Exact separation of segment cut subtours. */
-class SegmentCuts : public ConcordeSeparator {
+class SegmentCuts : ConcordeSeparator {
 public:
-  SegmentCuts(CMR::Data::GraphGroup &g_dat, CMR::Data::BestGroup &b_dat,
-	      CMR::Data::SupportGroup &s_dat, CMR::TourGraph &TG,
-	      CMR::Sep::LPcutList &cutq) :
-    ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
+    SegmentCuts(std::vector<int> &elist, std::vector<double> &ecap,
+                CMR::TourGraph &TG, CMR::Sep::LPcutList &cutq) :
+        ConcordeSeparator(elist, ecap, TG, cutq) {}
 
-  /** Finds subtours arising from intervals of the current best tour. */
-  bool find_cuts(); 
+    /** Finds subtours arising from intervals of the current best tour. */
+    bool find_cuts(); 
+};
+
+/** Standard separation of connect cuts. */
+class ConnectCuts : ConcordeSeparator {
+public:
+    ConnectCuts(std::vector<int> &elist, std::vector<double> &ecap,
+                CMR::TourGraph &TG, CMR::Sep::LPcutList &cutq) :
+        ConcordeSeparator(elist, ecap, TG, cutq) {}
+
+    /** Finds subtours arising from connected components. */
+    bool find_cuts(); 
 };
 
 /** Primal separation of comb ineqalities via standard block comb heuristic. */
-class BlockCombs : public ConcordeSeparator {
+class BlockCombs : ConcordeSeparator {
 public:
-  BlockCombs(CMR::Data::GraphGroup &g_dat, CMR::Data::BestGroup &b_dat,
-	     CMR::Data::SupportGroup &s_dat, CMR::TourGraph &TG,
-	     CMR::Sep::LPcutList &cutq) :
-    ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
+    BlockCombs(std::vector<int> &elist, std::vector<double> &ecap,
+               CMR::TourGraph &TG, CMR::Sep::LPcutList &cutq) :
+        ConcordeSeparator(elist, ecap, TG, cutq) {}
 
-  /** Returns true if block combs are found and some are tight at best tour. */
-  bool find_cuts();
+    /** Returns true if block combs are found and some are tight at tour. */
+    bool find_cuts();
 };
 
 /** Primal separation of blossoms via standard fast blossom heuristics. */
-class FastBlossoms : public ConcordeSeparator {
+class FastBlossoms : ConcordeSeparator {
 public:
-  FastBlossoms(CMR::Data::GraphGroup &g_dat, CMR::Data::BestGroup &b_dat,
-	       CMR::Data::SupportGroup &s_dat, CMR::TourGraph &TG,
-	       CMR::Sep::LPcutList &cutq) :
-    ConcordeSeparator(g_dat, b_dat, s_dat, TG, cutq) {}
+    FastBlossoms(std::vector<int> &elist, std::vector<double> &ecap,
+                 CMR::TourGraph &TG, CMR::Sep::LPcutList &cutq) :
+        ConcordeSeparator(elist, ecap, TG, cutq) {}
 
-  /** Returns true if blossoms are found and some are tight at best tour.
-   * First calls the Padberg-Hong odd component blossom heuristic, and then
-   * the Grotschell-Holland heuristic if no odd component blossoms are found.
-   */
-  bool find_cuts();
+    /** Returns true if blossoms are found and some are tight at best tour.
+     * First calls the Padberg-Hong odd component blossom heuristic, and then
+     * the Grotschell-Holland heuristic if no odd component blossoms are found.
+     */
+    bool find_cuts();
 };
 
 }
