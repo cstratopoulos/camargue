@@ -6,7 +6,7 @@
 #include <sys/resource.h>
 #include <time.h>
 
-using namespace CMR;
+namespace CMR {
 
 LP::Prefs::Prefs() :
   price_method(LP::Pricing::Devex),
@@ -24,7 +24,7 @@ LP::Prefs::Prefs(LP::Pricing _price, int _dp_threshold, int max_round,
 
 /* zeit function for recording times */
 
-double CMR::zeit (void)
+double zeit (void)
 {
     struct rusage ru;
 
@@ -34,7 +34,27 @@ double CMR::zeit (void)
            ((double) ru.ru_utime.tv_usec)/1000000.0;
 }
 
-double CMR::real_zeit (void)
+double real_zeit (void)
 {
     return (double) time (0);
+}
+
+std::string LP::piv_string(LP::PivType piv)
+{
+    switch (piv) {
+    case PivType::FathomedTour:
+        return "Fathomed tour";
+    case PivType::Frac:
+        return "Fractional";
+    case PivType::Subtour:
+        return "Integral subtour";
+    case PivType::Tour:
+        return "Tour";
+    default:
+        return "";
+    }
+
+    return "";
+}
+
 }

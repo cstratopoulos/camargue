@@ -16,6 +16,7 @@
 #include <iostream>
 #include <type_traits>
 #include <limits>
+#include <string>
 
 #include <boost/functional/hash.hpp>
 
@@ -125,6 +126,8 @@ enum class PivType {
   Tour, /**< A new or augmented tour. */
   FathomedTour /**< A Tour with a dual feasible basis in the current lp. */
 };
+
+std::string piv_string(PivType piv);
 
 /*
  * Prefs is a simple struct to store preferences for the lp solver.
