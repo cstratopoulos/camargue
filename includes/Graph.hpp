@@ -85,13 +85,14 @@ struct SupportGraph {
  */
 class TourGraph {
 public:
-  TourGraph(const std::vector<int> &tour_edges,
-	    const std::vector<CMR::Edge> &edges,
-	    const std::vector<int> &perm);
-  ~TourGraph();
+    TourGraph(const std::vector<int> &tour_edges,
+              const std::vector<CMR::Edge> &edges,
+              const std::vector<int> &perm);
+    ~TourGraph();
 
-  CCtsp_lpgraph* pass_ptr() { return &L; }
-  double* tour_array() { return &d_tour[0]; }
+    CCtsp_lpgraph* pass_ptr() { return &L; }
+    double* tour_array() { return &d_tour[0]; }
+    int node_count() const { return L.ncount; }
   
 private:
   CCtsp_lpgraph L;
