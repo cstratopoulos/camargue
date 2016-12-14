@@ -20,7 +20,7 @@ using std::cout;
 #ifdef CMR_DO_TESTS
 
 SCENARIO ("Pivoting and adding cuts",
-         "[LP][Sep][CoreLP]"){
+         "[LP][Sep][CoreLP][CutControl]"){
     vector<string> probs{"dantzig42", "st70", "pr76", "lin105",
                          "lin318", "d493", "att532", "pr1002", "rl1304",
                          "d2103", "pr2392"};
