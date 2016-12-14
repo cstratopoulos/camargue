@@ -201,8 +201,8 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
     best_tour_nodes = cyc;
     cout << "LK run from best tour: " << min_tour_value << "\n";
 
-    for (int i : best_tour_nodes)
-        perm[i] = i;
+    for (int i = 0; i < perm.size(); ++i)
+        perm[best_tour_nodes[i]] = i;
 
     vector<int> &delta = graph_data.delta;
 
@@ -260,8 +260,8 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
 
     get_tour_nodes(ncount, best_tour_nodes, tourfile);
 
-    for (int i : best_tour_nodes)
-        perm[i] = i;
+    for (int i = 0; i < best_tour_nodes.size(); ++i)
+        perm[best_tour_nodes[i]] = i;
 
     vector<int> &delta = graph_data.delta;
 

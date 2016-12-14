@@ -215,9 +215,12 @@ void CoreLP::handle_aug()
     if (fabs(objval - get_objval()) > EpsZero)
         throw runtime_error("Disagreement in new best tour objval with lp.");
 
-    for (int i : best_data.best_tour_nodes)
-        best_data.perm[i] = i;
+    vector<int> &perm = best_data.perm;
+    vector<int> &tour = best_data.best_tour_nodes;
 
+    for (int i = 0; i < tour.size(); ++i)
+        perm[tour[i]] = i;
+    
     get_base(tour_base.colstat, tour_base.rowstat);
 }
 
