@@ -221,6 +221,57 @@ void CoreLP::handle_aug()
     get_base(tour_base.colstat, tour_base.rowstat);
 }
 
+void CoreLP::add_cuts(CMR::Sep::LPcutList &cutq)
+{
+    runtime_error err("Problem in CoreLP::add_cuts(LPcutList)");
+    if (cutq.empty())
+        return;
+
+    CMR::CutTranslate translator(graph_data);
+    vector<int> &perm = best_data.perm;
+
+    for (auto cur = cutq.begin(); cur; cur = cur->next) {
+        vector<int> rmatind;
+        vector<double> rmatval;
+        char sense;
+        double rhs;
+
+        try {
+            translator.get_sparse_row(*cur, perm, rmatind, rmatval, sense,
+                                      rhs);
+            add_cut(rhs, sense, rmatind, rmatval);
+            
+        } CMR_CATCH_PRINT_THROW("adding sparse row", err);
+    }
+}
+
+void CoreLP::add_cuts(CMR::CutQueue<CMR::dominoparity> &dp_q)
+{
+    if (dp_q.empty())
+        return;
+    
+    runtime_error err("Problem in CoreLP::add_cuts(dominoparity)");
+
+    CMR::CutTranslate translator(graph_data);
+    vector<int> &tour_nodes = best_data.best_tour_nodes;
+
+    for (auto it = dp_q.begin(); it != dp_q.end(); ++it) {
+        CMR::dominoparity &dp_cut = *it;
+        vector<int> rmatind;
+        vector<double> rmatval;
+        char sense;
+        double rhs;
+
+        if (translator.get_sparse_row(dp_cut, tour_nodes, rmatind, rmatval,
+                                      sense, rhs))
+            throw err;
+
+        try {
+            add_cut(rhs, sense, rmatind, rmatval);
+        } CMR_CATCH_PRINT_THROW("adding dpcut row", err);
+    }
+}
+
 }
 }
 

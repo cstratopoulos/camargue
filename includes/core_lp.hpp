@@ -8,6 +8,8 @@
 #define CMR_CORE_LP_H
 
 #include "lp_interface.hpp"
+#include "cc_lpcuts.hpp"
+#include "cuts.hpp"
 #include "datagroups.hpp"
 
 #include <vector>
@@ -27,13 +29,18 @@ public:
     CMR::LP::PivType primal_pivot();
     void pivot_back();
 
+    void add_cuts(CMR::Sep::LPcutList &cutq);
+    void add_cuts(CMR::CutQueue<CMR::dominoparity> &dp_q);
+
+
+    CMR::Data::SupportGroup supp_data;
+
 private:
     void handle_aug();
     void handle_fathom();
     
     CMR::Data::GraphGroup &graph_data;
     CMR::Data::BestGroup &best_data;
-    CMR::Data::SupportGroup supp_data;
 
     struct TourBasis {
         TourBasis() = default;
