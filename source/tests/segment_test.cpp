@@ -40,6 +40,7 @@ SCENARIO("Exact primal separation of subtours",
 
 	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
 			     b_dat.perm);
+          
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
 	  CMR::Sep::SegmentCuts seg_sep(s_dat.support_elist,

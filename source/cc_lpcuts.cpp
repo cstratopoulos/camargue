@@ -30,34 +30,34 @@ LPcutList &LPcutList::operator=(LPcutList &&L) noexcept {
 
 void LPcutList::filter_primal(CMR::TourGraph &TG)
 {
-  if (cutcount == 0 || !head_cut) return;
+    if (cutcount == 0 || !head_cut) return;
 
-  lpcut_in *current = head_cut.get();
-  lpcut_in *prev = current;
+    lpcut_in *current = head_cut.get();
+    lpcut_in *prev = current;
 
-  while (current) {
-    double slack = CCtsp_cutprice(TG.pass_ptr(), current, TG.tour_array());
+    while (current) {
+        double slack = CCtsp_cutprice(TG.pass_ptr(), current, TG.tour_array());
+        
+        if (slack != 0) {
+            --cutcount;
 
-    if (slack != 0) {
-      --cutcount;
-
-      if (current == head_cut.get()) {
-	current = head_cut->next;
-	head_cut->next = nullptr;
-	head_cut.reset(current);
-	current = head_cut.get();
-	prev = current;
-      } else {
-	prev->next = current->next;
-	CCtsp_free_lpcut_in(current);
-	CC_IFFREE(current, lpcut_in);
-	current = prev->next;
-      }
-    } else {
-      prev = current;
-      current = current->next;
+            if (current == head_cut.get()) {
+                current = head_cut->next;
+                head_cut->next = nullptr;
+                head_cut.reset(current);
+                current = head_cut.get();
+                prev = current;
+            } else {
+                prev->next = current->next;
+                CCtsp_free_lpcut_in(current);
+                CC_IFFREE(current, lpcut_in);
+                current = prev->next;
+            }
+        } else {
+            prev = current;
+            current = current->next;
+        }
     }
-  }
 }
 
 void LPcutList::clear()
@@ -107,9 +107,10 @@ bool BlockCombs::find_cuts()
 		       &elist[0], &ecap[0], 1))
     throw std::runtime_error("CCtsp_block_combs failed.");
 
-  if (cutcount == 0) return false;
+  if (cutcount == 0)
+      return false;
 
-  cutq = LPcutList(head, cutcount);
+  cutq = LPcutList(head, cutcount);  
   cutq.filter_primal(TG);
 
   return(!cutq.empty());
@@ -124,21 +125,17 @@ bool FastBlossoms::find_cuts()
 		       &elist[0], &ecap[0]))
     throw std::runtime_error("CCtsp_fastblossom failed.");
 
-  if (cutcount == 0) return false;
+  if (cutcount == 0) {
+      if (CCtsp_ghfastblossom(&head, &cutcount, TG.node_count(), ecap.size(),
+                              &elist[0], &ecap[0]))
+          throw std::runtime_error("CCtsp_ghfastblossom failed.");
+  }
 
-  cutq = LPcutList(head, cutcount);
+  cutq = LPcutList(head, cutcount);  
   cutq.filter_primal(TG);
-  if (!cutq.empty()) return true;
-
-  cutcount = 0;
-  head = (lpcut_in *) NULL;
-
-  if (CCtsp_ghfastblossom(&head, &cutcount, TG.node_count(), ecap.size(),
-			 &elist[0], &ecap[0]))
-    throw std::runtime_error("CCtsp_ghfastblossom failed.");
-
-  cutq = LPcutList(head, cutcount);
-  cutq.filter_primal(TG);
+  
+  if (!cutq.empty())
+      return true;
   
   return(!cutq.empty());
 }

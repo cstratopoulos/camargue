@@ -20,12 +20,6 @@ public:
 
     bool find_cuts(CMR::TourGraph &TG);
 
-private:
-    CMR::Data::GraphGroup &graph_data;
-    CMR::Data::BestGroup &best_data;
-    CMR::Data::SupportGroup &supp_data;
-    CMR::Data::KarpPartition &karp_part;
-
     LPcutList seg_q;
     LPcutList fast2m_q;
     LPcutList blkcomb_q;
@@ -33,6 +27,14 @@ private:
     CMR::CutQueue<CMR::dominoparity> dp_q;
 
     LPcutList connect_q;
+
+    const CMR::Data::SupportGroup &support_data() const { return supp_data; }
+
+private:
+    CMR::Data::GraphGroup &graph_data;
+    CMR::Data::BestGroup &best_data;
+    CMR::Data::SupportGroup &supp_data;
+    CMR::Data::KarpPartition &karp_part;
 };
 
 }

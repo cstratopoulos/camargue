@@ -44,7 +44,8 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
-	  CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
+	  CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist,
+                                        s_dat.support_ecap, TG, cutq);
 	  REQUIRE(fb_sep.find_cuts());
 
           vector<int> &perm = b_dat.perm;
