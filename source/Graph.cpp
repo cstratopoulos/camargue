@@ -8,6 +8,8 @@ using std::vector;
 using std::cout;
 using std::cerr;
 
+using std::runtime_error;
+
 namespace CMR {
 
 Edge::Edge(int e0, int e1, int _len):
@@ -32,28 +34,32 @@ void Graph::print_edges() {
 
 TourGraph::TourGraph(const vector<int> &tour_edges,
 		     const vector<Edge> &edges, const vector<int> &perm)
-try {
-  vector<int> tour_elist;
-  int ecount = 0;
-  int ncount = perm.size();
-  
-  for (int i = 0; i < tour_edges.size(); ++i)
-    if (tour_edges[i]) {
-      ++ecount;
-      Edge e = edges[i];
-      tour_elist.push_back(perm[e.end[0]]);
-      tour_elist.push_back(perm[e.end[1]]);
-    }
+try
+{
+    vector<int> elist;
+    int ncount = perm.size();
+    int ecount = edges.size();
 
-  for (int i : tour_edges) d_tour.push_back(i);
+    for (const Edge &e : edges) {
+        elist.push_back(perm[e.end[0]]);
+        elist.push_back(perm[e.end[1]]);
+    }
+    
+  for (int i : tour_edges)
+      d_tour.push_back(i);
 
   CCtsp_init_lpgraph_struct(&L);
-  CCtsp_build_lpgraph(&L, ncount, ecount, &tour_elist[0], (int *) NULL);
-  CCtsp_build_lpadj(&L, 0, ecount);
- } catch (const std::exception &e) {
-  cerr << "Caught exception" << e.what() << "\n";
-  throw std::runtime_error("TourGraph constructor failed.");
- }
+  
+  if (CCtsp_build_lpgraph(&L, ncount, ecount, &elist[0], (int *) NULL))
+      throw runtime_error("CCtsp_build_lpgraph failed.");
+  
+  if (CCtsp_build_lpadj(&L, 0, ecount))
+      throw runtime_error("CCtsp_build_lpadj failed.");
+  
+} catch (const std::exception &e) {
+    cerr << e.what() << "\n";
+    throw std::runtime_error("TourGraph constructor failed.");
+}
 
 TourGraph::~TourGraph() { CCtsp_free_lpgraph(&L); }
 
