@@ -163,6 +163,9 @@ public:
 
     void clear() { cut_q.clear(); }
 
+    typename std::list<cut_rep>::iterator begin() { return cut_q.begin(); }
+    typename std::list<cut_rep>::iterator end() { return cut_q.end(); }
+
     bool q_fresh;
 
 private:
