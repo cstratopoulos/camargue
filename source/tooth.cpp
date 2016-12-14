@@ -63,7 +63,7 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
   vector<int> &perm = best_dat.perm;
   vector<int> &tour = best_dat.best_tour_nodes;
 
-#ifndef CMR_USE_OMP
+#ifdef CMR_USE_OMP
   #pragma omp parallel for
 #endif
   for (int root_ind = 0; root_ind < ncount; ++root_ind) {
@@ -122,7 +122,7 @@ int CandidateTeeth::merge_and_sort()
   t_sort.start();
   int rval = 0;
 
-#ifndef CMR_USE_OMP
+#ifdef CMR_USE_OMP
   #pragma omp parallel for
 #endif
   for (int root = 0; root < light_teeth.size(); ++root) {
@@ -227,7 +227,7 @@ void CandidateTeeth::complement_elim()
 		 dist.end());
   }
 
-#ifndef CMR_USE_OMP
+#ifdef CMR_USE_OMP
   #pragma omp parallel for
 #endif
   for (root = 1; root < ncount - 1; ++root) {
@@ -266,7 +266,7 @@ void CandidateTeeth::complement_elim()
 void CandidateTeeth::unmerged_weak_elim()
 {
   t_elim.start();
-#ifndef CMR_USE_OMP
+#ifdef CMR_USE_OMP
   #pragma omp parallel for
 #endif
   for (int root = 0; root < light_teeth.size(); ++root) {
