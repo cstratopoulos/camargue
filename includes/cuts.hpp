@@ -161,6 +161,8 @@ public:
     bool empty() const { return cut_q.empty(); } /**< Is the queue empty. */
     int size() const { return cut_q.size(); } /**< Number of cuts in queue. */
 
+    void clear() { cut_q.clear(); }
+
     bool q_fresh;
 
 private:
