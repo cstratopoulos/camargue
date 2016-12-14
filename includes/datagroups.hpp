@@ -152,6 +152,8 @@ struct SupportGroup  {
 
     bool connected;
     bool integral;
+
+    bool in_subtour_poly();
 };
 
 /** Load just enough Data to test cut separation routines.

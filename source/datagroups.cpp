@@ -346,5 +346,21 @@ void SupportGroup::reset(const int ncount, const vector<CMR::Edge> &edges,
     connected = CMR::GraphUtils::connected(&G_s, &icount, island, 0);
 }
 
+bool SupportGroup::in_subtour_poly()
+{
+    if (!connected)
+        return false;
+
+    double cutval = 2;
+    double rhs = 2.0 - CMR::Epsilon::Cut;
+
+    if (CCcut_mincut(G_s.node_count, support_ecap.size(),
+                     &support_elist[0], &support_ecap[0], &cutval,
+                     NULL, NULL))
+        throw runtime_error("CCcut_mincut failed in in_subtour_poly.");
+
+    return cutval > rhs;
+}
+
 }
 }
