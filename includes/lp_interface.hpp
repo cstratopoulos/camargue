@@ -117,6 +117,8 @@ protected:
     /**@name Pivoting and optimizing. */
     ///@{
 
+    void primal_opt();
+
     void nondegen_pivot(const double lowlimit);
     
     ///@}

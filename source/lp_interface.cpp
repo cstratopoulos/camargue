@@ -183,6 +183,13 @@ void Relaxation::add_cuts(const vector<double> &rhs,
         throw cpx_err(rval, "CPXaddrows");
 }
 
+void Relaxation::del_set_rows(std::vector<int> &delstat)
+{
+    int rval = CPXdelsetrows(cplex_env, cplex_lp, &delstat[0]);
+    if (rval)
+        throw cpx_err(rval, "CPXdelsetrows");
+}
+
 void Relaxation::get_row_infeas(const std::vector<double> &x,
                                 std::vector<double> &feas_stat,
                                 int begin, int end) const
@@ -269,6 +276,13 @@ void Relaxation::factor_basis()
         cerr << "CPXsetlong param itlim revert failed, rval: " << rval << "\n";
         throw err;
     }
+}
+
+void Relaxation::primal_opt()
+{
+    int rval = CPXprimopt(cplex_env, cplex_lp);
+    if (rval)
+        throw cpx_err(rval, "CPXprimopt");
 }
 
 void Relaxation::nondegen_pivot(const double lowlimit)
