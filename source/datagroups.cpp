@@ -160,7 +160,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
         elist.push_back(e.end[1]);
     }
 
-    int kicks = 500;
+    int kicks = 1000;
     int trials = 10;
     
     if (CClinkern_tour(ncount, inst.ptr(), ecount, &elist[0], ncount, kicks,
@@ -308,6 +308,8 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
     for (int i = 0; i < best_tour_edges.size(); ++i)
         if (best_tour_edges[i] == 1)
             min_tour_value += graph.edges[i].len;
+
+    cout << "Loaded and verified tour with length " << min_tour_value << "\n";
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("BestGroup file constructor failed.");
