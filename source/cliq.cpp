@@ -72,20 +72,24 @@ try
 Clique::Clique(std::vector<int> &nodes, const std::vector<int> &perm)
 try
 {
-    for (int i = 0; i < nodes.size(); ++i)
-        nodes[i] = perm[nodes[i]];
+    if (nodes.empty())
+        throw logic_error("Tried to construct empty clique.");
 
-    std::sort(nodes.begin(), nodes.end());    
+    std::sort(nodes.begin(), nodes.end(),
+              [&perm](int n1, int n2) -> bool {
+                  return perm[n1] < perm[n2];
+              });    
 
     int i = 0;
 
     while (i < nodes.size()) {
-        int low = nodes[i];
+        int low = perm[nodes[i]];
 
-        while ((i < (nodes.size() - 1)) && (nodes[i + 1] == (nodes[i] + 1)))
+        while ((i < (nodes.size() - 1)) &&
+               (perm[nodes[i + 1]] == (perm[nodes[i]] + 1)))
             ++i;
 
-        seglist.push_back(segment(low, nodes[i++]));        
+        seglist.push_back(segment(low, perm[nodes[i++]]));        
     }
 
     std::sort(seglist.begin(), seglist.end(), std::greater<segment>());
@@ -110,21 +114,23 @@ try : saved_tour(tour), saved_perm(perm) {} catch (const exception &e) {
     throw runtime_error("CliqueBank constructor failed.");
 }
 
-Clique::Ptr& CliqueBank::add_clique(const Clique &clq)
+Clique::Ptr CliqueBank::add_clique(const Clique &clq)
 {
     if (bank.count(clq) == 0)
-        bank[clq] = std::make_shared<Clique>(clq);
+        bank.insert({clq, std::make_shared<Clique>(clq)});
+        //bank[clq] = std::make_shared<Clique>(clq);
 
-    return bank[clq];
+    Clique::Ptr found = bank[clq];
+    return found;
 }
 
-Clique::Ptr& CliqueBank::add_clique(const CCtsp_lpclique &cc_clq,
+Clique::Ptr CliqueBank::add_clique(const CCtsp_lpclique &cc_clq,
                                     const vector<int> &tour)
 {
     return add_clique(Clique(cc_clq, saved_tour, saved_perm, tour));
 }
 
-Clique::Ptr& CliqueBank::add_clique(vector<int> &nodes)
+Clique::Ptr CliqueBank::add_clique(vector<int> &nodes)
 {
     return add_clique(Clique(nodes, saved_perm));
 }

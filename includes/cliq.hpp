@@ -87,17 +87,20 @@ class CliqueBank {
 public:
     CliqueBank(const std::vector<int> &tour, const std::vector<int> &perm);
 
-    CMR::Sep::Clique::Ptr& add_clique(const CMR::Sep::Clique &clq);
+    CMR::Sep::Clique::Ptr add_clique(const CMR::Sep::Clique &clq);
     
-    CMR::Sep::Clique::Ptr& add_clique(const CCtsp_lpclique &cc_cliq,
+    CMR::Sep::Clique::Ptr add_clique(const CCtsp_lpclique &cc_cliq,
                                       const std::vector<int> &tour);
     
-    CMR::Sep::Clique::Ptr& add_clique(std::vector<int> &nodes);
+    CMR::Sep::Clique::Ptr add_clique(std::vector<int> &nodes);
     
     void del_clique(CMR::Sep::Clique::Ptr &clq_ptr);
 
     using Itr = std::unordered_map<CMR::Sep::Clique,
                                     CMR::Sep::Clique::Ptr>::iterator;
+
+    int size() const { return bank.size(); }
+    
 private:
     const std::vector<int> saved_tour;
     const std::vector<int> saved_perm;
