@@ -42,9 +42,7 @@ bool CutControl::find_cuts(CMR::TourGraph &TG)
 
         if (segments.find_cuts()) {
             found_segments = true;
-            cout << "\t|||||||||||||\n";
-            cout << "\t"  << seg_q.size() << " segment cuts\n";
-            cout << "\t|||||||||||||\n";
+//            cout << "\t"  << seg_q.size() << " segment cuts\n";
             running_total += seg_q.size();
             if (running_total > 15)
                 return true;
@@ -54,7 +52,7 @@ bool CutControl::find_cuts(CMR::TourGraph &TG)
 
         if (fast2m.find_cuts()) {
             found_comb = true;
-            cout << "\t"  << fast2m_q.size() << " fast blossoms\n";
+//            cout << "\t"  << fast2m_q.size() << " fast blossoms\n";
             running_total += fast2m_q.size();
             if (running_total > 15)
                 return true;
@@ -64,7 +62,7 @@ bool CutControl::find_cuts(CMR::TourGraph &TG)
 
         if (blkcomb.find_cuts()) {
             found_comb = true;
-            cout << "\t"  << blkcomb_q.size() << " block combs\n";
+//            cout << "\t"  << blkcomb_q.size() << " block combs\n";
             running_total += blkcomb_q.size();
             if (running_total > 15)
                 return true;
@@ -76,7 +74,7 @@ bool CutControl::find_cuts(CMR::TourGraph &TG)
                 SimpleDP dominos(graph_data, karp_part,
                                  best_data, supp_data, dp_q);
                 if (dominos.find_cuts()) {
-                    cout << "\t" << dp_q.size() << " dominos\n";
+//                    cout << "\t" << dp_q.size() << " dominos\n";
                     running_total += dp_q.size();
                 }
             }
@@ -92,7 +90,7 @@ bool CutControl::find_cuts(CMR::TourGraph &TG)
             ConnectCuts subtours(perm_elist, ecap, TG, connect_q);
             
             if (subtours.find_cuts()) {
-                cout << "\t" << connect_q.size() << " connect cuts\n";
+//                cout << "\t" << connect_q.size() << " connect cuts\n";
                 running_total += connect_q.size();
             }
         } CMR_CATCH_PRINT_THROW("calling subtour sep", err);
