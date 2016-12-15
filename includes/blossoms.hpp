@@ -12,6 +12,7 @@
 #include "cuts.hpp"
 #include "Graph.hpp"
 
+
 namespace CMR {
 
 /** Class for exact primal blossom separation. 
@@ -19,6 +20,8 @@ namespace CMR {
  * solution, and used to perform primal blossom separation using the algorithm
  * of Letchford and Lodi.
  */
+
+/*
 template<> class Cut<blossom> {
 public:
   Cut<blossom>(std::vector<int> &_delta, std::vector<int> &_edge_marks,
@@ -64,7 +67,8 @@ private:
   CutQueue<blossom> local_q;
   CutQueue<HyperGraph> &external_q;
 };
-
+*/
 }
+
 
 #endif

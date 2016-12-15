@@ -15,7 +15,6 @@
 #include <limits>
 
 #include "util.hpp"
-#include "setbank.hpp"
 #include "datagroups.hpp"
 #include "cc_lpcuts.hpp"
 #include "Graph.hpp"
@@ -185,23 +184,11 @@ public:
                         std::vector<int> &rmatind,
                         std::vector<double> &rmatval, char &sense,
                         double &rhs);
-
-    int get_sparse_row(const CMR::HyperGraph &H, std::vector<int> &rmatind,
-                       std::vector<double> &rmatval, char &sense, double &rhs);
-  
+    
     int get_sparse_row(const CMR::dominoparity &dp_cut,
                        const std::vector<int> &tour_nodes,
                        std::vector<int> &rmatind, std::vector<double> &rmatval,
                        char &sense, double &rhs);
-  
-    int get_sparse_row_if(bool &violated, const CMR::HyperGraph &H,
-                          const std::vector<double> &x,
-                          std::vector<int> &rmatind,
-                          std::vector<double> &rmatval,
-                          char &sense, double &rhs);
-    
-    int is_cut_violated(bool &violated, const CMR::HyperGraph &H,
-                        std::vector<double> &x);
   
     template<typename number_t>
     void get_activity(double &activity, const std::vector<number_t> &x,
@@ -221,20 +208,6 @@ private:
     std::vector<int> &edge_marks;
     IntPairMap &edge_lookup;
 };
-
-/*
- *       FORWARD DECLARATIONS OF PARTIAL TEMPLATE SPECIALIZATIONS
- */
-
-
-template<>
-void CutQueue<HyperGraph>::push_front(const HyperGraph &H);
-
-template<>
-void CutQueue<HyperGraph>::push_back(const HyperGraph &H);
-
-template<>
-void CutQueue<HyperGraph>::pop_front();
   
 }
 

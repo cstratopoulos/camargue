@@ -16,7 +16,7 @@ using std::endl;
 
 
 namespace CMR {
-
+/*
 #ifdef CMR_USE_OMP
 
 int Cut<blossom>::separate() {
@@ -312,4 +312,5 @@ int Cut<blossom>::cutcall() {
   return rval;
 }
 
+*/
 }

@@ -71,6 +71,25 @@ SCENARIO ("Registering abstract cliques in a bank",
                         THEN ("Size is unchanged but ref goes up") {
                             REQUIRE(cbank.size() == 2);
                             REQUIRE(ptr1_copy.use_count() == 3);
+                            
+                            AND_WHEN ("We remove a copied clique") {
+                                cbank.del_clique(ptr1_copy);
+                                
+                                THEN ("Size is unchanged but ref goes down") {
+                                    REQUIRE(cbank.size() == 2);
+                                    REQUIRE(ptr1.use_count() == 2);
+                                    
+                                    AND_WHEN ("We remove a lone clique") {
+                                        cbank.del_clique(ptr2);
+                                        
+                                        THEN ("Size goes down, clique is null")
+                                        {
+                                            REQUIRE(cbank.size() == 1);
+                                            REQUIRE_FALSE(ptr2);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

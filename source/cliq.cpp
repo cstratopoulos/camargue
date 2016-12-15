@@ -117,11 +117,9 @@ try : saved_tour(tour), saved_perm(perm) {} catch (const exception &e) {
 Clique::Ptr CliqueBank::add_clique(const Clique &clq)
 {
     if (bank.count(clq) == 0)
-        bank.insert({clq, std::make_shared<Clique>(clq)});
-        //bank[clq] = std::make_shared<Clique>(clq);
+        bank[clq] = std::make_shared<Clique>(clq);
 
-    Clique::Ptr found = bank[clq];
-    return found;
+    return bank[clq];
 }
 
 Clique::Ptr CliqueBank::add_clique(const CCtsp_lpclique &cc_clq,
