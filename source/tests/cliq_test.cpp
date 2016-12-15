@@ -1,7 +1,7 @@
 #include "tests.hpp"
 #include "util.hpp"
-#include "core_lp.hpp"
 #include "datagroups.hpp"
+#include "cc_lpcuts.hpp"
 #include "cliq.hpp"
 
 
@@ -10,8 +10,12 @@
 #include <string>
 #include <iostream>
 
+#include <cstdlib>
+
 #include <catch.hpp>
 
+using std::min;
+using std::max;
 using std::array;
 using std::vector;
 
@@ -20,12 +24,99 @@ using std::cout;
 
 #ifdef CMR_DO_TESTS
 
+static void make_tour_perm(vector<int> &tour, vector<int> &perm)
+{
+    for (int i = 0; i < tour.size(); ++i)
+        tour[i] = i;
+
+    std::random_shuffle(tour.begin(), tour.end());
+
+    for (int i = 0; i < tour.size(); ++i)
+        perm[tour[i]] = i;
+}
+
+SCENARIO ("Registering abstract cliques in a bank",
+          "[Clique][CliqueBank]") {
+    vector<int> sizes{50, 250, 500, 1000};
+    for (int sz : sizes) {
+        GIVEN ("A " + std::to_string(sz) +
+               " node tour and a CliqueBank and some nodes") {
+            vector<int> tour(sz), perm(sz);
+            make_tour_perm(tour, perm);
+
+            CMR::Sep::CliqueBank cbank(tour, perm);
+
+            int e1 = rand() % sz, e2 = rand() % sz;
+            vector<int> nodes1;
+            for (int i = min(e1, e2); i <= max(e1, e2); ++i)
+                nodes1.push_back(i);
+
+            int f1 = rand() % sz, f2 = rand() % sz;
+            vector<int> nodes2;
+            for (int i = min(f1, f2); i <= max(f1, f2); ++i)
+                nodes2.push_back(i);
+
+            WHEN ("We add distinct nodes") {
+                auto ptr1 = cbank.add_clique(nodes1);
+                auto ptr2 = cbank.add_clique(nodes2);
+
+                THEN ("Size and refcounts increase") {
+                    REQUIRE(cbank.size() == 2);
+                    REQUIRE(ptr1.use_count() == 2);
+                    REQUIRE(ptr2.use_count() == 2);
+
+                    AND_WHEN ("We add a duplicate") {
+                        auto ptr1_copy = cbank.add_clique(nodes1);
+
+                        THEN ("Size is unchanged but ref goes up") {
+                            REQUIRE(cbank.size() == 2);
+                            REQUIRE(ptr1_copy.use_count() == 3);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+SCENARIO ("Testing equality and hash values of cliques",
+          "[.Clique][.hash][tiny]") {
+    
+    GIVEN ("A tour and some nodes") {
+        vector<int> tour(10);
+        vector<int> perm(10);
+
+        make_tour_perm(tour, perm);
+
+        vector<int> nodes{1,2,7};
+
+        WHEN ("We construct two of the same clique") {
+            CMR::Sep::Clique clq1(nodes, perm), clq2(nodes, perm);
+
+            THEN ("They are equal and hash equal") {
+                REQUIRE(clq1 == clq2);
+                std::size_t h1 = std::hash<CMR::Sep::Clique>{}(clq1);
+                std::size_t h2 = std::hash<CMR::Sep::Clique>{}(clq2);
+                REQUIRE(h1 == h2);
+            }
+
+            AND_WHEN ("We construct another clique from permuted nodes") {
+                vector<int> nodes3{2,7,1};
+                CMR::Sep::Clique clq3(nodes3, perm);
+                THEN ("It is equal to the others") {
+                    REQUIRE(clq1 == clq3);
+                }
+            }
+        }
+    }
+}
+
 SCENARIO ("Generating cliques from Concorde cliques",
           "[Clique][Sep]") {
     vector<string> probs{"pr76", "lin318", "d493", "pr1002"};
     for (string &fname : probs) {
         GIVEN("TSP instance " + fname) {
-            WHEN("We find primal blossoms") {p
+            WHEN("We find primal blossoms") {
                 THEN("We can represent them with CMR cliques") {
                     string
                     probfile = "problems/" + fname + ".tsp",
@@ -133,7 +224,7 @@ SCENARIO ("Abstract testing of tiny printed cliques",
                              << seg.end << "\n";
                         
                         CHECK(clq.seg_count() == 1);
-                        CHECK(seg.size() == vec.size());
+                        CHECK(seg.size() == vec_copy.size());
 
                         vector<int> from_clq = clq.node_list(tour);
 
