@@ -69,6 +69,48 @@ try
     throw runtime_error("Clique CCtsp_lpclique constructor failed.");
 }
 
+Clique::Clique(int start, int end,
+               const vector<int> &saved_tour, const vector<int> &saved_perm,
+               const vector<int> &current_tour) try
+{
+    bool range_agrees = true;
+    segment seg(start, end);
+    
+    for (int k = start; k <= end; ++k)
+        if (saved_tour[k] != current_tour[k]) {
+            range_agrees = false;
+            break;
+        }
+
+    if (range_agrees) {
+        seglist.push_back(seg);
+        return;
+    }
+
+    vector<int> seg_nodes;
+    seg_nodes.reserve(seg.size());
+
+    for (int k = seg.start; k <= seg.end; ++k)
+        seg_nodes.push_back(saved_perm[current_tour[k]]);
+
+    std::sort(seg_nodes.begin(), seg_nodes.end());
+
+    int k = 0;
+
+    while (k < seg_nodes.size()) {
+        int low = seg_nodes[k];
+            
+        while ((k < (seg_nodes.size() - 1)) &&
+               (seg_nodes[k + 1] == (seg_nodes[k] + 1)))
+            ++k;
+            
+        seglist.push_back(segment(low, seg_nodes[k++]));
+    }    
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("Clique seg constructor failed.");
+}
+
 Clique::Clique(std::vector<int> &nodes, const std::vector<int> &perm)
 try
 {
@@ -126,6 +168,11 @@ Clique::Ptr CliqueBank::add_clique(const CCtsp_lpclique &cc_clq,
                                     const vector<int> &tour)
 {
     return add_clique(Clique(cc_clq, saved_tour, saved_perm, tour));
+}
+
+Clique::Ptr CliqueBank::add_clique(int start, int end, const vector<int> &tour)
+{
+    return add_clique(Clique(start, end, saved_tour, saved_perm, tour));
 }
 
 Clique::Ptr CliqueBank::add_clique(vector<int> &nodes)

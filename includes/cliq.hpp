@@ -42,6 +42,11 @@ public:
            const std::vector<int> &saved_perm,
            const std::vector<int> & current_tour);
 
+    Clique(int start, int end,
+           const std::vector<int> &saved_tour,
+           const std::vector<int> &saved_perm,
+           const std::vector<int> & current_tour);
+
     Clique(std::vector<int> &nodes,
            const std::vector<int> &perm);
 
@@ -112,6 +117,10 @@ public:
      */
     CMR::Sep::Clique::Ptr add_clique(const CCtsp_lpclique &cc_cliq,
                                       const std::vector<int> &tour);
+
+    /** Construct/add/get a reference to the Clique from endpoints. */
+    CMR::Sep::Clique::Ptr add_clique(int start, int end,
+                                     const std::vector<int> &tour);
 
     /** Construct/add/get a reference to a Clique from a node list.
      * The vector \p nodes shall be a list of nodes to be included in the
