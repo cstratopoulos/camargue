@@ -135,6 +135,14 @@ CoreLP::TourBasis::TourBasis(CMR::Graph &graph,
     throw runtime_error("TourBasis constructor failed.");
 }
 
+double CoreLP::opt()
+{
+    primal_opt();
+    double result = get_objval();
+    pivot_back();
+    return result;
+}
+
 PivType CoreLP::primal_pivot()
 {
     runtime_error err("Problem in CoreLP::primal_pivot.");
