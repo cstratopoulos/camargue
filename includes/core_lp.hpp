@@ -26,6 +26,8 @@ public:
     CoreLP(CMR::Data::GraphGroup &graph_data_,
            CMR::Data::BestGroup &best_data_);
 
+    double opt();
+
     CMR::LP::PivType primal_pivot();
     void pivot_back();
 

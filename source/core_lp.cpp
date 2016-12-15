@@ -215,13 +215,35 @@ void CoreLP::handle_aug()
     if (fabs(objval - get_objval()) > EpsZero)
         throw runtime_error("Disagreement in new best tour objval with lp.");
 
+    best_data.min_tour_value = objval;
+
     vector<int> &perm = best_data.perm;
     vector<int> &tour = best_data.best_tour_nodes;
+    int ncount = tour.size();
 
-    for (int i = 0; i < tour.size(); ++i)
+    for (int i = 0; i < ncount; ++i)
         perm[tour[i]] = i;
     
     get_base(tour_base.colstat, tour_base.rowstat);
+
+    vector<double> slacks = row_slacks(ncount, num_rows() - 1);
+    
+    vector<int> delrows(num_rows(), 0);
+
+    int rownum = ncount;
+
+    for (double slack : slacks) {
+        if (slack)
+            delrows[rownum] = 1;
+        ++rownum;
+    }
+
+    int orig_count = num_rows();
+    del_set_rows(delrows);
+
+    cout << "\t Pruned " << (orig_count - num_rows()) << " cuts from LP.\n";
+
+    factor_basis();
 }
 
 void CoreLP::add_cuts(CMR::Sep::LPcutList &cutq)
