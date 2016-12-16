@@ -18,6 +18,7 @@ using std::vector;
 using std::unique_ptr;
 using std::string;
 using std::pair;
+using CMR::IntPair;
 
 #ifdef CMR_DO_TESTS
 

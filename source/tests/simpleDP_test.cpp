@@ -21,6 +21,8 @@ using std::vector;
 using std::string;
 using std::pair;
 
+using CMR::IntPair;
+
 #ifdef CMR_DO_TESTS
 
 SCENARIO("Separating simple DP inequalities in small instances",

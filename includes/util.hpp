@@ -17,8 +17,7 @@
 #include <type_traits>
 #include <limits>
 #include <string>
-
-#include <boost/functional/hash.hpp>
+#include <memory>
 
 /** Macro for printing error message and going to exit label. 
  * Prints the message \a message to stderr and goes to CLEANUP. Thus CLEANUP
@@ -214,11 +213,25 @@ constexpr int IntMin = std::numeric_limits<int>::min();
 
 constexpr double DoubleMax = std::numeric_limits<double>::max();
 constexpr double DoubleMin = std::numeric_limits<double>::min();
+
+typedef std::pair<int, int> IntPair;
+
+struct edge_hash {
+    std::size_t operator()(const IntPair& p) const
+        {
+            std::hash<int> hasher;
+            std::size_t seed = 0;
+            seed ^= hasher(p.first) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            seed ^= hasher(p.second) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            return seed; 
+        }
+};
+
+typedef std::unordered_map<IntPair, int, edge_hash> IntPairMap;
     
 }
 
-typedef std::pair<int, int> IntPair;
-typedef std::unordered_map<IntPair, int, boost::hash<IntPair>> IntPairMap;
+
 
 
 #endif

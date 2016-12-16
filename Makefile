@@ -8,7 +8,6 @@ TARGET      := camargue
 #The Directories, Source, Includes, Objects, Binary
 SRCDIR      := source
 INCDIR      := includes
-BOOSTDIR    := /usr/local/boost_1_61_0
 CPXDIR      := \
 /Users/christos/Applications/IBM/ILOG/CPLEX_Studio1261/cplex/include/ilcplex/
 PROGDIR     := /Users/christos/Dropbox/school/research/programs/
@@ -27,8 +26,8 @@ LIB         := /Users/christos/Applications/IBM/ILOG/CPLEX_Studio1261/cplex/lib/
 /Users/christos/Dropbox/school/research/programs/concorde/concorde.a \
 /Users/christos/Applications/QSOPT/qsopt.a \
 -lm -lpthread -fopenmp 
-INC         := -I$(INCDIR) -I$(BOOSTDIR) -I$(CPXDIR) -I$(PROGDIR)
-INCDEP      := -I$(INCDIR) -I$(BOOSTDIR) -I$(CPXDIR) -I$(PROGDIR)
+INC         := -I$(INCDIR)  -I$(CPXDIR) -I$(PROGDIR)
+INCDEP      := -I$(INCDIR)  -I$(CPXDIR) -I$(PROGDIR)
 
 #---------------------------------------------------------------------------------
 #DO NOT EDIT BELOW THIS LINE

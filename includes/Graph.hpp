@@ -16,6 +16,8 @@ extern "C" {
 
 namespace CMR {
 
+
+
 struct Edge {
   Edge() : removable(false) {}
   Edge(int e0, int e1, int _len);

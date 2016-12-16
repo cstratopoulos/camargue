@@ -13,6 +13,7 @@
 #include <memory>
 #include <vector>
 #include <limits>
+#include <list>
 
 #include "util.hpp"
 #include "datagroups.hpp"
@@ -21,22 +22,6 @@
 #include "tooth.hpp"
 
 namespace CMR {
-
-/** Structure for storing segment cuts.
- * Segment cuts are subtour inequalities arising from segments of the current
- *  best tour. If `tour` is a vector of tour nodes, the segment is given by
- * `tour[start], tour[start + 1], ..., tour[end]`. If \f$ x^* \f$ is an lp 
- * solution and \f$ S \f$ is the segment, \p cutval is \f$ x^*(\delta(S)) \f$ .
- */
-struct seg {
-    seg() = default;
-    seg(int _start, int _end, double _cutval) :
-        start(_start), end(_end), cutval(_cutval) {}
-
-    int start;
-    int end;
-    double cutval;
-};
 
 /** Structure for storing blossom inequalities from exact primal separation.
  * This structure stores blossom inequalities found by the exact primal

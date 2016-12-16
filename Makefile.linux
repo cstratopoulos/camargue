@@ -8,7 +8,6 @@ TARGET      := camargue
 #The Directories, Source, Includes, Objects, Binary
 SRCDIR      := source
 INCDIR      := includes
-BOOSTDIR    := /u2/castratopoulos/MyDocuments/Applications/boost_1_61_0
 CPXDIR      := /software/cplex-12.6/distribution/cplex/include/ilcplex/
 PROGDIR     := /u2/castratopoulos/MyDocuments/Applications/
 BUILDDIR    := objects
@@ -26,8 +25,8 @@ LIB         := \
 /software/cplex-12.6/distribution/cplex/lib/x86-64_linux/static_pic/libcplex.a \
 /u2/castratopoulos/MyDocuments/Applications/concorde/concorde.a -lm -lpthread \
 -fopenmp
-INC         := -I$(INCDIR) -I$(BOOSTDIR) -I$(CPXDIR) -I$(PROGDIR)
-INCDEP      := -I$(INCDIR) -I$(BOOSTDIR) -I$(CPXDIR) -I$(PROGDIR)
+INC         := -I$(INCDIR)  -I$(CPXDIR) -I$(PROGDIR)
+INCDEP      := -I$(INCDIR)  -I$(CPXDIR) -I$(PROGDIR)
 
 #---------------------------------------------------------------------------------
 #DO NOT EDIT BELOW THIS LINE
