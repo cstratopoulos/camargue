@@ -40,6 +40,7 @@ HyperGraph::~HyperGraph()
         source_bank.del_clique(ref);
 }
 
+/*
 DominoCut::DominoCut(CliqueBank &bank, CMR::dominoparity &dp_cut,
                      const vector<int> &tour) try :
     source_bank(bank)
@@ -65,11 +66,26 @@ DominoCut::DominoCut(CliqueBank &bank, CMR::dominoparity &dp_cut,
     throw runtime_error("Problem in DominoCut constructor.");
 }
 
+
 DominoCut::~DominoCut()
 {
     source_bank.del_clique(handle);
     for(auto &tooth : teeth)
         source_bank.del_clique(tooth.second);
+}
+*/
+
+ExternalCuts::ExternalCuts(const vector<int> &tour, const vector<int> &perm)
+try : next_row(tour.size()), clique_bank(tour, perm) {
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("ExternalCuts constructor failed.");
+}
+
+void ExternalCuts::add_cut(const lpcut_in &cc_lpcut,
+                           const vector<int> &current_tour)
+{
+    cuts.emplace(next_row++, HyperGraph(clique_bank, cc_lpcut, current_tour));
 }
 
 

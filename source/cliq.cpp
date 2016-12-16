@@ -1,5 +1,6 @@
 #include "cliq.hpp"
 #include "err_util.hpp"
+#include "util.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -18,6 +19,8 @@ using std::exception;
 using lpclique = CCtsp_lpclique;
 using lpcut_in = CCtsp_lpcut_in;
 
+
+
 namespace CMR {
 namespace Sep {
 
@@ -27,7 +30,7 @@ Clique::Clique(const lpclique &cc_clq,
 try
 {
     for (int i = 0; i < cc_clq.segcount; ++i) {
-        segment seg(cc_clq.nodes[i].lo, cc_clq.nodes[i].hi);
+        CMR::Segment seg(cc_clq.nodes[i].lo, cc_clq.nodes[i].hi);
         bool range_agrees = true;
 
         for (int k = seg.start; k <= seg.end; ++k) {
@@ -59,11 +62,11 @@ try
                    (seg_nodes[k + 1] == (seg_nodes[k] + 1)))
                 ++k;
             
-            seglist.push_back(segment(low, seg_nodes[k++]));
+            seglist.push_back(CMR::Segment(low, seg_nodes[k++]));
         }
     }
 
-    std::sort(seglist.begin(), seglist.end(), std::greater<segment>());
+    std::sort(seglist.begin(), seglist.end(), std::greater<CMR::Segment>());
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Clique CCtsp_lpclique constructor failed.");
@@ -74,7 +77,7 @@ Clique::Clique(int start, int end,
                const vector<int> &current_tour) try
 {
     bool range_agrees = true;
-    segment seg(start, end);
+    CMR::Segment seg(start, end);
     
     for (int k = start; k <= end; ++k)
         if (saved_tour[k] != current_tour[k]) {
@@ -104,7 +107,7 @@ Clique::Clique(int start, int end,
                (seg_nodes[k + 1] == (seg_nodes[k] + 1)))
             ++k;
             
-        seglist.push_back(segment(low, seg_nodes[k++]));
+        seglist.push_back(CMR::Segment(low, seg_nodes[k++]));
     }    
 } catch (const exception &e) {
     cerr << e.what() << "\n";
@@ -131,10 +134,10 @@ try
                (perm[nodes[i + 1]] == (perm[nodes[i]] + 1)))
             ++i;
 
-        seglist.push_back(segment(low, perm[nodes[i++]]));        
+        seglist.push_back(CMR::Segment(low, perm[nodes[i++]]));        
     }
 
-    std::sort(seglist.begin(), seglist.end(), std::greater<segment>());
+    std::sort(seglist.begin(), seglist.end(), std::greater<CMR::Segment>());
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Clique nodelist constructor failed.");
@@ -144,7 +147,7 @@ vector<int> Clique::node_list(const vector<int> &saved_tour) const
 {
     vector<int> result;
 
-    for (const segment &seg : seglist)
+    for (const CMR::Segment &seg : seglist)
         for (int k = seg.start; k <= seg.end; ++k) 
             result.push_back(saved_tour[k]);
 

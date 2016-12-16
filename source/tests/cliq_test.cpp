@@ -238,7 +238,7 @@ SCENARIO ("Abstract testing of tiny printed cliques",
                         for(int i : vec) cout << i << ", ";
                         cout << "\n";
                         CMR::Sep::Clique clq  = CMR::Sep::Clique(vec, perm);
-                        const CMR::Sep::segment seg = clq.seg_list().front();
+                        const CMR::Segment seg = clq.seg_list().front();
                         cout << "Represented as: " << seg.start << ", "
                              << seg.end << "\n";
                         
