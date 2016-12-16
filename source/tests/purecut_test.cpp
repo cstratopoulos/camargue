@@ -108,8 +108,8 @@ SCENARIO ("Testing a prototype Purecut loop",
           "[PureCut][Solver]") {
     vector<string> probs{
 //        "dantzig42", "gr48", "st70", "pr76", "rd100", "lin105"
-        "a280", "lin318", "gr431", "d493", "att532", "p654", "gr666", "u724"
-        //"pr1002", "d2103", "pr2392"
+//        "a280", "lin318", "gr431", "d493", "att532", "p654", "gr666", "u724",
+        "pr1002", "rl1304", "fl1400", "d2103", "pr2392"
     };
 
     for (string &prob : probs) {
@@ -118,7 +118,7 @@ SCENARIO ("Testing a prototype Purecut loop",
                 CMR::Data::Instance inst("problems/" + prob + ".tsp",
                                          CMR::real_zeit());
                 CMR::Data::GraphGroup g_dat(inst);
-                CMR::Data::BestGroup b_dat(inst, g_dat);
+                CMR::Data::BestGroup b_dat(inst, g_dat, prob + ".sol");
                 CMR::Data::KarpPartition kpart(b_dat.perm.size(),
                                                inst.ptr(), inst.seed());
 
