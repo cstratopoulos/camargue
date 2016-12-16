@@ -44,7 +44,7 @@ bool CutControl::find_cuts(CMR::TourGraph &TG)
             found_segments = true;
 //            cout << "\t"  << seg_q.size() << " segment cuts\n";
             running_total += seg_q.size();
-            if (running_total > 15)
+            if (running_total > 8)
                 return true;
         }
 
@@ -54,7 +54,7 @@ bool CutControl::find_cuts(CMR::TourGraph &TG)
             found_comb = true;
 //            cout << "\t"  << fast2m_q.size() << " fast blossoms\n";
             running_total += fast2m_q.size();
-            if (running_total > 15)
+            if (running_total > 8)
                 return true;
         }
 
@@ -64,7 +64,7 @@ bool CutControl::find_cuts(CMR::TourGraph &TG)
             found_comb = true;
 //            cout << "\t"  << blkcomb_q.size() << " block combs\n";
             running_total += blkcomb_q.size();
-            if (running_total > 15)
+            if (running_total > 8)
                 return true;
         }
 
