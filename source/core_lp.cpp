@@ -21,6 +21,8 @@ using std::runtime_error;
 using std::logic_error;
 using std::exception;
 
+using lpcut_in = CCtsp_lpcut_in;
+
 namespace CMR {
 namespace LP {
 
@@ -263,7 +265,7 @@ void CoreLP::add_cuts(CMR::Sep::LPcutList &cutq)
     CMR::CutTranslate translator(graph_data);
     vector<int> &perm = best_data.perm;
 
-    for (auto cur = cutq.begin(); cur; cur = cur->next) {
+    for (lpcut_in *cur = cutq.begin(); cur; cur = cur->next) {
         vector<int> rmatind;
         vector<double> rmatval;
         char sense;
@@ -278,17 +280,17 @@ void CoreLP::add_cuts(CMR::Sep::LPcutList &cutq)
     }
 }
 
-void CoreLP::add_cuts(CMR::CutQueue<CMR::dominoparity> &dp_q)
+void CoreLP::add_cuts(CutQueue<dominoparity> &dpq)
 {
-    if (dp_q.empty())
+    if (dpq.empty())
         return;
     
     runtime_error err("Problem in CoreLP::add_cuts(dominoparity)");
 
-    CMR::CutTranslate translator(graph_data);
+    CutTranslate translator(graph_data);
     vector<int> &tour_nodes = best_data.best_tour_nodes;
 
-    for (auto it = dp_q.begin(); it != dp_q.end(); ++it) {
+    for (CutQueue<dominoparity>::Itr it = dpq.begin(); it != dpq.end(); ++it) {
         CMR::dominoparity &dp_cut = *it;
         vector<int> rmatind;
         vector<double> rmatval;
