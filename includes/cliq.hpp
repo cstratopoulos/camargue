@@ -1,6 +1,8 @@
 #ifndef CMR_CLIQ_H
 #define CMR_CLIQ_H
 
+#include "util.hpp"
+
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -12,25 +14,6 @@ extern "C" {
 
 namespace CMR {
 namespace Sep {
-
-struct segment {
-    segment() = default;
-    segment(int lo, int hi) : start(lo), end(hi) {}
-
-    int size() const { return end - start + 1; }
-
-    bool operator>(const segment &rhs) const
-    {
-        return std::make_tuple(size(), start, end) >
-            std::make_tuple(rhs.size(), rhs.start, rhs.end);
-    }
-
-    bool operator==(const segment &rhs) const
-    { return (start == rhs.start) && (end == rhs.end); }
-    
-    int start;
-    int end;
-};
 
 /** Class for storing segment lists representing edges of a hypergraph. */
 class Clique {
@@ -54,14 +37,14 @@ public:
 
     int seg_count() const { return seglist.size(); }
 
-    const std::vector<CMR::Sep::segment> &seg_list() const { return seglist; }
+    const std::vector<CMR::Segment> &seg_list() const { return seglist; }
     std::vector<int> node_list(const std::vector<int> &saved_tour) const;
     
 
     bool operator==(const Clique &rhs) const { return seglist == rhs.seglist; }
     
 private:
-    std::vector<CMR::Sep::segment> seglist;
+    std::vector<CMR::Segment> seglist;
 };
 
 }
@@ -76,7 +59,7 @@ struct hash<CMR::Sep::Clique> {
     {
         size_t val = 0;
         
-        for (const CMR::Sep::segment &seg : clq.seg_list())
+        for (const CMR::Segment &seg : clq.seg_list())
             val = (val * 65537) + (seg.start * 4099) + seg.end;
 
         return val;

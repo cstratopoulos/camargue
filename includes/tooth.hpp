@@ -17,6 +17,15 @@ namespace CMR {
 
 enum class ListStat {None, Merge, Full};
 
+struct ToothBody : Segment {
+    ToothBody() = default;
+    ToothBody(int _start, int _end, double _slack) :
+        Segment(_start, _end), slack(_slack) {}
+    ToothBody(int _start, int _end) : Segment(_start, _end), slack(1.0) {}
+
+    double slack;
+};
+
 struct tooth_seg {
   tooth_seg(int _start, int _end, double _slack) :
     start(_start), end(_end), slack(_slack) {}

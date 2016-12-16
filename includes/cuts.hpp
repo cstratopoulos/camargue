@@ -147,8 +147,14 @@ public:
 
     void clear() { cut_q.clear(); }
 
-    typename std::list<cut_rep>::iterator begin() { return cut_q.begin(); }
-    typename std::list<cut_rep>::iterator end() { return cut_q.end(); }
+    using Itr = typename std::list<cut_rep>::iterator;
+    using ConstItr = typename std::list<cut_rep>::const_iterator;
+
+    Itr begin() { return cut_q.begin(); }
+    Itr end() { return cut_q.end(); }
+
+    ConstItr begin() const { return cut_q.begin(); }
+    ConstItr end() const { return cut_q.end(); }
 
     bool q_fresh;
 

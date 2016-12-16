@@ -7,8 +7,8 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef __CMR_UTIL_H
-#define __CMR_UTIL_H
+#ifndef _CMR_UTIL_H
+#define _CMR_UTIL_H
 
 #include <utility>
 #include <unordered_map>
@@ -49,31 +49,6 @@
 
 /** The namespace for this project. */
 namespace CMR {
-
-/** Choices for the execution behavior of PureCut. */
-enum class SolutionProtocol {
-
-  /** Pure cutting plane solution
-   * Indicates attempt to solve solely by pivoting and adding primal cutting
-   * planes, continuing until optimality or failure. 
-   */
-  PURECUT,
-
-  /** Augment-Branch-Cut solution
-   * Indicates that `PureCut.solve` will run until some specified threshold of
-   * time or cuts, and then will be embedded in an Augment-and-Branch-and-Cut
-   * solution process if optimality has not been attained.
-   */
-  ABC
-};
-
-/** A POD struct for creating a randomly generated euclidean TSP instance. */
-struct RandProb {
-  RandProb() : nodecount(0), gridsize(100), seed(0) {}
-  int nodecount; /**< Number of cities in the problem. */
-  int gridsize; /**< Size of grid from which coordinates will be drawn. */
-  int seed; /**<Random seed for generation of points. */
-};
 
 /** A POD struct for preferences related to tour file output.
  * This structure stores preferences about the types of files (if any) that
@@ -128,28 +103,6 @@ enum class PivType {
 
 std::string piv_string(PivType piv);
 
-/*
- * Prefs is a simple struct to store preferences for the lp solver.
- *
- * price_method is one of the Pricing types indicated above
- * dp_threshold - controls when simple domino parity inequality separation
- *    will be called. Negative values mean no simple DP separation, no 
- *    matter what. Nonnegative values mean simple DP separation will be
- *    called only after that many rounds of cutting plane generation, or
- *    if no other cuts are found
- */
-
-/** POD struct for lp solver preferences. */
-struct Prefs {
-  Prefs();
-  Prefs(Pricing _price, int _dp_threshold, int max_round, int q_max);
-      
-  Pricing price_method; /**< Which primal pricing criterion to use. */
-      
-  int dp_threshold; /**< Wait this many rounds before calling simple DP sep. */
-  int max_per_round; /**< Add at most this many cuts of each type per round. */
-  int q_max_size; /**< Keep a pool of this many blossoms. */
-};
 }
 
 
@@ -228,6 +181,28 @@ struct edge_hash {
 };
 
 typedef std::unordered_map<IntPair, int, edge_hash> IntPairMap;
+
+struct Segment {
+    Segment() = default;
+    Segment(int lo, int hi) : start(lo), end(hi) {}
+
+    int size() const { return end - start + 1; }
+    bool contains(int vx) const { return start <= vx && vx <= end; }
+    bool subset_of(const Segment &seg) const
+    { return seg.contains(start) && seg.contains(end); }
+
+    bool operator>(const Segment &rhs) const
+    {
+        return std::make_tuple(size(), start, end) >
+        std::make_tuple(rhs.size(), rhs.start, rhs.end);
+    }
+
+    bool operator==(const Segment &rhs) const
+    { return start == rhs.start && end == rhs.end; }
+
+    int start;
+    int end;
+};
     
 }
 
