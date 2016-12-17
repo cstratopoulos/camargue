@@ -85,7 +85,9 @@ try : next_row(tour.size()), clique_bank(tour, perm) {
 void ExternalCuts::add_cut(const lpcut_in &cc_lpcut,
                            const vector<int> &current_tour)
 {
-    cuts.emplace(next_row++, HyperGraph(clique_bank, cc_lpcut, current_tour));
+    cuts.insert(std::pair<int, HyperGraph>(next_row++,
+					   HyperGraph(clique_bank, cc_lpcut,
+						      current_tour)));
 }
 
 
