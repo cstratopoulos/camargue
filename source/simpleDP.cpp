@@ -50,7 +50,7 @@ bool Sep::SimpleDP::find_cuts()
       } CMR_CATCH_PRINT_THROW("making a mini cutgraph sep call", err);
 
       dp_q.splice(mini_q);
-      if(dp_q.size() >= 25)
+      if(dp_q.size() >= 2)
           break;
   }
 
