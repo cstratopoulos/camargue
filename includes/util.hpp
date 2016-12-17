@@ -154,12 +154,15 @@ std::unique_ptr<T> make_unique( Args&& ...args )
 template <typename T>
 struct C_resource_deleter {
     void operator()(T* ptr) const {
-        if(ptr) free(ptr);
+        if (ptr) free(ptr);
         ptr = nullptr;
     }
 };
 
 typedef std::unique_ptr<int, C_resource_deleter<int>> c_array_ptr;
+
+template <typename T>
+using c_struct_ptr = std::unique_ptr<T, void(*)(T*)>;
 
 constexpr int IntMax = std::numeric_limits<int>::max();
 constexpr int IntMin = std::numeric_limits<int>::min();
