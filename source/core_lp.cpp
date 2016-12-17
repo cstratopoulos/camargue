@@ -10,6 +10,7 @@
 #include <cmath>
 
 using std::cout;
+using std::endl;
 using std::cerr;
 
 using std::vector;
@@ -248,11 +249,7 @@ void CoreLP::handle_aug()
         ++rownum;
     }
 
-    int orig_count = num_rows();
     del_set_rows(delrows);
-
-    cout << "\t Pruned " << (orig_count - num_rows()) << " cuts from LP.\n";
-
     factor_basis();
 }
 
