@@ -35,6 +35,8 @@ static inline bool elim_less_tie(const SimpleTooth::Ptr &S,
     std::make_tuple(T->slack, T->body_size());
 }
 
+vector<vector<int>> CandidateTeeth::adj_zones;
+
 CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
 			       Data::BestGroup &_best_dat,
 			       Data::SupportGroup &_supp_dat) :
@@ -42,8 +44,6 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
   left_teeth(std::vector<vector<SimpleTooth::Ptr>>(_supp_dat.G_s.node_count)),
   right_teeth(std::vector<vector<SimpleTooth::Ptr>>(_supp_dat.G_s.node_count)),
   dist_teeth(std::vector<vector<SimpleTooth::Ptr>>(_supp_dat.G_s.node_count)),
-  adj_zones(vector<vector<int>>(_supp_dat.G_s.node_count,
-				vector<int>(_supp_dat.G_s.node_count, 0))),
   stats(_supp_dat.G_s.node_count, ListStat::None),
   endmark(vector<int>(_supp_dat.G_s.node_count, CC_LINSUB_BOTH_END)),
   graph_dat(_graph_dat),
@@ -62,6 +62,13 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
   int ncount = G_s.node_count;
   vector<int> &perm = best_dat.perm;
   vector<int> &tour = best_dat.best_tour_nodes;
+
+  adj_zones.resize(ncount);
+  for (vector<int>& vec : adj_zones) {
+      vec.resize(ncount);
+      for (int & i : vec)
+          i = 0;
+  }
 
 #ifdef CMR_USE_OMP
   #pragma omp parallel for

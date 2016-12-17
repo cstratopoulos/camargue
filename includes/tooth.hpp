@@ -99,7 +99,7 @@ public:
   std::vector<std::vector<SimpleTooth::Ptr>>
   light_teeth, left_teeth, right_teeth, dist_teeth;
 
-  std::vector<std::vector<int>> adj_zones;
+  static std::vector<std::vector<int>> adj_zones;
   std::vector<ListStat> stats;
 
 private:
