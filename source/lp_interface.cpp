@@ -62,13 +62,25 @@ Relaxation::Relaxation() try
     if (rval) 
         throw cpx_err(rval, "CPXopenCPLEX");
 
+    rval = CPXsetintparam(cplex_env, CPX_PARAM_AGGIND, CPX_OFF);
+    if (rval) {
+        CPXcloseCPLEX(&cplex_env);
+        throw cpx_err(rval, "CPXsetintparam aggregator");
+    }
     
     rval = CPXsetintparam(cplex_env, CPX_PARAM_PREIND, CPX_OFF);
-
     if (rval) {
         CPXcloseCPLEX(&cplex_env);
         throw cpx_err(rval, "CPXsetintparam presolve");
     }
+
+    rval = CPXsetintparam(cplex_env, CPX_PARAM_PPRIIND, CPX_PPRIIND_DEVEX);
+    if (rval) {
+        CPXcloseCPLEX(&cplex_env);
+        throw cpx_err(rval, "CPXsetintparam primal pricing");
+    }
+
+    
     char unused;
 
     cplex_lp = CPXcreateprob(cplex_env, &rval, &unused);
