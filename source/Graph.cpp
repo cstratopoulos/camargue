@@ -61,7 +61,7 @@ try
     throw std::runtime_error("TourGraph constructor failed.");
 }
 
-TourGraph::~TourGraph() { CCtsp_free_lpgraph(&L); }
+TourGraph::~TourGraph() { if (&L) CCtsp_free_lpgraph(&L); }
 
 int GraphUtils::connected(SupportGraph *G, int *icount,
 			  std::vector<int> &island,
