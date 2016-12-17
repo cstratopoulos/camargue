@@ -1,7 +1,7 @@
 #include "tests.hpp"
+#include "core_lp.hpp"
 #include "datagroups.hpp"
 #include "cutcontrol.hpp"
-#include "core_lp.hpp"
 #include "util.hpp"
 
 #include <array>

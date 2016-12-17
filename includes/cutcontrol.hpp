@@ -2,7 +2,6 @@
 #define CMR_CUTCONTROL_H
 
 #include "cuts.hpp"
-#include "core_lp.hpp"
 #include "datagroups.hpp"
 #include "karp.hpp"
 

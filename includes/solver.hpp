@@ -1,8 +1,8 @@
 #ifndef CMR_SOLVER_H
 #define CMR_SOLVER_H
 
-#include "datagroups.hpp"
 #include "core_lp.hpp"
+#include "datagroups.hpp"
 #include "cutcontrol.hpp"
 #include "util.hpp"
 
