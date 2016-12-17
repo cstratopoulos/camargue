@@ -42,12 +42,12 @@ namespace Data {
 Instance::Instance() noexcept : handle(nullptr) {}
 
 Instance::Instance(const string &fname, const int seed)
-try : handle(CMR::make_unique<CCdatagroup>()),
-      random_seed(seed) {
-    
+try : handle(CMR::make_unique<CCdatagroup>()), random_seed(seed) {
     if (CCutil_gettsplib(const_cast<char*>(fname.c_str()), &nodecount,
                          ptr()))
         throw runtime_error("CCutil_gettsplib failed.");
+    
+    cout << "Random seed " << seed << "\n";
     
     pname = fname.substr(fname.find_last_of("/") + 1);
     pname = pname.substr(0, pname.find_last_of("."));
@@ -60,8 +60,7 @@ Instance::Instance(const int seed, const int ncount, const int gridsize)
 try : handle(CMR::make_unique<CCdatagroup>()),
       nodecount(ncount),
       random_seed(seed),
-      pname("rand_s" + to_string(seed) + "n" + to_string(ncount) + "g"
-            + to_string(gridsize)) {
+      pname("r" + to_string(ncount) + "g" + to_string(gridsize)) {
   if (ncount <= 0)
       throw logic_error("Specified bad ncount.");
   
@@ -76,9 +75,12 @@ try : handle(CMR::make_unique<CCdatagroup>()),
   int tmp_gridsize = gridsize;
 
   CCutil_sprand(seed, &rstate);
+  
   if (CCutil_getdata((char *) NULL, binary_in, CC_EUCLIDEAN,
 		    &tmp_ncount, ptr(), tmp_gridsize, allow_dups, &rstate))
     throw runtime_error("CCutil_getdata failed.");
+  
+  cout << "Random problem, random seed " << seed << "\n";
 } catch (const exception &e) {
   cerr << e.what() << "\n";
   throw runtime_error("Instance constructor failed.");
@@ -199,7 +201,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
         throw runtime_error("CClinkern_tour failed.");
 
     best_tour_nodes = cyc;
-    cout << "LK run from best tour: " << min_tour_value << "\n";
+    cout << "LK run from best tour: " << min_tour_value << endl;
 
     for (int i = 0; i < perm.size(); ++i)
         perm[best_tour_nodes[i]] = i;
@@ -309,7 +311,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
         if (best_tour_edges[i] == 1)
             min_tour_value += graph.edges[i].len;
 
-    cout << "Loaded and verified tour with length " << min_tour_value << "\n";
+    cout << "Loaded and verified tour with length " << min_tour_value << endl;
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("BestGroup file constructor failed.");
