@@ -37,6 +37,8 @@ public:
 
     CMR::Data::SupportGroup supp_data;
 
+    friend class Solver;
+
 private:
     void handle_aug();
     void handle_fathom();

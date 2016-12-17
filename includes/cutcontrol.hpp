@@ -30,6 +30,8 @@ public:
 
     const CMR::Data::SupportGroup &support_data() const { return supp_data; }
 
+    friend class Solver;
+
 private:
     CMR::Data::GraphGroup &graph_data;
     CMR::Data::BestGroup &best_data;
