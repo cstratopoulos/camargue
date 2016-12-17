@@ -7,6 +7,8 @@
 #ifndef CMR_KARP_H
 #define CMR_KARP_H
 
+#include "datagroups.hpp"
+
 extern "C" {
 #include <concorde/INCLUDE/util.h>
 }
@@ -30,7 +32,9 @@ namespace Data {
  */
 class KarpPartition {
 public:
-  KarpPartition() = default; /**< Construct an empty partition */
+    KarpPartition() = default; /**< Construct an empty partition */
+
+    KarpPartition(const CMR::Data::Instance &inst);
 
   /** Construct a partition from a TSP instance.
    * The data in \p dat is used to construct a Karp partition for a TSP 
