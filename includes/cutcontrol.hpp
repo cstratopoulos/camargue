@@ -1,7 +1,7 @@
 #ifndef CMR_CUTCONTROL_H
 #define CMR_CUTCONTROL_H
 
-#include "cuts.hpp"
+#include "process_cuts.hpp"
 #include "datagroups.hpp"
 #include "karp.hpp"
 
@@ -23,7 +23,7 @@ public:
     LPcutList fast2m_q;
     LPcutList blkcomb_q;
 
-    CMR::CutQueue<CMR::dominoparity> dp_q;
+    CMR::Sep::CutQueue<CMR::Sep::dominoparity> dp_q;
 
     LPcutList connect_q;
 

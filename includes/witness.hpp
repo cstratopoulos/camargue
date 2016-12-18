@@ -3,7 +3,7 @@
 
 #include "datagroups.hpp"
 #include "tooth.hpp"
-#include "cuts.hpp"
+#include "process_cuts.hpp"
 
 
 #include <vector>
@@ -24,7 +24,7 @@ public:
   ~DPwitness();
   
   /** Create a cutgraph and grab odd cuts from it. */
-  bool simple_DP_sep(CMR::CutQueue<CMR::dominoparity> &domino_q);
+  bool simple_DP_sep(CMR::Sep::CutQueue<CMR::Sep::dominoparity> &domino_q);
   
 private:
   void build_light_tree();  /**< Build the tooth inequality tree. */
@@ -37,7 +37,7 @@ private:
   void expand_cut(CC_GHnode *n, std::vector<int> &cut_nodes);
 
   /** Get simple DP inequalities from fundamental cuts of the GH tree. */
-  void grab_dominos(CMR::CutQueue<CMR::dominoparity> &domino_q);
+  void grab_dominos(CMR::Sep::CutQueue<CMR::Sep::dominoparity> &domino_q);
 
   std::vector<std::vector<CMR::SimpleTooth>> light_teeth;
 
@@ -55,11 +55,11 @@ private:
   std::vector<int> cutgraph_delta;
   std::vector<int> cg_delta_marks;
 
-  CMR::CutQueue<CC_GHnode *> CC_gh_q;
+  CMR::Sep::CutQueue<CC_GHnode *> CC_gh_q;
 
   CC_GHtree gh_tree;
   
-  void grab_cuts(CMR::CutQueue<CMR::dominoparity> &domino_q);
+  void grab_cuts(CMR::Sep::CutQueue<CMR::Sep::dominoparity> &domino_q);
 
 };
 

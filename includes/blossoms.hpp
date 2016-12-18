@@ -7,10 +7,12 @@
 #ifndef CMR_BLOSSOMS_H
 #define CMR_BLOSSOMS_H
 
+#include "cut_structs.hpp"
+#include "Graph.hpp"
+
+
 #include <vector>
 
-#include "cuts.hpp"
-#include "Graph.hpp"
 
 
 namespace CMR {

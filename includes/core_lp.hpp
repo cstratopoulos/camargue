@@ -9,7 +9,7 @@
 
 #include "lp_interface.hpp"
 #include "cc_lpcuts.hpp"
-#include "cuts.hpp"
+#include "process_cuts.hpp"
 #include "datagroups.hpp"
 
 #include <vector>
@@ -32,7 +32,7 @@ public:
     void pivot_back();
 
     void add_cuts(CMR::Sep::LPcutList &cutq);
-    void add_cuts(CMR::CutQueue<CMR::dominoparity> &dp_q);
+    void add_cuts(CMR::Sep::CutQueue<CMR::Sep::dominoparity> &dp_q);
 
 
     CMR::Data::SupportGroup supp_data;

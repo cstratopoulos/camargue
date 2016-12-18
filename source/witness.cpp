@@ -37,7 +37,7 @@ supp_dat(cands.supp_dat), perm(cands.best_dat.perm), CC_gh_q(1000)
 
 DPwitness::~DPwitness() { CCcut_GHtreefree(&gh_tree); }
 
-bool DPwitness::simple_DP_sep(CutQueue<dominoparity> &dp_q)
+bool DPwitness::simple_DP_sep(Sep::CutQueue<Sep::dominoparity> &dp_q)
 {
     try {
         build_light_tree();
@@ -216,7 +216,7 @@ void DPwitness::build_gh_tree()
     } CMR_CATCH_PRINT_THROW("dfsing tree for odd cuts", err);
 }
 
-void DPwitness::grab_dominos(CutQueue<dominoparity> &dp_q)
+void DPwitness::grab_dominos(Sep::CutQueue<Sep::dominoparity> &dp_q)
 {
     runtime_error err("Problem in DPwitness::grab_dominos");
     int special_ind = cutgraph_nodes.size() - 1;
@@ -278,7 +278,7 @@ void DPwitness::grab_dominos(CutQueue<dominoparity> &dp_q)
         }
 
         try {
-            dominoparity newDP(used_teeth, handle_nodes, nonneg_edges);
+            Sep::dominoparity newDP(used_teeth, handle_nodes, nonneg_edges);
       
             dp_q.push_back(newDP);
         } CMR_CATCH_PRINT_THROW("adding new dp ineq", err);

@@ -8,7 +8,7 @@
 #include "tooth.hpp"
 #include "datagroups.hpp"
 #include "karp.hpp"
-#include "cuts.hpp"
+#include "process_cuts.hpp"
 
 #include <vector>
 
@@ -22,14 +22,14 @@ public:
            CMR::Data::KarpPartition &_kpart,
            CMR::Data::BestGroup &best_dat,
            CMR::Data::SupportGroup &supp_dat,
-           CMR::CutQueue<dominoparity> &dp_q);
+           CMR::Sep::CutQueue<dominoparity> &dp_q);
 
   bool find_cuts();
 
 private:
   CMR::CandidateTeeth candidates;
   CMR::Data::KarpPartition &kpart;
-  CMR::CutQueue<dominoparity> &dp_q;
+  CMR::Sep::CutQueue<dominoparity> &dp_q;
 };
 
 }

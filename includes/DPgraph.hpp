@@ -8,7 +8,7 @@
 #define CMR_DPGRAPH_HPP
 
 #include "tooth.hpp"
-#include "cuts.hpp"
+#include "process_cuts.hpp"
 
 #include <vector>
 #include <string>
@@ -52,10 +52,10 @@ public:
   std::ofstream cg_out;
 #endif
 
-  int simple_DP_sep(CMR::CutQueue<CMR::dominoparity> &domino_q);
+  int simple_DP_sep(CMR::Sep::CutQueue<CMR::Sep::dominoparity> &domino_q);
 
   //  private:
-  int grab_cuts(CMR::CutQueue<CMR::dominoparity> &domino_q);
+  int grab_cuts(CMR::Sep::CutQueue<CMR::Sep::dominoparity> &domino_q);
 
   int build_light_tree();
   int add_web_edges();
@@ -83,7 +83,7 @@ public:
   std::vector<int> cutgraph_delta;
   std::vector<int> cg_delta_marks;
 
-  CMR::CutQueue<CC_GHnode *> CC_gh_q;
+  CMR::Sep::CutQueue<CC_GHnode *> CC_gh_q;
 
   CC_GHtree gh_tree;
 

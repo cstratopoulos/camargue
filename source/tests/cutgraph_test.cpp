@@ -62,14 +62,14 @@ TEST_CASE ("Tiny simple DP cutgraph tests",
 				  fname,
 #endif
 				  cands);
-	CMR::CutQueue<CMR::dominoparity> dp_q;
+	CMR::Sep::CutQueue<CMR::Sep::dominoparity> dp_q;
 
 	REQUIRE(dp_graph.simple_DP_sep(dp_q) != 1);
 
 	REQUIRE(dp_q.size() == expected_num_cuts);
 
 	while (!dp_q.empty()) {
-	  CMR::dominoparity dp = dp_q.peek_front();
+	  CMR::Sep::dominoparity dp = dp_q.peek_front();
 	  vector<int> &bt = b_dat.best_tour_nodes;
 
 	  cout << "Found dp with....\n";
@@ -119,7 +119,7 @@ TEST_CASE ("simple DP cutgraph tests", "[cutgraph]") {
 	cands.weak_elim();
       
 	CMR::DPCutGraph dp_graph(cands);
-	CMR::CutQueue<CMR::dominoparity> dp_q;
+	CMR::Sep::CutQueue<CMR::Sep::dominoparity> dp_q;
 	
 	REQUIRE(dp_graph.simple_DP_sep(dp_q) == 0);
 	cout << "\n";

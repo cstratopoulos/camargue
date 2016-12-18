@@ -1,7 +1,7 @@
 #ifndef CMR_HYPERGRAPH_H
 #define CMR_HYPERGRAPH_H
 
-#include "cuts.hpp"
+#include "cut_structs.hpp"
 #include "cliq.hpp"
 
 #include <map>
@@ -37,7 +37,7 @@ private:
 class DominoCut {
 public:
     DominoCut(CMR::Sep::CliqueBank &bank,
-              CMR::dominoparity &dp_cut, int rhs,
+              CMR::Sep::dominoparity &dp_cut, int rhs,
               const std::vector<int> &tour);
 
     ~DominoCut();
@@ -63,7 +63,7 @@ class ExternalCuts {
                  const std::vector<int> &current_tour);
 
     /** Add a simple DP cut. */
-    void add_cut(CMR::dominoparity &dp_cut,
+    void add_cut(CMR::Sep::dominoparity &dp_cut,
                  const std::vector<int> &current_tour);
 
     /** Delete the cuts indicated by \p delset. 

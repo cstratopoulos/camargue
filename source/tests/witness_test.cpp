@@ -4,7 +4,7 @@
 #include "karp.hpp"       //project may not compile
 
 #include "tooth.hpp"
-#include "cuts.hpp"
+#include "process_cuts.hpp"
 #include "witness.hpp"
 
 #include <iostream>
@@ -56,7 +56,7 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
 
         REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(ncount,
                                                          inst.ptr(), 99));
-        CMR::CutTranslate translator(g_dat);
+        CMR::Sep::CutTranslate translator(g_dat);
         
         double tt = CMR::zeit();
         CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);	      
@@ -77,7 +77,7 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
         for (int i = 0; i < kpart.num_parts(); ++i) {
           double sep = CMR::zeit();
           CMR::DPwitness dpgraph(cands, kpart[i]);
-          CMR::CutQueue<CMR::dominoparity> dp_q(25);
+          CMR::Sep::CutQueue<CMR::Sep::dominoparity> dp_q(25);
           
           REQUIRE_NOTHROW(dpgraph.simple_DP_sep(dp_q));          
           sep = CMR::zeit() - sep;
@@ -93,7 +93,7 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
             char sense;
             double rhs;
 	  
-            const CMR::dominoparity &dp_cut = dp_q.peek_front();
+            const CMR::Sep::dominoparity &dp_cut = dp_q.peek_front();
             vector<int> &bt = b_dat.best_tour_nodes;
             double tour_activity, lp_activity;
             REQUIRE_FALSE(translator.get_sparse_row(dp_cut, bt, rmatind,

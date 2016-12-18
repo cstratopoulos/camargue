@@ -1,7 +1,7 @@
 #include "tests.hpp"
 #include "cc_lpcuts.hpp"
 #include "datagroups.hpp"
-#include "cuts.hpp"
+#include "process_cuts.hpp"
 
 #include <catch.hpp>
 
@@ -50,7 +50,7 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
 
           vector<int> &perm = b_dat.perm;
 
-          CMR::CutTranslate processor(g_dat);
+          CMR::Sep::CutTranslate processor(g_dat);
 
           for (auto cur = cutq.begin(); cur; cur = cur->next) {
               vector<int> rmatind;
@@ -121,7 +121,7 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
 
           vector<int> &perm = b_dat.perm;
 
-          CMR::CutTranslate processor(g_dat);
+          CMR::Sep::CutTranslate processor(g_dat);
 
           for (auto cur = cutq.begin(); cur; cur = cur->next) {
               vector<int> rmatind;

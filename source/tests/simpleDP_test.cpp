@@ -2,7 +2,7 @@
 #include "datagroups.hpp"
 #include "tooth.hpp"
 #include "simpleDP.hpp"
-#include "cuts.hpp"
+#include "process_cuts.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -53,8 +53,8 @@ SCENARIO("Separating simple DP inequalities in small instances",
                 REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(ncount,
                                                                  inst.ptr(),
                                                                  99));
-                CMR::CutTranslate translator(g_dat);
-                CMR::CutQueue<CMR::dominoparity> dp_q(100);
+                CMR::Sep::CutTranslate translator(g_dat);
+                CMR::Sep::CutQueue<CMR::Sep::dominoparity> dp_q(100);
 
                 CMR::Sep::SimpleDP sDP(g_dat, kpart, b_dat, s_dat, dp_q);
 
@@ -68,7 +68,7 @@ SCENARIO("Separating simple DP inequalities in small instances",
                     char sense;
                     double rhs;
 	  
-                    const CMR::dominoparity &dp_cut = dp_q.peek_front();
+                    const CMR::Sep::dominoparity &dp_cut = dp_q.peek_front();
                     vector<int> &bt = b_dat.best_tour_nodes;
                     double tour_activity, lp_activity;
                     REQUIRE_FALSE(translator.get_sparse_row(dp_cut, bt, rmatind,
@@ -129,8 +129,8 @@ SCENARIO("Separating simple DP inequalities in medium instances",
                 REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(ncount,
                                                                  inst.ptr(),
                                                                  99));
-                CMR::CutTranslate translator(g_dat);
-                CMR::CutQueue<CMR::dominoparity> dp_q(1000);
+                CMR::Sep::CutTranslate translator(g_dat);
+                CMR::Sep::CutQueue<CMR::Sep::dominoparity> dp_q(1000);
 
                 CMR::Sep::SimpleDP sDP(g_dat, kpart, b_dat, s_dat, dp_q);
 
@@ -144,7 +144,7 @@ SCENARIO("Separating simple DP inequalities in medium instances",
                     char sense;
                     double rhs;
 	  
-                    const CMR::dominoparity &dp_cut = dp_q.peek_front();
+                    const CMR::Sep::dominoparity &dp_cut = dp_q.peek_front();
                     vector<int> &bt = b_dat.best_tour_nodes;
                     double tour_activity, lp_activity;
           
@@ -215,8 +215,8 @@ SCENARIO("Separating simple DP inequalities in large instances",
                 REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(ncount,
                                                                  inst.ptr(),
                                                                  99));
-                CMR::CutTranslate translator(g_dat);
-                CMR::CutQueue<CMR::dominoparity> dp_q(1000);
+                CMR::Sep::CutTranslate translator(g_dat);
+                CMR::Sep::CutQueue<CMR::Sep::dominoparity> dp_q(1000);
 
                 CMR::Sep::SimpleDP sDP(g_dat, kpart, b_dat, s_dat, dp_q);
 
@@ -230,7 +230,7 @@ SCENARIO("Separating simple DP inequalities in large instances",
                     char sense;
                     double rhs;
 	  
-                    const CMR::dominoparity &dp_cut = dp_q.peek_front();
+                    const CMR::Sep::dominoparity &dp_cut = dp_q.peek_front();
                     vector<int> &bt = b_dat.best_tour_nodes;
                     double tour_activity, lp_activity;
                     REQUIRE_FALSE(translator.get_sparse_row(dp_cut, bt, rmatind,
