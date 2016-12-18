@@ -80,26 +80,6 @@ struct safeGMI {
 
 
 /*
- * This pure abstract class defines the interface to a separation routine
- * for a given cut type
- *
- * cut_call - the wrapper function calling all the protected methods
- * separate - invokes the separation routine for cuts of type cut_t
- * add_cut - the function for actually adding the row
- *           TODO: will just add the hypergraph to queue??
- * see segments.hpp, blossoms.hpp, dominos.hpp, etc for examples
- */
-template<typename cut_t> class Cut {
-public:
-    virtual int cutcall();// = 0;
-
-protected:
-    virtual int separate();// = 0;
-    virtual int add_cuts();// = 0;
-};
-
-
-/*
  * This template class provides an interface for dealing with a queue of
  * representations of cuts, cut_rep. In practice this 
  * will be a HyperGraph (see setbank.hpp), or a structure for storing simple
