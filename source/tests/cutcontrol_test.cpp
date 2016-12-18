@@ -1,7 +1,7 @@
 #include "tests.hpp"
 #include "core_lp.hpp"
 #include "datagroups.hpp"
-#include "cutcontrol.hpp"
+#include "separator.hpp"
 #include "util.hpp"
 
 #include <array>
@@ -21,7 +21,7 @@ using std::cout;
 
 /*
 SCENARIO ("Adding duplicate cuts",
-          "[LP][Sep][CoreLP][CutControl][Basis]") {
+          "[LP][Sep][CoreLP][Separator][Basis]") {
     vector<string> probs{"dantzig42", "pr76"};
 
     for (string &prob : probs) {
@@ -80,7 +80,7 @@ SCENARIO ("Adding duplicate cuts",
 */
 
 SCENARIO ("Pivoting and adding cuts",
-         "[LP][Sep][CoreLP][CutControl]") {
+         "[LP][Sep][CoreLP][Separator]") {
     vector<string> probs{"dantzig42", "st70", "pr76", "lin105",
                          "lin318", "d493", "att532", "pr1002", "rl1304",
                          "d2103", "pr2392"};
@@ -110,7 +110,7 @@ SCENARIO ("Pivoting and adding cuts",
                                       g_dat.m_graph.edges,
                                       b_dat.perm);
 
-                    CMR::Sep::CutControl control(g_dat, b_dat, s_dat, kpart);
+                    CMR::Sep::Separator control(g_dat, b_dat, s_dat, kpart);
 
                     REQUIRE(control.find_cuts(TG));
 

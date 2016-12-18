@@ -147,7 +147,7 @@ LP::PivType Solver::cutting_loop()
         }
 
         Data::SupportGroup &supp_data = core_lp.supp_data;
-        Sep::CutControl separator(graph_data, best_data, supp_data,
+        Sep::Separator separator(graph_data, best_data, supp_data,
                                   karp_part);
 
         try {

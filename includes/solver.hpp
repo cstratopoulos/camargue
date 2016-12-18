@@ -3,7 +3,7 @@
 
 #include "core_lp.hpp"
 #include "datagroups.hpp"
-#include "cutcontrol.hpp"
+#include "separator.hpp"
 #include "util.hpp"
 
 #include <string>
