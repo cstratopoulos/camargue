@@ -51,6 +51,9 @@ try : handle(CMR::make_unique<CCdatagroup>()), random_seed(seed) {
     
     pname = fname.substr(fname.find_last_of("/") + 1);
     pname = pname.substr(0, pname.find_last_of("."));
+
+    cout << std::fixed;
+
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Instance constructor failed.");
@@ -79,6 +82,9 @@ try : handle(CMR::make_unique<CCdatagroup>()),
   if (CCutil_getdata((char *) NULL, binary_in, CC_EUCLIDEAN,
 		    &tmp_ncount, ptr(), tmp_gridsize, allow_dups, &rstate))
     throw runtime_error("CCutil_getdata failed.");
+
+  cout << std::fixed;
+
   
   cout << "Random problem, random seed " << seed << "\n";
 } catch (const exception &e) {

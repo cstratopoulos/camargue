@@ -21,6 +21,7 @@ using std::exception;
 
 using std::vector;
 
+
 namespace CMR {
 
 inline static int make_seed(const int seed)
@@ -82,7 +83,7 @@ void Solver::report_piv(LP::PivType piv, int round)
         break;
     case LP::PivType::Tour:
         cout << "\tAugmented to tour of length "
-             << core_lp.get_objval();
+             << core_lp.get_objval() << "\n";
         break;
     default:
         cout << "\t Pivot status: \t" << LP::piv_string(piv) << "\n"
@@ -109,6 +110,7 @@ LP::PivType Solver::cutting_loop()
     vector<int> &perm = best_data.perm;
 
     std::unique_ptr<TourGraph> TG;
+
 
     try {
         TG = CMR::make_unique<TourGraph>(tour_edges, edges, perm);        
