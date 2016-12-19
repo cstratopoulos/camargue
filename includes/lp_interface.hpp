@@ -71,6 +71,10 @@ public:
                        std::vector<double> &downratio,
                        std::vector<double> &upratio);
 
+    void dual_strong_branch(const std::vector<int> &indices,
+                            std::vector<double> &downobj,
+                            std::vector<double> &upobj, int itlim);
+
 
     ///@}
 
