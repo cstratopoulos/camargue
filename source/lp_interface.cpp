@@ -396,5 +396,18 @@ vector<double> Relaxation::pi(int begin, int end) const
     return info_vec(CPXgetpi, "CPXgetpi", cplex_env, cplex_lp, begin, end);
 }
 
+void Relaxation::get_penalties(const vector<int> &indices,
+                               vector<double> &downratio,
+                               vector<double> &upratio)
+{
+    downratio.resize(indices.size());
+    upratio.resize(indices.size());
+
+    int rval = CPXmdleave(cplex_env, cplex_lp, &indices[0], indices.size(),
+                          &downratio[0], &upratio[0]);
+    if (rval)
+        throw cpx_err(rval, "CPXmdleave");
+}
+
 }
 }

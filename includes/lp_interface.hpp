@@ -67,6 +67,10 @@ public:
     void get_pi(std::vector<double> &pi, int begin, int end) const;
     std::vector<double> pi(int begin, int end) const;
 
+    void get_penalties(const std::vector<int> &indices,
+                       std::vector<double> &downratio,
+                       std::vector<double> &upratio);
+
 
     ///@}
 
