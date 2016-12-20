@@ -6,17 +6,24 @@
 #include "karp.hpp"
 
 namespace CMR {
+
 namespace Sep {
 
+/** Class for separation of cutting planes.
+ * This class is instantiated with data about active edges in a relaxation
+ * and a current lp solution, then used to search for cuts violated by the
+ * solution vector. 
+ */
 class Separator {
 public:
+
     Separator(CMR::Data::GraphGroup &graphdata,
-               CMR::Data::BestGroup &bestdata,
-               CMR::Data::SupportGroup &suppdata,
-               CMR::Data::KarpPartition &kpart) :
+              CMR::Data::BestGroup &bestdata,
+              CMR::Data::SupportGroup &suppdata,
+              CMR::Data::KarpPartition &kpart) :
         graph_data(graphdata), best_data(bestdata), supp_data(suppdata),
         karp_part(kpart){}
-
+    
     bool find_cuts(CMR::TourGraph &TG);
 
     LPcutList seg_q;

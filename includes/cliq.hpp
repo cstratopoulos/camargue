@@ -15,32 +15,65 @@ extern "C" {
 namespace CMR {
 namespace Sep {
 
-/** Class for storing segment lists representing edges of a hypergraph. */
+/** Class for storing segment lists representing edges of a hypergraph. 
+ * A Clique stores a subset of vertices as a list of CMR::Segment objects,
+ * where the start and endpoints indicate a range of nodes from a tour. 
+ * Thus, a Clique is meaningless without a tour from which to be 
+ * derefrenced. 
+ */
 class Clique {
 public:
     Clique() = default;
-    
+
+    /** Construct a Clique from a Concorde clique. 
+     * If \p cc_cliq is the clique and \p current_tour was the resident
+     * best tour when the clique was found, construct a Clique where the
+     * nodes in \p cc_cliq are represented as indices from \p saved_tour with
+     * corresponding permutation vector \p saved_perm.
+     */
     Clique(const CCtsp_lpclique &cc_cliq,
            const std::vector<int> &saved_tour,
            const std::vector<int> &saved_perm,
            const std::vector<int> & current_tour);
 
+    /** Construct a Clique from start and end indices.
+     * If \p current_tour is the resident best tour, constructs the Clique
+     * corresponding to the nodes
+     * `current_tour[start]` up to `current_tour[end]`,
+     * as indices from \p saved_tour.
+     */
     Clique(int start, int end,
            const std::vector<int> &saved_tour,
            const std::vector<int> &saved_perm,
            const std::vector<int> & current_tour);
 
+    /** Construct a Clique from a list of literal nodes.
+     * The vector \p nodes shall be a list of nodes in the graph relative
+     * to some absolute order rather than one dependent on a given tour. 
+     * They will be stored in a list of CMR::Segment objects using indices
+     * obtained from \p perm, hence implicitly represented in terms of the 
+     * tour corresponding to \p perm.
+     */
     Clique(std::vector<int> &nodes,
            const std::vector<int> &perm);
 
     using Ptr = std::shared_ptr<Clique>;
 
+    /** How many segments are used to represent the Clique. */
     int seg_count() const { return seglist.size(); }
 
+    /** A constant reference to the list of segments in the Clique. */
     const std::vector<CMR::Segment> &seg_list() const { return seglist; }
+
+    /** A list of literal nodes represented by the Clique.
+     * Given a Clique, if \p saved_tour was the active tour when the Clique
+     * was constructed, this method returns a vector of the literal nodes
+     * obtained by dereferencing \p saved_tour for the ranges specified
+     * in the segment list. 
+     */
     std::vector<int> node_list(const std::vector<int> &saved_tour) const;
     
-
+    /** Equality operator. */
     bool operator==(const Clique &rhs) const { return seglist == rhs.seglist; }
     
 private:

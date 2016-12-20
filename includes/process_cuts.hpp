@@ -23,10 +23,10 @@ template<typename cut_rep>
 class CutQueue {
 public:
     /** Construct a CutQueue with unlimited capacity. */
-    CutQueue() : q_capacity(std::numeric_limits<int>::max()), q_fresh(true) {}
+    CutQueue() : q_capacity(std::numeric_limits<int>::max()) {}
 
     /** Construct a CutQueue with capacity \p cap. */
-    CutQueue(const int cap) : q_capacity(cap), q_fresh(true) {}
+    CutQueue(const int cap) : q_capacity(cap) {}
   
     const int q_capacity; /**< How many cuts can be stored in the queue. */
 
@@ -56,7 +56,7 @@ public:
     bool empty() const { return cut_q.empty(); } /**< Is the queue empty. */
     int size() const { return cut_q.size(); } /**< Number of cuts in queue. */
 
-    void clear() { cut_q.clear(); }
+    void clear() { cut_q.clear(); } /**< Clear the queue. */
 
     using Itr = typename std::list<cut_rep>::iterator;
     using ConstItr = typename std::list<cut_rep>::const_iterator;
@@ -66,8 +66,6 @@ public:
 
     ConstItr begin() const { return cut_q.begin(); }
     ConstItr end() const { return cut_q.end(); }
-
-    bool q_fresh;
 
 private:
     std::list<cut_rep> cut_q;

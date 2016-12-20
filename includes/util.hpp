@@ -14,7 +14,6 @@
 #include <unordered_map>
 #include <vector>
 #include <iostream>
-#include <type_traits>
 #include <limits>
 #include <string>
 #include <memory>
@@ -149,8 +148,23 @@ struct C_resource_deleter {
 };
 
 
-typedef std::unique_ptr<int, C_resource_deleter<int>> c_array_ptr;
+/** Alias declaration for unique_ptr to C array.
+ * This specialization of unique_ptr takes ownership of a C-style array which
+ * was dynamically allocated by a C routine, freeing its memory 
+ * appropriately when necessary.
+ */
+using c_array_ptr = std::unique_ptr<int, C_resource_deleter<int>>;
 
+/** Alias template for C structs with free/init functions.
+ * Suggested usage is as follows. In Concorde there are many structures of the
+ * form `struct CCtsp_struct` which are used as `CCtsp_struct *S`
+ * which is malloc'd, initialized by `CCtsp_init_struct(S)`, and then the
+ * associated memory is freed by a call to `CCtsp_free_struct(S)`. Hence
+ * declare `*S` and call `CCtsp_init_struct(S)`, and then manage the object
+ * by c_struct_ptr(S, &CCts_free_struct) to create a unique_ptr which will
+ * automatically free S using the appropriate Concorde function to release
+ * the memory. 
+ */
 template <typename T>
 using c_struct_ptr = std::unique_ptr<T, void(*)(T*)>;
 
@@ -175,26 +189,55 @@ struct edge_hash {
 
 typedef std::unordered_map<IntPair, int, edge_hash> IntPairMap;
 
+/** Simple utility struct for storing an interval of nodes.
+ * A Segment is defined in terms of some list of nodes, usually a tsp tour.
+ * If \p tour is the nodelist, then a Segment `S` defined relative to tour
+ * represents the nodes `tour[S.start], ..., tour[S.end]`. Thus a Segment
+ * is meaningless without a tour from which to be dereferenced. 
+ * @remark Representation of nodes as a segment of a tour is a common theme
+ * in tsp computation, and for primal cutting plane tsp computation in 
+ * particular. This class is open for inheritance to define subtour cuts 
+ * associated to segments, bodies of simple teeth, and simple teeth themselves
+ * where the notion of size and containment is identical.
+ */
 struct Segment {
+    /** Default construct a Segment. */
     Segment() = default;
+
+    /** Construct a Segment with specified start and end point. */
     Segment(int lo, int hi) : start(lo), end(hi) {}
 
+    /** Size of the Segment.
+     * This is the number of the nodes in the closed interval from 
+     * \p start to \p end.
+     */
     int size() const { return end - start + 1; }
+
+    /** Does the Segment contain a certain vertex.
+     * Returns true iff \p vx lies in the interval specified by the Segment.
+     */
     bool contains(int vx) const { return start <= vx && vx <= end; }
+
+    /** Is one Segment a subset of the other.
+     * Returns true iff the interval defined by this Segment is a subset of
+     * that defined by \p seg.
+     */
     bool subset_of(const Segment &seg) const
     { return seg.contains(start) && seg.contains(end); }
 
+    /** Compare segments by size and then start point. */
     bool operator>(const Segment &rhs) const
     {
         return std::make_tuple(size(), start, end) >
         std::make_tuple(rhs.size(), rhs.start, rhs.end);
     }
 
+    /** Equality operator. */
     bool operator==(const Segment &rhs) const
     { return start == rhs.start && end == rhs.end; }
 
-    int start;
-    int end;
+    int start; /**< The start index of the Segment. */
+    int end; /**< The end index of the Segment. */
 };
     
 }
