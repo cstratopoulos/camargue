@@ -22,7 +22,12 @@ public:
     HyperGraph(CMR::Sep::CliqueBank &bank,
                const CCtsp_lpcut_in &cc_lpcut,
                const std::vector<int> &tour);
-    
+
+    /** Destruct a HyperGraph.
+     * Goes through the source Cliquebank, decrementing reference count
+     * on all Cliques used in the HyperGraph, purging Cliques from 
+     * the CliqueBank if necessary. 
+     */
     ~HyperGraph();
     
 private:

@@ -7,6 +7,7 @@
 
 namespace CMR {
 
+/** Namespace for matters related to cuts and separation of cutting planes. */
 namespace Sep {
 
 /** Class for separation of cutting planes.

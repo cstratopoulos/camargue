@@ -34,14 +34,7 @@ struct default_delete<CCdatagroup> {
 
 namespace CMR {
 
-/** Namespace for storing data groups.
- * Classes in this namespace store data compartmentalized to specific aspects
- * of the TSP solution process. The idea is that higher level controller
- * objects in the solution process (such as TSPSolver, PureCut, Separator, 
- * ABC, LP::Core, etc. should be initialized with some or all of these 
- * datagroups and, if applicable, individual members of relevant groups should
- * be passed to members or methods. 
- */
+/** Namespace for storing data groups. */
 namespace Data {
 
 /** Class for storing raw TSP instance data.

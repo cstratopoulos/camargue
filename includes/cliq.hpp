@@ -57,7 +57,8 @@ public:
     Clique(std::vector<int> &nodes,
            const std::vector<int> &perm);
 
-    using Ptr = std::shared_ptr<Clique>;
+
+    using Ptr = std::shared_ptr<Clique>; /**< shared_ptr alias declaration. */
 
     /** How many segments are used to represent the Clique. */
     int seg_count() const { return seglist.size(); }
