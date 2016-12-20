@@ -14,6 +14,9 @@
 namespace CMR {
 namespace LP {
 
+double branch_score(double multiplier, double val0, double val1);
+
+
 /** Class for storing an lp relaxation via interface to an lp solver. 
  * This structure stores the environment and lp data structures of the lp 
  * solver, and contains methods for modifying the relaxation in the sense of
@@ -102,7 +105,7 @@ public:
     void dual_strong_branch(const std::vector<int> &indices,
                             std::vector<double> &downobj,
                             std::vector<double> &upobj, int itlim,
-                            double upperbound, bool opt_first);
+                            double upperbound);
 
     /** Get modified strong branch objective values.
      * This function behaves like dual_strong_branch, but with

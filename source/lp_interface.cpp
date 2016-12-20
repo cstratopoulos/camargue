@@ -25,6 +25,9 @@ using cpx_err = CMR::retcode_error;
 namespace CMR {
 namespace LP {
 
+constexpr double CPXzero = 1E-10;
+constexpr double CPXint_tol = 0.0001;
+
 template <typename cplex_query>
 std::vector<double> info_vec(cplex_query F, const char* Fname,
                              const CPXENVptr cplex_env,
@@ -417,19 +420,8 @@ void Relaxation::get_penalties(const vector<int> &indices,
 void Relaxation::dual_strong_branch(const vector<int> &indices,
                                     vector<double> &downobj,
                                     vector<double> &upobj,
-                                    int itlim, double upperbound,
-                                    bool opt_first)
+                                    int itlim, double upperbound)
 {
-    vector<double> old_x;
-    vector<int> old_colstat;
-    vector<int> old_rowstat;
-
-    if (opt_first) {
-        get_base(old_colstat, old_rowstat);
-        get_x(old_x);
-        dual_opt();
-    }
-
     double old_ub;
     int old_perind;
     int rval = 0;
@@ -468,11 +460,6 @@ void Relaxation::dual_strong_branch(const vector<int> &indices,
     if (rval)
         throw cpx_err(rval, "CPXsetdblparam perturb ind");
     ////
-
-    if (opt_first) {
-        copy_start(old_x, old_colstat, old_rowstat);
-        factor_basis();
-    }
 }
 
 void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
