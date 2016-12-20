@@ -1,5 +1,6 @@
 #include "lp_interface.hpp"
 #include "err_util.hpp"
+#include "util.hpp"
 
 #include <stdexcept>
 #include <iostream>
@@ -62,31 +63,32 @@ Relaxation::Relaxation() try
     if (rval) 
         throw cpx_err(rval, "CPXopenCPLEX");
 
+    auto cleanup = CMR::make_guard([&rval, this] {
+        if (rval)
+            CPXcloseCPLEX(&cplex_env);
+    });
+
     rval = CPXsetintparam(cplex_env, CPX_PARAM_AGGIND, CPX_OFF);
-    if (rval) {
-        CPXcloseCPLEX(&cplex_env);
+    if (rval)
         throw cpx_err(rval, "CPXsetintparam aggregator");
-    }
     
     rval = CPXsetintparam(cplex_env, CPX_PARAM_PREIND, CPX_OFF);
-    if (rval) {
-        CPXcloseCPLEX(&cplex_env);
+    if (rval)
         throw cpx_err(rval, "CPXsetintparam presolve");
-    }
 
     rval = CPXsetintparam(cplex_env, CPX_PARAM_PPRIIND, CPX_PPRIIND_DEVEX);
-    if (rval) {
-        CPXcloseCPLEX(&cplex_env);
+    if (rval) 
         throw cpx_err(rval, "CPXsetintparam primal pricing");
-    }
 
+    rval = CPXsetintparam(cplex_env, CPX_PARAM_DPRIIND, CPX_DPRIIND_STEEP);
+    if (rval)
+        throw cpx_err(rval, "CPXsetintparam dual pricing");
     
     char unused;
 
     cplex_lp = CPXcreateprob(cplex_env, &rval, &unused);
 
     if (rval) {
-        CPXcloseCPLEX(&cplex_env);
         throw cpx_err(rval, "CPXcreateprob");
     }
 
@@ -262,32 +264,28 @@ void Relaxation::copy_start(const vector<double> &x,
 
 void Relaxation::factor_basis()
 {
-    runtime_error err("problem in factor_basis.");
+    int rval = 0;
+    CPXLONG old_itlim;
 
-    int rval = CPXsetlongparam(cplex_env, CPX_PARAM_ITLIM, 0);
-    if (rval) {
-        cerr << "CPXsetlongparam itlim clamp failed, rval: " << rval << "\n";
-        throw err;
-    }
+    rval = CPXgetlongparam(cplex_env, CPX_PARAM_ITLIM, &old_itlim);
+    if (rval)
+        throw cpx_err(rval, "CPXgetlongparam itlim");
+
+    rval = CPXsetlongparam(cplex_env, CPX_PARAM_ITLIM, 0);
+    if (rval)
+        throw cpx_err(rval, "CPXsetlongparam itlim clamp");
 
     rval = CPXprimopt(cplex_env, cplex_lp);
-    if (rval) {
-        cerr << "CPXprimopt failed, rval: " << rval << "\n";
-        throw err;
-    }
+    if (rval)
+        throw cpx_err(rval, "CPXprimopt 0 iterations");
 
     int solstat = CPXgetstat(cplex_env, cplex_lp);
-    if (solstat != CPX_STAT_ABORT_IT_LIM) {
-        cerr << "Solstat: " << solstat << "\n";
-        throw err;
-    }
+    if (solstat != CPX_STAT_ABORT_IT_LIM)
+        throw cpx_err(solstat, "CPXgetstat in factor_basis");
 
-    rval = CPXsetlongparam(cplex_env, CPX_PARAM_ITLIM,
-                           9223372036800000000);
-    if (rval) {
-        cerr << "CPXsetlong param itlim revert failed, rval: " << rval << "\n";
-        throw err;
-    }
+    rval = CPXsetlongparam(cplex_env, CPX_PARAM_ITLIM, old_itlim);
+    if (rval)
+        throw cpx_err(rval, "CPXsetlongparam revert itlim");
 }
 
 void Relaxation::primal_opt()
@@ -295,6 +293,13 @@ void Relaxation::primal_opt()
     int rval = CPXprimopt(cplex_env, cplex_lp);
     if (rval)
         throw cpx_err(rval, "CPXprimopt");
+}
+
+void Relaxation::dual_opt()
+{
+    int rval = CPXdualopt(cplex_env, cplex_lp);
+    if (rval)
+        throw cpx_err(rval, "CPXdualopt");
 }
 
 void Relaxation::nondegen_pivot(const double lowlimit)
@@ -408,6 +413,203 @@ void Relaxation::get_penalties(const vector<int> &indices,
     if (rval)
         throw cpx_err(rval, "CPXmdleave");
 }
+
+void Relaxation::dual_strong_branch(const vector<int> &indices,
+                                    vector<double> &downobj,
+                                    vector<double> &upobj,
+                                    int itlim, double upperbound,
+                                    bool opt_first)
+{
+    vector<double> old_x;
+    vector<int> old_colstat;
+    vector<int> old_rowstat;
+
+    if (opt_first) {
+        get_base(old_colstat, old_rowstat);
+        get_x(old_x);
+        dual_opt();
+    }
+
+    double old_ub;
+    int old_perind;
+    int rval = 0;
+
+    //Grabbing old upper bound and perturb index
+    rval = CPXgetdblparam(cplex_env, CPX_PARAM_OBJULIM, &old_ub);
+    if (rval)
+        throw cpx_err(rval, "CPXgetdblparam obj ulim");
+
+    rval = CPXgetintparam(cplex_env, CPX_PARAM_PERIND, &old_perind);
+    if (rval)
+        throw cpx_err(rval, "CPXgetintparam perturb ind");
+    ////
+
+    //Setting upper bound to upperbound, disabling perturbation
+    rval = CPXsetdblparam(cplex_env, CPX_PARAM_OBJULIM, upperbound);
+    if (rval)
+        throw cpx_err(rval, "CPXsetdblparam obj ulim");
+
+    rval = CPXsetintparam(cplex_env, CPX_PARAM_PERIND, 0);
+    if (rval)
+        throw cpx_err(rval, "CPXsetdblparam perturb ind");
+    ////
+
+    rval = CPXstrongbranch(cplex_env, cplex_lp, &indices[0], indices.size(),
+                           &downobj[0], &upobj[0], itlim);
+    if (rval)
+        throw cpx_err(rval, "CPXstrongbranch");
+    
+    //Reverting upper bound and perturbation
+    rval = CPXsetdblparam(cplex_env, CPX_PARAM_OBJULIM, old_ub);
+    if (rval)
+        throw cpx_err(rval, "CPXsetdblparam obj ulim");
+
+    rval = CPXsetintparam(cplex_env, CPX_PARAM_PERIND, old_perind);
+    if (rval)
+        throw cpx_err(rval, "CPXsetdblparam perturb ind");
+    ////
+
+    if (opt_first) {
+        copy_start(old_x, old_colstat, old_rowstat);
+        factor_basis();
+    }
+}
+
+void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
+                                      const vector<int> &colstat,
+                                      const vector<int> &rowstat,
+                                      const vector<int> &indices,
+                                      vector<double> &downobj,
+                                      vector<double> &upobj,
+                                      int itlim, double upperbound)
+{
+    double old_ub;
+    int old_perind;
+    int old_primal_price;
+    CPXLONG old_itlim;
+    int rval = 0;
+
+    //Grabbing old upper bound and perturb index
+    rval = CPXgetdblparam(cplex_env, CPX_PARAM_OBJULIM, &old_ub);
+    if (rval)
+        throw cpx_err(rval, "CPXgetdblparam obj ulim");
+
+    rval = CPXgetintparam(cplex_env, CPX_PARAM_PERIND, &old_perind);
+    if (rval)
+        throw cpx_err(rval, "CPXgetintparam perturb ind");
+
+    rval = CPXgetintparam(cplex_env, CPX_PARAM_PPRIIND, &old_primal_price);
+    if (rval)
+        throw cpx_err(rval, "CPXgetintparam primal price");
+
+    rval = CPXgetlongparam(cplex_env, CPX_PARAM_ITLIM, &old_itlim);
+    if (rval)
+        throw cpx_err(rval, "CPXgetlongparam itlim");
+    ////
+
+    //Setting upper bound to upperbound, disabling perturbation
+    rval = CPXsetdblparam(cplex_env, CPX_PARAM_OBJULIM, upperbound);
+    if (rval)
+        throw cpx_err(rval, "CPXsetdblparam obj ulim");
+
+    rval = CPXsetintparam(cplex_env, CPX_PARAM_PERIND, 0);
+    if (rval)
+        throw cpx_err(rval, "CPXsetdblparam perturb ind");
+
+    rval = CPXsetintparam(cplex_env, CPX_PARAM_PPRIIND, CPX_PPRIIND_STEEP);
+    if (rval)
+        throw cpx_err(rval, "CPXsetintparam primal price");
+
+    rval = CPXsetlongparam(cplex_env, CPX_PARAM_ITLIM, itlim);
+    if (rval)
+        throw cpx_err(rval, "CPXsetintparam itlim");
+    ////
+
+    downobj.reserve(indices.size());
+    upobj.reserve(indices.size());
+
+    for (const int &ind : indices) {
+        double zero = 0.0;
+        double one = 1.0;
+        char upper = 'U';
+        char lower = 'L';
+        int solstat;
+        
+        /////down clamp/////
+        copy_start(tour_vec, colstat, rowstat);
+        
+        rval = CPXtightenbds(cplex_env, cplex_lp, 1, &ind, &upper, &zero);
+        if (rval)
+            throw cpx_err(rval, "CPXtightenbds down clamp");
+
+        primal_opt();
+
+        solstat = CPXgetstat(cplex_env, cplex_lp);
+
+        if (solstat == CPX_STAT_ABORT_IT_LIM ||
+            solstat == CPX_STAT_ABORT_OBJ_LIM ||
+            solstat == CPX_STAT_OPTIMAL ||
+            solstat == CPX_STAT_OPTIMAL_INFEAS)
+            downobj.push_back(get_objval());
+        else if (solstat == CPX_STAT_INFEASIBLE)
+            downobj.push_back(CMR::DoubleMax);
+        else 
+            throw cpx_err(solstat, "CPXgetstat in down clamp");
+        
+        rval = CPXtightenbds(cplex_env, cplex_lp, 1, &ind, &upper, &one);
+        if (rval)
+            throw cpx_err(rval, "CPXtightenbds down unclamp");
+        
+        /////up clamp////
+        copy_start(tour_vec, colstat, rowstat);
+        
+        rval = CPXtightenbds(cplex_env, cplex_lp, 1, &ind, &lower, &one);
+        if (rval)
+            throw cpx_err(rval, "CPXtightenbds up clamp");
+
+        primal_opt();
+
+        solstat = CPXgetstat(cplex_env, cplex_lp);
+
+        if (solstat == CPX_STAT_ABORT_IT_LIM ||
+            solstat == CPX_STAT_ABORT_OBJ_LIM ||
+            solstat == CPX_STAT_OPTIMAL ||
+            solstat == CPX_STAT_OPTIMAL_INFEAS)
+            upobj.push_back(get_objval());
+        else if (solstat == CPX_STAT_INFEASIBLE)
+            upobj.push_back(CMR::DoubleMax);
+        else 
+            throw cpx_err(solstat, "CPXgetstat in down clamp");
+
+        rval = CPXtightenbds(cplex_env, cplex_lp, 1, &ind, &lower, &zero);
+        if (rval)
+            throw cpx_err(rval, "CPXtightenbds up unclamp");
+    }
+
+    copy_start(tour_vec, colstat, rowstat);
+    factor_basis();
+
+
+    //Reverting upper bound and perturbation
+    rval = CPXsetdblparam(cplex_env, CPX_PARAM_OBJULIM, old_ub);
+    if (rval)
+        throw cpx_err(rval, "CPXsetdblparam obj ulim");
+
+    rval = CPXsetintparam(cplex_env, CPX_PARAM_PERIND, old_perind);
+    if (rval)
+        throw cpx_err(rval, "CPXsetdblparam perturb ind");
+
+    rval = CPXsetintparam(cplex_env, CPX_PARAM_PPRIIND, old_primal_price);
+    if (rval)
+        throw cpx_err(rval, "CPXsetintparam primal price");
+
+    rval = CPXsetlongparam(cplex_env, CPX_PARAM_ITLIM, old_itlim);
+    if (rval)
+        throw cpx_err(rval, "CPXsetlongparam itlim");
+    ////
+
+}
+
 
 }
 }

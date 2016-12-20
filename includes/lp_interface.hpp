@@ -79,19 +79,50 @@ public:
     /** Return the dual values. */
     std::vector<double> pi(int begin, int end) const;
 
+    ///@}
+
+    /**@name Branch variable selection methods. */
+    ///@{
+
     /** Get the Driebeek penalties for specified indices. */
     void get_penalties(const std::vector<int> &indices,
                        std::vector<double> &downratio,
                        std::vector<double> &upratio);
 
-    /** Get strong branching objective values. */
+    /** Get strong branching objective values. 
+     * This function will evaluate the variables in \p indices (which should
+     * be the indices of fractional basic variables) as candidates for 
+     * branching edges by performing at most \p itlim dual steepest edge
+     * simplex pivots, with an objective function upper bound of
+     * \p upperbound.  If \p opt_first is true, the function will optimize
+     * the relaxation first, saving the resident basis/solution which will
+     * be restored afterwards. Otherwise, the pivots will be performed 
+     * from the resident basis/solution. 
+     */
     void dual_strong_branch(const std::vector<int> &indices,
                             std::vector<double> &downobj,
-                            std::vector<double> &upobj, int itlim);
+                            std::vector<double> &upobj, int itlim,
+                            double upperbound, bool opt_first);
 
+    /** Get modified strong branch objective values.
+     * This function behaves like dual_strong_branch, but with
+     * an implementation particular to this project. Here \p tour_vec shall
+     * be a binary vector indicating edges in a tsp tour, with associated
+     * column and row basis provided by \p colstat and \p rowstat, 
+     * respectively. Instead of using dual
+     * steepest edge simplex pivots, this function will perform at most
+     * \p itlim primal steepeste edge simplex pivots, with the tour solution
+     * and  basis as a starting point. 
+     */
+    void primal_strong_branch(const std::vector<double> &tour_vec,
+                              const std::vector<int> &colstat,
+                              const std::vector<int> &rowstat,
+                              const std::vector<int> &indices,
+                              std::vector<double> &downobj,
+                              std::vector<double> &upobj,
+                              int itlim, double upperbound);
 
     ///@}
-
 
 
 protected:
@@ -151,6 +182,9 @@ protected:
 
     /** Optimize the relaxation with primal simplex. */
     void primal_opt();
+
+    /** Optimize the relaxation with dual simplex. */
+    void dual_opt();
 
     /** Find a primal non-degenerate pivot.
      * If there is a solution `x` resident in the problem, and `x` has
