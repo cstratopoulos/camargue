@@ -26,6 +26,12 @@ public:
 
     CMR::LP::PivType cutting_loop();
 
+    CMR::LP::Relaxation &relax() { return core_lp; }
+
+    const CMR::LP::TourBasis &tour_basis() const { return core_lp.tour_base; }
+
+    const CMR::Data::BestGroup &best_info() const { return best_data; }
+
     
 
 private:

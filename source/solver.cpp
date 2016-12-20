@@ -155,8 +155,7 @@ LP::PivType Solver::cutting_loop()
         try {
             if (!separator.find_cuts(*TG)) {
                 report_piv(piv, round);
-                cout << "\tNo cuts found. "
-                     << "Optimal LP objective: " << core_lp.opt() << "\n";
+                cout << "\tNo cuts found.\n";
                 break;
             }
         } CMR_CATCH_PRINT_THROW("finding cuts", err);
