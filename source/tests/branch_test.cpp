@@ -177,9 +177,6 @@ SCENARIO ("Computing branching edges",
                         cout << "Var " << p.first << " has sb2 score "
                              << p.second << "\n";
 
-                    rel.copy_start(frac_x, frac_colstat, frac_rowstat);
-                    rel.factor_basis();
-
                     cout << "Doing CPLEX dual sb 100 itlim 5 cands NO opt....";
                     double dsb = CMR::zeit();
 
