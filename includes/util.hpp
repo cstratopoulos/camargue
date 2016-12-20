@@ -101,6 +101,7 @@ enum class PivType {
   FathomedTour /**< A Tour with a dual feasible basis in the current lp. */
 };
 
+/** Function for converting PivType to a string for output. */
 std::string piv_string(PivType piv);
 
 }
@@ -115,9 +116,6 @@ constexpr double Zero = 0.000001;
 /** Cuts are not considered violated unless violated by at least this much. */
 constexpr double Cut = 0.0001;
 
-/** The connected component tolerance for Grotschel Holland fast blossoms. */
-constexpr double GH = 0.3;
-
 }
 
 /** CPU time function. */
@@ -125,21 +123,6 @@ double zeit (void);
 
 /** Wall-clock time function. */
 double real_zeit (void);
-
-/** Prints every entry of a vector */
-template<typename entry_t>
-void print_vec(std::vector<entry_t> const &vec){
-  for(int i = 0; i < vec.size(); i++)
-    std::cout << "Entry " << i << ": " << vec[i] << "\n";
-}
-
-/** Prints nonzero entries of a vector. */
-template<typename entry_t >
-void print_vec_nonzero(std::vector<entry_t> const &vec){
-  for(int i = 0; i < vec.size(); i++)
-    if(vec[i] != 0)
-      std::cout << "Entry " << i << ": " << vec[i] << "\n";
-}
 
 /** Exception-safe creation of a unique_ptr, from Herb Sutter.
  * This is a c++14 feature which is ported to c++11 under the CMR namespace,
@@ -151,6 +134,12 @@ std::unique_ptr<T> make_unique( Args&& ...args )
     return std::unique_ptr<T>( new T( std::forward<Args>(args)... ) );
 }
 
+/** Class template for deleting resources allocated by C functions.
+ * In calls to Concorde, memory allocation takes place through malloc and 
+ * free, and it can be dangerous to delete memory that was malloc'd. Thus,
+ * A Concorde resource managed by a unique_ptr shall use this deleter to 
+ * free the memory associated with the resource.
+ */
 template <typename T>
 struct C_resource_deleter {
     void operator()(T* ptr) const {
@@ -158,6 +147,7 @@ struct C_resource_deleter {
         ptr = nullptr;
     }
 };
+
 
 typedef std::unique_ptr<int, C_resource_deleter<int>> c_array_ptr;
 
