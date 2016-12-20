@@ -29,6 +29,13 @@ namespace LP {
 
 constexpr double EpsZero = CMR::Epsilon::Zero;
 
+double branch_score(double multiplier, double val0, double val1)
+{
+    return 
+    ((val0 < val1) ? ((multiplier * val0) + val1) :
+     (val0 + multiplier * val1)) / (multiplier + 1.0);
+}
+
 CoreLP::CoreLP(CMR::Data::GraphGroup &graph_data_,
                CMR::Data::BestGroup &best_data_) try :
     graph_data(graph_data_), best_data(best_data_)
@@ -78,8 +85,8 @@ CoreLP::CoreLP(CMR::Data::GraphGroup &graph_data_,
     throw runtime_error("Problem in CoreLP constructor.");
 }
 
-CoreLP::TourBasis::TourBasis(CMR::Graph &graph,
-                             CMR::Data::BestGroup &best_data) try :
+TourBasis::TourBasis(CMR::Graph &graph,
+                     CMR::Data::BestGroup &best_data) try :
     best_tour_edges(vector<double>(graph.edge_count)),
     colstat(vector<int>(graph.edge_count, CPX_AT_LOWER)),
     rowstat(vector<int>(graph.node_count, CPX_AT_LOWER))

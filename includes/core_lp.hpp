@@ -15,7 +15,20 @@
 #include <vector>
 
 namespace CMR {
+
+class Solver;
+
 namespace LP {
+
+struct TourBasis {
+    TourBasis() = default;
+    TourBasis(CMR::Graph &graph, CMR::Data::BestGroup &best_data);
+
+    std::vector<double> best_tour_edges;
+     
+    std::vector<int> colstat;
+    std::vector<int> rowstat;
+};
 
 /** Class for storing the core lp associated to a TSP instance and pivoting.
  * This class contains the edges and constraints currently under consideration
@@ -37,7 +50,7 @@ public:
 
     CMR::Data::SupportGroup supp_data;
 
-    friend class Solver;
+    friend class CMR::Solver;
 
 private:
     void handle_aug();
@@ -46,15 +59,7 @@ private:
     CMR::Data::GraphGroup &graph_data;
     CMR::Data::BestGroup &best_data;
 
-    struct TourBasis {
-        TourBasis() = default;
-        TourBasis(CMR::Graph &graph, CMR::Data::BestGroup &best_data);
-
-        std::vector<double> best_tour_edges;
-     
-        std::vector<int> colstat;
-        std::vector<int> rowstat;
-    } tour_base;
+    TourBasis tour_base;
     
     std::vector<double> lp_edges;
     std::vector<double> feas_stat;
