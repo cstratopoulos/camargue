@@ -52,10 +52,10 @@ public:
   std::ofstream cg_out;
 #endif
 
-  int simple_DP_sep(CMR::Sep::CutQueue<CMR::Sep::dominoparity> &domino_q);
+  int simple_DP_sep(Sep::CutQueue<Sep::dominoparity> &domino_q);
 
   //  private:
-  int grab_cuts(CMR::Sep::CutQueue<CMR::Sep::dominoparity> &domino_q);
+  int grab_cuts(Sep::CutQueue<Sep::dominoparity> &domino_q);
 
   int build_light_tree();
   int add_web_edges();
@@ -83,7 +83,7 @@ public:
   std::vector<int> cutgraph_delta;
   std::vector<int> cg_delta_marks;
 
-  CMR::Sep::CutQueue<CC_GHnode *> CC_gh_q;
+  Sep::CutQueue<CC_GHnode *> CC_gh_q;
 
   CC_GHtree gh_tree;
 

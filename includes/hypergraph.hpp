@@ -19,7 +19,7 @@ public:
      * Clique pointers from \p bank, assuming that the cut was found with
      * \p tour as the resident best tour.
      */
-    HyperGraph(CMR::Sep::CliqueBank &bank,
+    HyperGraph(Sep::CliqueBank &bank,
                const CCtsp_lpcut_in &cc_lpcut,
                const std::vector<int> &tour);
 
@@ -34,15 +34,15 @@ private:
     char sense;
     double rhs;
     
-    std::vector<CMR::Sep::Clique::Ptr> cliques;
+    std::vector<Sep::Clique::Ptr> cliques;
 
-    CMR::Sep::CliqueBank &source_bank;
+    Sep::CliqueBank &source_bank;
 };
 
 class DominoCut {
 public:
-    DominoCut(CMR::Sep::CliqueBank &bank,
-              CMR::Sep::dominoparity &dp_cut, int rhs,
+    DominoCut(Sep::CliqueBank &bank,
+              Sep::dominoparity &dp_cut, int rhs,
               const std::vector<int> &tour);
 
     ~DominoCut();
@@ -51,11 +51,11 @@ private:
     char sense;
     double rhs;
 
-    CMR::Sep::Clique::Ptr handle;
-    std::vector<CMR::Sep::Clique::Ptr> nonneg_edges;
-    std::vector<std::pair<int, CMR::Sep::Clique::Ptr>> teeth;
+    Sep::Clique::Ptr handle;
+    std::vector<Sep::Clique::Ptr> nonneg_edges;
+    std::vector<std::pair<int, Sep::Clique::Ptr>> teeth;
 
-    CMR::Sep::CliqueBank &source_bank;
+    Sep::CliqueBank &source_bank;
 };
 
 /** Class for managing a list of cuts in an lp relaxation. */
@@ -68,7 +68,7 @@ class ExternalCuts {
                  const std::vector<int> &current_tour);
 
     /** Add a simple DP cut. */
-    void add_cut(CMR::Sep::dominoparity &dp_cut,
+    void add_cut(Sep::dominoparity &dp_cut,
                  const std::vector<int> &current_tour);
 
     /** Delete the cuts indicated by \p delset. 
@@ -81,10 +81,10 @@ class ExternalCuts {
 private:
     int next_row;
     
-    CMR::Sep::CliqueBank clique_bank;
+    Sep::CliqueBank clique_bank;
     
-    std::map<int, CMR::Sep::HyperGraph> cuts;
-    std::map<int, CMR::Sep::DominoCut> dp_cuts;
+    std::map<int, Sep::HyperGraph> cuts;
+    std::map<int, Sep::DominoCut> dp_cuts;
 };
 
 }

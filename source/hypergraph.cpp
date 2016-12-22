@@ -41,7 +41,7 @@ HyperGraph::~HyperGraph()
 }
 
 /*
-DominoCut::DominoCut(CliqueBank &bank, CMR::Sep::dominoparity &dp_cut,
+DominoCut::DominoCut(CliqueBank &bank, Sep::dominoparity &dp_cut,
                      const vector<int> &tour) try :
     source_bank(bank)
 {

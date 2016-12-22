@@ -260,13 +260,13 @@ void CoreLP::handle_aug()
     factor_basis();
 }
 
-void CoreLP::add_cuts(CMR::Sep::LPcutList &cutq)
+void CoreLP::add_cuts(Sep::LPcutList &cutq)
 {
     runtime_error err("Problem in CoreLP::add_cuts(LPcutList)");
     if (cutq.empty())
         return;
 
-    CMR::Sep::CutTranslate translator(graph_data);
+    Sep::CutTranslate translator(graph_data);
     vector<int> &perm = best_data.perm;
 
     for (lpcut_in *cur = cutq.begin(); cur; cur = cur->next) {
@@ -284,19 +284,19 @@ void CoreLP::add_cuts(CMR::Sep::LPcutList &cutq)
     }
 }
 
-void CoreLP::add_cuts(CMR::Sep::CutQueue<Sep::dominoparity> &dpq)
+void CoreLP::add_cuts(Sep::CutQueue<Sep::dominoparity> &dpq)
 {
     if (dpq.empty())
         return;
     
     runtime_error err("Problem in CoreLP::add_cuts(Sep::dominoparity)");
 
-    CMR::Sep::CutTranslate translator(graph_data);
+    Sep::CutTranslate translator(graph_data);
     vector<int> &tour_nodes = best_data.best_tour_nodes;
 
-    for (CMR::Sep::CutQueue<Sep::dominoparity>::Itr it = dpq.begin();
+    for (Sep::CutQueue<Sep::dominoparity>::Itr it = dpq.begin();
          it != dpq.end(); ++it) {
-        CMR::Sep::dominoparity &dp_cut = *it;
+        Sep::dominoparity &dp_cut = *it;
         vector<int> rmatind;
         vector<double> rmatval;
         char sense;

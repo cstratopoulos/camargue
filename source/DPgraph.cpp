@@ -31,7 +31,7 @@ DPCutGraph::DPCutGraph(
 DPCutGraph::~DPCutGraph() { CCcut_GHtreefree(&gh_tree); }
 
 
-int DPCutGraph::simple_DP_sep(CMR::Sep::CutQueue<Sep::dominoparity> &domino_q)
+int DPCutGraph::simple_DP_sep(Sep::CutQueue<Sep::dominoparity> &domino_q)
 {
 #ifdef CMR_DO_VIZ
   cg_out.open(ofname + "-witness.gv");
@@ -315,7 +315,7 @@ inline void DPCutGraph::expand_cut(CC_GHnode *n, vector<int> &cut_nodes)
     expand_cut(n, cut_nodes);
 }
 
-int DPCutGraph::grab_cuts(CMR::Sep::CutQueue<Sep::dominoparity> &domino_q)
+int DPCutGraph::grab_cuts(Sep::CutQueue<Sep::dominoparity> &domino_q)
 {
   int rval = 0;
   int special_ind = cutgraph_nodes.size() - 1;

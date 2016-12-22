@@ -89,7 +89,7 @@ namespace std {
 /** Partial specialization of std::hash taken from CCtsp_hashclique. */
 template<>
 struct hash<CMR::Sep::Clique> {
-    size_t operator()(const CMR::Sep::Clique &clq) const
+  size_t operator()(const CMR::Sep::Clique &clq) const
     {
         size_t val = 0;
         
@@ -125,18 +125,18 @@ public:
      * This function returns a reference counted pointer to a Clique stored
      * in the bank.
      */
-    CMR::Sep::Clique::Ptr add_clique(const CMR::Sep::Clique &clq);
+    Sep::Clique::Ptr add_clique(const Sep::Clique &clq);
 
     /** Construct a Clique in place, add it, and get a reference to it.
      * Same as the overload taking a Clique, but will construct a Clique
      * from the CCtsp_lpclique \p cc_cliq, with \p tour as the tour active
      * when \p cc_cliq was obtained.
      */
-    CMR::Sep::Clique::Ptr add_clique(const CCtsp_lpclique &cc_cliq,
+    Sep::Clique::Ptr add_clique(const CCtsp_lpclique &cc_cliq,
                                       const std::vector<int> &tour);
 
     /** Construct/add/get a reference to the Clique from endpoints. */
-    CMR::Sep::Clique::Ptr add_clique(int start, int end,
+    Sep::Clique::Ptr add_clique(int start, int end,
                                      const std::vector<int> &tour);
 
     /** Construct/add/get a reference to a Clique from a node list.
@@ -145,7 +145,7 @@ public:
      * @warning The elements of \p nodes are sorted by this function, but
      * unchanged otherwise.
      */
-    CMR::Sep::Clique::Ptr add_clique(std::vector<int> &nodes);
+    Sep::Clique::Ptr add_clique(std::vector<int> &nodes);
 
     /** Decrement the reference count of a Clique, possibly removing it.
      * The Clique pointed to by \p clq_ptr will be nullified, thereby
@@ -153,15 +153,15 @@ public:
      * If its reference count in the CliqueBank drops to one, it will be
      * erased, decreasing the size of the CliqueBank.
      */
-    void del_clique(CMR::Sep::Clique::Ptr &clq_ptr);
+    void del_clique(Sep::Clique::Ptr &clq_ptr);
 
 
     /** The number of unique Cliques in the bank. */
     int size() const { return bank.size(); }
 
     /** Alias declaration. */
-    using CliqueHash = std::unordered_map<CMR::Sep::Clique,
-                                          CMR::Sep::Clique::Ptr>;
+    using CliqueHash = std::unordered_map<Sep::Clique,
+                                          Sep::Clique::Ptr>;
 
 
     using Itr = CliqueHash::iterator; /**< Iterator alias. */

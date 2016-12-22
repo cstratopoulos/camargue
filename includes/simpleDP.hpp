@@ -22,14 +22,14 @@ public:
            Data::KarpPartition &_kpart,
            Data::BestGroup &best_dat,
            Data::SupportGroup &supp_dat,
-           CMR::Sep::CutQueue<dominoparity> &dp_q);
+           Sep::CutQueue<dominoparity> &dp_q);
 
   bool find_cuts();
 
 private:
   CMR::CandidateTeeth candidates;
   Data::KarpPartition &kpart;
-  CMR::Sep::CutQueue<dominoparity> &dp_q;
+  Sep::CutQueue<dominoparity> &dp_q;
 };
 
 }

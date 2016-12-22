@@ -66,7 +66,7 @@ class ConcordeSeparator {
 public:
     ConcordeSeparator(std::vector<int> &supp_elist,
                       std::vector<double> &supp_ecap,
-                      CMR::TourGraph &_TG, CMR::Sep::LPcutList &_cutq) :
+                      CMR::TourGraph &_TG, Sep::LPcutList &_cutq) :
         elist(supp_elist), ecap(supp_ecap), TG(_TG), cutq(_cutq) {}
 
     /** The call to the separation routine.
@@ -81,14 +81,14 @@ protected:
   
     CMR::TourGraph &TG;
   
-    CMR::Sep::LPcutList &cutq;
+    Sep::LPcutList &cutq;
 };
 
 /** Exact separation of segment cut subtours. */
 class SegmentCuts : ConcordeSeparator {
 public:
     SegmentCuts(std::vector<int> &elist, std::vector<double> &ecap,
-                CMR::TourGraph &TG, CMR::Sep::LPcutList &cutq) :
+                CMR::TourGraph &TG, Sep::LPcutList &cutq) :
         ConcordeSeparator(elist, ecap, TG, cutq) {}
 
     /** Finds subtours arising from intervals of the current best tour. */
@@ -99,7 +99,7 @@ public:
 class ConnectCuts : ConcordeSeparator {
 public:
     ConnectCuts(std::vector<int> &elist, std::vector<double> &ecap,
-                CMR::TourGraph &TG, CMR::Sep::LPcutList &cutq) :
+                CMR::TourGraph &TG, Sep::LPcutList &cutq) :
         ConcordeSeparator(elist, ecap, TG, cutq) {}
 
     /** Finds subtours arising from connected components. */
@@ -110,7 +110,7 @@ public:
 class BlockCombs : ConcordeSeparator {
 public:
     BlockCombs(std::vector<int> &elist, std::vector<double> &ecap,
-               CMR::TourGraph &TG, CMR::Sep::LPcutList &cutq) :
+               CMR::TourGraph &TG, Sep::LPcutList &cutq) :
         ConcordeSeparator(elist, ecap, TG, cutq) {}
 
     /** Returns true if block combs are found and some are tight at tour. */
@@ -121,7 +121,7 @@ public:
 class FastBlossoms : ConcordeSeparator {
 public:
     FastBlossoms(std::vector<int> &elist, std::vector<double> &ecap,
-                 CMR::TourGraph &TG, CMR::Sep::LPcutList &cutq) :
+                 CMR::TourGraph &TG, Sep::LPcutList &cutq) :
         ConcordeSeparator(elist, ecap, TG, cutq) {}
 
     /** Returns true if blossoms are found and some are tight at best tour.

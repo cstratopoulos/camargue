@@ -44,8 +44,8 @@ public:
     CMR::LP::PivType primal_pivot();
     void pivot_back();
 
-    void add_cuts(CMR::Sep::LPcutList &cutq);
-    void add_cuts(CMR::Sep::CutQueue<CMR::Sep::dominoparity> &dp_q);
+    void add_cuts(Sep::LPcutList &cutq);
+    void add_cuts(Sep::CutQueue<Sep::dominoparity> &dp_q);
 
 
     Data::SupportGroup supp_data;

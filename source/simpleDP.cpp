@@ -22,7 +22,7 @@ Sep::SimpleDP::SimpleDP(Data::GraphGroup &graph_dat,
                         Data::KarpPartition &_kpart,
                         Data::BestGroup &best_dat,
                         Data::SupportGroup &supp_dat,
-                        CMR::Sep::CutQueue<dominoparity> &_dp_q) try :
+                        Sep::CutQueue<dominoparity> &_dp_q) try :
   candidates(graph_dat, best_dat, supp_dat), kpart(_kpart), dp_q(_dp_q)
   {} catch (const exception &e) {
   cerr << e.what() << " constructing SimpleDP.\n";

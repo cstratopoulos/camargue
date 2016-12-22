@@ -85,7 +85,7 @@ public:
                         std::vector<double> &rmatval, char &sense,
                         double &rhs);
     
-    int get_sparse_row(const CMR::Sep::dominoparity &dp_cut,
+    int get_sparse_row(const Sep::dominoparity &dp_cut,
                        const std::vector<int> &tour_nodes,
                        std::vector<int> &rmatind, std::vector<double> &rmatval,
                        char &sense, double &rhs);

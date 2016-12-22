@@ -31,7 +31,7 @@ public:
     LPcutList fast2m_q;
     LPcutList blkcomb_q;
 
-    CMR::Sep::CutQueue<CMR::Sep::dominoparity> dp_q;
+    Sep::CutQueue<Sep::dominoparity> dp_q;
 
     LPcutList connect_q;
 
