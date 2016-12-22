@@ -117,6 +117,7 @@ constexpr double Cut = 0.0001;
 
 }
 
+namespace util {
 /** CPU time function. */
 double zeit (void);
 
@@ -167,6 +168,8 @@ using c_array_ptr = std::unique_ptr<int, C_resource_deleter<int>>;
  */
 template <typename T>
 using c_struct_ptr = std::unique_ptr<T, void(*)(T*)>;
+
+}
 
 constexpr int IntMax = std::numeric_limits<int>::max();
 constexpr int IntMin = std::numeric_limits<int>::min();
