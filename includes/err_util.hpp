@@ -18,6 +18,7 @@
 
 
 namespace CMR {
+namespace util {
 
 /** Code from Andrei Alexandrescu's ScopeGuard11 slides.
  * This class provides a limited implementation of ScopeGuard. I have not 
@@ -61,7 +62,8 @@ struct retcode_error : public std::runtime_error {
         std::runtime_error(std::string{func_name} + " failed with rval " +
                            std::to_string(rval)) {}
 };
-  
+
+}  
 }
 
 
