@@ -117,7 +117,7 @@ SCENARIO ("Computing branching edges",
                     double tourval = b_dat.min_tour_value;
 
                     cout << "Doing 100 itlim primal sb with 5 cands...";
-                    double sb1 = CMR::zeit();
+                    double sb1 = CMR::util::zeit();
                     REQUIRE_NOTHROW(rel.primal_strong_branch(tour_edges,
                                                              tour_colstat,
                                                              tour_rowstat,
@@ -125,7 +125,7 @@ SCENARIO ("Computing branching edges",
                                                              downobj,
                                                              upobj, 100,
                                                              tourval));
-                    cout << "Done in " << (CMR::zeit() - sb1) << "s\n";
+                    cout << "Done in " << (CMR::util::zeit() - sb1) << "s\n";
 
                     vector<double> after_x;
                     
@@ -152,7 +152,7 @@ SCENARIO ("Computing branching edges",
                     vector<int> sb1_5_cands{sb1_scores[0].first,
                                             sb1_scores[1].first};
 
-                    double sb2 = CMR::zeit();
+                    double sb2 = CMR::util::zeit();
 
                     cout << "500 itlim primal sb w 2 cands...";
                     REQUIRE_NOTHROW(rel.primal_strong_branch(tour_edges,
@@ -162,7 +162,7 @@ SCENARIO ("Computing branching edges",
                                                              downobj,
                                                              upobj, 500,
                                                              tourval));
-                    cout << "Done in " << (CMR::zeit() - sb2) << "s\n";
+                    cout << "Done in " << (CMR::util::zeit() - sb2) << "s\n";
 
                     vector<ScorePair> sb2_scores;
                     
@@ -178,12 +178,12 @@ SCENARIO ("Computing branching edges",
                              << p.second << "\n";
 
                     cout << "Doing CPLEX dual sb 100 itlim 5 cands NO opt....";
-                    double dsb = CMR::zeit();
+                    double dsb = CMR::util::zeit();
 
                     REQUIRE_NOTHROW(rel.dual_strong_branch(cand_inds,
                                                            downobj, upobj,
                                                            100, tourval));
-                    cout << "Done in " << (CMR::zeit() - dsb) << "s\n";
+                    cout << "Done in " << (CMR::util::zeit() - dsb) << "s\n";
 
                     vector<ScorePair> dsb_scores;
 

@@ -63,7 +63,7 @@ SCENARIO("Instance constructors initialize data as expected",
 	std::unique_ptr<CMR::Data::Instance> inst;
 
 	REQUIRE_NOTHROW(inst =
-			CMR::make_unique<CMR::Data::Instance>(pfile, 0));
+			CMR::util::make_unique<CMR::Data::Instance>(pfile, 0));
 	REQUIRE(inst->node_count() == expect_ncount);
       }
     }
@@ -79,7 +79,7 @@ SCENARIO("Instance constructors initialize data as expected",
 	int ncount = prob.first;
 	int gsize = prob.second;
 	REQUIRE_NOTHROW(inst =
-			CMR::make_unique<CMR::Data::Instance>(99,
+			CMR::util::make_unique<CMR::Data::Instance>(99,
 							       ncount,
 							       gsize));
       }

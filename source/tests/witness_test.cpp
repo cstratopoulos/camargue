@@ -58,12 +58,12 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
                                                          inst.ptr(), 99));
         CMR::Sep::CutTranslate translator(g_dat);
         
-        double tt = CMR::zeit();
+        double tt = CMR::util::zeit();
         CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);	      
         REQUIRE_FALSE(cands.get_light_teeth());
         cands.unmerged_weak_elim();
         REQUIRE_FALSE(cands.merge_and_sort());
-        tt = CMR::zeit() - tt;
+        tt = CMR::util::zeit() - tt;
 	      
         int orig_sz = 0;
         for (auto &vec : cands.light_teeth) orig_sz += vec.size();
@@ -75,12 +75,12 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
         double total_time = 0;
         
         for (int i = 0; i < kpart.num_parts(); ++i) {
-          double sep = CMR::zeit();
+          double sep = CMR::util::zeit();
           CMR::DPwitness dpgraph(cands, kpart[i]);
           CMR::Sep::CutQueue<CMR::Sep::dominoparity> dp_q(25);
           
           REQUIRE_NOTHROW(dpgraph.simple_DP_sep(dp_q));          
-          sep = CMR::zeit() - sep;
+          sep = CMR::util::zeit() - sep;
           if (dp_q.empty()) {
             total_time += sep;
             continue;

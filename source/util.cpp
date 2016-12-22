@@ -9,9 +9,9 @@
 namespace CMR {
 
 
-/* zeit function for recording times */
+/* util::zeit function for recording times */
 
-double zeit (void)
+double util::zeit (void)
 {
     struct rusage ru;
 
@@ -21,7 +21,7 @@ double zeit (void)
            ((double) ru.ru_utime.tv_usec)/1000000.0;
 }
 
-double real_zeit (void)
+double util::real_zeit (void)
 {
     return (double) time (0);
 }

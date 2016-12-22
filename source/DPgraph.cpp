@@ -270,20 +270,20 @@ int DPCutGraph::call_concorde_gomoryhu()
   
   CCutil_sprand(seed, &rstate);
 
-  double gh_time = zeit(), dfs_time;
+  double gh_time = util::zeit(), dfs_time;
   rval = CCcut_gomory_hu(&gh_tree, ncount, ecount, &cut_elist[0], &cut_ecap[0],
 			 markcount, &odd_nodes_list[0], &rstate);
   CMR_CHECK_RVAL(rval, "CCcut_gomory_hu failed. ");
-  cout << "Built Gomory-Hu tree in " << (zeit() - gh_time) << "s "
+  cout << "Built Gomory-Hu tree in " << (util::zeit() - gh_time) << "s "
        << "(ncount " << ncount << ", ecount " << ecount << ")\n";
 
-  dfs_time = zeit();
+  dfs_time = util::zeit();
   try {
     dfs_odd_cuts(gh_tree.root);
   } catch (...) {
     CMR_SET_GOTO(rval, "Problem dfsing tree for odd cuts. ");
   }  
-  cout << "Done odd cut dfs in " << (zeit() - dfs_time)  <<  "s, "
+  cout << "Done odd cut dfs in " << (util::zeit() - dfs_time)  <<  "s, "
        << CC_gh_q.size() << " cuts in queue.\n";
 
   if (CC_gh_q.empty()) rval = 2;

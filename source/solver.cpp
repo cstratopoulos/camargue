@@ -26,7 +26,7 @@ namespace CMR {
 
 inline static int make_seed(const int seed)
 {
-    return (seed > 0) ? seed : (int) real_zeit();
+    return (seed > 0) ? seed : (int) util::real_zeit();
 }
 
 Solver::Solver(const string &fname, const int seed, const OutPrefs outprefs)
@@ -113,7 +113,7 @@ LP::PivType Solver::cutting_loop()
 
 
     try {
-        TG = CMR::make_unique<TourGraph>(tour_edges, edges, perm);        
+        TG = CMR::util::make_unique<TourGraph>(tour_edges, edges, perm);        
     } CMR_CATCH_PRINT_THROW("allocating tour graph", err);
 
 
@@ -142,7 +142,7 @@ LP::PivType Solver::cutting_loop()
             piv = LP::PivType::Frac;
 
             try {
-                TG = CMR::make_unique<TourGraph>(tour_edges, edges, perm);
+                TG = CMR::util::make_unique<TourGraph>(tour_edges, edges, perm);
             } CMR_CATCH_PRINT_THROW("updating tour graph", err);
             
             continue;

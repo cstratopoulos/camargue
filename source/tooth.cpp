@@ -103,7 +103,7 @@ int CandidateTeeth::get_light_teeth()
   unique_ptr<LinsubCBData> cb_data;
   try {
     cb_data =
-      CMR::make_unique<LinsubCBData>(right_teeth,left_teeth, dist_teeth,
+      CMR::util::make_unique<LinsubCBData>(right_teeth,left_teeth, dist_teeth,
 				      adj_zones, graph_dat.edge_marks,
 				      best_dat.best_tour_nodes,
 				      best_dat.perm, supp_dat.G_s); }
@@ -497,12 +497,12 @@ inline void CandidateTeeth::add_tooth(vector<SimpleTooth::Ptr> &teeth,
     if (CandidateTeeth::root_equivalent(root, body, old_body, zones)) {
       elim = true;
       if (slack < old_slack)
-	teeth.back() = CMR::make_unique<SimpleTooth>(root, body, slack);
+	teeth.back() = CMR::util::make_unique<SimpleTooth>(root, body, slack);
     }
   }
 
   if (!elim)
-    teeth.emplace_back(CMR::make_unique<SimpleTooth>(root, body, slack));
+    teeth.emplace_back(CMR::util::make_unique<SimpleTooth>(root, body, slack));
 }
 
 string CandidateTeeth::print_label(const SimpleTooth &T)

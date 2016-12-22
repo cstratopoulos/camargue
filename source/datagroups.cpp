@@ -42,7 +42,7 @@ namespace Data {
 Instance::Instance() noexcept : handle(nullptr) {}
 
 Instance::Instance(const string &fname, const int seed)
-try : handle(CMR::make_unique<CCdatagroup>()), random_seed(seed) {
+try : handle(CMR::util::make_unique<CCdatagroup>()), random_seed(seed) {
     if (CCutil_gettsplib(const_cast<char*>(fname.c_str()), &nodecount,
                          ptr()))
         throw runtime_error("CCutil_gettsplib failed.");
@@ -60,7 +60,7 @@ try : handle(CMR::make_unique<CCdatagroup>()), random_seed(seed) {
  }
 
 Instance::Instance(const int seed, const int ncount, const int gridsize)
-try : handle(CMR::make_unique<CCdatagroup>()),
+try : handle(CMR::util::make_unique<CCdatagroup>()),
       nodecount(ncount),
       random_seed(seed),
       pname("r" + to_string(ncount) + "g" + to_string(gridsize)) {
@@ -128,7 +128,7 @@ try
                        &(m_graph.edge_count), &elist, 1, &rstate))
         throw runtime_error("CCedgegen_edges failed.");
 
-    c_array_ptr edge_handle(elist);
+    util::c_array_ptr edge_handle(elist);
     int ecount = m_graph.edge_count;
 
     for (int i = 0; i < ecount; ++i) {
