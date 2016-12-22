@@ -32,7 +32,7 @@ KarpPartition::KarpPartition(const int ncount, CCdatagroup *dat,
     CCrandstate rstate;
     int partcount = 0;
    
-    auto cleanup = CMR::util::make_guard([&subdiv_list, &part_matrix, &partcount] {
+    auto cleanup = util::make_guard([&subdiv_list, &part_matrix, &partcount] {
         CC_IFFREE(subdiv_list, CCsubdiv);
         if (part_matrix) {
             for (int i = 0; i < partcount; ++i)
@@ -76,7 +76,7 @@ KarpPartition::KarpPartition(const Instance &inst) try
     CCrandstate rstate;
     int partcount = 0;
    
-    auto cleanup = CMR::util::make_guard([&subdiv_list, &part_matrix, &partcount] {
+    auto cleanup = util::make_guard([&subdiv_list, &part_matrix, &partcount] {
         CC_IFFREE(subdiv_list, CCsubdiv);
         if (part_matrix) {
             for (int i = 0; i < partcount; ++i)
