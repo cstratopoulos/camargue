@@ -34,7 +34,7 @@ class KarpPartition {
 public:
     KarpPartition() = default; /**< Construct an empty partition */
 
-    KarpPartition(const CMR::Data::Instance &inst);
+    KarpPartition(const Data::Instance &inst);
 
   /** Construct a partition from a TSP instance.
    * The data in \p dat is used to construct a Karp partition for a TSP 

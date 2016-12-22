@@ -18,17 +18,17 @@ namespace Sep {
 /** Class for separation of simple domino parity inequalities. */
 class SimpleDP {
 public:
-  SimpleDP(CMR::Data::GraphGroup &graph_dat,
-           CMR::Data::KarpPartition &_kpart,
-           CMR::Data::BestGroup &best_dat,
-           CMR::Data::SupportGroup &supp_dat,
+  SimpleDP(Data::GraphGroup &graph_dat,
+           Data::KarpPartition &_kpart,
+           Data::BestGroup &best_dat,
+           Data::SupportGroup &supp_dat,
            CMR::Sep::CutQueue<dominoparity> &dp_q);
 
   bool find_cuts();
 
 private:
   CMR::CandidateTeeth candidates;
-  CMR::Data::KarpPartition &kpart;
+  Data::KarpPartition &kpart;
   CMR::Sep::CutQueue<dominoparity> &dp_q;
 };
 

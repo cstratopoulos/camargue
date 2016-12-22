@@ -66,9 +66,9 @@ struct SimpleTooth {
 
 class CandidateTeeth {
 public:
-  CandidateTeeth(CMR::Data::GraphGroup &_graph_dat,
-		 CMR::Data::BestGroup &_best_dat,
-		 CMR::Data::SupportGroup &_supp_dat);
+  CandidateTeeth(Data::GraphGroup &_graph_dat,
+		 Data::BestGroup &_best_dat,
+		 Data::SupportGroup &_supp_dat);
 
   int get_light_teeth();
 
@@ -150,9 +150,9 @@ private:
     std::vector<std::pair<int, double>> prev_slacks;
   };
 
-  CMR::Data::GraphGroup &graph_dat;
-  CMR::Data::BestGroup &best_dat;
-  CMR::Data::SupportGroup &supp_dat;
+  Data::GraphGroup &graph_dat;
+  Data::BestGroup &best_dat;
+  Data::SupportGroup &supp_dat;
 
   CMR::Timer t_all;
   CMR::Timer t_zones;

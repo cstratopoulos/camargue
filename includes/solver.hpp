@@ -30,17 +30,17 @@ public:
 
     const CMR::LP::TourBasis &tour_basis() const { return core_lp.tour_base; }
 
-    const CMR::Data::BestGroup &best_info() const { return best_data; }
+    const Data::BestGroup &best_info() const { return best_data; }
 
     
 
 private:
     void report_piv(CMR::LP::PivType piv, int round);
     
-    CMR::Data::Instance tsp_instance;
-    CMR::Data::KarpPartition karp_part;
-    CMR::Data::GraphGroup graph_data;
-    CMR::Data::BestGroup best_data;
+    Data::Instance tsp_instance;
+    Data::KarpPartition karp_part;
+    Data::GraphGroup graph_data;
+    Data::BestGroup best_data;
 
     CMR::LP::CoreLP core_lp;
 

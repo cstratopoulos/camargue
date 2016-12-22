@@ -167,19 +167,19 @@ struct SupportGroup  {
 void make_cut_test(const std::string &tsp_fname,
 		   const std::string &tour_nodes_fname,
 		   const std::string &lp_sol_fname,
-		   CMR::Data::GraphGroup &graph_data,
-		   CMR::Data::BestGroup &best_data,
+		   Data::GraphGroup &graph_data,
+		   Data::BestGroup &best_data,
 		   std::vector<double> &lp_edges,
-		   CMR::Data::SupportGroup &supp_data);
+		   Data::SupportGroup &supp_data);
 
 void make_cut_test(const std::string &tsp_fname,
 		   const std::string &tour_nodes_fname,
 		   const std::string &lp_sol_fname,
-		   CMR::Data::GraphGroup &graph_data,
-		   CMR::Data::BestGroup &best_data,
+		   Data::GraphGroup &graph_data,
+		   Data::BestGroup &best_data,
 		   std::vector<double> &lp_edges,
-		   CMR::Data::SupportGroup &supp_data,
-		   CMR::Data::Instance &inst_p);
+		   Data::SupportGroup &supp_data,
+		   Data::Instance &inst_p);
 
 }
 }

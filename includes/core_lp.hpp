@@ -22,7 +22,7 @@ namespace LP {
 
 struct TourBasis {
     TourBasis() = default;
-    TourBasis(CMR::Graph &graph, CMR::Data::BestGroup &best_data);
+    TourBasis(CMR::Graph &graph, Data::BestGroup &best_data);
 
     std::vector<double> best_tour_edges;
      
@@ -36,8 +36,8 @@ struct TourBasis {
  */
 class CoreLP : public Relaxation {
 public:
-    CoreLP(CMR::Data::GraphGroup &graph_data_,
-           CMR::Data::BestGroup &best_data_);
+    CoreLP(Data::GraphGroup &graph_data_,
+           Data::BestGroup &best_data_);
 
     double opt();
 
@@ -48,7 +48,7 @@ public:
     void add_cuts(CMR::Sep::CutQueue<CMR::Sep::dominoparity> &dp_q);
 
 
-    CMR::Data::SupportGroup supp_data;
+    Data::SupportGroup supp_data;
 
     friend class CMR::Solver;
 
@@ -56,8 +56,8 @@ private:
     void handle_aug();
     void handle_fathom();
     
-    CMR::Data::GraphGroup &graph_data;
-    CMR::Data::BestGroup &best_data;
+    Data::GraphGroup &graph_data;
+    Data::BestGroup &best_data;
 
     TourBasis tour_base;
     

@@ -18,10 +18,10 @@ using std::exception;
 
 namespace CMR {
 
-Sep::SimpleDP::SimpleDP(CMR::Data::GraphGroup &graph_dat,
-                        CMR::Data::KarpPartition &_kpart,
-                        CMR::Data::BestGroup &best_dat,
-                        CMR::Data::SupportGroup &supp_dat,
+Sep::SimpleDP::SimpleDP(Data::GraphGroup &graph_dat,
+                        Data::KarpPartition &_kpart,
+                        Data::BestGroup &best_dat,
+                        Data::SupportGroup &supp_dat,
                         CMR::Sep::CutQueue<dominoparity> &_dp_q) try :
   candidates(graph_dat, best_dat, supp_dat), kpart(_kpart), dp_q(_dp_q)
   {} catch (const exception &e) {

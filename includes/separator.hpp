@@ -18,10 +18,10 @@ namespace Sep {
 class Separator {
 public:
 
-    Separator(CMR::Data::GraphGroup &graphdata,
-              CMR::Data::BestGroup &bestdata,
-              CMR::Data::SupportGroup &suppdata,
-              CMR::Data::KarpPartition &kpart) :
+    Separator(Data::GraphGroup &graphdata,
+              Data::BestGroup &bestdata,
+              Data::SupportGroup &suppdata,
+              Data::KarpPartition &kpart) :
         graph_data(graphdata), best_data(bestdata), supp_data(suppdata),
         karp_part(kpart){}
     
@@ -35,15 +35,15 @@ public:
 
     LPcutList connect_q;
 
-    const CMR::Data::SupportGroup &support_data() const { return supp_data; }
+    const Data::SupportGroup &support_data() const { return supp_data; }
 
     friend class Solver;
 
 private:
-    CMR::Data::GraphGroup &graph_data;
-    CMR::Data::BestGroup &best_data;
-    CMR::Data::SupportGroup &supp_data;
-    CMR::Data::KarpPartition &karp_part;
+    Data::GraphGroup &graph_data;
+    Data::BestGroup &best_data;
+    Data::SupportGroup &supp_data;
+    Data::KarpPartition &karp_part;
 };
 
 }

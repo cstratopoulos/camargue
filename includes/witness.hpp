@@ -41,7 +41,7 @@ private:
 
   std::vector<std::vector<CMR::SimpleTooth>> light_teeth;
 
-  const CMR::Data::SupportGroup &supp_dat;
+  const Data::SupportGroup &supp_dat;
 
   const std::vector<int> &perm;
 

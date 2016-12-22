@@ -36,8 +36,8 @@ double branch_score(double multiplier, double val0, double val1)
      (val0 + multiplier * val1)) / (multiplier + 1.0);
 }
 
-CoreLP::CoreLP(CMR::Data::GraphGroup &graph_data_,
-               CMR::Data::BestGroup &best_data_) try :
+CoreLP::CoreLP(Data::GraphGroup &graph_data_,
+               Data::BestGroup &best_data_) try :
     graph_data(graph_data_), best_data(best_data_)
 {
     CMR::Graph &graph = graph_data.m_graph;
@@ -86,7 +86,7 @@ CoreLP::CoreLP(CMR::Data::GraphGroup &graph_data_,
 }
 
 TourBasis::TourBasis(CMR::Graph &graph,
-                     CMR::Data::BestGroup &best_data) try :
+                     Data::BestGroup &best_data) try :
     best_tour_edges(vector<double>(graph.edge_count)),
     colstat(vector<int>(graph.edge_count, CPX_AT_LOWER)),
     rowstat(vector<int>(graph.node_count, CPX_AT_LOWER))
