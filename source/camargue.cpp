@@ -56,11 +56,11 @@ int main(int argc, char* argv[]) {
 
   try {
     if (tourfile.empty())
-      solver = CMR::util::make_unique<CMR::TSPSolver>(probfile, randprob,
+      solver = util::make_unique<CMR::TSPSolver>(probfile, randprob,
 						  o_prefs, prefs, dat,
 						  do_sparse, qnearest);
     else
-      solver = CMR::util::make_unique<CMR::TSPSolver>(probfile, tourfile,
+      solver = util::make_unique<CMR::TSPSolver>(probfile, tourfile,
 						  o_prefs, prefs, dat,
 						  do_sparse, qnearest);
   } catch (...) {

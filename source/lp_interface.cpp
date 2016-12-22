@@ -66,7 +66,7 @@ Relaxation::Relaxation() try
     if (rval) 
         throw cpx_err(rval, "CPXopenCPLEX");
 
-    auto cleanup = CMR::util::make_guard([&rval, this] {
+    auto cleanup = util::make_guard([&rval, this] {
         if (rval)
             CPXcloseCPLEX(&cplex_env);
     });

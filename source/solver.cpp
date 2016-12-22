@@ -113,7 +113,7 @@ LP::PivType Solver::cutting_loop()
 
 
     try {
-        TG = CMR::util::make_unique<TourGraph>(tour_edges, edges, perm);        
+        TG = util::make_unique<TourGraph>(tour_edges, edges, perm);        
     } CMR_CATCH_PRINT_THROW("allocating tour graph", err);
 
 
@@ -142,7 +142,7 @@ LP::PivType Solver::cutting_loop()
             piv = LP::PivType::Frac;
 
             try {
-                TG = CMR::util::make_unique<TourGraph>(tour_edges, edges, perm);
+                TG = util::make_unique<TourGraph>(tour_edges, edges, perm);
             } CMR_CATCH_PRINT_THROW("updating tour graph", err);
             
             continue;
