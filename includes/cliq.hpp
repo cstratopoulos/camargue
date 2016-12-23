@@ -1,8 +1,10 @@
 #ifndef CMR_CLIQ_H
 #define CMR_CLIQ_H
 
+#include "tooth.hpp"
 #include "util.hpp"
 
+#include <array>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -81,6 +83,43 @@ private:
     std::vector<CMR::Segment> seglist;
 };
 
+/** Vertex set structure used in tooth inequalities for domino parity cuts.
+ * This class holds a tooth in the sense used by Fleischer et al. (2006) 
+ * meaning two disjoint, nonempty vertex subsets whose union is not the vertex
+ * set of the graph. A tooth inequality is obtained by summing the SECs on the
+ * two sets. 
+ * @remark This underlying data in this class is sufficiently general to hold
+ * general teeth (i.e., for general domino parity inequalities), but for now
+ * there is only a constructor to implement simple teeth for simple domino 
+ * parity inequalities, i.e., teeth where one of the sets is a singleton. 
+ */
+class Tooth {
+public:
+    Tooth() = default;
+
+    /** Construct a Tooth from a SimpleTooth.
+     * @param saved_tour the dereferencing tour for this Tooth
+     * @param saved_perm the dereferencing perm for this Tooth
+     * @param current_tour the active tour when \p T was found.
+     */
+    Tooth(const SimpleTooth &T,
+          const std::vector<int> &saved_tour,
+          const std::vector<int> &saved_perm,
+          const std::vector<int> &current_tour);
+
+    /** Reference to defining set pair. */
+    const std::array<Clique, 2> &set_pair() const { return sets; }
+
+    using Ptr = std::shared_ptr<Tooth>; /** Pointer alias declaration. */
+
+    /** Equality operator. */
+    bool operator==(const Tooth &rhs) const { return sets == rhs.sets; }
+
+private:
+    std::array<Clique, 2> sets;
+};
+
+
 }
 }
 
@@ -89,16 +128,34 @@ namespace std {
 /** Partial specialization of std::hash taken from CCtsp_hashclique. */
 template<>
 struct hash<CMR::Sep::Clique> {
-  size_t operator()(const CMR::Sep::Clique &clq) const
-    {
-        size_t val = 0;
+    /** Call operator for hashing a Clique. */
+    size_t operator()(const CMR::Sep::Clique &clq) const
+        {
+            size_t val = 0;
         
-        for (const CMR::Segment &seg : clq.seg_list())
-            val = (val * 65537) + (seg.start * 4099) + seg.end;
+            for (const CMR::Segment &seg : clq.seg_list())
+                val = (val * 65537) + (seg.start * 4099) + seg.end;
 
-        return val;
-    }
+            return val;
+        }
 };
+
+/** Partial specialization of std::hash from CCtsp_hashdomino. */
+template<>
+struct hash<CMR::Sep::Tooth> {
+    /** Call operator for hashing a Tooth. */
+    size_t operator()(const CMR::Sep::Tooth &T) const
+        {
+            size_t val = 0;
+
+            for (const CMR::Sep::Clique &clq : T.set_pair())
+                for (const CMR::Segment &seg : clq.seg_list())
+                    val = (val * 65537) + (seg.start * 4099) + seg.end;
+
+            return val;
+        }
+};
+
 }
 
 namespace CMR {
@@ -133,11 +190,11 @@ public:
      * when \p cc_cliq was obtained.
      */
     Sep::Clique::Ptr add_clique(const CCtsp_lpclique &cc_cliq,
-                                      const std::vector<int> &tour);
+                                const std::vector<int> &tour);
 
     /** Construct/add/get a reference to the Clique from endpoints. */
     Sep::Clique::Ptr add_clique(int start, int end,
-                                     const std::vector<int> &tour);
+                                const std::vector<int> &tour);
 
     /** Construct/add/get a reference to a Clique from a node list.
      * The vector \p nodes shall be a list of nodes to be included in the
@@ -159,7 +216,7 @@ public:
     /** The number of unique Cliques in the bank. */
     int size() const { return bank.size(); }
 
-    /** Alias declaration. */
+    /** Alias declaration for Clique hash table. */
     using CliqueHash = std::unordered_map<Sep::Clique,
                                           Sep::Clique::Ptr>;
 
@@ -181,6 +238,35 @@ private:
     CliqueHash bank;
 };
 
+
+class ToothBank {
+public:
+    ToothBank(const std::vector<int> &tour, const std::vector<int> &perm);
+
+    Tooth::Ptr add_tooth(const SimpleTooth &T,
+                         const std::vector<int> &tour);
+
+    void del_tooth(Tooth::Ptr &T_ptr);
+
+    int size() const { return bank.size(); }
+
+    using ToothHash = std::unordered_map<Tooth, Tooth::Ptr>;
+
+    using Itr = ToothHash::iterator;
+    using ConstItr = ToothHash::const_iterator;
+
+    Itr begin() { return bank.begin(); }
+    ConstItr begin() const { return bank.begin(); }
+
+    Itr end() { return bank.end(); }
+    ConstItr end() const { return bank.end(); }
+
+private:
+    const std::vector<int> saved_tour;
+    const std::vector<int> saved_perm;
+
+    ToothHash bank;
+};
 
 }
 }

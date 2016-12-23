@@ -11,6 +11,12 @@
 namespace CMR {
 namespace Sep {
 
+/** Types of cuts that may be stored in ExternalCuts. */
+enum class ExtType : char {
+    Standard = 'S', /**< Subtour or comb as HyperGraph. */
+    Domino = 'D' /**<Simple DP inequality as DominoCut. */
+};
+
 /** Class for external representation of cuts added to the lp relaxation. */
 class HyperGraph {
 public:
@@ -41,6 +47,17 @@ private:
 
 class DominoCut {
 public:
+    DominoCut(CliqueBank &bank,
+              dominoparity &dp_cut, int rhs,
+              const std::vector<int> &tour);
+
+private:
+    Clique::Ptr handle;
+};
+
+/*
+class DominoCut {
+public:
     DominoCut(Sep::CliqueBank &bank,
               Sep::dominoparity &dp_cut, int rhs,
               const std::vector<int> &tour);
@@ -57,6 +74,7 @@ private:
 
     Sep::CliqueBank &source_bank;
 };
+*/
 
 /** Class for managing a list of cuts in an lp relaxation. */
 class ExternalCuts {
@@ -82,6 +100,8 @@ private:
     int next_row;
     
     Sep::CliqueBank clique_bank;
+
+    std::vector<ExtType> cut_types;
     
     std::map<int, Sep::HyperGraph> cuts;
     std::map<int, Sep::DominoCut> dp_cuts;
