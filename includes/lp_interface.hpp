@@ -16,6 +16,13 @@ namespace LP {
 
 double branch_score(double multiplier, double val0, double val1);
 
+struct Basis {
+    Basis() = default;
+    
+    std::vector<int> colstat;
+    std::vector<int> rowstat;
+};
+
 
 /** Class for storing an lp relaxation via interface to an lp solver. 
  * This structure stores the environment and lp data structures of the lp 
