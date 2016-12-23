@@ -156,10 +156,11 @@ vector<int> Clique::node_list(const vector<int> &saved_tour) const
 
 Tooth::Tooth(const SimpleTooth &T,
              const vector<int> &saved_tour, const vector<int> &saved_perm,
-             const vector<int> &current_tour) try :
-    sets{Clique(T.root, T.root, saved_tour, saved_perm, current_tour),
-        Clique(T.body_start, T.body_end, saved_tour, saved_perm, current_tour)}
-{    
+             const vector<int> &current_tour) try
+{
+  sets[0] = Clique(T.root, T.root, saved_tour, saved_perm, current_tour);
+  sets[1] = Clique(T.body_start, T.body_end, saved_tour, saved_perm,
+		   current_tour);
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Tooth constructor failed.");
