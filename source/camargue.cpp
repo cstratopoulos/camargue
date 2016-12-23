@@ -1,5 +1,5 @@
 #include "util.hpp"
-#include "graph_io.hpp"
+#include "io_util.hpp"
 #include "timer.hpp"
 #include "tests.hpp"
 

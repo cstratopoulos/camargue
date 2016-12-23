@@ -1,5 +1,5 @@
 #include "datagroups.hpp"
-#include "graph_io.hpp"
+#include "io_util.hpp"
 #include "util.hpp"
 #include "err_util.hpp"
 
@@ -266,7 +266,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
     Graph &graph = graph_data.m_graph;
     int ncount = graph.node_count;
 
-    get_tour_nodes(ncount, best_tour_nodes, tourfile);
+    util::get_tour_nodes(ncount, best_tour_nodes, tourfile);
 
     for (int i = 0; i < best_tour_nodes.size(); ++i)
         perm[best_tour_nodes[i]] = i;

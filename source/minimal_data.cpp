@@ -1,5 +1,5 @@
 #include "datagroups.hpp"
-#include "graph_io.hpp"
+#include "io_util.hpp"
 #include "util.hpp"
 #include "Graph.hpp"
 
@@ -72,9 +72,10 @@ void make_cut_test(const string &tsp_fname,
     }
 
     try {
-        get_tour_nodes(ncount, best_data.best_tour_nodes, tour_nodes_fname);
-        get_lp_sol(ncount, supp_data.support_elist, supp_data.support_ecap,
-                   lp_sol_fname);
+        util::get_tour_nodes(ncount, best_data.best_tour_nodes,
+                             tour_nodes_fname);
+        util::get_lp_sol(ncount, supp_data.support_elist,
+                         supp_data.support_ecap, lp_sol_fname);
     } catch (const exception &e) { cerr << e.what() << "\n"; throw err; }
   
     for (int i = 0; i < ncount; ++i) {//add the best tour edges
