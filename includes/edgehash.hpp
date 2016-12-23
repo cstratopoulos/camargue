@@ -8,34 +8,22 @@ extern "C" {
 }
 
 #include <iostream>
+#include <memory>
 #include <stdexcept>
+#include <utility>
 
 namespace CMR {
 namespace util {
 
-template <int size>
 class EdgeHash {
 public:
-    EdgeHash();
-    
-    
-    ~EdgeHash();
+    EdgeHash(int size);
 
 private:
+    static constexpr int factor = 1.5;
     c_struct_ptr<CCutil_edgehash> hash_handle;
 };
 
-template<int size>
-EdgeHash<size>::EdgeHash() try
-{
-    CCutil_edgehash *eh = new CCutil_edgehash;
-
-    hash_handle(eh, CCutil_edgehash_free);
-    
-} catch (const std::exception &e) {
-    std::cerr << e.what() << "\n";
-    throw std::runtime_error("EdgeHash constructor failed.");
-}
 
 }
 }
