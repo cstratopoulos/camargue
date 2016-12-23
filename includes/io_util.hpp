@@ -18,6 +18,7 @@
 #include <string>
 
 namespace CMR {
+namespace util {
 
 /** Writes a tour to file.
  * Writes the tour specified by \p tour_nodes to the file named 
@@ -113,7 +114,8 @@ void get_tour_nodes(const int node_count, std::vector<int> &tour_nodes,
 void get_lp_sol(const int node_count, std::vector<int> &support_elist,
 	       std::vector<double> &support_ecap,
 	       const std::string &lp_sol_fname);
-		     
+
+}		     
 }
 
 

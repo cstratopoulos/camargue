@@ -1,4 +1,4 @@
-#include "graph_io.hpp"
+#include "io_util.hpp"
 #include "util.hpp"
 
 #include <iomanip>
@@ -18,6 +18,7 @@ using std::endl;
 
 
 namespace CMR {
+namespace util {
 
 void write_tour_nodes(const std::vector<int> &tour_nodes,
 		     const std::string &tour_nodes_fname)
@@ -285,5 +286,5 @@ void get_lp_sol(const int node_count, std::vector<int> &support_elist,
   }
 }
 
-
+}
 }
