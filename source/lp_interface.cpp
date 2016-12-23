@@ -19,7 +19,7 @@ using std::exception;
 
 using std::vector;
 
-using cpx_err = CMR::retcode_error;
+using cpx_err = CMR::util::retcode_error;
 
 
 namespace CMR {
@@ -66,7 +66,7 @@ Relaxation::Relaxation() try
     if (rval) 
         throw cpx_err(rval, "CPXopenCPLEX");
 
-    auto cleanup = CMR::make_guard([&rval, this] {
+    auto cleanup = util::make_guard([&rval, this] {
         if (rval)
             CPXcloseCPLEX(&cplex_env);
     });
