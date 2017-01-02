@@ -1,4 +1,7 @@
 #include "tests.hpp"
+
+#ifdef CMR_DO_TESTSfdfds
+
 #include "solver.hpp"
 #include "util.hpp"
 #include "timer.hpp"
@@ -36,7 +39,7 @@ static bool sp_sort_greater(const ScorePair &p, const ScorePair &r)
 
 static bool is_integral(double d) { return d >= EpsZero && d <= 1 - EpsZero; }
 
-#ifdef CMR_DO_TESTS
+
 
 SCENARIO ("Computing branching edges",
           "[Solver][Branch][ABC]") {
