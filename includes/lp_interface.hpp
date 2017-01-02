@@ -14,8 +14,6 @@
 namespace CMR {
 namespace LP {
 
-double branch_score(double multiplier, double val0, double val1);
-
 struct Basis {
     Basis() = default;
     
@@ -57,6 +55,8 @@ public:
 
     int num_rows() const; /**< Number of rows in the model. */
     int num_cols() const; /**< Number of columsn in the model. */
+
+    int it_count() const;
 
     /** Check the feasibility status of a given solution.
      * If \p x is an lp solution, the `i`th entry of \p feas_stat will be
@@ -135,8 +135,6 @@ public:
     ///@}
 
 
-protected:
-
     /**@name Row and column operations. */
     ///@{
 
@@ -196,12 +194,11 @@ protected:
     /** Optimize the relaxation with dual simplex. */
     void dual_opt();
 
-    /** Find a primal non-degenerate pivot.
-     * If there is a solution `x` resident in the problem, and `x` has
-     * objective value `lowlimit + CMR::Epsilon::Zero`, this function
-     * pivots until reaching a solution which differs from `x`. 
-     */
+    /** Find a primal non-degenerate pivot. */
     void nondegen_pivot(const double lowlimit);
+
+    /** Perform exactly one primal simplex pivot. */
+    void single_pivot();
     
     ///@}
 

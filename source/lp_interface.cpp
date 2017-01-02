@@ -154,6 +154,8 @@ int Relaxation::num_rows() const { return CPXgetnumrows(cplex_env, cplex_lp); }
 
 int Relaxation::num_cols() const { return CPXgetnumcols(cplex_env, cplex_lp); }
 
+int Relaxation::it_count() const { return CPXgetitcnt(cplex_env, cplex_lp); }
+
 void Relaxation::new_row(const char sense, const double rhs)
 {
     int rval = CPXnewrows(cplex_env, cplex_lp, 1, &rhs, &sense, NULL, NULL);
@@ -342,6 +344,41 @@ void Relaxation::nondegen_pivot(const double lowlimit)
              << rval << "\n";
         throw err;
     }    
+}
+
+void Relaxation::single_pivot() try
+{
+    int rval = 0;
+    CPXLONG old_itlim;
+    CPXLONG single_itlim = 1;
+
+    rval = CPXgetlongparam(cplex_env, CPX_PARAM_ITLIM, &old_itlim);
+    if (rval)
+        throw cpx_err(rval, "CPXgetlongparam itlim");
+
+    rval = CPXsetlongparam(cplex_env, CPX_PARAM_ITLIM, single_itlim);
+    if (rval)
+        throw cpx_err(rval, "CPXsetlongparam itlim");
+
+    rval = CPXprimopt(cplex_env, cplex_lp);
+    if (rval)
+        throw cpx_err(rval, "CPXprimopt");
+
+    int solstat = CPXgetstat(cplex_env, cplex_lp);
+    if (solstat == CPX_STAT_INFEASIBLE)
+        throw runtime_error("LP is infeasible.");
+
+    if (solstat != CPX_STAT_OPTIMAL &&
+        solstat != CPX_STAT_ABORT_IT_LIM &&
+        solstat != CPX_STAT_OPTIMAL_INFEAS)
+        throw cpx_err(solstat, "CPXprimopt solstat");
+
+    rval = CPXsetlongparam(cplex_env, CPX_PARAM_ITLIM, old_itlim);
+    if (rval)
+        throw cpx_err(rval, "CPXsetlongparam itlim");
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("Problem in Relaxation::single_pivot.");
 }
 
 double Relaxation::get_objval() const
