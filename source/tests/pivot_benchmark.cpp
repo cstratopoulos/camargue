@@ -33,14 +33,19 @@ static int nd_itcount;
 static int itlim_itcount;
 
 SCENARIO ("Comparing pivot protocols",
-          "[.LP][benchmark]") {
+          "[LP][Relaxation][single_pivot][nondegen_pivot][.benchmark]") {
     vector<string> probs{
-        "d2103",
-        //"pr2392",
-        // "pcb3038",
-        // "rl5915",
-        //"pla7397"
-        // "usa13509"
+      "dsj1000",
+	"pr1002",
+	"rl1304",
+	"fl1577",
+	"d2103",
+	"u2319",
+	"pr2392",
+	"pcb3038",
+        "rl5915",
+        "pla7397",
+        "usa13509"
     };
 
 
@@ -74,10 +79,13 @@ SCENARIO ("Comparing pivot protocols",
                 itlim_objval = core.get_objval();
                 itlim_itcount = itcount;
 
-                cout << "\n\nInstance " << prob << "\n";
-                cout << "piv times\t" << nd_time << "\t" << itlim_time << "\n"
+                cout << "\n\nInstance " << prob << "\tND\titlim\n";
+                cout << "piv times\t" << nd_time << "\t" << itlim_time << "\t"
+		     << "ratio: " << (itlim_time / nd_time) << "\n"
                      << "piv vals\t" << nd_objval << "\t"
                      << itlim_objval << "\n"
+		     << "piv deltas\t" << (nd_objval / tourlen) << "\t"
+		     << (itlim_objval / tourlen) << "\n"
                      << "piv counts\t" << nd_itcount << "\t" << itlim_itcount
                      << "\n";
             }
