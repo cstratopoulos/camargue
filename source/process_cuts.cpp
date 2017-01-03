@@ -159,9 +159,10 @@ void Sep::CutTranslate::get_sparse_row(const CCtsp_lpcut_in &cc_cut,
 // }
 
 int Sep::CutTranslate::get_sparse_row(const dominoparity &dp_cut,
-				 const vector<int> &tour_nodes,
-				 vector<int> &rmatind, vector<double> &rmatval,
-				 char &sense, double &rhs)
+                                      const vector<int> &tour_nodes,
+                                      vector<int> &rmatind,
+                                      vector<double> &rmatval,
+                                      char &sense, double &rhs)
 {
     int rval = 0;
     vector<double> coeff_buff;
