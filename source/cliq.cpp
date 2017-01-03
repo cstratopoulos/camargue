@@ -213,5 +213,19 @@ void CliqueBank::del_clique(Clique::Ptr &clq_ptr)
         bank.erase(find_it);
 }
 
+ToothBank::ToothBank(const vector<int> &tour, const vector<int> &perm)
+try : saved_tour(tour), saved_perm(perm) {} catch (const exception &e) {
+    throw runtime_error("ToothBank constructor failed.");
+}
+
+Tooth::Ptr ToothBank::add_tooth(const SimpleTooth &T, const vector<int> &tour)
+{
+    Tooth t(T, saved_tour, saved_perm, tour);
+
+    if (bank.count(t) == 0)
+        bank[t] = std::make_shared<Tooth>(t);
+
+    return bank[t];
+}
 }
 }
