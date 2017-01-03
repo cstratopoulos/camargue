@@ -239,32 +239,40 @@ private:
 };
 
 
+/** Storage of a repository of Teeth, for use in building a HyperGraph.
+ * This class is like CliqueBank, but instead it dispenses and deletes 
+ * references to Tooth objects instead. 
+ */
 class ToothBank {
 public:
+    /** Construct a ToothBank to be dereferenced by \p tour and \p perm. */
     ToothBank(const std::vector<int> &tour, const std::vector<int> &perm);
 
+    /** Add a Tooth to the bank and get a reference to it. */
     Tooth::Ptr add_tooth(const SimpleTooth &T,
                          const std::vector<int> &tour);
 
+    /** Decrement the reference count of a Tooth, possibly deleting it. */
     void del_tooth(Tooth::Ptr &T_ptr);
 
+    /** Number of unique Teeth in the bank. */
     int size() const { return bank.size(); }
 
+    /** Alias declaration for Tooth hash table. */
     using ToothHash = std::unordered_map<Tooth, Tooth::Ptr>;
 
-    using Itr = ToothHash::iterator;
-    using ConstItr = ToothHash::const_iterator;
+    using Itr = ToothHash::iterator; /**< Iterator alias. */
+    using ConstItr = ToothHash::const_iterator; /**< Const iterator alias. */
 
-    Itr begin() { return bank.begin(); }
-    ConstItr begin() const { return bank.begin(); }
+    Itr begin() { return bank.begin(); } /**< Begin iterator. */
+    ConstItr begin() const { return bank.begin(); } /**< Const begin. */
 
-    Itr end() { return bank.end(); }
-    ConstItr end() const { return bank.end(); }
+    Itr end() { return bank.end(); } /**< Past the end. */
+    ConstItr end() const { return bank.end(); } /**< Const past the end. */
 
 private:
     const std::vector<int> saved_tour;
     const std::vector<int> saved_perm;
-
     ToothHash bank;
 };
 
