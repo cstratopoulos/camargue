@@ -11,12 +11,6 @@
 namespace CMR {
 namespace Sep {
 
-/** Types of cuts that may be stored in ExternalCuts. */
-enum class ExtType : char {
-    Standard = 'S', /**< Subtour or comb as HyperGraph. */
-    Domino = 'D' /**<Simple DP inequality as DominoCut. */
-};
-
 /** Class for external representation of cuts added to the lp relaxation. */
 class HyperGraph {
 public:
@@ -25,8 +19,12 @@ public:
      * Clique pointers from \p bank, assuming that the cut was found with
      * \p tour as the resident best tour.
      */
-    HyperGraph(Sep::CliqueBank &bank,
+    HyperGraph(CliqueBank &bank,
                const CCtsp_lpcut_in &cc_lpcut,
+               const std::vector<int> &tour);
+
+    HyperGraph(CliqueBank &bank, ToothBank &tbank,
+               const dominoparity &dp_cut, const double _rhs,
                const std::vector<int> &tour);
 
     /** Destruct a HyperGraph.
@@ -35,77 +33,24 @@ public:
      * the CliqueBank if necessary. 
      */
     ~HyperGraph();
+
+    enum Type : bool {
+        Standard = true, Domino = false
+    };
+
+    Type cut_type() const { return static_cast<Type>(teeth.empty()); }
     
 private:
     char sense;
     double rhs;
     
-    std::vector<Sep::Clique::Ptr> cliques;
+    std::vector<Clique::Ptr> cliques;
+    std::vector<Tooth::Ptr> teeth;
 
-    Sep::CliqueBank &source_bank;
+    CliqueBank &source_bank;
+    ToothBank *source_toothbank;
 };
 
-class DominoCut {
-public:
-    DominoCut(CliqueBank &bank,
-              dominoparity &dp_cut, int rhs,
-              const std::vector<int> &tour);
-
-private:
-    Clique::Ptr handle;
-};
-
-/*
-class DominoCut {
-public:
-    DominoCut(Sep::CliqueBank &bank,
-              Sep::dominoparity &dp_cut, int rhs,
-              const std::vector<int> &tour);
-
-    ~DominoCut();
-
-private:
-    char sense;
-    double rhs;
-
-    Sep::Clique::Ptr handle;
-    std::vector<Sep::Clique::Ptr> nonneg_edges;
-    std::vector<std::pair<int, Sep::Clique::Ptr>> teeth;
-
-    Sep::CliqueBank &source_bank;
-};
-*/
-
-/** Class for managing a list of cuts in an lp relaxation. */
-class ExternalCuts {
-    /** Construct ExternalCuts with a reference tour and perm. */
-    ExternalCuts(const std::vector<int> &tour, const std::vector<int> &perm);
-
-    /** Add a cut in Concorde format. */
-    void add_cut(const CCtsp_lpcut_in &cc_lpcut,
-                 const std::vector<int> &current_tour);
-
-    /** Add a simple DP cut. */
-    void add_cut(Sep::dominoparity &dp_cut,
-                 const std::vector<int> &current_tour);
-
-    /** Delete the cuts indicated by \p delset. 
-     * If `delset[i] == -1` then `cuts[i]` will be deleted, else `cuts[i]` 
-     * will become `cuts[delset[i]]`
-     */
-    void del_cuts(const std::vector<int> &delset,
-                  int new_num_rows);
-
-private:
-    int next_row;
-    
-    Sep::CliqueBank clique_bank;
-
-    std::vector<ExtType> cut_types;
-    
-    std::map<int, Sep::HyperGraph> cuts;
-    std::map<int, Sep::DominoCut> dp_cuts;
-};
 
 }
 }
