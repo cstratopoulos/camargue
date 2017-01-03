@@ -227,5 +227,24 @@ Tooth::Ptr ToothBank::add_tooth(const SimpleTooth &T, const vector<int> &tour)
 
     return bank[t];
 }
+
+void ToothBank::del_tooth(Tooth::Ptr &T_ptr)
+{
+    if (!T_ptr)
+        return;
+
+    Tooth &T = *T_ptr;
+
+    ToothBank::Itr find_it = bank.find(T);
+
+    if (find_it == bank.end())
+        return;
+
+    T_ptr.reset();
+
+    if (find_it->second.use_count() <= 1)
+        bank.erase(find_it);
+}
+
 }
 }
