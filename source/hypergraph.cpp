@@ -68,6 +68,9 @@ HyperGraph::~HyperGraph()
 
 double HyperGraph::get_coeff(int end0, int end1) const
 {
+    if (end0 == end1)
+        throw logic_error("Edge has same endpoints in HyperGraph::get_coeff.");
+    
     double result = 0.0;
     
     if (cut_type() == Type::Standard) {
@@ -138,7 +141,7 @@ double HyperGraph::get_coeff(int end0, int end1) const
     }
 
     pre_result /= 2;
-    return pre_result;
+    return static_cast<double>(pre_result);
 }
 
 ExternalCuts::ExternalCuts(const vector<int> &tour, const vector<int> &perm)
@@ -176,6 +179,44 @@ void ExternalCuts::del_cuts(const vector<int> &delset)
                                   return H.rhs == '\0';
                               }),
                cuts.end());
+}
+
+void ExternalCuts::get_col(const int end0, const int end1,
+                           vector<int> &cmatind, vector<double> &cmatval) try
+{
+    if (end0 == end1)
+        throw logic_error("Edge has same endpoints.");
+    
+    cmatind.clear();
+    cmatval.clear();
+    
+    int lp_size = node_count + cuts.size();
+
+    try {
+        cmatind.reserve(lp_size);
+        cmatval.reserve(lp_size);
+
+        cmatind.push_back(end0);
+        cmatind.push_back(end1);
+
+        cmatval.push_back(1.0);
+        cmatval.push_back(1.0);
+
+        for (int i = 0; i < cuts.size(); ++i) {
+            int index = i + node_count;
+            double coeff = cuts[i].get_coeff(end0, end1);
+
+            if (coeff != 0.0) {
+                cmatind.push_back(index);
+                cmatval.push_back(coeff);
+            }
+        }
+    } catch (const exception &e) {
+        cerr << e.what() << " pushing back column coeffs.\n";
+        throw e;
+    }
+} catch (const exception &e) {
+    throw runtime_error("Problem in ExternalCuts::get_col.");
 }
 
 

@@ -78,6 +78,17 @@ public:
         return cuts[lp_rownum - node_count];
     }
 
+    /** Get the column associated with an edge to be added to the lp.
+     * @param[in] end0 one end of the edge to be added
+     * @param[in] end1 the other end of the edge to be added
+     * @param[in/out] cmatind the indices of the rows having nonzero 
+     * coefficients for the new edge
+     * @param[in/out] cmatval the coefficients corresponding to entries of 
+     * \p cmatind.
+     */
+    void get_col(const int end0, const int end1,
+                 std::vector<int> &cmatind, std::vector<double> &cmatval);
+
 private:
     const int node_count;
 
