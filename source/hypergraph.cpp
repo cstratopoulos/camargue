@@ -66,6 +66,81 @@ HyperGraph::~HyperGraph()
             source_toothbank->del_tooth(ref);
 }
 
+double HyperGraph::get_coeff(int end0, int end1) const
+{
+    double result = 0.0;
+    
+    if (cut_type() == Type::Standard) {
+        const vector<int> &perm = source_bank->ref_perm();
+
+        int end0_ind = perm[end0];
+        int end1_ind = perm[end1];
+
+        for (const Clique::Ptr &clq_ref : cliques) {
+            bool contains_end0 = clq_ref->contains(end0_ind);
+            bool contains_end1 = clq_ref->contains(end1_ind);
+
+            if (contains_end0 != contains_end1)
+                result += 1.0;
+        }
+
+        return result;
+    }
+
+    //else it is a Simple DP
+    int pre_result = 0;
+    //get handle coeffs
+    const vector<int> &handle_perm = source_bank->ref_perm();
+    int end0_ind = handle_perm[end0];
+    int end1_ind = handle_perm[end1];
+    
+    const Clique::Ptr &handle_clq = cliques[0];
+    
+    bool contains_end0 = handle_clq->contains(end0_ind);
+    bool contains_end1 = handle_clq->contains(end1_ind);
+    
+    if (contains_end0 && contains_end1) //in E(H)
+        pre_result += 2;
+    else if (contains_end0 != contains_end1) // in delta(H)
+        pre_result += 1;
+
+    const vector<int> &tooth_perm = source_toothbank->ref_perm();
+    
+    end0_ind = tooth_perm[end0];
+    end1_ind = tooth_perm[end1];
+    contains_end0 = false;
+    contains_end1 = false;
+
+    for (const Tooth::Ptr &tooth : teeth) {
+        const Clique &root_clq = tooth->set_pair()[0];
+        const Clique &bod_clq = tooth->set_pair()[1];
+
+        bool root_end0 = false;
+        bool root_end1 = false;
+
+        if ((root_end0 = root_clq.contains(end0_ind)))
+            if (bod_clq.contains(end1_ind)) {
+                pre_result += 1;
+                continue;
+            }
+
+        if ((root_end1 = root_clq.contains(end1_ind)))
+            if (bod_clq.contains(end0_ind)) {
+                pre_result += 1;
+                continue;
+            }
+
+        if (root_end0 || root_end1)
+            continue;
+
+        if (bod_clq.contains(end0_ind) && bod_clq.contains(end1_ind))
+            pre_result += 2;
+    }
+
+    result = pre_result / 2;
+    return result;    
+}
+
 ExternalCuts::ExternalCuts(const vector<int> &tour, const vector<int> &perm)
 try : node_count(tour.size()), clique_bank(tour, perm), tooth_bank(tour, perm)
 {

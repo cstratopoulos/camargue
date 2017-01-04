@@ -25,21 +25,21 @@ public:
                const CCtsp_lpcut_in &cc_lpcut,
                const std::vector<int> &tour);
 
+    /** Construct a HyperGraph from a simple tooth inequality. */
     HyperGraph(CliqueBank &bank, ToothBank &tbank,
                const dominoparity &dp_cut, const double _rhs,
                const std::vector<int> &tour);
 
-    /** Destruct a HyperGraph.
-     * Goes through the source Cliquebank and ToothBank, decrementing reference
-     * counts, purging if necessary.
-     */
-    ~HyperGraph();
+    ~HyperGraph(); /**< Destruct and decrement/delete Clique/Tooth refs. */
 
     enum Type : bool {
         Standard = true, Domino = false
     };
 
     Type cut_type() const { return static_cast<Type>(teeth.empty()); }
+
+    /** Get the coefficient of an edge specified by endpoints. */
+    double get_coeff(int end0, int end1) const;
 
     friend class ExternalCuts;
     
@@ -68,8 +68,15 @@ public:
     void add_cut(const dominoparity &dp_cut, const double rhs,
                  const std::vector<int> &current_tour);
 
-    
+    /** Delete the cuts specified by \p delset.
+     * Erase each entry of `cuts[i]` for which `delset[i + node_count] == -1`.
+     */
     void del_cuts(const std::vector<int> &delset);
+
+    /** Return a cut corresponding to a row number index from the lp. */
+    const HyperGraph &get_cut(int lp_rownum) const {
+        return cuts[lp_rownum - node_count];
+    }
 
 private:
     const int node_count;
