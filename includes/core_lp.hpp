@@ -11,6 +11,7 @@
 #include "cc_lpcuts.hpp"
 #include "process_cuts.hpp"
 #include "datagroups.hpp"
+#include "hypergraph.hpp"
 
 #include <vector>
 
@@ -41,7 +42,7 @@ public:
 
     double opt();
 
-    CMR::LP::PivType primal_pivot();
+    LP::PivType primal_pivot();
     void pivot_back();
 
     void add_cuts(Sep::LPcutList &cutq);
@@ -59,10 +60,14 @@ private:
     Data::GraphGroup &graph_data;
     Data::BestGroup &best_data;
 
+    Sep::ExternalCuts ext_cuts;
+
     TourBasis tour_base;
     
     std::vector<double> lp_edges;
     std::vector<double> feas_stat;
+
+
 };
 
 }

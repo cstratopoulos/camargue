@@ -38,7 +38,8 @@ double branch_score(double multiplier, double val0, double val1)
 
 CoreLP::CoreLP(Data::GraphGroup &graph_data_,
                Data::BestGroup &best_data_) try :
-    graph_data(graph_data_), best_data(best_data_)
+    graph_data(graph_data_), best_data(best_data_),
+    ext_cuts(best_data.best_tour_nodes, best_data.perm)
 {
     CMR::Graph &graph = graph_data.m_graph;
     int ncount = graph.node_count;
@@ -257,17 +258,18 @@ void CoreLP::handle_aug()
     }
 
     del_set_rows(delrows);
+    ext_cuts.del_cuts(delrows);
     factor_basis();
 }
 
-void CoreLP::add_cuts(Sep::LPcutList &cutq)
+void CoreLP::add_cuts(Sep::LPcutList &cutq) try
 {
-    runtime_error err("Problem in CoreLP::add_cuts(LPcutList)");
     if (cutq.empty())
         return;
 
     Sep::CutTranslate translator(graph_data);
     vector<int> &perm = best_data.perm;
+    vector<int> &tour = best_data.best_tour_nodes;
 
     for (lpcut_in *cur = cutq.begin(); cur; cur = cur->next) {
         vector<int> rmatind;
@@ -280,8 +282,20 @@ void CoreLP::add_cuts(Sep::LPcutList &cutq)
                                       rhs);
             add_cut(rhs, sense, rmatind, rmatval);
             
-        } CMR_CATCH_PRINT_THROW("adding sparse row", err);
+        } catch (const exception &e) {
+            cerr << e.what() << " adding sparse row.\n";
+            throw e;
+        }
+
+        try {
+            ext_cuts.add_cut(*cur, tour);
+        } catch (const exception &e) {
+            cerr << e.what() << " adding external rep.\n";
+            throw e;
+        }
     }
+} catch (const exception &e) {
+    throw runtime_error("Problem in CoreLP::add_cuts(LPcutList.)");
 }
 
 void CoreLP::add_cuts(Sep::CutQueue<Sep::dominoparity> &dpq)
@@ -309,6 +323,10 @@ void CoreLP::add_cuts(Sep::CutQueue<Sep::dominoparity> &dpq)
         try {
             add_cut(rhs, sense, rmatind, rmatval);
         } CMR_CATCH_PRINT_THROW("adding dpcut row", err);
+
+        try {
+            ext_cuts.add_cut(dp_cut, rhs, tour_nodes);
+        } CMR_CATCH_PRINT_THROW("adding external rep,", err);
     }
 }
 
