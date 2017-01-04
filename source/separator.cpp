@@ -71,7 +71,7 @@ bool Separator::find_cuts(CMR::TourGraph &TG)
                 SimpleDP dominos(graph_data, karp_part,
                                  best_data, supp_data, dp_q);
                 if (dominos.find_cuts()) {
-                    cout << "\t" << dp_q.size() << " dominos\n";
+                    //cout << "\t" << dp_q.size() << " dominos\n";
                     running_total += dp_q.size();
                 }
             }

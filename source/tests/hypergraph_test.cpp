@@ -105,7 +105,6 @@ SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
                     }
 
                     if (!sep.dp_q.empty()) {
-                        cout << "Found dominos for " << fname << "\n";
                         for (auto it = sep.dp_q.begin();
                              it != sep.dp_q.end(); ++it) {
                             CMR::Sep::dominoparity &dp_cut = *it;
