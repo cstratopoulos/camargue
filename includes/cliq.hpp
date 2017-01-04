@@ -266,6 +266,9 @@ public:
     /** Construct a ToothBank to be dereferenced by \p tour and \p perm. */
     ToothBank(const std::vector<int> &tour, const std::vector<int> &perm);
 
+    /** Construct a ToothBank with reference vectors matching a CliqueBank. */
+    ToothBank(const CliqueBank &cbank);
+
     /** Add a Tooth to the bank and get a reference to it. */
     Tooth::Ptr add_tooth(const SimpleTooth &T,
                          const std::vector<int> &tour);

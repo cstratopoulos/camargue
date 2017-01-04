@@ -218,6 +218,12 @@ try : saved_tour(tour), saved_perm(perm) {} catch (const exception &e) {
     throw runtime_error("ToothBank constructor failed.");
 }
 
+ToothBank::ToothBank(const CliqueBank &cbank)
+try : saved_tour(cbank.ref_tour()), saved_perm(cbank.ref_perm()) {}
+catch (const exception &e) {
+    throw runtime_error("ToothBank constructor from CliqueBank failed.");
+}
+
 Tooth::Ptr ToothBank::add_tooth(const SimpleTooth &T, const vector<int> &tour)
 {
     Tooth t(T, saved_tour, saved_perm, tour);
