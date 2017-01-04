@@ -27,14 +27,7 @@ using lpcut_in = CCtsp_lpcut_in;
 namespace CMR {
 namespace LP {
 
-constexpr double EpsZero = CMR::Epsilon::Zero;
-
-double branch_score(double multiplier, double val0, double val1)
-{
-    return 
-    ((val0 < val1) ? ((multiplier * val0) + val1) :
-     (val0 + multiplier * val1)) / (multiplier + 1.0);
-}
+namespace Eps = CMR::Epsilon;
 
 CoreLP::CoreLP(Data::GraphGroup &graph_data_,
                Data::BestGroup &best_data_) try :
@@ -158,7 +151,7 @@ PivType CoreLP::primal_pivot()
 {
     runtime_error err("Problem in CoreLP::primal_pivot.");
 
-    double low_limit = best_data.min_tour_value - EpsZero;
+    double low_limit = best_data.min_tour_value - Eps::Zero;
     CMR::Graph &graph = graph_data.m_graph;
 
     try {
@@ -221,7 +214,7 @@ void CoreLP::handle_aug()
     tour_base.best_tour_edges = lp_edges;
 
     for (int i = 0; i < lp_edges.size(); ++i)
-        if (lp_edges[i] < EpsZero)
+        if (lp_edges[i] < Eps::Zero)
             best_data.best_tour_edges[i] = 0;
         else {
             best_data.best_tour_edges[i] = 1;
@@ -231,7 +224,7 @@ void CoreLP::handle_aug()
     if (objval > best_data.min_tour_value)
         throw runtime_error("Tried to update best tour with worse objval!");
 
-    if (fabs(objval - get_objval()) > EpsZero)
+    if (fabs(objval - get_objval()) > Eps::Zero)
         throw runtime_error("Disagreement in new best tour objval with lp.");
 
     best_data.min_tour_value = objval;
