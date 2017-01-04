@@ -1,4 +1,7 @@
 #include "tests.hpp"
+
+#ifdef CMR_DO_TESTS
+
 #include "util.hpp"
 #include "datagroups.hpp"
 #include "cc_lpcuts.hpp"
@@ -22,7 +25,7 @@ using std::vector;
 using std::string;
 using std::cout;
 
-#ifdef CMR_DO_TESTS
+
 
 static void make_tour_perm(vector<int> &tour, vector<int> &perm)
 {
