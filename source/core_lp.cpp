@@ -82,8 +82,8 @@ CoreLP::CoreLP(Data::GraphGroup &graph_data_,
 TourBasis::TourBasis(CMR::Graph &graph,
                      Data::BestGroup &best_data) try :
     best_tour_edges(vector<double>(graph.edge_count)),
-    colstat(vector<int>(graph.edge_count, CPX_AT_LOWER)),
-    rowstat(vector<int>(graph.node_count, CPX_AT_LOWER))
+    colstat(vector<int>(graph.edge_count, BStat::AtLower)),
+    rowstat(vector<int>(graph.node_count, BStat::AtLower))
 {
     vector<int> &int_tour_edges = best_data.best_tour_edges;
     
@@ -104,7 +104,7 @@ TourBasis::TourBasis(CMR::Graph &graph,
                  << " not found in edge hash.\n";
             throw logic_error("Graph does not contain all edges in tour.");
         }
-        colstat[edge_it->second] = CPX_BASIC;
+        colstat[edge_it->second] = BStat::Basic;
     }
 
     if ((ncount % 2) == 0) {
@@ -119,7 +119,7 @@ TourBasis::TourBasis(CMR::Graph &graph,
             throw logic_error("Graph does not contain all edges in tour.");
         }
 
-        colstat[edge_it->second] = CPX_AT_UPPER;
+        colstat[edge_it->second] = BStat::AtUpper;
 
         end0 = min(tour_nodes[0], tour_nodes[ncount - 2]);
         end1 = max(tour_nodes[0], tour_nodes[ncount - 2]);
@@ -132,7 +132,7 @@ TourBasis::TourBasis(CMR::Graph &graph,
             throw logic_error("Graph does not contain basis edge.");
         }
 
-        colstat[edge_it->second] = CPX_BASIC;
+        colstat[edge_it->second] = BStat::Basic;
     }
 } catch (const exception &e) {
     cerr << e.what() << "\n";
