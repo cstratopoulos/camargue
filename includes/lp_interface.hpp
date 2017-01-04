@@ -7,12 +7,18 @@
 #ifndef CMR_LP_INTERFACE_H
 #define CMR_LP_INTERFACE_H
 
-#include <cplex.h>
-
 #include <vector>
+#include <memory>
 
 namespace CMR {
 namespace LP {
+
+enum BStat {
+    AtLower = 0,
+    Basic = 1,
+    AtUpper = 2,
+    FreeSuper = 3
+};
 
 struct Basis {
     Basis() = default;
@@ -26,9 +32,6 @@ struct Basis {
  * This structure stores the environment and lp data structures of the lp 
  * solver, and contains methods for modifying the relaxation in the sense of
  * adding/removing constraints and variables.
- * @remark This is implemented as an interface to CPLEX 12, but use of 
- * other solvers could be supported by re-implementing the protected members
- * and changing private members appropriately. 
  */
 class Relaxation {
 public:
@@ -203,8 +206,8 @@ public:
     ///@}
 
 private:
-    CPXENVptr cplex_env;
-    CPXLPptr cplex_lp;
+    struct solver_impl;
+    std::unique_ptr<solver_impl> simpl_p;
 };
 
 }
