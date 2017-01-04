@@ -22,6 +22,16 @@ public:
               Data::BestGroup &bestdata,
               Data::SupportGroup &suppdata,
               Data::KarpPartition &kpart) :
+        max_total(8),
+        graph_data(graphdata), best_data(bestdata), supp_data(suppdata),
+        karp_part(kpart){}
+
+    Separator(Data::GraphGroup &graphdata,
+              Data::BestGroup &bestdata,
+              Data::SupportGroup &suppdata,
+              Data::KarpPartition &kpart,
+              int round_limit) :
+        max_total(round_limit),
         graph_data(graphdata), best_data(bestdata), supp_data(suppdata),
         karp_part(kpart){}
     
@@ -31,7 +41,7 @@ public:
     LPcutList fast2m_q;
     LPcutList blkcomb_q;
 
-    Sep::CutQueue<Sep::dominoparity> dp_q;
+    CutQueue<dominoparity> dp_q;
 
     LPcutList connect_q;
 
@@ -40,6 +50,8 @@ public:
     friend class Solver;
 
 private:
+    const int max_total;
+    
     Data::GraphGroup &graph_data;
     Data::BestGroup &best_data;
     Data::SupportGroup &supp_data;
