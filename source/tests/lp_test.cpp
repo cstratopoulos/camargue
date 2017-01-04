@@ -1,9 +1,13 @@
 #include <catch.hpp>
 
+#ifdef CMR_DO_TESTS
+
 #include "lp_interface.hpp"
 #include "core_lp.hpp"
 #include "tests.hpp"
 #include "err_util.hpp"
+
+#include <cplex.h>
 
 #include <iostream>
 #include <string>
@@ -15,8 +19,6 @@ using std::vector;
 using std::unique_ptr;
 using std::string;
 using std::pair;
-
-#ifdef CMR_DO_TESTS
 
 SCENARIO ("Performing single pivots",
           "[LP][CoreLP][primal_pivot]") {
