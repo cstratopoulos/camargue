@@ -35,7 +35,6 @@ bool Separator::find_cuts(CMR::TourGraph &TG)
 
     int running_total = 0;
     bool found_segments = false;
-    bool found_comb = false;
 
     try {
         SegmentCuts segments(perm_elist, ecap, TG, seg_q);
@@ -44,31 +43,29 @@ bool Separator::find_cuts(CMR::TourGraph &TG)
             found_segments = true;
 //            cout << "\t"  << seg_q.size() << " segment cuts\n";
             running_total += seg_q.size();
-            if (running_total > 8)
+            if (running_total > max_total)
                 return true;
         }
 
         FastBlossoms fast2m(perm_elist, ecap, TG, fast2m_q);
 
         if (fast2m.find_cuts()) {
-            found_comb = true;
-//            cout << "\t"  << fast2m_q.size() << " fast blossoms\n";
+            //            cout << "\t"  << fast2m_q.size() << " fast blossoms\n";
             running_total += fast2m_q.size();
-            if (running_total > 8)
+            if (running_total > max_total)
                 return true;
         }
 
         BlockCombs blkcomb(perm_elist, ecap, TG, blkcomb_q);
 
         if (blkcomb.find_cuts()) {
-            found_comb = true;
-//            cout << "\t"  << blkcomb_q.size() << " block combs\n";
+            //            cout << "\t"  << blkcomb_q.size() << " block combs\n";
             running_total += blkcomb_q.size();
-            if (running_total > 8)
+            if (running_total > max_total)
                 return true;
         }
 
-        if (supp_data.connected && !found_segments && !found_comb) {
+        if (supp_data.connected && !found_segments) {
             if (supp_data.in_subtour_poly()) {
                 dp_q.clear();
                 SimpleDP dominos(graph_data, karp_part,
