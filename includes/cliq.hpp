@@ -36,7 +36,7 @@ public:
     Clique(const CCtsp_lpclique &cc_cliq,
            const std::vector<int> &saved_tour,
            const std::vector<int> &saved_perm,
-           const std::vector<int> & current_tour);
+           const std::vector<int> &current_tour);
 
     /** Construct a Clique from start and end indices.
      * If \p current_tour is the resident best tour, constructs the Clique

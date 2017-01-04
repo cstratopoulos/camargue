@@ -137,8 +137,8 @@ double HyperGraph::get_coeff(int end0, int end1) const
             pre_result += 2;
     }
 
-    result = pre_result / 2;
-    return result;    
+    pre_result /= 2;
+    return pre_result;
 }
 
 ExternalCuts::ExternalCuts(const vector<int> &tour, const vector<int> &perm)
