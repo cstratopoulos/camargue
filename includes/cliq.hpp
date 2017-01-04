@@ -78,6 +78,17 @@ public:
     
     /** Equality operator. */
     bool operator==(const Clique &rhs) const { return seglist == rhs.seglist; }
+
+    /** Returns true iff the Clique contains \p index.
+     * \p index an index from a tour, assumed to be the same as the one used
+     * to dereference the Clique.
+     */
+    bool contains(const int index) const {
+        for (const Segment &seg : seglist)
+            if (seg.contains(index))
+                return true;
+        return false;
+    }
     
 private:
     std::vector<CMR::Segment> seglist;
@@ -231,6 +242,13 @@ public:
     
     Itr end() { return bank.end(); } /**< Past the end iterator. */    
     ConstItr end() const { return bank.end(); } /**< Const past end iter. */
+
+    /** Get a const reference to the saved tour for dereferencing. */
+    const std::vector<int> &ref_tour() const { return saved_tour; }
+
+    /** Get a const reference to the saved perm for dereferencing. */
+    const std::vector<int> &ref_perm() const { return saved_perm; }
+
     
 private:
     const std::vector<int> saved_tour;
@@ -269,6 +287,12 @@ public:
 
     Itr end() { return bank.end(); } /**< Past the end. */
     ConstItr end() const { return bank.end(); } /**< Const past the end. */
+
+    /** Get a const reference to the saved tour for dereferencing. */
+    const std::vector<int> &ref_tour() const { return saved_tour; }
+
+    /** Get a const reference to the saved perm for dereferencing. */
+    const std::vector<int> &ref_perm() const { return saved_perm; }
 
 private:
     const std::vector<int> saved_tour;
