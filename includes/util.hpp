@@ -10,13 +10,15 @@
 #ifndef _CMR_UTIL_H
 #define _CMR_UTIL_H
 
-#include <utility>
-#include <unordered_map>
-#include <vector>
+#include <array>
 #include <iostream>
 #include <limits>
-#include <string>
 #include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 
 /** Macro for printing error message and going to exit label. 
  * Prints the message \a message to stderr and goes to CLEANUP. Thus CLEANUP
@@ -105,15 +107,37 @@ std::string piv_string(PivType piv);
 
 }
 
+namespace Price {
 
-/** Namespace for numerical tolerances used in this project. */
+constexpr int BatchSize = 100; //<! Number of edges added to CoreLP at a time.
+
+struct edge {
+    edge() = default;
+    edge(int end0, int end1) : end{end0, end1}, redcost(1.0) {}
+    edge(int end0, int end1, double rc) : end{end0, end1}, redcost(rc) {}
+    
+    std::array<int, 2> end;
+    double redcost;
+};
+
+/** Return type for edge pricing routines. */
+enum class ScanStat {
+    Partial, //!< Scanned some edges, found some with negative reduced cost.
+    Full, //!< Scanned all edges, found some with negative reduced cost.
+    FullOpt //!< Scanned all edges, none had negative reduced cost. 
+};
+
+}
+
+
+/** Numerical tolerances used in this project. */
 namespace Epsilon {
 
-/** Numbers less than this are treated as zero. */
-constexpr double Zero = 0.000001;
+
+constexpr double Zero = 0.000001; //<! Numbers less than this treated as zero.
 
 /** Cuts are not considered violated unless violated by at least this much. */
-constexpr double Cut = 0.0001;
+constexpr double Cut = 0.0001; 
 
 }
 
