@@ -41,6 +41,9 @@ public:
     /** Get the coefficient of an edge specified by endpoints. */
     double get_coeff(int end0, int end1) const;
 
+    /// Get a constant reference to the vector of Clique refs.
+    const std::vector<Clique::Ptr> &get_cliques() const { return cliques; }
+
     friend class ExternalCuts;
     
 private:
@@ -77,6 +80,15 @@ public:
     const HyperGraph &get_cut(int lp_rownum) const {
         return cuts[lp_rownum - node_count];
     }
+
+    /** Get a constant reference to the list of cuts. */
+    const std::vector<HyperGraph> &get_cuts() const { return cuts; }
+
+    /** Get a constant reference to the CliqueBank. */
+    const CliqueBank &get_cbank() const { return clique_bank; };
+
+    /** Get a constant reference to the ToothBank. */
+    const ToothBank &get_tbank() const { return tooth_bank; };
 
     /** Get the column associated with an edge to be added to the lp.
      * @param[in] end0 one end of the edge to be added
