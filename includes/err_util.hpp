@@ -46,7 +46,7 @@ private:
   bool active;
 };
 
-/** Type deduction function for ScopeGuard. 
+/** Type deduction function for ScopeGuard, also from Andrei Alexandrescu.
  * The suggested usage is `auto cleanup = make_guard([] {cleanup_lambda}); `
  */
 template <typename act_type>
@@ -56,8 +56,11 @@ ScopeGuard<act_type> make_guard(act_type f)
 }
 
 
-
+/// Structure for converting retcodes to exceptions.
+/// To be used with retcode-returning functions where different values signify
+/// different errors, meaningful for lookup.
 struct retcode_error : public std::runtime_error {
+    /// Construct a retcode_error with retcode and function name.
     retcode_error(const int rval, const char* func_name) :
         std::runtime_error(std::string{func_name} + " failed with rval " +
                            std::to_string(rval)) {}
