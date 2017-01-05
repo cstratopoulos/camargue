@@ -68,8 +68,13 @@ public:
     /** Access the raw pointer to the data, for use by Concorde routines. */
     CCdatagroup* ptr() const { return const_cast<CCdatagroup*>(handle.get()); }
 
+    /** Get the distance between two nodes in an Instance. */
+    double edgelen(int end0, int end1) const
+        { return CCutil_dat_edgelen(end0, end1, handle.get()); }
+
     int node_count() const { return nodecount; }
     int seed() const { return random_seed; }
+
     const std::string &problem_name() const { return pname; }
   
 private:
