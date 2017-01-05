@@ -7,8 +7,8 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef _CMR_UTIL_H
-#define _CMR_UTIL_H
+#ifndef CMR_UTIL_H
+#define CMR_UTIL_H
 
 #include <array>
 #include <iostream>
@@ -104,28 +104,6 @@ enum class PivType {
 
 /** Function for converting PivType to a string for output. */
 std::string piv_string(PivType piv);
-
-}
-
-namespace Price {
-
-constexpr int BatchSize = 100; //<! Number of edges added to CoreLP at a time.
-
-struct edge {
-    edge() = default;
-    edge(int end0, int end1) : end{end0, end1}, redcost(1.0) {}
-    edge(int end0, int end1, double rc) : end{end0, end1}, redcost(rc) {}
-    
-    std::array<int, 2> end;
-    double redcost;
-};
-
-/** Return type for edge pricing routines. */
-enum class ScanStat {
-    Partial, //!< Scanned some edges, found some with negative reduced cost.
-    Full, //!< Scanned all edges, found some with negative reduced cost.
-    FullOpt //!< Scanned all edges, none had negative reduced cost. 
-};
 
 }
 
