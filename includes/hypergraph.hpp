@@ -44,6 +44,9 @@ public:
     /// Get a constant reference to the vector of Clique refs.
     const std::vector<Clique::Ptr> &get_cliques() const { return cliques; }
 
+    ///Get a constant reference to the vector of Tooth refs
+    const std::vector<Tooth::Ptr> &get_teeth() const { return teeth; }
+
     friend class ExternalCuts;
     
 private:
