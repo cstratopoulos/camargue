@@ -31,7 +31,10 @@ public:
 
     /** Generate edges to add to the CoreLP.
      * @param[in] piv_stat the PivType from the solution when edge generation 
-     * is called. Used to determine which pricing protocol will be used.
+     * is called. The partial edge set is scanned iff \p piv_stat is 
+     * PivType::Tour. Full edge set may be scanned if \p piv_stat is 
+     * PivType::FathomedTour, or PivType::Tour with a small enough graph, or
+     * if a partial scan finds no edges to add. 
      * @returns a ScanStat indicating the outcome of the pricing scan.
      */
     ScanStat add_edges(LP::PivType piv_stat);
@@ -49,20 +52,20 @@ private:
     const Data::Instance &inst;
     const Sep::ExternalCuts &ext_cuts;
 
-    std::vector<double> node_pi;
-    std::vector<double> node_pi_est;
+    std::vector<double> node_pi; //!< pi values for degree eqns.
+    std::vector<double> node_pi_est; //!< estimated node pi for dominos.
     
-    std::vector<double> cut_pi;
+    std::vector<double> cut_pi; //!< pi values for cuts.
 
     std::unordered_map<Sep::Clique, double> clique_pi;
     
-    int last_ind;
+    int last_ind; //!< Index of last edge visited in partial scan.
 
-    util::c_array_ptr nearest_elist;
-    int nearest_ecount;
+    util::c_array_ptr nearest_elist; //!< List of nearest neighbor edges.
+    int nearest_ecount; //!< Number of edges in nearest_elist.
+    bool small_graph; //!< True iff nearest elist would contain whole graph.
 
-
-    std::vector<edge> edge_q;
+    std::vector<edge> edge_q; //!< Queue of edges for inclusion.
 
 };
 
