@@ -6,6 +6,10 @@
 #include "hypergraph.hpp"
 #include "price_util.hpp"
 
+extern "C" {
+#include <concorde/INCLUDE/tsp.h>
+}
+
 #include <queue>
 #include <unordered_map>
 #include <vector>
@@ -14,8 +18,6 @@ namespace CMR {
 
 /** Namespace for manners related to pricing sets of edges. */
 namespace Price {
-
-constexpr int nearest_factor = 50;
 
 /** Class for pricing edges not in the CoreLP. */
 class Pricer {
@@ -28,6 +30,11 @@ public:
      */
     Pricer(const LP::Relaxation &_relax, const Data::Instance &_inst,
            const Sep::ExternalCuts &_ext_cuts);
+
+    Pricer(const Pricer &P) = delete;
+    Pricer &operator=(const Pricer &P) = delete;
+
+    ~Pricer();
 
     /** Generate edges to add to the CoreLP.
      * @param[in] piv_stat the PivType from the solution when edge generation 
@@ -52,18 +59,19 @@ private:
     const Data::Instance &inst;
     const Sep::ExternalCuts &ext_cuts;
 
+    const int gen_max;
+
+    std::vector<int> gen_elist;
+    std::vector<double> gen_elen;
+
     std::vector<double> node_pi; //!< pi values for degree eqns.
     std::vector<double> node_pi_est; //!< estimated node pi for dominos.
     
     std::vector<double> cut_pi; //!< pi values for cuts.
 
     std::unordered_map<Sep::Clique, double> clique_pi;
-    
-    int last_ind; //!< Index of last edge visited in partial scan.
 
-    util::c_array_ptr nearest_elist; //!< List of nearest neighbor edges.
-    int nearest_ecount; //!< Number of edges in nearest_elist.
-    bool small_graph; //!< True iff nearest elist would contain whole graph.
+    CCtsp_edgegenerator eg_inside;
 
     std::vector<edge> edge_q; //!< Queue of edges for inclusion.
 

@@ -1,9 +1,7 @@
 #include "pricer.hpp"
 #include "err_util.hpp"
 
-extern "C" {
-#include <concorde/INCLUDE/edgegen.h>
-}
+
 
 #include <iostream>
 #include <stdexcept>
@@ -27,40 +25,25 @@ namespace Price {
 Pricer::Pricer(const LP::Relaxation &_relax, const Data::Instance &_inst,
                const Sep::ExternalCuts &_ext_cuts) try :
     relax(_relax), inst(_inst), ext_cuts(_ext_cuts),
+    gen_max(EstBatch + ScaleBatch * inst.node_count()),
+    gen_elist(vector<int>(2 * gen_max)), gen_elen(gen_max),
     node_pi(vector<double>(inst.node_count())),
     node_pi_est(vector<double>(inst.node_count())),
-    cut_pi(vector<double>(relax.num_rows() - inst.node_count())),
-    last_ind(0)
+    cut_pi(vector<double>(relax.num_rows() - inst.node_count()))
 {
-    int ncount = inst.node_count();
-    CCedgegengroup plan;
     CCrandstate rstate;
-
     CCutil_sprand(inst.seed(), &rstate);
-    CCedgegen_init_edgegengroup(&plan);
+    
+    if (CCtsp_init_edgegenerator(&eg_inside, inst.node_count(), inst.ptr(),
+                                 (CCtsp_genadj *) NULL, Nearest, 1, &rstate))
+        throw runtime_error("");
 
-    plan.nearest = nearest_factor;
-
-    int *elist = (int *) NULL;
-    int ecount = 0;
-
-    if (CCedgegen_edges(&plan, ncount, inst.ptr(), NULL, &ecount, &elist,
-                        1, &rstate))
-        throw runtime_error("Problem in CCedgegen_edges");
-
-    nearest_elist.reset(elist);
-
-    if (ecount >= (ncount * (ncount - 1)) / 2) { //if 50-nearest has full edges
-        nearest_elist.reset(nullptr);
-        nearest_ecount = 0;
-        small_graph = true;
-    } else {
-        small_graph = false;
-        nearest_ecount = ecount;
-    }
 } catch (const exception &e) {
+    cerr << e.what() << "\n";
     throw runtime_error("Pricer constructor failed.");
 }
+
+Pricer::~Pricer() { CCtsp_free_edgegenerator(&eg_inside); }
 
 //before invoking full_scan or partial_scan, this function populates pi info
 //for the degree eqns and cuts
@@ -153,29 +136,63 @@ ScanStat Pricer::add_edges(PivType piv_stat)
                     }
     }
 
-    //now run the appropriate pricing scan
-    if (!small_graph && piv_stat == LP::PivType::Tour) {
-        result = partial_scan();
-        if (result == ScanStat::Partial)
-            return result;
-    }
-
-    if (piv_stat == LP::PivType::FathomedTour || result == ScanStat::PartOpt)
-        result = full_scan();
+    //now run appropriate pricing scan
 
     return result;    
 }
 
 ScanStat Pricer::partial_scan()
 {
+    runtime_error err("Problem in Pricer::partial_scan");
     ScanStat result = ScanStat::Partial;
+
+    if (CCtsp_reset_edgegenerator(&eg_inside, &node_pi_est[0], 1))
+        throw err;
+
+    int num_gen = 0;
+    int finished = 0;
+    CCrandstate rstate;
+    CCutil_sprand(inst.seed(), &rstate);
+
+    if (CCtsp_generate_edges(&eg_inside, gen_max, &num_gen,
+                             &gen_elist[0], &gen_elen[0], &finished, 1,
+                             &rstate))
+        throw err;
+
+    //need to add access to current graph: scroll thru gen_elist seeing if
+    //edges found are not in graph yet.
+    //probably a good time to get rid of the edgehash from Graph.
+    //then call price_list-esque thing on the edges found.
+    
 
     return result;
 }
 
 ScanStat Pricer::full_scan()
 {
+    runtime_error err("Problem in Pricer::full_scan");
     ScanStat result = ScanStat::Full;
+
+    CCtsp_edgegenerator eg;
+    CCrandstate rstate;
+    CCutil_sprand(inst.seed(), &rstate);
+
+    if (CCtsp_init_edgegenerator(&eg, inst.node_count(), inst.ptr(),
+                                 (CCtsp_genadj *) NULL,
+                                 CCtsp_PRICE_COMPLETE_GRAPH, 1, &rstate)) {
+        cerr << "CCtsp_init_edgegenerator failed.\n";
+        throw err;
+    }
+    
+    auto cleanup = util::make_guard([&eg] {
+        CCtsp_free_edgegenerator(&eg);
+    });
+
+    if (CCtsp_reset_edgegenerator(&eg, &node_pi_est[0], 1))
+        throw err;
+
+    
+    
 
     return result;
 }
