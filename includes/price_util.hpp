@@ -5,8 +5,12 @@ namespace CMR {
 
 namespace Price {
 
-constexpr int BatchSize = 100; //<! Number of edges added to CoreLP at a time.
-constexpr int QueueMax = 20000; //<! Max number of edges in queue for addition.
+constexpr int Nearest = 50; //<! Number of nearest edges to each node examined.
+
+constexpr int AddBatch = 100; //<! Number added to CoreLP at a time.
+constexpr int PoolSize = 1000; //<! Number of negative rc edges to keep in pool.
+constexpr int EstBatch = 20000; //<! Max number of edges to estimate red cost.
+constexpr int ScaleBatch = 3; //<! Scale factor for EstBatch. 
 
 /// Return type for edge pricing routines.
 enum class ScanStat {
