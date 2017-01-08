@@ -1,10 +1,12 @@
 #ifndef CMR_GRAPH_H
 #define CMR_GRAPH_H
 
-#include <vector>
-#include <queue>
 #include <iostream>
 #include <memory>
+#include <queue>
+#include <utility>
+#include <vector>
+
 
 #include <math.h>
 
@@ -15,7 +17,6 @@ extern "C" {
 }
 
 namespace CMR {
-
 
 
 struct Edge {
@@ -125,6 +126,43 @@ int build_s_graph (int node_count,
 		   const std::vector<int> &support_indices,
 		   const std::vector<double> &m_lp_edges,
 		   SupportGraph *G_s);
+}
+
+namespace GraphUtils {
+
+struct AdjObj {
+    int other_end;
+    int edge_index;
+    double val;
+};
+
+struct Node {
+    Node(std::vector<AdjObj>::iterator range_start,
+         std::vector<AdjObj>::iterator range_end) :
+        neighbors(std::vector<AdjObj>(range_start, range_end)),
+        mark(0) {}
+    
+    int degree() const { return neighbors.size(); }
+    const std::vector<AdjObj> &neighbors;
+    int mark;
+};
+
+struct AdjList {
+    AdjList(int ncount, const std::vector<CMR::Edge> &ref_elist);
+    
+    AdjList(int ncount,
+            const std::vector<CMR::Edge> &ref_elist,
+            const std::vector<double> &edge_caps,
+            const std::vector<int> &keep_indices);
+
+    int node_count;
+    int edge_count;
+    
+    std::vector<AdjObj> adjspace;
+    std::vector<Node> nodelist;
+
+};
+
 }
 }
 

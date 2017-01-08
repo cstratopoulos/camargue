@@ -7,16 +7,18 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef _CMR_UTIL_H
-#define _CMR_UTIL_H
+#ifndef CMR_UTIL_H
+#define CMR_UTIL_H
 
-#include <utility>
-#include <unordered_map>
-#include <vector>
+#include <array>
 #include <iostream>
 #include <limits>
-#include <string>
 #include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 
 /** Macro for printing error message and going to exit label. 
  * Prints the message \a message to stderr and goes to CLEANUP. Thus CLEANUP
@@ -106,14 +108,14 @@ std::string piv_string(PivType piv);
 }
 
 
-/** Namespace for numerical tolerances used in this project. */
+/** Numerical tolerances used in this project. */
 namespace Epsilon {
 
-/** Numbers less than this are treated as zero. */
-constexpr double Zero = 0.000001;
+
+constexpr double Zero = 0.000001; //<! Numbers less than this treated as zero.
 
 /** Cuts are not considered violated unless violated by at least this much. */
-constexpr double Cut = 0.0001;
+constexpr double Cut = 0.0001; 
 
 }
 
