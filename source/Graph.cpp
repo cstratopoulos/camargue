@@ -15,10 +15,12 @@ using std::exception;
 namespace CMR {
 
 Edge::Edge(int e0, int e1, int _len):
-    end((e0 < e1) ? std::array<int, 2>({e0, e1}) :
-        std::array<int, 2>({e1, e0})),
     len(_len),
-    removable(false) {}
+    removable(false)
+{
+  end[0] = e0 < e1 ? e0 : e1;
+  end[1] = e1 > e0 ? e1 : e0;
+}
 
 void Graph::print_edges() {
     for (int i = 0; i < edges.size(); ++i)
