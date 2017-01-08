@@ -1,35 +1,35 @@
 #ifndef CMR_GRAPH_H
 #define CMR_GRAPH_H
 
+#include "util.hpp"
+
+#include <array>
 #include <iostream>
 #include <memory>
 #include <queue>
 #include <utility>
 #include <vector>
 
-
-#include <math.h>
-
-#include "util.hpp"
+#include <cmath>
 
 extern "C" {
-  #include <concorde/INCLUDE/tsp.h>
+#include <concorde/INCLUDE/tsp.h>
 }
 
 namespace CMR {
 
 
 struct Edge {
-  Edge() : removable(false) {}
-  Edge(int e0, int e1, int _len);
+    Edge() : removable(false) {}
+    Edge(int e0, int e1, int _len);
 
-  bool operator==(const Edge &rhs) const {
-    return ((end[0] == rhs.end[0]) && (end[1] == rhs.end[1]));
-  }
-  
-  int end[2];
-  int len;
-  bool removable;
+    bool operator==(const Edge &rhs) const {
+        return ((end[0] == rhs.end[0]) && (end[1] == rhs.end[1]));
+    }
+
+    std::array<int, 2> end;
+    int len;
+    bool removable;
 };
 
 struct Graph {
@@ -131,19 +131,21 @@ int build_s_graph (int node_count,
 namespace GraphUtils {
 
 struct AdjObj {
+    AdjObj() = default;
+    AdjObj(int otherend, int index, double _val) :
+        other_end(otherend), edge_index(index), val(_val) {}
+    
     int other_end;
     int edge_index;
     double val;
 };
 
 struct Node {
-    Node(std::vector<AdjObj>::iterator range_start,
-         std::vector<AdjObj>::iterator range_end) :
-        neighbors(std::vector<AdjObj>(range_start, range_end)),
-        mark(0) {}
+    Node() = default;
+    Node(int degree_estimate) { neighbors.reserve(degree_estimate); }
     
     int degree() const { return neighbors.size(); }
-    const std::vector<AdjObj> &neighbors;
+    std::vector<AdjObj> neighbors;
     int mark;
 };
 
@@ -155,10 +157,17 @@ struct AdjList {
             const std::vector<double> &edge_caps,
             const std::vector<int> &keep_indices);
 
+    const AdjObj *find_edge(int end0, int end1) const
+    {
+        for (const AdjObj &a : nodelist[end0].neighbors)
+            if (a.other_end == end1)
+                return &a;
+        return nullptr;
+    }
+
     int node_count;
     int edge_count;
     
-    std::vector<AdjObj> adjspace;
     std::vector<Node> nodelist;
 
 };

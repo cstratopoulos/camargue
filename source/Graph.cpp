@@ -9,20 +9,16 @@ using std::cout;
 using std::cerr;
 
 using std::runtime_error;
+using std::logic_error;
+using std::exception;
 
 namespace CMR {
 
 Edge::Edge(int e0, int e1, int _len):
-  len(_len),
-  removable(false) {
-  if (e0 < e1) {
-    end[0] = e0;
-    end[1] = e1;
-  } else {
-    end[0] = e1;
-    end[1] = e0;
-  }
-}
+    end((e0 < e1) ? std::array<int, 2>({e0, e1}) :
+        std::array<int, 2>({e1, e0})),
+    len(_len),
+    removable(false) {}
 
 void Graph::print_edges() {
     for (int i = 0; i < edges.size(); ++i)
@@ -212,12 +208,37 @@ int GraphUtils::build_s_graph (int node_count,
 namespace GraphUtils {
 
 AdjList::AdjList(int ncount, const vector<CMR::Edge> &ref_elist) try
-    : node_count(ncount), edge_count(ref_elist.size)
+    : node_count(ncount), edge_count(ref_elist.size()),
+      nodelist(vector<Node>(node_count, Node((2 * edge_count) / node_count)))
 {
-    
+    for (int i = 0; i < edge_count; ++i) {
+        const CMR::Edge &e = ref_elist[i];
+
+        nodelist[e.end[0]].neighbors.emplace_back(e.end[1], i, e.len);
+        nodelist[e.end[1]].neighbors.emplace_back(e.end[0], i, e.len);
+    }
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("AdjList elist constructor failed.");
+}
+
+AdjList::AdjList(int  ncount,
+                 const vector<CMR::Edge> &ref_elist,
+                 const vector<double> &edge_caps,
+                 const std::vector<int> &keep_indices) try
+    : node_count(ncount), edge_count(keep_indices.size()),
+      nodelist(vector<Node>(node_count, Node((2 * edge_count) / node_count)))
+{
+    for (int index : keep_indices) {
+        const CMR::Edge &e = ref_elist[index];
+        double cap = edge_caps[index];
+
+        nodelist[e.end[0]].neighbors.emplace_back(e.end[1], index, cap);
+        nodelist[e.end[1]].neighbors.emplace_back(e.end[0], index, cap);
+    }
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("AdjList indices/ecap constructor failed.");
 }
 
 }
