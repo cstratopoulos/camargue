@@ -209,4 +209,17 @@ int GraphUtils::build_s_graph (int node_count,
   return 0;
 }
 
+namespace GraphUtils {
+
+AdjList::AdjList(int ncount, const vector<CMR::Edge> &ref_elist) try
+    : node_count(ncount), edge_count(ref_elist.size)
+{
+    
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("AdjList elist constructor failed.");
+}
+
+}
+
 }

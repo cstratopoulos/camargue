@@ -154,10 +154,10 @@ ScanStat Pricer::partial_scan()
     CCrandstate rstate;
     CCutil_sprand(inst.seed(), &rstate);
 
-    if (CCtsp_generate_edges(&eg_inside, gen_max, &num_gen,
-                             &gen_elist[0], &gen_elen[0], &finished, 1,
-                             &rstate))
-        throw err;
+    // if (CCtsp_generate_edges(&eg_inside, gen_max, &num_gen,
+    //                          &gen_elist[0], &gen_elen[0], &finished, 1,
+    //                          &rstate))
+    //     throw err;
 
     //need to add access to current graph: scroll thru gen_elist seeing if
     //edges found are not in graph yet.
