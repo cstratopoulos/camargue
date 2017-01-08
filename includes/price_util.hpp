@@ -24,11 +24,13 @@ struct edge {
     edge() = default;
     
     edge(int end0, int end1) :
-        end{end0 < end1 ? end0 : end1, end1 > end0 ? end1 : end0},
+        end((end0 < end1) ? std::array<int, 2>({end0, end1}) :
+            std::array<int, 2>({end1, end0})),
         redcost(1.0) {}
     
     edge(int end0, int end1, double rc) :
-        end{end0 < end1 ? end0 : end1, end1 > end0 ? end1 : end0},
+        end((end0 < end1) ? std::array<int, 2>({end0, end1}) :
+            std::array<int, 2>({end1, end0})),
         redcost(rc) {}
 
     bool operator<(const edge &rhs) const { return redcost > rhs.redcost; }
