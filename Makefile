@@ -1,6 +1,6 @@
 # Adapted from http://stackoverflow.com/a/27794283/6516346
 #Compiler and Linker
-CC          := /usr/local/Cellar/gcc49/4.9.3/bin/g++-4.9
+CC          := g++
 
 #The Target Binary Program
 TARGET      := camargue
@@ -8,9 +8,8 @@ TARGET      := camargue
 #The Directories, Source, Includes, Objects, Binary
 SRCDIR      := source
 INCDIR      := includes
-CPXDIR      := \
-/Users/christos/Applications/IBM/ILOG/CPLEX_Studio1261/cplex/include/ilcplex/
-PROGDIR     := /Users/christos/Dropbox/school/research/programs/
+CPXDIR      := /opt/ibm/ILOG/CPLEX_Studio127/cplex/include/ilcplex/
+PROGDIR     := /home/christos/Documents/School/research/programs/
 BUILDDIR    := objects
 TARGETDIR   := .
 SRCEXT      := cpp
@@ -22,9 +21,8 @@ CFLAGS      := -Wall -O3 -pedantic -fopenmp \
 -Wno-missing-braces -Wno-sign-compare  -Wno-long-long\
 -Wno-variadic-macros\
 -std=c++11
-LIB         := /Users/christos/Applications/IBM/ILOG/CPLEX_Studio1261/cplex/lib/x86-64_osx/static_pic/libcplex.a \
-/Users/christos/Dropbox/school/research/programs/concorde/concorde.a \
-/Users/christos/Applications/QSOPT/qsopt.a \
+LIB         := /opt/ibm/ILOG/CPLEX_Studio127/cplex/lib/x86-64_linux/static_pic/libcplex.a \
+/home/christos/Documents/School/research/programs/concorde/concorde.a \
 -lm -lpthread -fopenmp 
 INC         := -I$(INCDIR)  -I$(CPXDIR) -I$(PROGDIR)
 INCDEP      := -I$(INCDIR)  -I$(CPXDIR) -I$(PROGDIR)
