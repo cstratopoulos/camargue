@@ -29,7 +29,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 						"test_data/tours/blossom6.bad.sol",
 						"test_data/subtour_lp/blossom6.sub.x",
 						g_dat, b_dat, lp_edges, s_dat));
-	CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+	CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.core_graph.get_edges(),
 			   b_dat.perm);
 	for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
@@ -53,7 +53,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 						"test_data/subtour_lp/d493.sub.x",
 						g_dat, b_dat, lp_edges,
 						s_dat));
-	CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+	CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.core_graph.get_edges(),
 			   b_dat.perm);
 	for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	

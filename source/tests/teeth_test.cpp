@@ -203,7 +203,7 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
       CMR::SupportGraph &G_s = s_dat.G_s;
       int max_deg = 0;
       CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);
-      int ncount = g_dat.m_graph.node_count;
+      int ncount = g_dat.core_graph.node_count();
 
       if (ncount <= 20) {
 	cout << "Best tour:\n";

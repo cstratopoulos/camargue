@@ -73,11 +73,10 @@ private:
 
 class CutTranslate {
 public:
-    CutTranslate(Data::GraphGroup &GraphGroup) :
-        edges(GraphGroup.m_graph.edges),
-        delta(GraphGroup.delta),
-        edge_marks(GraphGroup.edge_marks),
-        edge_lookup(GraphGroup.m_graph.edge_lookup) {}
+    CutTranslate(Data::GraphGroup &graph_group) :
+        core_graph(graph_group.core_graph),
+        delta(graph_group.delta),
+        edge_marks(graph_group.edge_marks) {}
 
     void get_sparse_row(const CCtsp_lpcut_in &cc_cut,
                         const std::vector<int> &perm,
@@ -85,7 +84,7 @@ public:
                         std::vector<double> &rmatval, char &sense,
                         double &rhs);
     
-    int get_sparse_row(const Sep::dominoparity &dp_cut,
+    void get_sparse_row(const Sep::dominoparity &dp_cut,
                        const std::vector<int> &tour_nodes,
                        std::vector<int> &rmatind, std::vector<double> &rmatval,
                        char &sense, double &rhs);
@@ -102,11 +101,10 @@ public:
             }
         }
 
-private:  
-    std::vector<Edge> &edges;
+private:
+    const GraphUtils::CoreGraph &core_graph;
     std::vector<int> &delta;
     std::vector<int> &edge_marks;
-    IntPairMap &edge_lookup;
 };
 }  
 }

@@ -111,8 +111,6 @@ try
     int ncount = inst.node_count();
     int ecount = 0;
     
-    m_graph.node_count = ncount;
-
     CCedgegengroup plan;
     CCrandstate rstate;
 
@@ -130,22 +128,10 @@ try
                        &ecount, &elist, 1, &rstate))
         throw runtime_error("CCedgegen_edges failed.");
 
-    m_graph.edge_count = ecount;
-
     util::c_array_ptr edge_handle(elist);
-    m_graph.edge_count = ecount;
 
     core_graph = GraphUtils::CoreGraph(ncount, ecount, elist,
                                        inst.edgelen_func());
-
-    for (int i = 0; i < ecount; ++i) {
-        int end0 = min(elist[2 * i], elist[(2 * i) + 1]);
-        int end1 = max(elist[2 * i], elist[(2 * i) + 1]);
-
-        m_graph.edges.emplace_back(end0, end1,
-                                   CCutil_dat_edgelen(end0, end1, inst.ptr()));
-        m_graph.edge_lookup.emplace(IntPair(end0, end1), i);
-    }
 
     island.resize(ncount);
     delta.resize(ecount, 0);
@@ -156,8 +142,8 @@ try
 }
 
 BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
-    best_tour_edges(std::vector<int>(graph_data.m_graph.edge_count, 0)),
-    best_tour_nodes(std::vector<int>(graph_data.m_graph.node_count)),
+    best_tour_edges(std::vector<int>(graph_data.core_graph.edge_count(), 0)),
+    best_tour_nodes(std::vector<int>(graph_data.core_graph.node_count())),
     perm(best_tour_nodes.size()),
     min_tour_value(DoubleMax)
 {
@@ -165,12 +151,13 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
     CCrandstate rstate;
     CCutil_sprand(inst.seed(), &rstate);
 
-    Graph &graph = graph_data.m_graph;
-    int ncount = graph.node_count;
-    int ecount = graph.edge_count;
+    GraphUtils::CoreGraph &core_graph = graph_data.core_graph;
+
+    int ncount = core_graph.node_count();
+    int ecount = core_graph.edge_count();
     vector<int> elist;
 
-    for(Edge &e : graph.edges) {
+    for(const Edge &e : core_graph.get_edges()) {
         elist.push_back(e.end[0]);
         elist.push_back(e.end[1]);
     }
@@ -222,38 +209,32 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
     vector<int> &delta = graph_data.delta;
 
     for (int i = 0; i < ncount; ++i) {
-        int end0 = min(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
-        int end1 = max(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
-        IntPair find_pair(end0, end1);
-        IntPairMap::iterator edge_it = graph.edge_lookup.find(find_pair);
+        int e0 = best_tour_nodes[i];
+        int e1 = best_tour_nodes[(i + 1) % ncount];
 
-        if (edge_it == graph.edge_lookup.end()) {
-            Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, inst.ptr()));
+        int find_ind = core_graph.find_edge_ind(e0, e1);
 
-            graph.edges.push_back(e);
-            graph.edge_lookup[find_pair] = graph.edges.size() - 1;
-            graph.edge_count += 1;
+        if (find_ind == -1) {
+            core_graph.add_edge(e0, e1, inst.edgelen(e0, e1));
+            find_ind = core_graph.find_edge_ind(e0, e1);
+
             best_tour_edges.push_back(0);
             delta.push_back(0);
-            edge_it = graph.edge_lookup.find(find_pair);
         }
 
-        int edge_index = edge_it->second;
-        best_tour_edges[edge_index] = 1;
+        best_tour_edges[find_ind] = 1;
     }
 
     if ((ncount % 2) == 0) {
-        int end0 = fmin(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
-        int end1 = fmax(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
-        IntPair find_pair(end0, end1);
-        IntPairMap::iterator edge_it = graph.edge_lookup.find(find_pair);
+        int e0 = best_tour_nodes[0];
+        int e1 = best_tour_nodes[ncount - 2];
 
-        if (edge_it == graph.edge_lookup.end()) {
-            Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, inst.ptr()));
+        int find_ind = core_graph.find_edge_ind(e0, e1);
 
-            graph.edges.push_back(e);
-            graph.edge_lookup[find_pair] = graph.edges.size() - 1;
-            graph.edge_count += 1;
+        if (find_ind == -1) {
+            core_graph.add_edge(e0, e1, inst.edgelen(e0, e1));
+            find_ind = core_graph.find_edge_ind(e0, e1);
+
             best_tour_edges.push_back(0);
             delta.push_back(0);
         }
@@ -265,13 +246,14 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
 
 BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
           const std::string &tourfile) try :
-    best_tour_edges(std::vector<int>(graph_data.m_graph.edge_count, 0)),
-    best_tour_nodes(std::vector<int>(graph_data.m_graph.node_count)),
+    best_tour_edges(std::vector<int>(graph_data.core_graph.edge_count(), 0)),
+    best_tour_nodes(std::vector<int>(graph_data.core_graph.node_count())),
     perm(best_tour_nodes.size()),
     min_tour_value(DoubleMax)
 {
-    Graph &graph = graph_data.m_graph;
-    int ncount = graph.node_count;
+    GraphUtils::CoreGraph &core_graph = graph_data.core_graph;
+
+    int ncount = core_graph.node_count();
 
     util::get_tour_nodes(ncount, best_tour_nodes, tourfile);
 
@@ -281,38 +263,33 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
     vector<int> &delta = graph_data.delta;
 
     for (int i = 0; i < ncount; ++i) {
-        int end0 = min(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
-        int end1 = max(best_tour_nodes[i], best_tour_nodes[(i + 1) % ncount]);
-        IntPair find_pair(end0, end1);
-        IntPairMap::iterator edge_it = graph.edge_lookup.find(find_pair);
+        int e0 = best_tour_nodes[i];
+        int e1 = best_tour_nodes[(i + 1) % ncount];
 
-        if (edge_it == graph.edge_lookup.end()) {
-            Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, inst.ptr()));
+        int find_ind = core_graph.find_edge_ind(e0, e1);
 
-            graph.edges.push_back(e);
-            graph.edge_lookup[find_pair] = graph.edges.size() - 1;
-            graph.edge_count += 1;
+        if (find_ind == -1) {
+            core_graph.add_edge(e0, e1, inst.edgelen(e0, e1));
+            find_ind = core_graph.find_edge_ind(e0, e1);
+
             best_tour_edges.push_back(0);
             delta.push_back(0);
-            edge_it = graph.edge_lookup.find(find_pair);
         }
 
-        int edge_index = edge_it->second;
-        best_tour_edges[edge_index] = 1;
+        best_tour_edges[find_ind] = 1;
     }
 
+
     if ((ncount % 2) == 0) {
-        int end0 = fmin(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
-        int end1 = fmax(best_tour_nodes[0], best_tour_nodes[ncount - 2]);
-        IntPair find_pair(end0, end1);
-        IntPairMap::iterator edge_it = graph.edge_lookup.find(find_pair);
+        int e0 = best_tour_nodes[0];
+        int e1 = best_tour_nodes[ncount - 2];
 
-        if (edge_it == graph.edge_lookup.end()) {
-            Edge e(end0, end1, CCutil_dat_edgelen(end0, end1, inst.ptr()));
+        int find_ind = core_graph.find_edge_ind(e0, e1);
 
-            graph.edges.push_back(e);
-            graph.edge_lookup[find_pair] = graph.edges.size() - 1;
-            graph.edge_count += 1;
+        if (find_ind == -1) {
+            core_graph.add_edge(e0, e1, inst.edgelen(e0, e1));
+            find_ind = core_graph.find_edge_ind(e0, e1);
+
             best_tour_edges.push_back(0);
             delta.push_back(0);
         }
@@ -322,7 +299,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
 
     for (int i = 0; i < best_tour_edges.size(); ++i)
         if (best_tour_edges[i] == 1)
-            min_tour_value += graph.edges[i].len;
+            min_tour_value += core_graph.get_edge(i).len;
 
     cout << "Loaded and verified tour with length " << min_tour_value << endl;
 } catch (const exception &e) {

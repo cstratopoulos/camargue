@@ -34,7 +34,7 @@ SCENARIO ("Adding duplicate cuts",
                     CMR::LP::CoreLP core(g_dat, b_dat);
 
                     CMR::TourGraph TG(b_dat.best_tour_edges,
-                                      g_dat.m_graph.edges, b_dat.perm);
+                                      g_dat.core_graph.get_edges(), b_dat.perm);
 
                     REQUIRE_NOTHROW(core.primal_pivot());
                     
@@ -52,7 +52,7 @@ SCENARIO ("Adding duplicate cuts",
                     REQUIRE_NOTHROW(core.add_cuts(cutq));
                     REQUIRE_NOTHROW(core.add_cuts(cutq));
                     
-                    int ncount = g_dat.m_graph.node_count;
+                    int ncount = g_dat.core_graph.node_count();
                     int expect_rowcount = ncount + 4;
 
                     REQUIRE(core.num_rows() == expect_rowcount);
@@ -107,7 +107,7 @@ SCENARIO ("Pivoting and adding cuts",
                     CMR::Data::SupportGroup &s_dat = core.supp_data;
 
                     CMR::TourGraph TG(b_dat.best_tour_edges,
-                                      g_dat.m_graph.edges,
+                                      g_dat.core_graph.get_edges(),
                                       b_dat.perm);
 
                     CMR::Sep::Separator control(g_dat, b_dat, s_dat, kpart);

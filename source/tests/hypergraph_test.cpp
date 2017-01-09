@@ -49,14 +49,15 @@ SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
         GIVEN ("A subtour lp solution for " + fname) {
             CMR::Data::make_cut_test(probfile, solfile, subtourfile, g_dat,
                                      b_dat, lp_edges, s_dat, inst);
-            int ncount = g_dat.m_graph.node_count;
+            int ncount = g_dat.core_graph.node_count();
             CMR::Sep::CutTranslate translator(g_dat);
             
             kpart = CMR::Data::KarpPartition(inst);
 
             CMR::Sep::Separator sep(g_dat, b_dat, s_dat, kpart,
                                     CMR::IntMax);
-            CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+            CMR::TourGraph TG(b_dat.best_tour_edges,
+                              g_dat.core_graph.get_edges(),
                               b_dat.perm);
 
             CMR::Sep::CliqueBank cbank(b_dat.best_tour_nodes,
@@ -94,7 +95,7 @@ SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
                                 int edge_ind = rmatind[i];
                                 double ref_coeff = rmatval[i];
                                 CMR::Edge e =
-                                g_dat.m_graph.edges[edge_ind];
+                                g_dat.core_graph.get_edge(edge_ind);
 
                                 double hg_coeff = hg.get_coeff(e.end[0],
                                                                e.end[1]);
@@ -123,7 +124,7 @@ SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
                                 int edge_ind = rmatind[i];
                                 double ref_coeff = rmatval[i];
                                 CMR::Edge e =
-                                g_dat.m_graph.edges[edge_ind];
+                                g_dat.core_graph.get_edge(edge_ind);
 
                                 double hg_coeff = hg.get_coeff(e.end[0],
                                                                e.end[1]);

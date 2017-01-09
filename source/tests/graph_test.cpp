@@ -41,10 +41,11 @@ SCENARIO ("Constructing core LP adjacency lists",
             THEN ("We can construct an adj list from the edges") {
                 REQUIRE_NOTHROW(full_alist =
                                 CMR::GraphUtils::AdjList(inst.node_count(),
-                                                         g_dat.m_graph.edges));
+                                                         g_dat.core_graph.get_edges()));
 
                 AND_THEN ("Edge finding in the alist agrees with the edges") {
-                    vector<CMR::Edge> &edges = g_dat.m_graph.edges;
+                    const vector<CMR::Edge> &edges =
+                    g_dat.core_graph.get_edges();
 
                     for (int i = 0; i < edges.size(); ++i) {
                         auto e = edges[i];
@@ -86,11 +87,11 @@ SCENARIO ("Constructing support adjacency lists",
             THEN("We can construct an adj list for the support graph") {
                 CMR::Data::make_cut_test(probfile, solfile, subtourfile, g_dat,
                                          b_dat, lp_edges, s_dat, inst);
-                int ncount = g_dat.m_graph.node_count;
+                int ncount = g_dat.core_graph.node_count();
 
                 CMR::GraphUtils::AdjList sup_alist;
                 vector<int> &sup_inds = s_dat.support_indices;
-                vector<CMR::Edge> &edges = g_dat.m_graph.edges;
+                const vector<CMR::Edge> &edges = g_dat.core_graph.get_edges();
                 
                 REQUIRE_NOTHROW(sup_alist =
                                 CMR::GraphUtils::AdjList(inst.node_count(),
@@ -99,7 +100,7 @@ SCENARIO ("Constructing support adjacency lists",
 
                 AND_THEN ("We find only the edges that should be there") {
                     for (int i = 0; i < edges.size(); ++i) {
-                        CMR::Edge &e = edges[i];
+                        CMR::Edge e = edges[i];
                         auto found_ptr = sup_alist.find_edge(e.end[0],
                                                              e.end[1]);
                         if (lp_edges[i] < CMR::Epsilon::Zero)

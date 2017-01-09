@@ -63,7 +63,7 @@ SCENARIO ("Verifying a BestGroup with a GraphGroup",
 
             CMR::Data::Instance inst(probfile, 99);
             CMR::Data::GraphGroup g_dat(inst);
-            int ncount = g_dat.m_graph.node_count;
+            int ncount = g_dat.core_graph.node_count();
 
             WHEN ("An LK tour is constructed") {
                 THEN ("Its values can be verified by GraphGroup") {
@@ -77,24 +77,21 @@ SCENARIO ("Verifying a BestGroup with a GraphGroup",
 
                     for (int i = 0; i < tour_edges.size(); ++i)
                         if (tour_edges[i])
-                            edge_val += g_dat.m_graph.edges[i].len;
+                            edge_val += g_dat.core_graph.get_edges()[i].len;
 
                     bool failed_lookup = false;
                     
                     for (int i = 0; i < tour_nodes.size(); ++i) {
-                        int end0 = min(tour_nodes[i],
-                                       tour_nodes[(i + 1) % ncount]);
-                        int end1 = max(tour_nodes[i],
-                                       tour_nodes[(i + 1) % ncount]);
-                        auto fit =
-                        g_dat.m_graph.edge_lookup.find(IntPair(end0, end1));
+                        int e0 = tour_nodes[i];
+                        int e1 = tour_nodes[(i + 1) % ncount];
+                        int find_ind = g_dat.core_graph.find_edge_ind(e0, e1);
 
-                        if (fit == g_dat.m_graph.edge_lookup.end()) {
+                        if (find_ind == -1) {
                             failed_lookup = true;
                             break;
                         }
 
-                        node_val += g_dat.m_graph.edges[fit->second].len;
+                        node_val += g_dat.core_graph.get_edge(find_ind).len;
                     }
 
                     REQUIRE_FALSE(failed_lookup);
@@ -115,24 +112,21 @@ SCENARIO ("Verifying a BestGroup with a GraphGroup",
 
                     for (int i = 0; i < tour_edges.size(); ++i)
                         if (tour_edges[i])
-                            edge_val += g_dat.m_graph.edges[i].len;
+                            edge_val += g_dat.core_graph.get_edge(i).len;
 
                     bool failed_lookup = false;
                     
                     for (int i = 0; i < tour_nodes.size(); ++i) {
-                        int end0 = min(tour_nodes[i],
-                                       tour_nodes[(i + 1) % ncount]);
-                        int end1 = max(tour_nodes[i],
-                                       tour_nodes[(i + 1) % ncount]);
-                        auto fit =
-                        g_dat.m_graph.edge_lookup.find(IntPair(end0, end1));
+                        int e0 = tour_nodes[i];
+                        int e1 = tour_nodes[(i + 1) % ncount];
+                        int find_ind = g_dat.core_graph.find_edge_ind(e0, e1);
 
-                        if (fit == g_dat.m_graph.edge_lookup.end()) {
+                        if (find_ind == -1) {
                             failed_lookup = true;
                             break;
                         }
 
-                        node_val += g_dat.m_graph.edges[fit->second].len;
+                        node_val += g_dat.core_graph.get_edge(find_ind).len;
                     }
 
                     REQUIRE_FALSE(failed_lookup);

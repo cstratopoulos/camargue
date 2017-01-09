@@ -48,7 +48,7 @@ SCENARIO("Separating simple DP inequalities in small instances",
                                                          subtourfile, g_dat,
                                                          b_dat, lp_edges,
                                                          s_dat, inst));
-                int ncount = g_dat.m_graph.node_count;
+                int ncount = g_dat.core_graph.node_count();
 
                 REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(ncount,
                                                                  inst.ptr(),
@@ -71,7 +71,7 @@ SCENARIO("Separating simple DP inequalities in small instances",
                     const CMR::Sep::dominoparity &dp_cut = dp_q.peek_front();
                     vector<int> &bt = b_dat.best_tour_nodes;
                     double tour_activity, lp_activity;
-                    REQUIRE_FALSE(translator.get_sparse_row(dp_cut, bt, rmatind,
+                    REQUIRE_NOTHROW(translator.get_sparse_row(dp_cut, bt, rmatind,
                                                             rmatval, sense,
                                                             rhs));
 
@@ -124,7 +124,7 @@ SCENARIO("Separating simple DP inequalities in medium instances",
                                                          subtourfile, g_dat,
                                                          b_dat, lp_edges,
                                                          s_dat, inst));
-                int ncount = g_dat.m_graph.node_count;
+                int ncount = g_dat.core_graph.node_count();
 
                 REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(ncount,
                                                                  inst.ptr(),
@@ -148,7 +148,7 @@ SCENARIO("Separating simple DP inequalities in medium instances",
                     vector<int> &bt = b_dat.best_tour_nodes;
                     double tour_activity, lp_activity;
           
-                    REQUIRE_FALSE(translator.get_sparse_row(dp_cut, bt, rmatind,
+                    REQUIRE_NOTHROW(translator.get_sparse_row(dp_cut, bt, rmatind,
                                                             rmatval, sense,
                                                             rhs));
 
@@ -210,7 +210,7 @@ SCENARIO("Separating simple DP inequalities in large instances",
                                                          subtourfile, g_dat,
                                                          b_dat, lp_edges,
                                                          s_dat, inst));
-                int ncount = g_dat.m_graph.node_count;
+                int ncount = g_dat.core_graph.node_count();
 
                 REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(ncount,
                                                                  inst.ptr(),
@@ -233,7 +233,7 @@ SCENARIO("Separating simple DP inequalities in large instances",
                     const CMR::Sep::dominoparity &dp_cut = dp_q.peek_front();
                     vector<int> &bt = b_dat.best_tour_nodes;
                     double tour_activity, lp_activity;
-                    REQUIRE_FALSE(translator.get_sparse_row(dp_cut, bt, rmatind,
+                    REQUIRE_NOTHROW(translator.get_sparse_row(dp_cut, bt, rmatind,
                                                             rmatval, sense,
                                                             rhs));
 

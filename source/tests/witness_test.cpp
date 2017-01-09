@@ -1,5 +1,7 @@
 #include "tests.hpp"
 
+#ifdef CMR_DO_TESTS
+
 #include "datagroups.hpp" //If the order of these includes is reversed, the 
 #include "karp.hpp"       //project may not compile
 
@@ -22,7 +24,6 @@ using std::vector;
 using std::string;
 using std::pair;
 
-#ifdef CMR_DO_TESTS
 
 SCENARIO("Finding simple DP inequalities via karp partition witnesses",
          "[karp][.simpleDP][DPwitness]") {
@@ -52,7 +53,7 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
         REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
                                                  subtourfile, g_dat, b_dat,
                                                  lp_edges, s_dat, inst));
-        int ncount = g_dat.m_graph.node_count;
+        int ncount = g_dat.core_graph.node_count();
 
         REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(ncount,
                                                          inst.ptr(), 99));
@@ -96,7 +97,7 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
             const CMR::Sep::dominoparity &dp_cut = dp_q.peek_front();
             vector<int> &bt = b_dat.best_tour_nodes;
             double tour_activity, lp_activity;
-            REQUIRE_FALSE(translator.get_sparse_row(dp_cut, bt, rmatind,
+            REQUIRE_NOTHROW(translator.get_sparse_row(dp_cut, bt, rmatind,
                                                     rmatval, sense, rhs));
 
             translator.get_activity(tour_activity, b_dat.best_tour_edges,

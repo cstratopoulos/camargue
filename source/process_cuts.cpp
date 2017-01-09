@@ -1,8 +1,11 @@
 #include "process_cuts.hpp"
+#include "err_util.hpp"
 
+#include <iostream>
 #include <map>
 #include <utility>
-#include <iostream>
+#include <stdexcept>
+
 
 #include <cmath>
 
@@ -12,6 +15,9 @@ using std::pair;
 
 using std::cout;
 using std::cerr;
+
+using std::exception;
+using std::runtime_error;
 
 namespace CMR {
 
@@ -28,6 +34,7 @@ void Sep::CutTranslate::get_sparse_row(const CCtsp_lpcut_in &cc_cut,
 
     int ncount = perm.size();
     map<int, double> coeff_map;
+    const vector<Edge> &edges = core_graph.get_edges();
 
     for (int i = 0; i < cc_cut.cliquecount; ++i) {
         vector<bool> node_marks(ncount, false);
@@ -158,13 +165,13 @@ void Sep::CutTranslate::get_sparse_row(const CCtsp_lpcut_in &cc_cut,
 //     return rval;
 // }
 
-int Sep::CutTranslate::get_sparse_row(const dominoparity &dp_cut,
+void Sep::CutTranslate::get_sparse_row(const dominoparity &dp_cut,
                                       const vector<int> &tour_nodes,
                                       vector<int> &rmatind,
                                       vector<double> &rmatval,
                                       char &sense, double &rhs)
 {
-    int rval = 0;
+    runtime_error err("Problem in CutTranslate::get_sparse_row dp cut.");
     vector<double> coeff_buff;
 
     for (int &i : edge_marks) i = 0;
@@ -173,15 +180,17 @@ int Sep::CutTranslate::get_sparse_row(const dominoparity &dp_cut,
     rhs = 0.0;
     sense = 'L';
 
-    try { coeff_buff.resize(edges.size(), 0.0); } catch (...) {
-        CMR_SET_GOTO(rval, "Couldn't allocate coefficient buffer. ");
-    }
+    const vector<Edge> &edges = core_graph.get_edges();
+
+    try {
+        coeff_buff.resize(edges.size(), 0.0);
+    } CMR_CATCH_PRINT_THROW("allocating coeff buffer", err);
 
     for (const int node : dp_cut.degree_nodes)
         edge_marks[tour_nodes[node]] = 1;
 
     for (int i = 0; i < edges.size(); ++i) {
-        Edge e = edges[i];
+        const Edge &e = edges[i];
         int sum = edge_marks[e.end[0]] + edge_marks[e.end[1]];
         coeff_buff[i] += sum;
     }
@@ -219,17 +228,18 @@ int Sep::CutTranslate::get_sparse_row(const dominoparity &dp_cut,
     }
 
     for (const IntPair &ends : dp_cut.nonneg_edges) {
-        int end0 = fmin(tour_nodes[ends.first], tour_nodes[ends.second]);
-        int end1 = fmax(tour_nodes[ends.first], tour_nodes[ends.second]);
+        int e0 = tour_nodes[ends.first];
+        int e1 = tour_nodes[ends.second];
 
-        IntPairMap::const_iterator it = edge_lookup.find(IntPair(end0, end1));
-    
-        if (it == edge_lookup.end()) {
-            CMR_SET_GOTO(rval, "Tried to lookup invalid edge. ");
+        int find_ind = core_graph.find_edge_ind(e0, e1);
+        if (find_ind == -1) {
+            cerr << "Tried to lookup invalid edge.\n";
+            throw err;
         }
 
-        coeff_buff[it->second] -= 1.0;
+        coeff_buff[find_ind] -= 1.0;
     }
+
 
     try {
         for (int i = 0; i < coeff_buff.size(); ++i)
@@ -237,8 +247,7 @@ int Sep::CutTranslate::get_sparse_row(const dominoparity &dp_cut,
                 rmatind.push_back(i);
                 rmatval.push_back(coeff_buff[i]);
             }
-    } catch (...) { CMR_SET_GOTO(rval,
-                                 "Couldn't get sparse row from buffer. "); }
+    } CMR_CATCH_PRINT_THROW("getting sparse row from buffer", err);
 
     rhs /= 2;
     rhs = floor(rhs);
@@ -249,75 +258,7 @@ int Sep::CutTranslate::get_sparse_row(const dominoparity &dp_cut,
             coeff = floor(coeff);
         }
     }
-
- CLEANUP:
-    if (rval) {
-        cerr << "Problem in Sep::CutTranslate::get_sparse_row(dp_cut, ...), "
-             << "cut invalidated.\n";
-        rmatind.clear();
-        rmatval.clear();
-    }
-    return rval;
 }
 
-
-// int Sep::CutTranslate::get_sparse_row_if(bool &violated, const HyperGraph &H,
-// 				    const vector<double> &x,
-// 				    vector<int> &rmatind,
-// 				    vector<double> &rmatval, char &sense,
-// 				    double &rhs)
-// {
-//     int rval = 0;
-//     violated = false;
-//     double activity;
-
-//     rval = get_sparse_row(H, rmatind, rmatval, sense, rhs);
-//     CMR_CHECK_RVAL(rval, "Couldn't get sparse row, ");
-
-//     get_activity(activity, x, rmatind, rmatval);
-
-//     switch (sense) {
-//     case 'G':
-//         violated = (activity < rhs) && ((rhs - activity) >= 0.001);
-//         break;
-//     case 'L':
-//         violated = (activity > rhs) && ((activity - rhs) >= 0.001);
-//         break;
-//     default:
-//         rval = 1;
-//         CMR_GOTO_CLEANUP("Uncaught row sense " << sense << ", ");
-//     }
-
-//  CLEANUP:
-//     if (rval)
-//         cerr << "Sep::CutTranslate<HyperGraph>::get_sparse_row_if failed, "
-//              << "row is invalid.\n";
-
-//     if (rval || !violated) {
-//         rmatind.clear();
-//         rmatval.clear();
-//     }
-  
-//     return rval;
-// }
-
-// int Sep::CutTranslate::is_cut_violated(bool &violated, const HyperGraph &H,
-// 				  vector<double> &x)
-// {
-//     int rval = 0;
-//     vector<int> rmatind;
-//     vector<double> rmatval;
-//     char sense; double rhs;
-
-//     violated = false;
-
-//     rval = get_sparse_row_if(violated, H, x, rmatind, rmatval, sense, rhs);
-//     CMR_CHECK_RVAL(rval, "Couldn't test violation, ");
-
-//  CLEANUP:
-//     if (rval)
-//         cerr << "Sep::CutTranslate::is_cut_violated failed\n";
-//     return rval;
-// }
 
 }

@@ -262,6 +262,23 @@ CoreGraph::CoreGraph(int ncount, int ecount, const int *elist,
     throw runtime_error("CoreGraph constructor failed.");
 }
 
+CoreGraph::CoreGraph(const vector<int> &tour_nodes,
+                     const std::function<double(int, int)> edgelen) try
+    : nodecount(tour_nodes.size())
+{
+    edges.reserve(nodecount);
+
+    for (int i = 0; i < nodecount; ++i) 
+        edges.emplace_back(tour_nodes[i], tour_nodes[(i + 1) % nodecount],
+                           edgelen(tour_nodes[i],
+                                   tour_nodes[(i + 1) % nodecount]));
+
+    adj_list = AdjList(nodecount, edges);    
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("CoreGraph constructor failed.");
+}
+
 int CoreGraph::find_edge_ind(int end0, int end1) const
 {
     const AdjObj *adj_ptr = adj_list.find_edge(end0, end1);

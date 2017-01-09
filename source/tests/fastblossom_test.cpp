@@ -40,8 +40,8 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
 						  lp_edges, s_dat));
 
 	
-	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
-			     b_dat.perm);
+	  CMR::TourGraph TG(b_dat.best_tour_edges,
+                            g_dat.core_graph.get_edges(),  b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
 	  CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist,
@@ -76,8 +76,8 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
 						  blossomfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
-	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
-			     b_dat.perm);
+	  CMR::TourGraph TG(b_dat.best_tour_edges,
+                            g_dat.core_graph.get_edges(), b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
 	  CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
@@ -112,7 +112,7 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
 						  subtourfile, g_dat, b_dat,
 						  lp_edges, s_dat));
 
-	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+	  CMR::TourGraph TG(b_dat.best_tour_edges,g_dat.core_graph.get_edges(),
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	
@@ -149,7 +149,7 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
 						  g_dat, b_dat, lp_edges,
 						  s_dat));
 
-	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.m_graph.edges,
+	  CMR::TourGraph TG(b_dat.best_tour_edges, g_dat.core_graph.get_edges(),
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 	

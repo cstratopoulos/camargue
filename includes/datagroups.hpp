@@ -100,7 +100,6 @@ struct GraphGroup {
     GraphGroup(const Instance &inst);
 
     GraphUtils::CoreGraph core_graph;
-    Graph m_graph; /**< A Graph object describing the TSP instance. */
     
     std::vector<int> island; /**< Stores components from a dfs of m_graph */
     std::vector<int> delta; /**< Stores edges in delta of some node set */

@@ -183,6 +183,10 @@ public:
     CoreGraph(int ncount, int ecount, const int *elist,
               const std::function<double(int, int)> edgelen);
 
+    /// Construct a CoreGraph containing the nodes of a TSP tour.
+    CoreGraph(const std::vector<int> &tour_nodes,
+              const std::function<double(int, int)> edgelen);
+
     int node_count() const { return nodecount; }
     int edge_count() const { return edges.size(); }
 

@@ -34,8 +34,8 @@ CoreLP::CoreLP(Data::GraphGroup &graph_data_,
     graph_data(graph_data_), best_data(best_data_),
     ext_cuts(best_data.best_tour_nodes, best_data.perm)
 {
-    CMR::Graph &graph = graph_data.m_graph;
-    int ncount = graph.node_count;
+    GraphUtils::CoreGraph &core_graph = graph_data.core_graph;
+    int ncount = core_graph.node_count();
 
     char degree_sense = 'E';
     double degree_rhs = 2.0;
@@ -47,14 +47,14 @@ CoreLP::CoreLP(Data::GraphGroup &graph_data_,
     double lb = 0.0;
     double ub = 1.0;
     
-    for (CMR::Edge &e : graph.edges) {
+    for (const CMR::Edge &e : core_graph.get_edges()) {
         double objval = e.len;
         vector<int> ends{e.end[0], e.end[1]};
 
         add_col(objval, ends, col_coeffs, lb, ub);
     }
     
-    tour_base = TourBasis(graph, best_data);
+    tour_base = TourBasis(core_graph, best_data);
 
     get_row_infeas(tour_base.best_tour_edges,
                    feas_stat, 0, num_rows() - 1);
@@ -79,60 +79,56 @@ CoreLP::CoreLP(Data::GraphGroup &graph_data_,
     throw runtime_error("Problem in CoreLP constructor.");
 }
 
-TourBasis::TourBasis(CMR::Graph &graph,
-                     Data::BestGroup &best_data) try :
-    best_tour_edges(vector<double>(graph.edge_count)),
-    colstat(vector<int>(graph.edge_count, BStat::AtLower)),
-    rowstat(vector<int>(graph.node_count, BStat::AtLower))
+TourBasis::TourBasis(const GraphUtils::CoreGraph &core_graph,
+                     const Data::BestGroup &best_data) try :
+    best_tour_edges(vector<double>(core_graph.edge_count())),
+    colstat(vector<int>(core_graph.edge_count(), BStat::AtLower)),
+    rowstat(vector<int>(core_graph.node_count(), BStat::AtLower))
 {
-    vector<int> &int_tour_edges = best_data.best_tour_edges;
+    const vector<int> &int_tour_edges = best_data.best_tour_edges;
     
     for(int i = 0; i < int_tour_edges.size(); ++i)
         best_tour_edges[i] = int_tour_edges[i];
 
-    int ncount = graph.node_count;
-    vector<int> &tour_nodes = best_data.best_tour_nodes;
+    int ncount = core_graph.node_count();
+    const vector<int> &tour_nodes = best_data.best_tour_nodes;
 
     for (int i = 0; i < ncount; ++i) {
-        int end0 = min(tour_nodes[i], tour_nodes[(i + 1) % ncount]);
-        int end1 = max(tour_nodes[i], tour_nodes[(i + 1) % ncount]);
+        int e0 = tour_nodes[i];
+        int e1 = tour_nodes[(i + 1) % ncount];
 
-        auto edge_it = graph.edge_lookup.find(IntPair(end0, end1));
+        int find_ind = core_graph.find_edge_ind(e0, e1);
 
-        if (edge_it == graph.edge_lookup.end()) {
-            cerr << "Edge " << end0 << ", " << end1
-                 << " not found in edge hash.\n";
+        if (find_ind == -1) {
+            cerr << e0 << ", " << e1 << " not in core graph.\n";
             throw logic_error("Graph does not contain all edges in tour.");
         }
-        colstat[edge_it->second] = BStat::Basic;
+        
+        colstat[find_ind] = BStat::Basic;
     }
 
     if ((ncount % 2) == 0) {
-        int end0 = min(tour_nodes[ncount - 2], tour_nodes[ncount - 1]);
-        int end1 = max(tour_nodes[ncount - 2], tour_nodes[ncount - 1]);
+        int e0 = tour_nodes[ncount - 2];
+        int e1 = tour_nodes[ncount - 1];
 
-        auto edge_it = graph.edge_lookup.find(IntPair(end0, end1));
+        int find_ind = core_graph.find_edge_ind(e0, e1);
 
-        if (edge_it == graph.edge_lookup.end()) {
-            cerr << "Edge " << end0 << ", " << end1
-                 << " not found in edge hash.\n";
+        if (find_ind == -1) {
+            cerr << e0 << ", " << e1 << " not in core graph.\n";
             throw logic_error("Graph does not contain all edges in tour.");
         }
 
-        colstat[edge_it->second] = BStat::AtUpper;
+        colstat[find_ind] = BStat::AtUpper;
 
-        end0 = min(tour_nodes[0], tour_nodes[ncount - 2]);
-        end1 = max(tour_nodes[0], tour_nodes[ncount - 2]);
+        e0 = tour_nodes[0];
+        e1 = tour_nodes[ncount - 2];
 
-        edge_it = graph.edge_lookup.find(IntPair(end0, end1));
-        
-        if (edge_it == graph.edge_lookup.end()) {
-            cerr << "Edge " << end0 << ", " << end1
-                 << " not found in edge hash.\n";
-            throw logic_error("Graph does not contain basis edge.");
+        if (find_ind == -1) {
+            cerr << e0 << ", " << e1 << " not in core graph.\n";
+            throw logic_error("Graph does not contain all edges in tour.");
         }
 
-        colstat[edge_it->second] = BStat::Basic;
+        colstat[find_ind] = BStat::Basic;
     }
 } catch (const exception &e) {
     cerr << e.what() << "\n";
@@ -152,7 +148,7 @@ PivType CoreLP::primal_pivot()
     runtime_error err("Problem in CoreLP::primal_pivot.");
 
     double low_limit = best_data.min_tour_value - Eps::Zero;
-    CMR::Graph &graph = graph_data.m_graph;
+    GraphUtils::CoreGraph &core_graph = graph_data.core_graph;
 
     try {
         get_base(tour_base.colstat, tour_base.rowstat);
@@ -164,8 +160,8 @@ PivType CoreLP::primal_pivot()
         
         get_x(lp_edges);
         
-        supp_data.reset(graph.node_count, graph.edges, lp_edges,
-                        graph_data.island);
+        supp_data.reset(core_graph.node_count(), core_graph.get_edges(),
+                        lp_edges, graph_data.island);
         
     } CMR_CATCH_PRINT_THROW("pivoting and setting x", err);
 
@@ -218,7 +214,7 @@ void CoreLP::handle_aug()
             best_data.best_tour_edges[i] = 0;
         else {
             best_data.best_tour_edges[i] = 1;
-            objval += graph_data.m_graph.edges[i].len;
+            objval += graph_data.core_graph.get_edge(i).len;
         }
 
     if (objval > best_data.min_tour_value)
@@ -309,17 +305,12 @@ void CoreLP::add_cuts(Sep::CutQueue<Sep::dominoparity> &dpq)
         char sense;
         double rhs;
 
-        if (translator.get_sparse_row(dp_cut, tour_nodes, rmatind, rmatval,
-                                      sense, rhs))
-            throw err;
-
         try {
+            translator.get_sparse_row(dp_cut, tour_nodes, rmatind, rmatval,
+                                      sense, rhs);
             add_cut(rhs, sense, rmatind, rmatval);
-        } CMR_CATCH_PRINT_THROW("adding dpcut row", err);
-
-        try {
             ext_cuts.add_cut(dp_cut, rhs, tour_nodes);
-        } CMR_CATCH_PRINT_THROW("adding external rep,", err);
+        } CMR_CATCH_PRINT_THROW("adding dpcut row", err);
     }
 }
 
