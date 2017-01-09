@@ -23,14 +23,6 @@ Edge::Edge(int e0, int e1, int _len):
   end[1] = e1 > e0 ? e1 : e0;
 }
 
-void Graph::print_edges() {
-    for (int i = 0; i < edges.size(); ++i)
-    {
-        cout << edges[i].end[0] << ", " << edges[i].end[1]
-	     << "-(" << edges[i].len << ")\n";
-    }
-}
-
 TourGraph::TourGraph(const vector<int> &tour_edges,
 		     const vector<Edge> &edges, const vector<int> &perm)
 try
@@ -254,6 +246,40 @@ void AdjList::add_edge(int end0, int end1, int index, double val)
     ++edge_count;
 }
 
+CoreGraph::CoreGraph(int ncount, int ecount, const int *elist,
+                     const std::function<double(int, int)> edgelen) try
+    : nodecount(ncount)
+{
+    edges.reserve(ecount);
+    
+    for (int i = 0; i < ecount; ++i) 
+        edges.emplace_back(elist[2 * i], elist[(2 * i) + 1],
+                           edgelen(elist[2 * i], elist[(2 * i) + 1]));
+
+    adj_list = AdjList(ncount, edges);
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("CoreGraph constructor failed.");
 }
 
+int CoreGraph::find_edge_ind(int end0, int end1) const
+{
+    const AdjObj *adj_ptr = adj_list.find_edge(end0, end1);
+    if (adj_ptr == nullptr)
+        return -1;
+    return adj_ptr->edge_index;
+}
+
+void CoreGraph::add_edge( int end0, int end1, int len )
+{
+    if (find_edge_ind(end0, end1) != -1)
+        return;
+
+    int new_ind = edge_count();
+
+    edges.emplace_back(end0, end1, len);
+    adj_list.add_edge(end0, end1, new_ind, len);
+}
+
+}
 }

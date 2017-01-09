@@ -34,22 +34,12 @@ struct Edge {
 };
 
 struct Graph {
-  Graph() : node_count(0), edge_count(0) {}
-    
-  void print_edges();
+    Graph() : node_count(0), edge_count(0) {}
 
-  int node_count;
-  int edge_count;
-  std::vector<Edge> edges;
-  IntPairMap edge_lookup;
-
-  void print_edge(int i) const {
-    if(i >= edge_count)
-      std::cout << "Edge out of range" << std::endl;
-    else
-      std::cout << "Edge " << i << ": [" << edges[i].end[0]
-		<< ", " << edges[i].end[1] << "]" << std::endl;
-  };
+    int node_count;
+    int edge_count;
+    std::vector<Edge> edges;
+    IntPairMap edge_lookup;
 };
 
 
@@ -182,6 +172,30 @@ struct AdjList {
     
     std::vector<Node> nodelist;
 
+};
+
+/// Graph object representing the edges in a core lp relaxation.
+class CoreGraph {
+public:
+    CoreGraph() = default;
+
+    /// Construct a CoreGraph from a C-style node-node elist, plus lenght func.
+    CoreGraph(int ncount, int ecount, const int *elist,
+              const std::function<double(int, int)> edgelen);
+
+    int node_count() const { return nodecount; }
+    int edge_count() const { return edges.size(); }
+
+    int find_edge_ind(int end0, int end1) const;
+    
+    const CMR::Edge &get_edge(int index) const { return edges[index]; }
+    
+    void add_edge(int end0, int end1, int len);    
+
+private:
+    std::vector<CMR::Edge> edges;
+    AdjList adj_list;
+    int nodecount;
 };
 
 }
