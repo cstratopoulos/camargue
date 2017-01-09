@@ -1,9 +1,11 @@
+#include "tests.hpp"
+
+#ifdef CMR_DO_TESTS
+
 #include <catch.hpp>
 
-#include "lp_interface.hpp"
-#include "core_lp.hpp"
-#include "tests.hpp"
-#include "err_util.hpp"
+#include "datagroups.hpp"
+#include "Graph.hpp"
 
 #include <iostream>
 #include <string>
@@ -20,7 +22,7 @@ using std::string;
 using std::pair;
 using CMR::IntPair;
 
-#ifdef CMR_DO_TESTS
+
 
 SCENARIO ("Consructing a GraphGroup and BestGroup",
           "[Data][BestGroup][GraphGroup]") {
