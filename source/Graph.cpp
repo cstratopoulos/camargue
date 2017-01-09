@@ -1,8 +1,9 @@
+#include "Graph.hpp"
+
+#include <algorithm>
 #include <fstream>		   
 #include <iostream>
 #include <stdexcept>
-
-#include "Graph.hpp"
 
 using std::vector;
 using std::cout;
@@ -241,6 +242,16 @@ AdjList::AdjList(int  ncount,
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("AdjList indices/ecap constructor failed.");
+}
+
+void AdjList::add_edge(int end0, int end1, int index, double val)
+{
+    if (find_edge(end0, end1) != nullptr)
+        return;
+
+    nodelist[end0].neighbors.emplace_back(end1, index, val);
+    nodelist[end1].neighbors.emplace_back(end0, index, val);
+    ++edge_count;
 }
 
 }

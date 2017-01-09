@@ -4,6 +4,7 @@
 #include "util.hpp"
 
 #include <array>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <queue>
@@ -138,6 +139,13 @@ struct AdjObj {
     int other_end;
     int edge_index;
     double val;
+
+    bool operator==(const AdjObj &rhs) const
+    {
+        return (other_end == rhs.other_end
+                && edge_index == rhs.edge_index
+                && val == rhs.val);
+    }
 };
 
 struct Node {
@@ -150,11 +158,13 @@ struct Node {
 };
 
 struct AdjList {
+    AdjList() = default;
+    
     AdjList(int ncount, const std::vector<CMR::Edge> &ref_elist);
     
     AdjList(int ncount,
             const std::vector<CMR::Edge> &ref_elist,
-            const std::vector<double> &edge_caps,
+            const std::vector<double> &ref_elist_caps,
             const std::vector<int> &keep_indices);
 
     const AdjObj *find_edge(int end0, int end1) const
@@ -164,6 +174,8 @@ struct AdjList {
                 return &a;
         return nullptr;
     }
+
+    void add_edge(int end0, int end1, int index, double val);
 
     int node_count;
     int edge_count;
