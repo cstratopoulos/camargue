@@ -179,7 +179,7 @@ class CoreGraph {
 public:
     CoreGraph() = default;
 
-    /// Construct a CoreGraph from a C-style node-node elist, plus lenght func.
+    /// Construct a CoreGraph from a length func and a c-array node-node elist.
     CoreGraph(int ncount, int ecount, const int *elist,
               const std::function<double(int, int)> edgelen);
 
@@ -187,8 +187,9 @@ public:
     int edge_count() const { return edges.size(); }
 
     int find_edge_ind(int end0, int end1) const;
-    
+
     const CMR::Edge &get_edge(int index) const { return edges[index]; }
+    const std::vector<CMR::Edge> &get_edges() const { return edges; }
     
     void add_edge(int end0, int end1, int len);    
 
