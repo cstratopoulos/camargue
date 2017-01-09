@@ -109,6 +109,8 @@ GraphGroup::GraphGroup(const Instance &inst)
 try     
 {
     int ncount = inst.node_count();
+    int ecount = 0;
+    
     m_graph.node_count = ncount;
 
     CCedgegengroup plan;
@@ -125,11 +127,16 @@ try
     int *elist = (int *) NULL;
 
     if(CCedgegen_edges(&plan, ncount, inst.ptr(), NULL,
-                       &(m_graph.edge_count), &elist, 1, &rstate))
+                       &ecount, &elist, 1, &rstate))
         throw runtime_error("CCedgegen_edges failed.");
 
+    m_graph.edge_count = ecount;
+
     util::c_array_ptr edge_handle(elist);
-    int ecount = m_graph.edge_count;
+    m_graph.edge_count = ecount;
+
+    core_graph = GraphUtils::CoreGraph(ncount, ecount, elist,
+                                       inst.edgelen_func());
 
     for (int i = 0; i < ecount; ++i) {
         int end0 = min(elist[2 * i], elist[(2 * i) + 1]);
