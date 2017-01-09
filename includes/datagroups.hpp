@@ -10,15 +10,16 @@
 #include "util.hpp"
 #include "Graph.hpp"
 
+#include <functional>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include <cmath>
+
 extern "C" {
 #include <concorde/INCLUDE/util.h>
 }
-
-#include <vector>
-#include <memory>
-#include <string>
-
-#include <cmath>
 
 namespace std {
 
@@ -72,6 +73,9 @@ public:
     double edgelen(int end0, int end1) const
         { return CCutil_dat_edgelen(end0, end1, handle.get()); }
 
+    const std::function<double(int, int)> edgelen_func() const
+        { return [this](int e0, int e1){ return edgelen(e0, e1); }; }
+
     int node_count() const { return nodecount; }
     int seed() const { return random_seed; }
 
@@ -94,7 +98,8 @@ private:
 struct GraphGroup {
     GraphGroup() = default;
     GraphGroup(const Instance &inst);
-  
+
+    GraphUtils::CoreGraph core_graph;
     Graph m_graph; /**< A Graph object describing the TSP instance. */
     
     std::vector<int> island; /**< Stores components from a dfs of m_graph */
