@@ -162,21 +162,23 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         return ScanStat::PartOpt;    
 }
 
-vector<EndPts> Pricer::get_pool_chunk()
+vector<Edge> Pricer::get_pool_chunk()
 {
-    vector<EndPts> result;
+    vector<Edge> result;
 
     if (edge_q.size() <= AddBatch) {
         result.reserve(edge_q.size());
         for (const PrEdge &e : edge_q)
-            result.emplace_back(e.end[0], e.end[1]);
+            result.emplace_back(e.end[0], e.end[1],
+                                inst.edgelen(e.end[0], e.end[1]));
         edge_q.clear();
         return result;
     }
 
     result.reserve(AddBatch);
     for (auto it = edge_q.end() - AddBatch; it != edge_q.end(); ++it)
-        result.emplace_back(it->end[0], it->end[1]);
+        result.emplace_back(it->end[0], it->end[1],
+                            inst.edgelen(it->end[0], it->end[1]));
     edge_q.resize(edge_q.size() - AddBatch);
     return result;
 }

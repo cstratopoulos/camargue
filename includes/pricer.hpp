@@ -48,7 +48,7 @@ public:
      */
     ScanStat gen_edges(LP::PivType piv_stat);
 
-    std::vector<EndPts> get_pool_chunk();
+    std::vector<Edge> get_pool_chunk();
 
     int queue_size() const { return edge_q.size(); }
 
