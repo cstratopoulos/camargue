@@ -46,7 +46,11 @@ public:
      * if a partial scan finds no edges to add. 
      * @returns a ScanStat indicating the outcome of the pricing scan.
      */
-    ScanStat add_edges(LP::PivType piv_stat);
+    ScanStat gen_edges(LP::PivType piv_stat);
+
+    std::vector<edge> get_pool_chunk();
+
+    int queue_size() const { return edge_q.size(); }
 
 private:
     void get_duals();

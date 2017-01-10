@@ -142,7 +142,10 @@ LP::PivType Solver::cutting_loop()
                                                      graph_data);
                 } CMR_CATCH_PRINT_THROW("instantiating Pricer", err);
 
-            edge_pricer->add_edges(piv);
+            if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full){
+                edge_pricer->get_pool_chunk();
+                cout << "\tEdge q size: " << edge_pricer->queue_size() << "\n";
+            }
             
             break;
         }
@@ -160,8 +163,10 @@ LP::PivType Solver::cutting_loop()
                                                      graph_data);
                 } CMR_CATCH_PRINT_THROW("instantiating Pricer", err);
 
-            edge_pricer->add_edges(piv);
-            
+            if (edge_pricer->gen_edges(piv) == Price::ScanStat::Partial){
+                edge_pricer->get_pool_chunk();
+                cout << "\tEdge q size: " << edge_pricer->queue_size() << "\n";
+            }
             piv = LP::PivType::Frac;
 
             try {

@@ -33,14 +33,13 @@ SCENARIO ("Running the Solver cutting_loop on augmentable or optimal instances",
     vector<string> probs{
         "pr76",
         "lin105",
+        "pcb442",
         "p654",
-        "d2103",
-        "pr2392",
     };
 
     for (string &prob : probs) {
         GIVEN (prob) {
-            THEN ("We can instantiate a Solver and run cutting_loop") {
+            THEN ("We can run cutting loop and price on opt/aug tours") {
                 CMR::OutPrefs prefs;
                 CMR::Solver solver("problems/" + prob + ".tsp",
                                    //prob + ".sol",

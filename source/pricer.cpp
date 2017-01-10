@@ -8,6 +8,8 @@
 
 using std::vector;
 
+using std::make_move_iterator;
+
 using std::cout;
 using std::cerr;
 
@@ -52,9 +54,9 @@ Pricer::Pricer(const LP::Relaxation &_relax, const Data::Instance &_inst,
 
 Pricer::~Pricer() { CCtsp_free_edgegenerator(&eg_inside); }
 
-ScanStat Pricer::add_edges(LP::PivType piv_stat)
+ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 {
-    runtime_error err("Problem in Pricer::add_edges");
+    runtime_error err("Problem in Pricer::gen_edges");
     const Sep::CliqueBank &clq_bank = ext_cuts.get_cbank();
     
     
@@ -131,15 +133,41 @@ ScanStat Pricer::add_edges(LP::PivType piv_stat)
             }
         }
 
-        cout << "\t" << edge_q.size() << " edges in edge_q\n";
+        cout << "\t" << edge_q.size() << " edges in edge_q\n"
+             << "\t" << penalty << " penalty accrued\n";
 
         ///TODO add penalty test?
         if (edge_q.size() >= PoolSize)
             break;
     }
-
-    std::sort(edge_q.begin(), edge_q.end());
+    
     edge_hash.clear();
+
+    if (!edge_q.empty()){
+        std::sort(edge_q.begin(), edge_q.end(),
+                  [](const edge &e, const edge &f) {return f < e; });
+        if (piv_stat == PivType::FathomedTour)
+            return ScanStat::Full;
+        else
+            return ScanStat::Partial;
+    }
+
+    if (piv_stat == PivType::FathomedTour)
+        return ScanStat::FullOpt;
+    else
+        return ScanStat::PartOpt;    
+}
+
+vector<edge> Pricer::get_pool_chunk()
+{
+    vector<edge> result;
+    if (edge_q.size() <= AddBatch)
+        result = edge_q;
+    else
+        result = vector<edge>(edge_q.end() - (AddBatch + 1), edge_q.end());
+
+    edge_q.resize(edge_q.size() - AddBatch);
+    return result;
 }
 
 void Pricer::get_duals()
