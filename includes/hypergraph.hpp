@@ -43,7 +43,7 @@ public:
     double get_coeff(int end0, int end1) const;
 
     /// Get sparse coefficient row for a list of edges.
-    void get_coeffs(const std::vector<Price::edge> &edges,
+    void get_coeffs(const std::vector<Price::PrEdge> &edges,
                     std::vector<int> &rmatind,
                     std::vector<double> &rmatval) const;
 

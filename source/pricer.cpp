@@ -52,7 +52,11 @@ Pricer::Pricer(const LP::Relaxation &_relax, const Data::Instance &_inst,
     throw runtime_error("Pricer constructor failed.");
 }
 
-Pricer::~Pricer() { CCtsp_free_edgegenerator(&eg_inside); }
+Pricer::~Pricer()
+{
+    CCtsp_free_edgegenerator(&eg_inside);
+    CCtsp_free_edgegenerator(&eg_full);
+}
 
 ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 {
@@ -119,7 +123,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         if (price_elist.empty())
             continue;
 
-        for (const edge &e : price_elist) {
+        for (const PrEdge &e : price_elist) {
             if (e.redcost < 0.0)
                 penalty += e.redcost;
             if (e.redcost <= -Eps::Zero) {
@@ -145,7 +149,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
     if (!edge_q.empty()){
         std::sort(edge_q.begin(), edge_q.end(),
-                  [](const edge &e, const edge &f) {return f < e; });
+                  [](const PrEdge &e, const PrEdge &f) {return f < e; });
         if (piv_stat == PivType::FathomedTour)
             return ScanStat::Full;
         else
@@ -158,14 +162,21 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         return ScanStat::PartOpt;    
 }
 
-vector<edge> Pricer::get_pool_chunk()
+vector<EndPts> Pricer::get_pool_chunk()
 {
-    vector<edge> result;
-    if (edge_q.size() <= AddBatch)
-        result = edge_q;
-    else
-        result = vector<edge>(edge_q.end() - (AddBatch + 1), edge_q.end());
+    vector<EndPts> result;
 
+    if (edge_q.size() <= AddBatch) {
+        result.reserve(edge_q.size());
+        for (const PrEdge &e : edge_q)
+            result.emplace_back(e.end[0], e.end[1]);
+        edge_q.clear();
+        return result;
+    }
+
+    result.reserve(AddBatch);
+    for (auto it = edge_q.end() - AddBatch; it != edge_q.end(); ++it)
+        result.emplace_back(it->end[0], it->end[1]);
     edge_q.resize(edge_q.size() - AddBatch);
     return result;
 }
@@ -260,7 +271,7 @@ void Pricer::price_candidates()
     if (price_elist.empty())
         return;
     
-    for (edge &e : price_elist)
+    for (PrEdge &e : price_elist)
         e.redcost = inst.edgelen(e.end[0], e.end[1]) - node_pi[e.end[0]]
         - node_pi[e.end[1]];
 

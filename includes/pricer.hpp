@@ -48,7 +48,7 @@ public:
      */
     ScanStat gen_edges(LP::PivType piv_stat);
 
-    std::vector<edge> get_pool_chunk();
+    std::vector<EndPts> get_pool_chunk();
 
     int queue_size() const { return edge_q.size(); }
 
@@ -79,8 +79,8 @@ private:
 
     util::EdgeHash edge_hash;
 
-    std::vector<edge> price_elist; //!< Compute exact RCs for these edges.
-    std::vector<edge> edge_q; //!< Queue of edges for inclusion.
+    std::vector<PrEdge> price_elist; //!< Compute exact RCs for these edges.
+    std::vector<PrEdge> edge_q; //!< Queue of edges for inclusion.
 
 };
 

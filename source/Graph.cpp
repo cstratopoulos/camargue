@@ -15,14 +15,6 @@ using std::exception;
 
 namespace CMR {
 
-Edge::Edge(int e0, int e1, int _len):
-    len(_len),
-    removable(false)
-{
-  end[0] = e0 < e1 ? e0 : e1;
-  end[1] = e1 > e0 ? e1 : e0;
-}
-
 TourGraph::TourGraph(const vector<int> &tour_edges,
 		     const vector<Edge> &edges, const vector<int> &perm)
 try
@@ -217,12 +209,12 @@ AdjList::AdjList(int ncount, const vector<CMR::Edge> &ref_elist) try
     throw runtime_error("AdjList elist constructor failed.");
 }
 
-AdjList::AdjList(int ncount, const vector<Price::edge> &price_elist) try
+AdjList::AdjList(int ncount, const vector<Price::PrEdge> &price_elist) try
     : node_count(ncount), edge_count(price_elist.size()),
       nodelist(vector<Node>(node_count, Node((2 * edge_count) / node_count)))
 {
     for (int i = 0; i < edge_count; ++i) {
-        const Price::edge &e = price_elist[i];
+        const Price::PrEdge &e = price_elist[i];
 
         nodelist[e.end[0]].neighbors.emplace_back(e.end[1], i, e.redcost);
         nodelist[e.end[1]].neighbors.emplace_back(e.end[0], i, e.redcost);

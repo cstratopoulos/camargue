@@ -147,7 +147,7 @@ double HyperGraph::get_coeff(int end0, int end1) const
     return static_cast<double>(pre_result);
 }
 
-void HyperGraph::get_coeffs(const std::vector<Price::edge> &edges,
+void HyperGraph::get_coeffs(const std::vector<Price::PrEdge> &edges,
                             vector<int> &rmatind,
                             vector<double> &rmatval) const
 {
