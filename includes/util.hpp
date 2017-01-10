@@ -151,25 +151,13 @@ struct C_resource_deleter {
 };
 
 
+
 /** Alias declaration for unique_ptr to C array.
  * This specialization of unique_ptr takes ownership of a C-style array which
  * was dynamically allocated by a C routine, freeing its memory 
  * appropriately when necessary.
  */
 using c_array_ptr = std::unique_ptr<int, C_resource_deleter<int>>;
-
-/** Alias template for C structs with free/init functions.
- * Suggested usage is as follows. In Concorde there are many structures of the
- * form `struct CCtsp_struct` which are used as `CCtsp_struct *S`
- * which is malloc'd, initialized by `CCtsp_init_struct(S)`, and then the
- * associated memory is freed by a call to `CCtsp_free_struct(S)`. Hence
- * declare `*S` and call `CCtsp_init_struct(S)`, and then manage the object
- * by c_struct_ptr(S, &CCts_free_struct) to create a unique_ptr which will
- * automatically free S using the appropriate Concorde function to release
- * the memory. 
- */
-template <typename T>
-using c_struct_ptr = std::unique_ptr<T, void(*)(T*)>;
 
 }
 
@@ -180,19 +168,6 @@ constexpr double DoubleMax = std::numeric_limits<double>::max();
 constexpr double DoubleMin = std::numeric_limits<double>::min();
 
 typedef std::pair<int, int> IntPair;
-
-struct edge_hash {
-    std::size_t operator()(const IntPair& p) const
-        {
-            std::hash<int> hasher;
-            std::size_t seed = 0;
-            seed ^= hasher(p.first) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            seed ^= hasher(p.second) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            return seed; 
-        }
-};
-
-typedef std::unordered_map<IntPair, int, edge_hash> IntPairMap;
 
 /** Simple utility struct for storing an interval of nodes.
  * A Segment is defined in terms of some list of nodes, usually a tsp tour.
