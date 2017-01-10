@@ -1,4 +1,5 @@
 #include "solver.hpp"
+#include "separator.hpp"
 #include "timer.hpp"
 #include "err_util.hpp"
 
@@ -132,6 +133,17 @@ LP::PivType Solver::cutting_loop()
         
         if (piv == LP::PivType::FathomedTour) {
             report_piv(piv, round);
+
+            if (!edge_pricer)
+                try {
+                    edge_pricer =
+                    util::make_unique<Price::Pricer>(core_lp, tsp_instance,
+                                                     core_lp.ext_cuts,
+                                                     graph_data);
+                } CMR_CATCH_PRINT_THROW("instantiating Pricer", err);
+
+            edge_pricer->add_edges(piv);
+            
             break;
         }
 
@@ -139,6 +151,17 @@ LP::PivType Solver::cutting_loop()
             report_piv(piv, round);
             cout << "\tPruned " << (rowcount - core_lp.num_rows())
                  << " rows from the LP." << endl;
+
+            if (!edge_pricer)
+                try {
+                    edge_pricer =
+                    util::make_unique<Price::Pricer>(core_lp, tsp_instance,
+                                                     core_lp.ext_cuts,
+                                                     graph_data);
+                } CMR_CATCH_PRINT_THROW("instantiating Pricer", err);
+
+            edge_pricer->add_edges(piv);
+            
             piv = LP::PivType::Frac;
 
             try {

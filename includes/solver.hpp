@@ -2,10 +2,12 @@
 #define CMR_SOLVER_H
 
 #include "core_lp.hpp"
+#include "karp.hpp"
 #include "datagroups.hpp"
-#include "separator.hpp"
+#include "pricer.hpp"
 #include "util.hpp"
 
+#include <memory>
 #include <string>
 
 namespace CMR {
@@ -42,9 +44,11 @@ private:
     Data::GraphGroup graph_data;
     Data::BestGroup best_data;
 
-    CMR::LP::CoreLP core_lp;
+    LP::CoreLP core_lp;
 
-    CMR::OutPrefs output_prefs;
+    std::unique_ptr<Price::Pricer> edge_pricer;
+
+    OutPrefs output_prefs;
 };
 
 }
