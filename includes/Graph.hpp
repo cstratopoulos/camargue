@@ -1,6 +1,7 @@
 #ifndef CMR_GRAPH_H
 #define CMR_GRAPH_H
 
+#include "price_util.hpp"
 #include "util.hpp"
 
 #include <array>
@@ -32,16 +33,6 @@ struct Edge {
     int len;
     bool removable;
 };
-
-struct Graph {
-    Graph() : node_count(0), edge_count(0) {}
-
-    int node_count;
-    int edge_count;
-    std::vector<Edge> edges;
-    IntPairMap edge_lookup;
-};
-
 
 struct s_adjobj {
   int other_end;
@@ -151,6 +142,8 @@ struct AdjList {
     AdjList() = default;
     
     AdjList(int ncount, const std::vector<CMR::Edge> &ref_elist);
+
+    AdjList(int ncount, const std::vector<Price::edge> &price_elist);
     
     AdjList(int ncount,
             const std::vector<CMR::Edge> &ref_elist,
@@ -192,7 +185,9 @@ public:
 
     int find_edge_ind(int end0, int end1) const;
 
-    const CMR::Edge &get_edge(int index) const { return edges[index]; }
+    CMR::Edge &get_edge(int index) { return edges[index]; }
+    
+    std::vector<CMR::Edge> &get_edges() { return edges; }
     const std::vector<CMR::Edge> &get_edges() const { return edges; }
     
     void add_edge(int end0, int end1, int len);    
