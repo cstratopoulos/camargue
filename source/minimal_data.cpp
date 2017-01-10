@@ -116,17 +116,6 @@ void make_cut_test(const string &tsp_fname,
         supp_data.reset(core_graph.node_count(), core_graph.get_edges(),
                         lp_edges, graph_data.island);
     } CMR_CATCH_PRINT_THROW("resetting support data", err);
-
-    // try {
-    //     for (int i = 0; i < lp_edges.size(); ++i)
-    //         if (lp_edges[i] >= Epsilon::Zero)
-    //             supp_data.support_indices.push_back(i);
-    // } CMR_CATCH_PRINT_THROW("pushing back sup inds", err);
-
-    // if (GraphUtils::build_s_graph(ncount, core_graph.get_edges(),
-    //                               supp_data.support_indices,
-    //                               lp_edges, &supp_data.G_s))
-    //     throw err;
 }
 
 }
