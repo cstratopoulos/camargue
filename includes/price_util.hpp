@@ -1,6 +1,8 @@
 #ifndef CMR_PRICE_UTIL_H
 #define CMR_PRICE_UTIL_H
 
+#include <array>
+
 namespace CMR {
 
 namespace Price {
@@ -10,7 +12,9 @@ constexpr int Nearest = 50; //<! Number of nearest edges to each node examined.
 constexpr int AddBatch = 100; //<! Number added to CoreLP at a time.
 constexpr int PoolSize = 1000; //<! Number of negative rc edges to keep in pool.
 constexpr int EstBatch = 20000; //<! Max number of edges to estimate red cost.
-constexpr int ScaleBatch = 3; //<! Scale factor for EstBatch. 
+constexpr int ScaleBatch = 3; //<! Scale factor for EstBatch.
+
+constexpr double MaxPenalty = 0.10;
 
 /// Return type for edge pricing routines.
 enum class ScanStat {
@@ -37,7 +41,7 @@ struct edge {
     end[1] = end1 > end0 ? end1 : end0;
   }
 
-    bool operator<(const edge &rhs) const { return redcost > rhs.redcost; }
+    bool operator<(const edge &rhs) const { return redcost < rhs.redcost; }
     
     std::array<int, 2> end;
     double redcost;
