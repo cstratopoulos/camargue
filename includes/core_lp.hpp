@@ -12,6 +12,7 @@
 #include "process_cuts.hpp"
 #include "datagroups.hpp"
 #include "hypergraph.hpp"
+#include "util.hpp"
 
 #include <vector>
 
@@ -48,6 +49,8 @@ public:
 
     void add_cuts(Sep::LPcutList &cutq);
     void add_cuts(Sep::CutQueue<Sep::dominoparity> &dp_q);
+
+    void add_edges(std::vector<EndPts> &add_batch);
 
 
     Data::SupportGroup supp_data;

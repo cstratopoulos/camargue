@@ -314,6 +314,11 @@ void CoreLP::add_cuts(Sep::CutQueue<Sep::dominoparity> &dpq)
     }
 }
 
+void CoreLP::add_edges(vector<EndPts> &add_batch)
+{
+
+}
+
 }
 }
 
