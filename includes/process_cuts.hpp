@@ -84,13 +84,13 @@ public:
                         std::vector<double> &rmatval, char &sense,
                         double &rhs);
     
-    void get_sparse_row(const Sep::dominoparity &dp_cut,
-                       const std::vector<int> &tour_nodes,
-                       std::vector<int> &rmatind, std::vector<double> &rmatval,
-                       char &sense, double &rhs);
+    void get_sparse_row(const dominoparity &dp_cut,
+                        const std::vector<int> &tour_nodes,
+                        std::vector<int> &rmatind, std::vector<double> &rmatval,
+                        char &sense, double &rhs);
   
-    template<typename number_t>
-    void get_activity(double &activity, const std::vector<number_t> &x,
+    template<typename number_type>
+    void get_activity(double &activity, const std::vector<number_type> &x,
                       const std::vector<int> &rmatind,
                       const std::vector<double> &rmatval)
         {
