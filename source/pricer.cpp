@@ -66,11 +66,13 @@ ScanStat Pricer::add_edges(LP::PivType piv_stat)
 
     CCtsp_edgegenerator *current_eg;
 
-    if (piv_stat == PivType::FathomedTour)
+    if (piv_stat == PivType::FathomedTour){
         current_eg = &eg_full;
-    else if (piv_stat == PivType::Tour)
+        cout << "\tRunning full eg\n";
+    } else if (piv_stat == PivType::Tour){
         current_eg = &eg_inside;
-    else
+        cout << "\tRunning inside eg\n";
+    } else
         throw logic_error("Tried to run pricing on non tour.");
 
     try {
@@ -89,12 +91,13 @@ ScanStat Pricer::add_edges(LP::PivType piv_stat)
 
     int finished = 0;
 
+    cout << "\tEntering EG loop\n\t";
     while (!finished) {
         double penalty = 0.0;
         int num_gen = 0;
 
         if (CCtsp_generate_edges(current_eg, gen_max, &num_gen, &gen_elist[0],
-                                 &gen_elen[0], &finished, 1, &rstate))
+                                 &gen_elen[0], &finished, 0, &rstate))
             throw err;
 
         for (int i = 0; i < num_gen; ++i) {
@@ -127,6 +130,8 @@ ScanStat Pricer::add_edges(LP::PivType piv_stat)
                 } CMR_CATCH_PRINT_THROW("removing edge from hash", err);
             }
         }
+
+        cout << "\t" << edge_q.size() << " edges in edge_q\n";
 
         ///TODO add penalty test?
         if (edge_q.size() >= PoolSize)

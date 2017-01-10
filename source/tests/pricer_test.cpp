@@ -28,10 +28,14 @@ using std::cout;
 
 
 
-SCENARIO ("Running the Solver cutting_loop",
-          "[Solver][cutting_loop]") {
+SCENARIO ("Running the Solver cutting_loop on augmentable or optimal instances",
+          "[Price][Pricer][add_edges]") {
     vector<string> probs{
-        "lin318", "d493", "p654", "pr1002", "d2103", "pr2392"
+        "pr76",
+        "lin105",
+        "p654",
+        "d2103",
+        "pr2392",
     };
 
     for (string &prob : probs) {
@@ -41,20 +45,6 @@ SCENARIO ("Running the Solver cutting_loop",
                 CMR::Solver solver("problems/" + prob + ".tsp",
                                    //prob + ".sol",
                                    0, prefs);
-
-                REQUIRE_NOTHROW(solver.cutting_loop());
-            }
-        }
-    }
-}
-
-SCENARIO ("Running random 1k solver cutting_loop",
-          "[Solver][cutting_loop][random]") {
-    for (int i : {1, 2, 3, 4, 5}) {
-        GIVEN ("A 1k random instance" + to_string(i)) {
-            THEN ("We can instantiate a Solver and run cutting_loop") {
-                CMR::OutPrefs prefs;
-                CMR::Solver solver(0, 1000, 1000000, prefs);
 
                 REQUIRE_NOTHROW(solver.cutting_loop());
             }
