@@ -305,5 +305,15 @@ void CoreGraph::add_edge( int end0, int end1, int len )
     adj_list.add_edge(end0, end1, new_ind, len);
 }
 
+void CoreGraph::add_edge(const Edge &e)
+{
+    if (find_edge_ind(e.end[0], e.end[1]) != -1)
+        return;
+
+    int new_ind = edge_count();
+    edges.push_back(e);
+    adj_list.add_edge(e.end[0], e.end[1], new_ind, e.len);
+}
+
 }
 }
