@@ -21,15 +21,15 @@ extern "C" {
 namespace CMR {
 
 
-struct Edge {
+struct Edge : EndPts {
     Edge() : removable(false) {}
-    Edge(int e0, int e1, int _len);
+    Edge(int e0, int e1, int _len) :
+        EndPts(e0, e1), len(_len), removable(false) {}
 
     bool operator==(const Edge &rhs) const {
         return ((end[0] == rhs.end[0]) && (end[1] == rhs.end[1]));
     }
 
-    std::array<int, 2> end;
     int len;
     bool removable;
 };
@@ -143,7 +143,7 @@ struct AdjList {
     
     AdjList(int ncount, const std::vector<CMR::Edge> &ref_elist);
 
-    AdjList(int ncount, const std::vector<Price::edge> &price_elist);
+    AdjList(int ncount, const std::vector<Price::PrEdge> &price_elist);
     
     AdjList(int ncount,
             const std::vector<CMR::Edge> &ref_elist,

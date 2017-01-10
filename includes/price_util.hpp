@@ -1,6 +1,8 @@
 #ifndef CMR_PRICE_UTIL_H
 #define CMR_PRICE_UTIL_H
 
+#include "util.hpp"
+
 #include <array>
 
 namespace CMR {
@@ -24,26 +26,15 @@ enum class ScanStat {
     FullOpt //!< Scanned all edges, none had negative reduced cost. 
 };
 
-struct edge {
-    edge() = default;
+struct PrEdge : EndPts {
+    PrEdge() = default;
     
-    edge(int end0, int end1) :
-        redcost(1.0)
-  {
-    end[0] = end0 < end1 ? end0 : end1;
-    end[1] = end1 > end0 ? end1 : end0;
-  }
-    
-    edge(int end0, int end1, double rc) :
-        redcost(rc)
-  {
-    end[0] = end0 < end1 ? end0 : end1;
-    end[1] = end1 > end0 ? end1 : end0;
-  }
+    PrEdge(int end0, int end1) : EndPts(end0, end1), redcost(1.0) {}
 
-    bool operator<(const edge &rhs) const { return redcost < rhs.redcost; }
+    PrEdge(int end0, int end1, double rc) : EndPts(end0, end1), redcost(rc) {}
+
+    bool operator<(const PrEdge &rhs) const { return redcost < rhs.redcost; }
     
-    std::array<int, 2> end;
     double redcost;
 };
 
