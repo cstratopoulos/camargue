@@ -20,6 +20,10 @@ namespace util {
 class EdgeHash {
 public:
     EdgeHash(int size); /**< Construct an EdgeHash for approx size elements. */
+    ~EdgeHash();
+
+    EdgeHash(const EdgeHash &eh) = delete;
+    EdgeHash &operator=(const EdgeHash &eh) = delete;
 
     void add(int end1, int end2, int val); /**< Add a pair. */
     void set(int end1, int end2, int val); /**< Set val for existing pair. */
@@ -34,9 +38,7 @@ public:
 
 private:
     static constexpr int factor = 1.5;
-    c_struct_ptr<CCutil_edgehash> hash_handle;
-
-    CCutil_edgehash *ptr() { return hash_handle.get(); };
+    CCutil_edgehash eh;
 };
 
 

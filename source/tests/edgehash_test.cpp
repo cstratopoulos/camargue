@@ -1,6 +1,5 @@
 #include "tests.hpp"
 
-
 #ifdef CMR_DO_TESTS
 
 #include "edgehash.hpp"
@@ -24,7 +23,8 @@ using std::cout;
 
 SCENARIO ("Instantiating EdgeHash",
           "[util][EdgeHash]") {
-
+    cout << "Sizeof EdgeHash: " << sizeof(CMR::util::EdgeHash) << "\n";
+    cout << "Size of CCutil_edgehash: " << sizeof(CCutil_edgehash) << "\n";
     CMR::util::EdgeHash eh(5);
 
 }
