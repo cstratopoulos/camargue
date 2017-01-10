@@ -187,10 +187,11 @@ public:
 
     CMR::Edge &get_edge(int index) { return edges[index]; }
     
-    std::vector<CMR::Edge> &get_edges() { return edges; }
-    const std::vector<CMR::Edge> &get_edges() const { return edges; }
+    std::vector<Edge> &get_edges() { return edges; }
+    const std::vector<Edge> &get_edges() const { return edges; }
     
-    void add_edge(int end0, int end1, int len);    
+    void add_edge(int end0, int end1, int len);
+    void add_edge(const Edge &e);
 
 private:
     std::vector<CMR::Edge> edges;
