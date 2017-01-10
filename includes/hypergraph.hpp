@@ -3,6 +3,7 @@
 
 #include "cut_structs.hpp"
 #include "cliq.hpp"
+#include "price_util.hpp"
 
 #include <map>
 #include <utility>
@@ -38,8 +39,16 @@ public:
 
     Type cut_type() const { return static_cast<Type>(teeth.empty()); }
 
-    /** Get the coefficient of an edge specified by endpoints. */
+    /// Get the coefficient of an edge specified by endpoints.
     double get_coeff(int end0, int end1) const;
+
+    /// Get sparse coefficient row for a list of edges.
+    void get_coeffs(const std::vector<Price::edge> &edges,
+                    std::vector<int> &rmatind,
+                    std::vector<double> &rmatval) const;
+
+    char get_sense() const { return sense; } //!< Get the sense of the cut.
+    double get_rhs() const { return rhs; } //!< Get the rhs of the cut.
 
     /// Get a constant reference to the vector of Clique refs.
     const std::vector<Clique::Ptr> &get_cliques() const { return cliques; }

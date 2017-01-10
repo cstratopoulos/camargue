@@ -25,7 +25,7 @@ using std::string;
 using std::cout;
 
 SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
-          "[Sep][HyperGraph][get_coeff]") {
+          "[Sep][HyperGraph][get_coeff][get_coeffs]") {
     vector<string> probs{
         "dantzig42",
         "pr76",
@@ -50,6 +50,8 @@ SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
             CMR::Data::make_cut_test(probfile, solfile, subtourfile, g_dat,
                                      b_dat, lp_edges, s_dat, inst);
             int ncount = g_dat.core_graph.node_count();
+
+            
             CMR::Sep::CutTranslate translator(g_dat);
             
             kpart = CMR::Data::KarpPartition(inst);
@@ -63,6 +65,10 @@ SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
             CMR::Sep::CliqueBank cbank(b_dat.best_tour_nodes,
                                        b_dat.perm);
             CMR::Sep::ToothBank tbank(cbank);
+
+            vector<CMR::Price::edge> pr_edges(g_dat.core_graph.edge_count());
+            for (int i = 0; i < pr_edges.size(); ++i)
+                pr_edges[i].end = g_dat.core_graph.get_edge(i).end;
 
             WHEN ("Cuts are found") {
                 REQUIRE(sep.find_cuts(TG));
@@ -102,10 +108,17 @@ SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
 
                                 REQUIRE(ref_coeff == hg_coeff);
                             }
+
+                            vector<int> pr_rmatind;
+                            vector<double> pr_rmatval;
+                            hg.get_coeffs(pr_edges , pr_rmatind, pr_rmatval);
+                            REQUIRE(pr_rmatind == rmatind);
+                            REQUIRE(pr_rmatval == rmatval);
                         }
                     }
 
                     if (!sep.dp_q.empty()) {
+                        cout << "\tFOUND DP CUTS\n";
                         for (auto it = sep.dp_q.begin();
                              it != sep.dp_q.end(); ++it) {
                             CMR::Sep::dominoparity &dp_cut = *it;
@@ -131,6 +144,12 @@ SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
 
                                 REQUIRE(ref_coeff == hg_coeff);
                             }
+
+                            vector<int> pr_rmatind;
+                            vector<double> pr_rmatval;
+                            hg.get_coeffs(pr_edges , pr_rmatind, pr_rmatval);
+                            REQUIRE(pr_rmatind == rmatind);
+                            REQUIRE(pr_rmatval == rmatval);
                         }
                     }
                 }
