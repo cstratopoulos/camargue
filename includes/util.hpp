@@ -244,6 +244,14 @@ struct Segment {
     int start; /**< The start index of the Segment. */
     int end; /**< The end index of the Segment. */
 };
+
+struct BEdge {
+    BEdge() = default;
+    BEdge(int e0, int e1) : end{{e0, e1}}
+        { if (end[0] > end[1]) std::swap(end[0], end[1]); }
+
+    std::array<int, 2> end;
+};
     
 }
 
