@@ -50,8 +50,7 @@ public:
     void add_cuts(Sep::LPcutList &cutq);
     void add_cuts(Sep::CutQueue<Sep::dominoparity> &dp_q);
 
-    void add_edges(std::vector<EndPts> &add_batch);
-
+    void add_edges(std::vector<Edge> &add_batch);
 
     Data::SupportGroup supp_data;
 
