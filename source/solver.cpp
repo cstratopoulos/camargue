@@ -82,7 +82,7 @@ void Solver::report_piv(LP::PivType piv, int round)
     case LP::PivType::FathomedTour:
         cout << "\tTour optimal for edge set\n"
              << "\t*************************\n"
-             << "\tLP optimal obj val: " << core_lp.opt() << "\n";
+             << "\tLP optimal obj val: " << core_lp.opt_objval() << "\n";
         break;
     case LP::PivType::Tour:
         cout << "\tAugmented to tour of length "
@@ -146,11 +146,9 @@ LP::PivType Solver::cutting_loop()
 
             try {
                 if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full){
-                    vector<Edge> batch = edge_pricer->get_pool_chunk();
-                    core_lp.add_edges(batch);
-                    
                     continue;
-                }
+                } else
+                    break;
             } CMR_CATCH_PRINT_THROW("adding edges to core", err);
             
             break;
@@ -170,10 +168,7 @@ LP::PivType Solver::cutting_loop()
                 } CMR_CATCH_PRINT_THROW("instantiating Pricer", err);
 
             try {
-                if (edge_pricer->gen_edges(piv) == Price::ScanStat::Partial){
-                    vector<Edge> batch = edge_pricer->get_pool_chunk();
-                    core_lp.add_edges(batch);
-                }
+                edge_pricer->gen_edges(piv);
             } CMR_CATCH_PRINT_THROW("adding edges to core", err);
             
             piv = LP::PivType::Frac;
