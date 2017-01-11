@@ -94,10 +94,11 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     int finished = 0;
     int outercount = 0;
 
+    double penalty = 0.0;
+
     while (!finished) {
         cout << "\tEntering EG loop, pass " << ++outercount << "\n\t";
 
-        double penalty = 0.0;
         int num_gen = 0;
 
         price_elist.clear();
