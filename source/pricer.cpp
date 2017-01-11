@@ -254,8 +254,9 @@ void Pricer::get_duals()
 
         core_lp.get_pi(node_pi, 0, inst.node_count() - 1);
         node_pi_est = node_pi;
-        
-        core_lp.get_pi(cut_pi, inst.node_count(), core_lp.num_rows() - 1);
+
+        if (!cutlist.empty())
+            core_lp.get_pi(cut_pi, inst.node_count(), core_lp.num_rows() - 1);
     } CMR_CATCH_PRINT_THROW("clearing/getting/updating pi values", err);
 
     //get clique_pi for non-domino cuts
