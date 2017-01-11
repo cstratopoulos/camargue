@@ -58,7 +58,8 @@ public:
 
 private:
     void handle_aug();
-    void handle_fathom();
+
+    void rebuild_basis();
     
     Data::GraphGroup &graph_data;
     Data::BestGroup &best_data;

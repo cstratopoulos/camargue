@@ -193,9 +193,7 @@ void CoreLP::pivot_back()
     try {
         copy_start(tour_base.best_tour_edges, tour_base.colstat,
                    tour_base.rowstat);
-
         factor_basis();
-        
     } catch (const exception &e) {
         cerr << e.what() << "\n";
         throw runtime_error("Problem in CoreLP::pivot_back.");
@@ -249,6 +247,45 @@ void CoreLP::handle_aug()
     del_set_rows(delrows);
     ext_cuts.del_cuts(delrows);
     factor_basis();
+}
+
+void CoreLP::rebuild_basis()
+{
+    vector<double> &tour = tour_base.best_tour_edges;
+    
+    copy_start(tour);
+    factor_basis();
+
+    vector<double> test_x = lp_vec();
+
+    for (int i = 0; i < test_x.size(); ++i)
+        if (std::abs(test_x[i] - tour[i]) >= Eps::Zero)
+            throw runtime_error("tour not instated after basis rebuild.");
+
+    get_base(tour_base.colstat, tour_base.rowstat);
+
+    vector<double> feas_stat;
+
+    get_row_infeas(tour, feas_stat, 0, num_rows() - 1);
+
+    int ncount = graph_data.core_graph.node_count();
+
+    for (int i = 0; i < feas_stat.size(); ++i) {
+        if (std::abs(feas_stat[i] >= Eps::Zero)) {
+            if (i < ncount)
+                cout << "Found nonzero infeas on degree eqn\n";
+            else {
+                cout << "Found nonzero infeas on cut, type: ";
+                if (ext_cuts.get_cut(i).cut_type() ==
+                    Sep::HyperGraph::Type::Standard)
+                    cout << "subtour, blossom, or comb\n";
+                else
+                    cout << "domino\n";                
+            }
+            
+            throw runtime_error("tour is now infeasible.");
+        }
+    }
 }
 
 void CoreLP::add_cuts(Sep::LPcutList &cutq) try
@@ -316,11 +353,41 @@ void CoreLP::add_cuts(Sep::CutQueue<Sep::dominoparity> &dpq)
 
 void CoreLP::add_edges(const vector<Edge> &batch)
 {
-    // runtime_error err("Problem in CoreLP::add_edges");
+    runtime_error err("Problem in CoreLP::add_edges");
     
-    // try {
-        
-    // }
+    GraphUtils::CoreGraph &core_graph = graph_data.core_graph;
+    int old_ecount = core_graph.edge_count();
+    int new_ecount = old_ecount + batch.size();
+    
+    try {
+        graph_data.delta.resize(new_ecount, 0);
+        best_data.best_tour_edges.resize(new_ecount, 0);        
+        for (const Edge &e : batch)
+            core_graph.add_edge(e);        
+    } CMR_CATCH_PRINT_THROW("adding edges to core graph/best group", err);
+
+    double lb = 0.0;
+    double ub = 1.0;
+    vector<int> cmatind;
+    vector<double> cmatval;
+
+    try {
+        for (const Edge &e : batch) {
+            double objval = e.len;
+            
+            ext_cuts.get_col(e.end[0], e.end[1], cmatind, cmatval);
+            add_col(objval, cmatind, cmatval, lb, ub);
+        }
+    } CMR_CATCH_PRINT_THROW("adding edges to core lp", err);
+
+    try {
+        tour_base.best_tour_edges.resize(new_ecount, 0.0);
+        rebuild_basis();
+    } CMR_CATCH_PRINT_THROW("rebuilding tour basis", err)
+
+    
+    
+    cout << "\tAdded " << batch.size() << " edges to the core lp\n";
 }
 
 }
