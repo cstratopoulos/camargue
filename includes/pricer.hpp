@@ -55,6 +55,8 @@ public:
 private:
     void get_duals();
     void price_candidates();
+
+    void sort_q();
     
     const LP::Relaxation &relax;
     const Data::Instance &inst;

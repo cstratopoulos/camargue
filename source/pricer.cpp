@@ -8,8 +8,6 @@
 
 using std::vector;
 
-using std::make_move_iterator;
-
 using std::cout;
 using std::cerr;
 
@@ -68,7 +66,25 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
     try {
         clique_pi.reserve(clq_bank.size());
-    } CMR_CATCH_PRINT_THROW("reserving clique pi", err);
+        get_duals();
+    } CMR_CATCH_PRINT_THROW("populating clique pi", err);
+
+    if (!edge_q.empty()) { //try to re-price queue before generating again
+        price_candidates();
+        edge_q.erase(std::remove_if(edge_q.begin(), edge_q.end(),
+                                    [](const PrEdge &e)
+                                    { return e.redcost > - Eps::Zero; }),
+                     edge_q.end());
+        if (!edge_q.empty()) {
+            cout << "\tFound edges by re-pricing queue.\n";
+            sort_q();
+            if (piv_stat == PivType::FathomedTour)
+                return ScanStat::Full;
+            else
+                return ScanStat::Partial;
+        }
+        cout << "\tPurged all edges in queue, proceeding with regeneration.\n";
+    } // queue is now empty, proceed with generating
 
     CCtsp_edgegenerator *current_eg;
 
@@ -81,11 +97,10 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     } else
         throw logic_error("Tried to run pricing on non tour.");
 
-    try {
-        get_duals();
-        if (CCtsp_reset_edgegenerator(current_eg, &node_pi_est[0], 1))
-            throw runtime_error("");
-    } CMR_CATCH_PRINT_THROW("getting duals and resetting edgegen.", err);
+    if (CCtsp_reset_edgegenerator(current_eg, &node_pi_est[0], 1)) {
+        cerr << "CCtsp_reset_edgegenerator failed.\n";
+        throw err;
+    }
 
     GraphUtils::CoreGraph &core_graph = graph_group.core_graph;
     CCrandstate rstate;
@@ -151,8 +166,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     edge_hash.clear();
 
     if (!edge_q.empty()){
-        std::sort(edge_q.begin(), edge_q.end(),
-                  [](const PrEdge &e, const PrEdge &f) {return f < e; });
+        sort_q();
         if (piv_stat == PivType::FathomedTour)
             return ScanStat::Full;
         else
@@ -273,14 +287,16 @@ void Pricer::get_duals()
 
 void Pricer::price_candidates()
 {
-    if (price_elist.empty())
+    if (price_elist.empty() && edge_q.empty())
         return;
+
+    vector<PrEdge> &target_edges = edge_q.empty() ? price_elist : edge_q;
     
-    for (PrEdge &e : price_elist)
+    for (PrEdge &e : target_edges)
         e.redcost = inst.edgelen(e.end[0], e.end[1]) - node_pi[e.end[0]]
         - node_pi[e.end[1]];
 
-    GraphUtils::AdjList price_adjlist(inst.node_count(), price_elist);
+    GraphUtils::AdjList price_adjlist(inst.node_count(), target_edges);
     vector<GraphUtils::Node> &price_nodelist = price_adjlist.nodelist;
     
     const std::vector<int> &def_tour = ext_cuts.get_cbank().ref_tour();
@@ -300,7 +316,7 @@ void Pricer::price_candidates()
                     for (GraphUtils::AdjObj &a :
                          price_nodelist[node].neighbors) {
                         if (price_nodelist[a.other_end].mark == marker)
-                            price_elist[a.edge_index].redcost += add_back;
+                            target_edges[a.edge_index].redcost += add_back;
                     }
                     price_nodelist[node].mark = marker;
                 }
@@ -322,15 +338,21 @@ void Pricer::price_candidates()
             continue;
 
         try {
-            H.get_coeffs(price_elist, rmatind, rmatval);
+            H.get_coeffs(target_edges, rmatind, rmatval);
         } catch (const exception &e) {
             cerr << e.what() << "\n";
             throw runtime_error("Couldn't get price edge domino coeffs.");
         }
 
         for (int j = 0; j < rmatind.size(); ++j)
-            price_elist[rmatind[j]].redcost -= pival * rmatval[j];
+            target_edges[rmatind[j]].redcost -= pival * rmatval[j];
     }
+}
+
+void Pricer::sort_q()
+{
+    std::sort(edge_q.begin(), edge_q.end(),
+              [](const PrEdge &e, const PrEdge &f) {return f < e; });
 }
 
 
