@@ -35,10 +35,12 @@ void EdgeHash::set(int end1, int end2, int val)
         throw runtime_error("CCutil_edgehash_set failed.");
 }
 
+//we ignore errors from Concorde, hence do not consider it an error to erase
+//no element from an empty hash, or to attempt to erase an element which was
+//not there in the first place.
 void EdgeHash::erase(int end1, int end2)
 {
-    if (CCutil_edgehash_del(&eh, end1, end2))
-        throw runtime_error("CCutil_edgehash_del failed.");
+    CCutil_edgehash_del(&eh, end1, end2);
 }
 
 vector<Edge> EdgeHash::get_all()
