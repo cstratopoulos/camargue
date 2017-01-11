@@ -1,268 +1,165 @@
+#include "solver.hpp"
 #include "util.hpp"
 #include "io_util.hpp"
 #include "timer.hpp"
 #include "tests.hpp"
 
-#include <iostream>
-#include <string>
 #include <iomanip>
+#include <iostream>
 #include <memory>
+#include <stdexcept>
+#include <string>
 #include <utility>
-#include <vector>
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <getopt.h>
 
-using std::vector;
 using std::string;
 using std::cout;
+using std::cerr;
+
+using std::unique_ptr;
+
+using std::runtime_error;
+using std::logic_error;
+using std::exception;
+
+
 
 #ifndef CMR_DO_TESTS
 
-static int initial_parse(int ac, char **av, std::string &fname,
-			 std::string &tour_fname,
-			 CMR::RandProb &randprob, CMR::LP::Prefs &prefs,
-			 CMR::OutPrefs &o_prefs,
-			 bool &sparseflag, int &qnearest);
+static void initial_parse(int argc, char **argv,
+                          string &tsp_fname, string &tour_fname,
+                          int &seed, int &rnodes, int &rgrid,
+                          CMR::OutPrefs &outprefs);
 
 static void usage(const std::string &fname);
 
-int main(int argc, char* argv[]) {
-  CMR::LP::Prefs prefs;
-  CMR::OutPrefs o_prefs;
-  CMR::RandProb randprob;
-  std::unique_ptr<CCdatagroup> dat(new CCdatagroup);
-  /**@todo make this a regular ptr bc it confuses valgrind maybe */
-  std::string probfile, tourfile;
-  bool do_sparse = false;
-  int qnearest = 0;
-  /**@todo probably put this somewhere else */
+int main(int argc, char** argv) try
+{
+    string tsp_fname;
+    string tour_fname;
+    
+    int seed = 0;
 
-  if (initial_parse(argc, argv, probfile, tourfile, randprob, prefs, o_prefs,
-  		   do_sparse, qnearest)) {
-    std::cerr << "Problem parsing arguments\n";
-    exit(1);
-  }
+    int rand_nodes = 0;
+    int rand_grid = 0;
+    
+    CMR::OutPrefs outprefs;
 
-  std::unique_ptr<CMR::TSPSolver> solver;
+    unique_ptr<CMR::Solver> tsp_solver;
 
-  CMR::Timer t("Overall");
-  CMR::Timer c("Constructors", &t);
-  t.start();
-  c.start();
-  
+    cout << "sizeof datagroup: " << sizeof(CCdatagroup) << "\n";
 
-  try {
-    if (tourfile.empty())
-      solver = util::make_unique<CMR::TSPSolver>(probfile, randprob,
-						  o_prefs, prefs, dat,
-						  do_sparse, qnearest);
-    else
-      solver = util::make_unique<CMR::TSPSolver>(probfile, tourfile,
-						  o_prefs, prefs, dat,
-						  do_sparse, qnearest);
-  } catch (...) {
+    initial_parse(argc, argv, tsp_fname, tour_fname,
+                  seed, rand_nodes, rand_grid, outprefs);
+
+    if (!tsp_fname.empty()) {
+        if (tour_fname.empty())
+            tsp_solver = CMR::util::make_unique<CMR::Solver>(tsp_fname, seed,
+                                                             outprefs);
+        else
+            tsp_solver = CMR::util::make_unique<CMR::Solver>(tsp_fname,
+                                                             tour_fname, seed,
+                                                             outprefs);
+    } else
+        tsp_solver = CMR::util::make_unique<CMR::Solver>(seed, rand_nodes,
+                                                         rand_grid, outprefs);
+
+    CMR::Timer t;
+    t.start();
+
+    tsp_solver->cutting_loop();
+
+    t.stop();
+    t.report(true);
+
+    return 0;
+    
+} catch (const exception &e) {
+    cerr << e.what() << " in Camargue main.\n";
     return 1;
-  }
-
-  c.stop();
-      
-  int rval = solver->call(CMR::SolutionProtocol::PURECUT, do_sparse);
-
-  t.stop();
-  c.report(false);
-  t.report(true);
-
-  return rval;
 }
 
-static int initial_parse(int ac, char **av, std::string &fname,
-			 std::string &tourfname,
-			 CMR::RandProb &randprob,
-			 CMR::LP::Prefs &prefs, CMR::OutPrefs &o_prefs,
-			 bool &sparseflag,
-			 int &qnearest) {
-  bool rand = false;
-  int pricing_choice = 0;
-  int dp_factor = -1;
-  int cuts_per_round = 4;
-  int max_q_size = 150;
-  int seed = 0;
-  int ncount = 0;
-  int gridsize = 100;
-  int tourprefs = 0;
-  qnearest = 0;
+static void initial_parse(int ac, char **av,
+                          string &tsp_fname, string &tour_fname,
+                          int &seed, int &rnodes, int &rgrid,
+                          CMR::OutPrefs &outprefs)
+{
+    bool randflag = false;
+    
+    rgrid = 1000000;
 
-  int c;
+    int c;
 
-  if (ac == 1) {
-    usage(av[0]);
-    return 1;
-  }
-
-  while ((c = getopt(ac, av, "ad:c:q:p:RSXg:n:s:t:u:o:")) != EOF) {
-    switch (c) {
-    case 'd':
-      dp_factor = atoi(optarg);
-      break;
-    case 'c':
-      cuts_per_round = atoi(optarg);
-      break;
-    case 'q':
-      max_q_size = atoi(optarg);
-      break;
-    case 'p':
-      pricing_choice = atoi(optarg);
-      break;
-    case 'R':
-      rand = true;
-      break;
-    case 'S':
-      sparseflag = true;
-      break;
-    case 'X':
-      o_prefs.dump_xy = true;
-      break;
-    case 'g':
-      gridsize = atoi(optarg);
-      break;
-    case 'n':
-      ncount = atoi(optarg);
-      break;
-    case 's':
-      seed = atoi(optarg);
-      break;
-    case 'u':
-      qnearest = atoi(optarg);
-      break;
-    case 'o':
-      tourprefs = atoi(optarg);
-      break;
-    case 't':
-      tourfname = optarg;
-      break;
-    case '?':
-    default:
-      usage(av[0]);
-      return 1;
+    if (ac == 1) {
+        usage(av[0]);
+        throw logic_error("No arguments specified");
     }
-  }
 
-  if (optind < ac)
-    fname = av[optind++];
-  if (optind != ac) {
-    usage(av[0]);
-    return 1;
-  }
+    while ((c = getopt(ac, av, "aRn:g:s:t:")) != EOF) {
+        switch (c) {
+        case 'R':
+            randflag = true;
+            break;
+        case 'n':
+            rnodes = atoi(optarg);
+            break;
+        case 'g':
+            rgrid = atoi(optarg);
+            break;
+        case 's':
+            seed = atoi(optarg);
+            break;
+        case 't':
+            tour_fname = optarg;
+            break;
+        case '?':
+        default:
+            usage(av[0]);
+            throw logic_error("Erroneous argument");
+        }
+    }
 
-  if (fname.empty() && ncount == 0) {
-    printf("Must specify a problem file or nodecount for random prob\n");
-    usage(av[0]);
-    return 1;
-  }
+    if (optind < ac)
+        tsp_fname = av[optind++];
 
-  if (!fname.empty() && rand) {
-    printf("Cannot specify both filename and random problem\n");
-    usage(av[0]);
-    return 1;
-  }
+    if (optind != ac) {
+        usage(av[0]);
+        throw logic_error("Bad option count");
+    }
 
-  randprob.nodecount = ncount;
-  randprob.gridsize = gridsize;
-  randprob.seed = seed;
+    if (tsp_fname.empty() && rnodes <= 0) {
+        usage(av[0]);
+        throw logic_error("Must specify problem file or random nodecount");
+    }
 
-  switch (pricing_choice) {
-  case 0:
-    prefs.price_method = CMR::LP::Pricing::Devex;
-    std::cout << "Devex pricing\n";
-    break;
-  case 1:
-    prefs.price_method = CMR::LP::Pricing::SlackSteepest;
-    std::cout << "Steepest edge w slack initial norms\n";
-    break;
-  case 2:
-    prefs.price_method = CMR::LP::Pricing::Steepest;
-    std::cout << "True steepest edge\n";
-    break;
-  default:
-    std::cout << "Pricing method " << pricing_choice << " out of range\n";
-    usage(av[0]);
-    return 1;
-  }
+    if (randflag &&
+        (!tsp_fname.empty() || !tour_fname.empty())) {
+        usage(av[0]);
+        throw logic_error("Cannot specify filenames and random prob");
+    }
 
-  prefs.dp_threshold = 5 * dp_factor;
-  if (dp_factor >= 0)
-    std::cout << "DP separation will be tried every "
-	 << prefs.dp_threshold << " non-degenerate pivots w no augmentation\n";
-
-  if (cuts_per_round < 1 || max_q_size < 1 || max_q_size < cuts_per_round) {
-    std::cerr << "Invalid cuts per round or queue capacity\n";
-    usage(av[0]);
-    return 1;
-  }
-  prefs.max_per_round = cuts_per_round;
-  prefs.q_max_size = max_q_size;
-
-  if (qnearest < 0 || qnearest > 10) {
-    std::cerr << "Invalid choice of quad-nearest density\n";
-    usage(av[0]);
-    return 1;
-  }
-
-  switch (tourprefs) {
-  case 3:
-    o_prefs.save_tour = false;
-    o_prefs.save_tour_edges = false;
-    break;
-  case 1:
-    o_prefs.save_tour = false;
-    o_prefs.save_tour_edges = true;
-    break;
-  case 2:
-    o_prefs.save_tour = true;
-    o_prefs.save_tour_edges = true;
-    break;
-  case 0: default:
-    o_prefs.save_tour = true;
-    break;
-  }
-
-  return 0;
+    if (tsp_fname.empty() && !tour_fname.empty()) {
+        usage(av[0]);
+        throw logic_error("Cannot specify tour without TSPLIB file.");
+    }
 }
 
-static void usage(const std::string &fname) {
-  fprintf(stderr, "Usage: %s [-see below-] [prob_file]\n", fname.data());
-  fprintf(stderr, "-------FLAG OPTIONS ------------------------------------\n");
-  fprintf(stderr, "-R    generate random problem\n");
-  fprintf(stderr, "-S    only solve sparse instance with edge set from \n");
-  fprintf(stderr,"       10 Lin-Kernighan tours\n");
-  fprintf(stderr, "-X    dump xy-coords to file, if possible \n");
-  fprintf(stderr, "------ PARAMETER OPTIONS (argument x) ------------------\n");
-  fprintf(stderr, "-c    add at most x cuts per round (default 2)\n");
-  fprintf(stderr, "-d    only call simpleDP sep after 5x rounds of cuts \n");
-  fprintf(stderr, "      with no augmentation. (disabled by default)\n");
-  fprintf(stderr, "-g    gridsize for random problem (100 default)\n");
-  fprintf(stderr, "-n    nodecount for random problem (must be nonzero if\n");
-  fprintf(stderr, "      -R is used\n");
-  fprintf(stderr, "-o    tour file output level \n");
-  fprintf(stderr, "    0 (default) only nodes of best tour\n");
-  fprintf(stderr, "    1 only edges of best tour, node node format\n");
-  fprintf(stderr, "    2 both nodes and edges of best tour\n");
-  fprintf(stderr, "    3 nothing about best tour\n");
-  fprintf(stderr, "-p    set primal pricing protocol to:\n");
-  fprintf(stderr, "    0 (default) devex\n");
-  fprintf(stderr, "    1 steepest edge with slack initial norms\n");
-  fprintf(stderr, "    2 true steepest edge.\n");
-  fprintf(stderr, "-q    keep a queue of at most x blossom cuts to \n");
-  fprintf(stderr, "      be checked before calling the blossom separation \n");
-  fprintf(stderr, "      all over again (default 15)\n");
-  fprintf(stderr, "-s    random seed for random problem and Lin-Kernighan.\n");
-  fprintf(stderr, "      If not set, current time will be used.\n");
-  fprintf(stderr, "-t    load initial tour in filename x.\n");
-  fprintf(stderr, "-u    initial edge set will be union of 10 LK tours plus\n");
-  fprintf(stderr, "      quad x-nearest edges (0 default).\n");
+static void usage(const std::string &fname)
+{
+    cerr << "Usage: " << fname << " [-see below-] [-prob_file-]\n";
+    cerr << "\t\t FLAG OPTIONS\n"
+         << "-R \t Generate random problem.\n"
+         << "   \t Notes:\t Incompatible with tour file/TSPLIB file\n"
+         << "   \t       \t Must be set to specify -n, -g below\n\n";
+    cerr << "\t\t PARAMETER OPTIONS (argument x)\n"
+         << "-n \t random problem with x nodes\n"
+         << "-g \t random problem gridsize x by x (1 million default)\n"
+         << "-s \t random seed x used throughout code (current time default)\n"
+         << "-t \t load starting tour from path x\n";
 }
 
 #endif
