@@ -112,11 +112,11 @@ LP::PivType Solver::cutting_loop()
     const vector<Edge> &edges = graph_data.core_graph.get_edges();
     vector<int> &perm = best_data.perm;
 
-    std::unique_ptr<TourGraph> TG;
+    TourGraph TG;
 
 
     try {
-        TG = util::make_unique<TourGraph>(tour_edges, edges, perm);        
+        TG = TourGraph(tour_edges, edges, perm);        
     } CMR_CATCH_PRINT_THROW("allocating tour graph", err);
 
 
@@ -174,7 +174,7 @@ LP::PivType Solver::cutting_loop()
             piv = LP::PivType::Frac;
 
             try {
-                TG = util::make_unique<TourGraph>(tour_edges, edges, perm);
+                TG = TourGraph(tour_edges, edges, perm);
             } CMR_CATCH_PRINT_THROW("updating tour graph", err);
             
             continue;
@@ -185,7 +185,7 @@ LP::PivType Solver::cutting_loop()
                                   karp_part);
 
         try {
-            if (!separator.find_cuts(*TG)) {
+            if (!separator.find_cuts(TG)) {
                 report_piv(piv, round);
                 cout << "\tNo cuts found.\n";
                 break;
