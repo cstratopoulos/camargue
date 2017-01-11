@@ -21,17 +21,6 @@ extern "C" {
 #include <concorde/INCLUDE/util.h>
 }
 
-namespace std {
-
-template<>
-struct default_delete<CCdatagroup> {
-  void operator()(CCdatagroup *dat) const {
-    if(dat) CCutil_freedatagroup(dat);
-    CC_IFFREE(dat, CCdatagroup);
-  }
-};
-
-}
 
 namespace CMR {
 
@@ -40,18 +29,19 @@ namespace Data {
 
 /** Class for storing raw TSP instance data.
  * This class is a handle to the Concorde CCdatagroup structure, modeling 
- * unique_ptr-style sole ownership over a datagroup. Move and copy operations
- * are essentially those which exist on the underlying unique_ptr.
+ * unique_ptr-style sole ownership over a datagroup. 
  */
 class Instance {
 public:
-    Instance() noexcept; /**< Default construct an instance with null handle. */
+    Instance() = default;
 
     /** Construct an instance from a TSPLIB file.
      * If \p fname is the path to a TSPLIB file from the executable directory,
      * constructs an Instance specifying the data in \p fname.
      */
     Instance(const std::string &fname, const int seed);
+
+    ~Instance();
 
     /** Construct a geometric random TSP instance.
      * The instance will have \p ncount nodes distributed uniform randomly over
@@ -67,11 +57,11 @@ public:
     Instance &operator=(Instance &&I) noexcept; /**< Move assign. */
   
     /** Access the raw pointer to the data, for use by Concorde routines. */
-    CCdatagroup* ptr() const { return const_cast<CCdatagroup*>(handle.get()); }
+    CCdatagroup* ptr() const { return const_cast<CCdatagroup*>(&dat); }
 
     /** Get the distance between two nodes in an Instance. */
     double edgelen(int end0, int end1) const
-        { return CCutil_dat_edgelen(end0, end1, handle.get()); }
+        { return CCutil_dat_edgelen(end0, end1, ptr()); }
 
     const std::function<double(int, int)> edgelen_func() const
         { return [this](int e0, int e1){ return edgelen(e0, e1); }; }
@@ -82,7 +72,7 @@ public:
     const std::string &problem_name() const { return pname; }
   
 private:
-    std::unique_ptr<CCdatagroup> handle;
+    CCdatagroup dat;
 
     int nodecount;
     int random_seed;

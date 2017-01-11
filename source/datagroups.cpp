@@ -39,10 +39,8 @@ using std::logic_error;
 namespace CMR {
 namespace Data {
 
-Instance::Instance() noexcept : handle(nullptr) {}
-
 Instance::Instance(const string &fname, const int seed)
-try : handle(util::make_unique<CCdatagroup>()), random_seed(seed) {
+try : random_seed(seed) {
     if (CCutil_gettsplib(const_cast<char*>(fname.c_str()), &nodecount,
                          ptr()))
         throw runtime_error("CCutil_gettsplib failed.");
@@ -57,14 +55,14 @@ try : handle(util::make_unique<CCdatagroup>()), random_seed(seed) {
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Instance constructor failed.");
- }
+}
+
+Instance::~Instance() { CCutil_freedatagroup(&dat); }
 
 Instance::Instance(const int seed, const int ncount, const int gridsize)
-try : handle(util::make_unique<CCdatagroup>()),
-      nodecount(ncount),
-      random_seed(seed),
+try : nodecount(ncount), random_seed(seed),
       pname("r" + to_string(ncount) + "g" + to_string(gridsize)) {
-  if (ncount <= 0)
+  if (ncount <= 2)
       throw logic_error("Specified bad ncount.");
   
   if (gridsize <= 0)
@@ -93,15 +91,31 @@ try : handle(util::make_unique<CCdatagroup>()),
  }
 
 Instance::Instance(Instance &&I) noexcept :
-    handle(std::move(I.handle)), nodecount(I.nodecount),
-    random_seed(I.random_seed), pname(I.pname)
-{}
+    nodecount(I.nodecount), random_seed(I.random_seed), pname(I.pname)
+{
+    CCutil_freedatagroup(&dat);
+    dat = I.dat;
+    
+    CCutil_init_datagroup(&I.dat);
+    I.nodecount = 0;
+    I.random_seed = 0;
+    I.pname.clear();
+}
 
-Instance &Instance::operator=(Instance &&I) noexcept {
-  handle = std::move(I.handle);
+Instance &Instance::operator=(Instance &&I) noexcept
+{
   nodecount = I.nodecount;
   random_seed = I.random_seed;
   pname = I.pname;
+
+  CCutil_freedatagroup(&dat);
+  dat = I.dat;
+
+  CCutil_init_datagroup(&I.dat);
+  I.nodecount = 0;
+  I.random_seed = 0;
+  I.pname.clear();  
+  
   return *this;
 }
 
