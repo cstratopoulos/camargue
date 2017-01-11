@@ -68,23 +68,6 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         get_duals();
     } CMR_CATCH_PRINT_THROW("populating clique pi", err);
 
-    if (!edge_q.empty()) { //try to re-price queue before generating again
-        price_candidates();
-        edge_q.erase(std::remove_if(edge_q.begin(), edge_q.end(),
-                                    [](const PrEdge &e)
-                                    { return e.redcost > - Eps::Zero; }),
-                     edge_q.end());
-        if (!edge_q.empty()) {
-            cout << "\tFound edges by re-pricing queue.\n";
-            sort_q();
-            if (piv_stat == PivType::FathomedTour)
-                return ScanStat::Full;
-            else
-                return ScanStat::Partial;
-        }
-        cout << "\tPurged all edges in queue, proceeding with regeneration.\n";
-    } // queue is now empty, proceed with generating
-
     CCtsp_edgegenerator *current_eg;
 
     if (piv_stat == PivType::FathomedTour){
@@ -179,6 +162,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         
         while (((!finished && edge_q.size() >= PoolSize) ||
                 (finished && penalty < -MaxPenalty && !edge_q.empty()))) {
+            cout << "\t\tOpt tour inner price loop.\n";
             sort_q();
 
             try {
@@ -189,14 +173,14 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                 new_objval = core_lp.opt_objval();
             } CMR_CATCH_PRINT_THROW("adding edges to lp and optimizing", err);
 
-            cout << "\tAdded " << num_added << " edges in opt solution.\n";
+            cout << "\t\tAdded " << num_added << " edges in opt solution.\n";
 
             if (std::abs(new_objval - opt_tourlen) >= Eps::Zero) {
                 cout << "\tTour no longer optimal after adding edges.\n";
                 return ScanStat::Full;
             }
 
-            cout << "\tTour still optimal after adding edges.\n";
+            cout << "\t\tTour still optimal after adding edges.\n";
 
             try {
                 get_duals();
@@ -213,7 +197,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                                         }),
                          edge_q.end());
 
-            cout << "\tInner penalty: " << penalty << ", new edge_q size "
+            cout << "\t\tInner penalty: " << penalty << ", new edge_q size "
                  << edge_q.size() << "\n";
 
             if (num_added > 0) {
