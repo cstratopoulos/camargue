@@ -202,8 +202,6 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                                         }),
                          edge_q.end());
 
-            cout << "\t\tInner penalty: " << penalty << ", new edge_q size "
-                 << edge_q.size() << "\n";
 
             if (num_added > 0) {
                 if (CCtsp_reset_edgegenerator(current_eg, &node_pi_est[0],
@@ -216,7 +214,10 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                 edge_hash.clear();
                 for (const PrEdge &e : edge_q)
                     edge_hash.add(e.end[0], e.end[1], 1);
-            }        
+            }
+            
+            cout << "\t\tInner penalty: " << penalty << ", new edge_q size "
+                 << edge_q.size() << ", finished: " << finished << "\n";
         }
     }
     cout << "\t Finished: " << finished << ", tour seems genuinely optimal.\n";
