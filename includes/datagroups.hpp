@@ -103,7 +103,7 @@ struct GraphGroup {
     
     std::vector<int> island; /**< Stores components from a dfs of m_graph */
     std::vector<int> delta; /**< Stores edges in delta of some node set */
-    std::vector<int> edge_marks; /**< Marks nodes for adjacency computations */
+    std::vector<int> node_marks; /**< Marks nodes for adjacency computations */
 };
 
 /** Stores information about the current best tour.

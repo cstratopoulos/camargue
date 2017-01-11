@@ -104,7 +104,7 @@ int CandidateTeeth::get_light_teeth()
   try {
     cb_data =
       util::make_unique<LinsubCBData>(right_teeth,left_teeth, dist_teeth,
-				      adj_zones, graph_dat.edge_marks,
+				      adj_zones, graph_dat.node_marks,
 				      best_dat.best_tour_nodes,
 				      best_dat.perm, supp_dat.G_s); }
   catch (...) { CMR_SET_GOTO(rval, "Couldn't allocate CBdata. "); }

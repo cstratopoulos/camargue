@@ -76,7 +76,7 @@ public:
     CutTranslate(Data::GraphGroup &graph_group) :
         core_graph(graph_group.core_graph),
         delta(graph_group.delta),
-        edge_marks(graph_group.edge_marks) {}
+        node_marks(graph_group.node_marks) {}
 
     void get_sparse_row(const CCtsp_lpcut_in &cc_cut,
                         const std::vector<int> &perm,
@@ -104,7 +104,7 @@ public:
 private:
     const GraphUtils::CoreGraph &core_graph;
     std::vector<int> &delta;
-    std::vector<int> &edge_marks;
+    std::vector<int> &node_marks;
 };
 }  
 }

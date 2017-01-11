@@ -229,7 +229,7 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut) {
   }
 
   GraphUtils::get_delta(blossom_cut.handle, edges, &deltacount, delta,
-			edge_marks);
+			node_marks);
 
   if (deltacount == 0) {
     rval = 1; CMR_GOTO_CLEANUP("Get delta returned zero handle edges, ");

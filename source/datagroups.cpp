@@ -135,7 +135,7 @@ try
 
     island.resize(ncount);
     delta.resize(ecount, 0);
-    edge_marks.resize(ncount, 0);
+    node_marks.resize(ncount, 0);
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("GraphGroup constructor failed.");

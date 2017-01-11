@@ -119,20 +119,20 @@ void GraphUtils::get_delta(const int interval_start, const int interval_end,
 			   const vector<int> &tour_nodes,
 			   const vector<int> &elist,
 			   int &deltacount, vector<int> &delta,
-			   vector<int> &edge_marks)
+			   vector<int> &node_marks)
 {
   for (int i = interval_start; i <= interval_end; i++)
-    edge_marks[tour_nodes[i]] = 1;
+    node_marks[tour_nodes[i]] = 1;
 
   int k = 0;
 
   for (int i = 0; i < elist.size() / 2; i++) {
-    if (edge_marks[elist[2 * i]] + edge_marks[elist[(2 * i) + 1]] == 1)
+    if (node_marks[elist[2 * i]] + node_marks[elist[(2 * i) + 1]] == 1)
       delta[k++] = i;
   }
 
   for (int i = interval_start; i <= interval_end; i++)
-    edge_marks[tour_nodes[i]] = 0;  
+    node_marks[tour_nodes[i]] = 0;  
 }
 
 int GraphUtils::build_s_graph (int node_count,

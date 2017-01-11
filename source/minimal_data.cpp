@@ -60,7 +60,7 @@ void make_cut_test(const string &tsp_fname,
   
     try {
         graph_data.island.resize(ncount);
-        graph_data.edge_marks.resize(ncount, 0);
+        graph_data.node_marks.resize(ncount, 0);
         best_data.perm.resize(ncount);
     } catch (const exception &e) {
         cerr << e.what() << " trying ncount resizes\n";

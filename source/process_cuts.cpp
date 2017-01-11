@@ -79,7 +79,7 @@ void CutTranslate::get_sparse_row(const dominoparity &dp_cut,
     runtime_error err("Problem in CutTranslate::get_sparse_row dp cut.");
     vector<double> coeff_buff;
 
-    for (int &i : edge_marks) i = 0;
+    for (int &i : node_marks) i = 0;
     rmatind.clear();
     rmatval.clear();
     rhs = 0.0;
@@ -92,27 +92,27 @@ void CutTranslate::get_sparse_row(const dominoparity &dp_cut,
     } CMR_CATCH_PRINT_THROW("allocating coeff buffer", err);
 
     for (const int node : dp_cut.degree_nodes)
-        edge_marks[tour_nodes[node]] = 1;
+        node_marks[tour_nodes[node]] = 1;
 
     for (int i = 0; i < edges.size(); ++i) {
         const Edge &e = edges[i];
-        int sum = edge_marks[e.end[0]] + edge_marks[e.end[1]];
+        int sum = node_marks[e.end[0]] + node_marks[e.end[1]];
         coeff_buff[i] += sum;
     }
 
     rhs += 2 * dp_cut.degree_nodes.size();
 
     for (const int node : dp_cut.degree_nodes)
-        edge_marks[tour_nodes[node]] = 0;
+        node_marks[tour_nodes[node]] = 0;
 
     for (const SimpleTooth &T : dp_cut.used_teeth) {
         for (int i = T.body_start; i <= T.body_end; ++i)
-            edge_marks[tour_nodes[i]] = 1;
-        edge_marks[tour_nodes[T.root]] = -2;
+            node_marks[tour_nodes[i]] = 1;
+        node_marks[tour_nodes[T.root]] = -2;
 
         for (int i = 0; i < edges.size(); ++i) {
             Edge e = edges[i];
-            int sum = edge_marks[e.end[0]] + edge_marks[e.end[1]];
+            int sum = node_marks[e.end[0]] + node_marks[e.end[1]];
             switch (sum) {
             case 2:
                 coeff_buff[i] += 2;
@@ -128,8 +128,8 @@ void CutTranslate::get_sparse_row(const dominoparity &dp_cut,
         rhs += (2 * (T.body_end - T.body_start + 1)) - 1;
     
         for (int i = T.body_start; i <= T.body_end; ++i)
-            edge_marks[tour_nodes[i]] = 0;
-        edge_marks[tour_nodes[T.root]] = 0; 
+            node_marks[tour_nodes[i]] = 0;
+        node_marks[tour_nodes[T.root]] = 0; 
     }
 
     for (const IntPair &ends : dp_cut.nonneg_edges) {

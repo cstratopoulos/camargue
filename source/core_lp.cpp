@@ -314,9 +314,13 @@ void CoreLP::add_cuts(Sep::CutQueue<Sep::dominoparity> &dpq)
     }
 }
 
-void CoreLP::add_edges(vector<Edge> &add_batch)
+void CoreLP::add_edges(const vector<Edge> &batch)
 {
+    // runtime_error err("Problem in CoreLP::add_edges");
     
+    // try {
+        
+    // }
 }
 
 }
