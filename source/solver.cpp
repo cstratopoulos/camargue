@@ -142,10 +142,14 @@ LP::PivType Solver::cutting_loop()
                                                      graph_data);
                 } CMR_CATCH_PRINT_THROW("instantiating Pricer", err);
 
-            if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full){
-                edge_pricer->get_pool_chunk();
-                cout << "\tEdge q size: " << edge_pricer->queue_size() << "\n";
-            }
+            try {
+                if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full){
+                    vector<Edge> batch = edge_pricer->get_pool_chunk();
+                    core_lp.add_edges(batch);
+                    
+                    continue;
+                }
+            } CMR_CATCH_PRINT_THROW("adding edges to core", err);
             
             break;
         }
@@ -163,10 +167,13 @@ LP::PivType Solver::cutting_loop()
                                                      graph_data);
                 } CMR_CATCH_PRINT_THROW("instantiating Pricer", err);
 
-            if (edge_pricer->gen_edges(piv) == Price::ScanStat::Partial){
-                edge_pricer->get_pool_chunk();
-                cout << "\tEdge q size: " << edge_pricer->queue_size() << "\n";
-            }
+            try {
+                if (edge_pricer->gen_edges(piv) == Price::ScanStat::Partial){
+                    vector<Edge> batch = edge_pricer->get_pool_chunk();
+                    core_lp.add_edges(batch);
+                }
+            } CMR_CATCH_PRINT_THROW("adding edges to core", err);
+            
             piv = LP::PivType::Frac;
 
             try {
@@ -204,6 +211,18 @@ LP::PivType Solver::cutting_loop()
 
     timer.stop();
     timer.report(false);
+    cout << "\tFinal LP has " << core_lp.num_rows() << " rows, "
+         << core_lp.num_cols() << " cols.\n";
+    
+    int stcount = 0;
+    int dpcount = 0;
+    
+    for (const Sep::HyperGraph &H : core_lp.ext_cuts.get_cuts())
+        if (H.cut_type() == Sep::HyperGraph::Type::Standard)
+            ++stcount;
+        else
+            ++dpcount;
+    cout << "\t" << stcount << " standard cuts, " << dpcount << " dp cuts.\n";
     cout << "\n";
     return piv;
 }

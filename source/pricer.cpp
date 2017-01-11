@@ -118,10 +118,13 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
             }
         }
 
+        cout << "\t Pricing candidates\n";
         price_candidates();
 
-        if (price_elist.empty())
+        if (price_elist.empty()){
+            cout << "\t Price elist empty, finished: " << finished << "\n";
             continue;
+        }
 
         for (const PrEdge &e : price_elist) {
             if (e.redcost < 0.0)
