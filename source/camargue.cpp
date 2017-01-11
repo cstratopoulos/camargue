@@ -51,8 +51,6 @@ int main(int argc, char** argv) try
 
     unique_ptr<CMR::Solver> tsp_solver;
 
-    cout << "sizeof datagroup: " << sizeof(CCdatagroup) << "\n";
-
     initial_parse(argc, argv, tsp_fname, tour_fname,
                   seed, rand_nodes, rand_grid, outprefs);
 
