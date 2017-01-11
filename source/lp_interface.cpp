@@ -252,9 +252,10 @@ void Relaxation::get_base(vector<int> &colstat,
 
 void Relaxation::copy_start(const vector<double> &x)
 {
-    int rval = CPXcopystart(simpl_p->env, simpl_p->lp, (int *) NULL,
-                            (int *) NULL, &x[0], (double *) NULL,
-                            (double *) NULL, (double *) NULL);
+    int rval = CPXcopystart(simpl_p->env, simpl_p->lp,
+                            (int *) NULL, (int *) NULL, //starting basis
+                            &x[0], (double *) NULL, //starting primal vals
+                            (double *) NULL, (double *) NULL); //starting duals
     if (rval)
         throw cpx_err(rval, "CPXcopystart");
 }
@@ -263,9 +264,10 @@ void Relaxation::copy_start(const vector<double> &x,
                             const vector<int> &col_stat,
                             const vector<int> &row_stat)
 {
-    int rval = CPXcopystart(simpl_p->env, simpl_p->lp, &col_stat[0],
-                            &row_stat[0], &x[0], (double *) NULL,
-                            (double *) NULL, (double *) NULL);
+    int rval = CPXcopystart(simpl_p->env, simpl_p->lp,
+                            &col_stat[0], &row_stat[0], //starting basis
+                            &x[0], (double *) NULL, //starting primal vals
+                            (double *) NULL, (double *) NULL); //starting duals
     if (rval)
         throw cpx_err(rval, "CPXcopystart");
 }
