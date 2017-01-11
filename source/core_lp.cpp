@@ -25,9 +25,11 @@ using std::exception;
 using lpcut_in = CCtsp_lpcut_in;
 
 namespace CMR {
-namespace LP {
 
+using CutType = Sep::HyperGraph::Type;
 namespace Eps = CMR::Epsilon;
+
+namespace LP {
 
 CoreLP::CoreLP(Data::GraphGroup &graph_data_,
                Data::BestGroup &best_data_) try :
@@ -276,8 +278,7 @@ void CoreLP::rebuild_basis()
                 cout << "Found nonzero infeas on degree eqn\n";
             else {
                 cout << "Found nonzero infeas on cut, type: ";
-                if (ext_cuts.get_cut(i).cut_type() ==
-                    Sep::HyperGraph::Type::Standard)
+                if (ext_cuts.get_cut(i).cut_type() == CutType::Standard)
                     cout << "subtour, blossom, or comb\n";
                 else
                     cout << "domino\n";                

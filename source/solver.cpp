@@ -25,6 +25,8 @@ using std::vector;
 
 namespace CMR {
 
+using CutType = Sep::HyperGraph::Type;
+
 inline static int make_seed(const int seed)
 {
     return (seed > 0) ? seed : (int) util::real_zeit();
@@ -218,7 +220,7 @@ LP::PivType Solver::cutting_loop()
     int dpcount = 0;
     
     for (const Sep::HyperGraph &H : core_lp.ext_cuts.get_cuts())
-        if (H.cut_type() == Sep::HyperGraph::Type::Standard)
+        if (H.cut_type() == CutType::Standard)
             ++stcount;
         else
             ++dpcount;

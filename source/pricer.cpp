@@ -18,6 +18,8 @@ using std::logic_error;
 namespace CMR {
 
 using LP::PivType;
+using CutType = Sep::HyperGraph::Type;
+
 namespace Eps = Epsilon;
 
 namespace Price {
@@ -158,6 +160,11 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         cout << "\t" << edge_q.size() << " edges in edge_q\n"
              << "\t" << penalty << " penalty accrued\n";
 
+        if (!edge_q.empty() && piv_stat == PivType::Tour){
+            cout << "\tFound edges for aug tour.\n";
+            break;
+        }
+        
         ///TODO add penalty test?
         if (edge_q.size() >= PoolSize)
             break;
@@ -218,7 +225,7 @@ void Pricer::get_duals()
     //get clique_pi for non-domino cuts
     for (int i = 0; i < cutlist.size(); ++i) {
         const Sep::HyperGraph &H = cutlist[i];
-        if (H.cut_type() != Sep::HyperGraph::Type::Standard)
+        if (H.cut_type() != CutType::Standard)
             continue;
 
         double pival = cut_pi[i];
@@ -259,7 +266,7 @@ void Pricer::get_duals()
     //now get node_pi_est for domino cuts, skipping standard ones
     for (int i = 0; i < cutlist.size(); ++i) {
         const Sep::HyperGraph &H = cutlist[i];
-        if (H.cut_type() != Sep::HyperGraph::Type::Domino)
+        if (H.cut_type() != CutType::Domino)
             continue;
 
         double pival = cut_pi[i];
@@ -334,7 +341,7 @@ void Pricer::price_candidates()
             continue;
 
         const Sep::HyperGraph &H = cutlist[i];
-        if (H.cut_type() == Sep::HyperGraph::Type::Standard)
+        if (H.cut_type() == CutType::Standard)
             continue;
 
         try {
