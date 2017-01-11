@@ -18,8 +18,10 @@ using std::exception;
 
 namespace CMR {
 
-Timer::Timer() try : wall_elapsed(0), cpu_elapsed(0),
-  ratio_timer(nullptr) {} catch (const exception &e) {
+Timer::Timer() try
+    : timer_name("Unnamed timer"),  wall_elapsed(0), cpu_elapsed(0),
+      ratio_timer(nullptr)
+{} catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Timer constructor failed.");
 }
