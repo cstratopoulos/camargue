@@ -189,6 +189,8 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                 new_objval = core_lp.opt_objval();
             } CMR_CATCH_PRINT_THROW("adding edges to lp and optimizing", err);
 
+            cout << "\tAdded " << num_added << " edges in opt solution.\n";
+
             if (std::abs(new_objval - opt_tourlen) >= Eps::Zero) {
                 cout << "\tTour no longer optimal after adding edges.\n";
                 return ScanStat::Full;
@@ -210,6 +212,9 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                                             return e.redcost > - Eps::Zero;
                                         }),
                          edge_q.end());
+
+            cout << "\tInner penalty: " << penalty << ", new edge_q size "
+                 << edge_q.size() << "\n";
 
             if (num_added > 0) {
                 if (CCtsp_reset_edgegenerator(current_eg, &node_pi_est[0],
