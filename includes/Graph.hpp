@@ -70,18 +70,29 @@ struct SupportGraph {
  */
 class TourGraph {
 public:
+    TourGraph() noexcept;
+    
     TourGraph(const std::vector<int> &tour_edges,
               const std::vector<CMR::Edge> &edges,
               const std::vector<int> &perm);
+
+    TourGraph(TourGraph &&T) noexcept;
+    TourGraph &operator=(TourGraph &&T) noexcept;
+    
     ~TourGraph();
+
+    TourGraph(const TourGraph &T) = delete;
+    TourGraph &operator=(const TourGraph &T) = delete;
+
+    
 
     CCtsp_lpgraph* pass_ptr() { return &L; }
     double* tour_array() { return &d_tour[0]; }
     int node_count() const { return L.ncount; }
   
 private:
-  CCtsp_lpgraph L;
   std::vector<double> d_tour;
+  CCtsp_lpgraph L;
 };
 
 

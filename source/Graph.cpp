@@ -15,6 +15,8 @@ using std::exception;
 
 namespace CMR {
 
+TourGraph::TourGraph() noexcept { CCtsp_init_lpgraph_struct(&L); }
+
 TourGraph::TourGraph(const vector<int> &tour_edges,
 		     const vector<Edge> &edges, const vector<int> &perm)
 try
@@ -44,7 +46,31 @@ try
     throw std::runtime_error("TourGraph constructor failed.");
 }
 
-TourGraph::~TourGraph() { if (&L) CCtsp_free_lpgraph(&L); }
+TourGraph::TourGraph(TourGraph &&T) noexcept : d_tour(std::move(T.d_tour))
+{
+    CCtsp_free_lpgraph(&L);
+    L = T.L;
+
+    CCtsp_init_lpgraph_struct(&T.L);
+    T.d_tour.clear();
+}
+
+TourGraph &TourGraph::operator=(TourGraph &&T) noexcept
+{
+    d_tour = std::move(T.d_tour);
+    
+    CCtsp_free_lpgraph(&L);
+    L = T.L;
+
+    CCtsp_init_lpgraph_struct(&T.L);
+    T.d_tour.clear();
+
+    return *this;
+}
+
+
+
+TourGraph::~TourGraph() {  CCtsp_free_lpgraph(&L); }
 
 int GraphUtils::connected(SupportGraph *G, int *icount,
 			  std::vector<int> &island,
