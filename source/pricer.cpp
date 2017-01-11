@@ -92,9 +92,11 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     edge_q.clear();
 
     int finished = 0;
+    int outercount = 0;
 
-    cout << "\tEntering EG loop\n\t";
     while (!finished) {
+        cout << "\tEntering EG loop, pass " << ++outercount << "\n\t";
+
         double penalty = 0.0;
         int num_gen = 0;
 
@@ -159,10 +161,12 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         double opt_tourlen = core_lp.get_objval();
         double new_objval = opt_tourlen;
         int num_added = 0;
+        int innercount = 0;
         
         while (((!finished && edge_q.size() >= PoolSize) ||
                 (finished && penalty < -MaxPenalty && !edge_q.empty()))) {
-            cout << "\t\tOpt tour inner price loop.\n";
+            cout << "\t\tOpt tour inner price loop, pass " << ++innercount
+                 << "\n";
             sort_q();
 
             try {
