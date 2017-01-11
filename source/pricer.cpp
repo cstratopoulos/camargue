@@ -24,15 +24,15 @@ namespace Eps = Epsilon;
 
 namespace Price {
 
-Pricer::Pricer(const LP::Relaxation &_relax, const Data::Instance &_inst,
+Pricer::Pricer(LP::CoreLP &core, const Data::Instance &_inst,
                const Sep::ExternalCuts &_ext_cuts,
                Data::GraphGroup &graphgroup) try :
-    relax(_relax), inst(_inst), ext_cuts(_ext_cuts), graph_group(graphgroup),
+    core_lp(core), inst(_inst), ext_cuts(_ext_cuts), graph_group(graphgroup),
     gen_max(EstBatch + ScaleBatch * inst.node_count()),
     gen_elist(vector<int>(2 * gen_max)), gen_elen(gen_max),
     node_pi(vector<double>(inst.node_count())),
     node_pi_est(vector<double>(inst.node_count())),
-    cut_pi(vector<double>(relax.num_rows() - inst.node_count())),
+    cut_pi(vector<double>(core_lp.num_rows() - inst.node_count())),
     edge_hash(gen_max)
 {
     CCrandstate rstate;
@@ -61,13 +61,10 @@ Pricer::~Pricer()
 ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 {
     runtime_error err("Problem in Pricer::gen_edges");
-    const Sep::CliqueBank &clq_bank = ext_cuts.get_cbank();
     
-    
-    clique_pi.clear();
+    edge_hash.clear();
 
     try {
-        clique_pi.reserve(clq_bank.size());
         get_duals();
     } CMR_CATCH_PRINT_THROW("populating clique pi", err);
 
@@ -99,7 +96,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     } else
         throw logic_error("Tried to run pricing on non tour.");
 
-    if (CCtsp_reset_edgegenerator(current_eg, &node_pi_est[0], 1)) {
+    if (CCtsp_reset_edgegenerator(current_eg, &node_pi_est[0], 0)) {
         cerr << "CCtsp_reset_edgegenerator failed.\n";
         throw err;
     }
@@ -109,7 +106,6 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
     CCutil_sprand(inst.seed(), &rstate);
 
-    price_elist.clear();
     edge_q.clear();
 
     int finished = 0;
@@ -119,9 +115,13 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         double penalty = 0.0;
         int num_gen = 0;
 
+        price_elist.clear();
+
         if (CCtsp_generate_edges(current_eg, gen_max, &num_gen, &gen_elist[0],
-                                 &gen_elen[0], &finished, 0, &rstate))
+                                 &gen_elen[0], &finished, 0, &rstate)) {
+            cerr << "CCtsp_generate_edges failed.\n";
             throw err;
+        }
 
         for (int i = 0; i < num_gen; ++i) {
             int e0 = gen_elist[2 * i];
@@ -138,11 +138,6 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         cout << "\t Pricing candidates\n";
         price_candidates();
 
-        if (price_elist.empty()){
-            cout << "\t Price elist empty, finished: " << finished << "\n";
-            continue;
-        }
-
         for (const PrEdge &e : price_elist) {
             if (e.redcost < 0.0)
                 penalty += e.redcost;
@@ -151,39 +146,87 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                     edge_q.push_back(e);
                 } CMR_CATCH_PRINT_THROW("enqueueing edge for addition", err);
             } else {
-                try {
-                    edge_hash.erase(e.end[0], e.end[1]);
-                } CMR_CATCH_PRINT_THROW("removing edge from hash", err);
+                edge_hash.erase(e.end[0], e.end[1]);
             }
         }
 
         cout << "\t" << edge_q.size() << " edges in edge_q\n"
-             << "\t" << penalty << " penalty accrued\n";
+             << "\t" << penalty << " penalty accrued, finished: "
+             << finished << "\n";
 
-        if (!edge_q.empty() && piv_stat == PivType::Tour){
-            cout << "\tFound edges for aug tour.\n";
-            break;
+        if (piv_stat == PivType::Tour) {
+            if (!edge_q.empty()) {
+                sort_q();
+                try {
+                    vector<Edge> add_batch = get_pool_chunk();
+                    core_lp.add_edges(add_batch);
+                } CMR_CATCH_PRINT_THROW("adding edges for aug tour", err);
+                cout << "\tFound and added edges for aug tour.\n";
+                
+                return ScanStat::Partial;                
+            } else if (finished) {
+                return ScanStat::PartOpt;
+            } else
+                continue;
         }
+
+        //this loop is only entered for fathomed tours
+        //we use the concorde termination criteria, but also terminate within
+        //the loop if adding edges and optimizing takes us to a new lp solution
+        double opt_tourlen = core_lp.get_objval();
+        double new_objval = opt_tourlen;
+        int num_added = 0;
         
-        ///TODO add penalty test?
-        if (edge_q.size() >= PoolSize)
-            break;
-    }
-    
-    edge_hash.clear();
+        while (((!finished && edge_q.size() >= PoolSize) ||
+                (finished && penalty < -MaxPenalty && !edge_q.empty()))) {
+            sort_q();
 
-    if (!edge_q.empty()){
-        sort_q();
-        if (piv_stat == PivType::FathomedTour)
-            return ScanStat::Full;
-        else
-            return ScanStat::Partial;
-    }
+            try {
+                vector<Edge> add_batch = get_pool_chunk();
+                
+                num_added = add_batch.size();
+                core_lp.add_edges(add_batch);
+                new_objval = core_lp.opt_objval();
+            } CMR_CATCH_PRINT_THROW("adding edges to lp and optimizing", err);
 
-    if (piv_stat == PivType::FathomedTour)
-        return ScanStat::FullOpt;
-    else
-        return ScanStat::PartOpt;    
+            if (std::abs(new_objval - opt_tourlen) >= Eps::Zero) {
+                cout << "\tTour no longer optimal after adding edges.\n";
+                return ScanStat::Full;
+            }
+
+            cout << "\tTour still optimal after adding edges.\n";
+
+            try {
+                get_duals();
+                price_candidates();
+            } CMR_CATCH_PRINT_THROW("getting new duals and re-pricing", err);
+
+            penalty = 0.0;
+
+            edge_q.erase(std::remove_if(edge_q.begin(), edge_q.end(),
+                                        [&penalty](const PrEdge &e) -> bool {
+                                            if (e.redcost < 0.0)
+                                                penalty += e.redcost;
+                                            return e.redcost > - Eps::Zero;
+                                        }),
+                         edge_q.end());
+
+            if (num_added > 0) {
+                if (CCtsp_reset_edgegenerator(current_eg, &node_pi_est[0],
+                                              0)) {
+                    cerr << "CCtsp_reset_edgegenerator failed.\n";
+                    throw err;
+                }
+                
+                finished = 0;
+                edge_hash.clear();
+                for (const PrEdge &e : edge_q)
+                    edge_hash.add(e.end[0], e.end[1], 1);
+            }        
+        }
+    }
+    cout << "\t Finished: " << finished << ", tour seems genuinely optimal.\n";
+    return ScanStat::FullOpt;
 }
 
 vector<Edge> Pricer::get_pool_chunk()
@@ -214,12 +257,16 @@ void Pricer::get_duals()
     const vector<Sep::HyperGraph> &cutlist = ext_cuts.get_cuts();
     const Sep::CliqueBank &clq_bank = ext_cuts.get_cbank();
     const vector<int> &def_tour = clq_bank.ref_tour();
+
+    clique_pi.clear();
     
     try { //get updated pi values from the lp
-        relax.get_pi(node_pi, 0, inst.node_count() - 1);
+        clique_pi.reserve(clq_bank.size());
+
+        core_lp.get_pi(node_pi, 0, inst.node_count() - 1);
         node_pi_est = node_pi;
         
-        relax.get_pi(cut_pi, inst.node_count(), relax.num_rows() - 1);
+        core_lp.get_pi(cut_pi, inst.node_count(), core_lp.num_rows() - 1);
     } CMR_CATCH_PRINT_THROW("clearing/getting/updating pi values", err);
 
     //get clique_pi for non-domino cuts

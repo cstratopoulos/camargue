@@ -1,7 +1,7 @@
 #ifndef CMR_PRICER_H
 #define CMR_PRICER_H
 
-#include "lp_interface.hpp"
+#include "core_lp.hpp"
 #include "datagroups.hpp"
 #include "hypergraph.hpp"
 #include "price_util.hpp"
@@ -29,7 +29,7 @@ public:
      * @param[in] _ext_cuts the HyperGraph representation of the cuts in 
      * \p _relax.
      */
-    Pricer(const LP::Relaxation &_relax, const Data::Instance &_inst,
+    Pricer(LP::CoreLP &core, const Data::Instance &_inst,
            const Sep::ExternalCuts &_ext_cuts,
            Data::GraphGroup &graphgroup);
 
@@ -58,7 +58,7 @@ private:
 
     void sort_q();
     
-    const LP::Relaxation &relax;
+    LP::CoreLP &core_lp;
     const Data::Instance &inst;
     const Sep::ExternalCuts &ext_cuts;
 
