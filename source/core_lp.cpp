@@ -292,16 +292,18 @@ void CoreLP::rebuild_basis()
     }
 }
 
-void CoreLP::add_cuts(Sep::LPcutList &cutq) try
+void CoreLP::add_cuts(const Sep::LPcutList &cutq)
 {
     if (cutq.empty())
         return;
+
+    runtime_error err("Problem in CoreLP::add_cuts LPcutList");
 
     Sep::CutTranslate translator(graph_data);
     vector<int> &perm = best_data.perm;
     vector<int> &tour = best_data.best_tour_nodes;
 
-    for (lpcut_in *cur = cutq.begin(); cur; cur = cur->next) {
+    for (const lpcut_in *cur = cutq.begin(); cur; cur = cur->next) {
         vector<int> rmatind;
         vector<double> rmatval;
         char sense;
@@ -311,24 +313,12 @@ void CoreLP::add_cuts(Sep::LPcutList &cutq) try
             translator.get_sparse_row(*cur, perm, rmatind, rmatval, sense,
                                       rhs);
             add_cut(rhs, sense, rmatind, rmatval);
-            
-        } catch (const exception &e) {
-            cerr << e.what() << " adding sparse row.\n";
-            throw e;
-        }
-
-        try {
-            ext_cuts.add_cut(*cur, tour);
-        } catch (const exception &e) {
-            cerr << e.what() << " adding external rep.\n";
-            throw e;
-        }
+            ext_cuts.add_cut(*cur, tour);            
+        } CMR_CATCH_PRINT_THROW("processing/adding cut", err);
     }
-} catch (const exception &e) {
-    throw runtime_error("Problem in CoreLP::add_cuts(LPcutList.)");
 }
 
-void CoreLP::add_cuts(Sep::CutQueue<Sep::dominoparity> &dpq)
+void CoreLP::add_cuts(const Sep::CutQueue<Sep::dominoparity> &dpq)
 {
     if (dpq.empty())
         return;
@@ -338,9 +328,9 @@ void CoreLP::add_cuts(Sep::CutQueue<Sep::dominoparity> &dpq)
     Sep::CutTranslate translator(graph_data);
     vector<int> &tour_nodes = best_data.best_tour_nodes;
 
-    for (Sep::CutQueue<Sep::dominoparity>::Itr it = dpq.begin();
+    for (Sep::CutQueue<Sep::dominoparity>::ConstItr it = dpq.begin();
          it != dpq.end(); ++it) {
-        Sep::dominoparity &dp_cut = *it;
+        const Sep::dominoparity &dp_cut = *it;
         vector<int> rmatind;
         vector<double> rmatval;
         char sense;
