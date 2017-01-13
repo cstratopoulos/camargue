@@ -197,12 +197,12 @@ LP::PivType Solver::cutting_loop()
         } CMR_CATCH_PRINT_THROW("pivoting back", err);
 
         try {
-            core_lp.add_cuts(separator.seg_q);
-            core_lp.add_cuts(separator.fast2m_q);
-            core_lp.add_cuts(separator.blkcomb_q);
-            core_lp.add_cuts(separator.connect_q);
+            core_lp.add_cuts(separator.segment_q());
+            core_lp.add_cuts(separator.fastblossom_q());
+            core_lp.add_cuts(separator.blockcomb_q());
+            core_lp.add_cuts(separator.connect_cuts_q());
 
-            core_lp.add_cuts(separator.dp_q);
+            core_lp.add_cuts(separator.simpleDP_q());
         } CMR_CATCH_PRINT_THROW("adding cuts", err);
     }
 
