@@ -65,7 +65,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     edge_hash.clear();
 
     try {
-        get_duals();
+        ext_cuts.get_duals(core_lp, node_pi, node_pi_est, cut_pi, clique_pi);
     } CMR_CATCH_PRINT_THROW("populating clique pi", err);
 
     CCtsp_edgegenerator *current_eg;
@@ -188,7 +188,8 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
             cout << "\t\tTour still optimal after adding edges.\n";
 
             try {
-                get_duals();
+                ext_cuts.get_duals(core_lp, node_pi, node_pi_est, cut_pi,
+                                   clique_pi);
                 price_candidates();
             } CMR_CATCH_PRINT_THROW("getting new duals and re-pricing", err);
 
@@ -243,96 +244,6 @@ vector<Edge> Pricer::get_pool_chunk()
                             inst.edgelen(it->end[0], it->end[1]));
     edge_q.resize(edge_q.size() - AddBatch);
     return result;
-}
-
-void Pricer::get_duals()
-{
-    runtime_error err("Problem in Pricer::get_duals");
-    
-    const vector<Sep::HyperGraph> &cutlist = ext_cuts.get_cuts();
-    const Sep::CliqueBank &clq_bank = ext_cuts.get_cbank();
-    const vector<int> &def_tour = clq_bank.ref_tour();
-
-    clique_pi.clear();
-    
-    try { //get updated pi values from the lp
-        clique_pi.reserve(clq_bank.size());
-
-        core_lp.get_pi(node_pi, 0, inst.node_count() - 1);
-        node_pi_est = node_pi;
-
-        if (!cutlist.empty())
-            core_lp.get_pi(cut_pi, inst.node_count(), core_lp.num_rows() - 1);
-    } CMR_CATCH_PRINT_THROW("clearing/getting/updating pi values", err);
-
-    //get clique_pi for non-domino cuts
-    for (int i = 0; i < cutlist.size(); ++i) {
-        const Sep::HyperGraph &H = cutlist[i];
-        if (H.cut_type() != CutType::Standard)
-            continue;
-
-        double pival = cut_pi[i];
-
-        for (const Sep::Clique::Ptr &clq_ref : H.get_cliques()) {
-            if (clique_pi.count(*clq_ref) == 0)
-                clique_pi[*clq_ref] = 0.0;
-            
-            clique_pi[*clq_ref] += pival;
-        }
-    }
-
-    //use clique_pi to build node_pi for all cliques with nonzero pi
-    for (const std::pair<Sep::Clique, double> &kv : clique_pi) {
-        const Sep::Clique &clq = kv.first;
-        double pival = kv.second;
-
-        if (pival > 0.0) {
-            for (const Segment &seg : clq.seg_list()) {
-                for (int k = seg.start; k <= seg.end; ++k) {
-                    int node = def_tour[k];
-                    
-                    node_pi[node] += pival;
-                    node_pi_est[node] += pival;
-                }
-            }            
-        } else if (pival < 0.0) {
-            for (const Segment &seg : clq.seg_list()) {
-                for (int k = seg.start; k <= seg.end; ++k) {
-                    int node = def_tour[k];
-                    
-                    node_pi[node] += pival;
-                }
-            }
-        }
-    }
-
-    //now get node_pi_est for domino cuts, skipping standard ones
-    for (int i = 0; i < cutlist.size(); ++i) {
-        const Sep::HyperGraph &H = cutlist[i];
-        if (H.cut_type() != CutType::Domino)
-            continue;
-
-        double pival = cut_pi[i];
-        if (pival <= 0.0)
-            continue;
-        
-        const Sep::Clique::Ptr &handle_ref = H.get_cliques()[0];
-        for (const Segment &seg : handle_ref->seg_list()) {
-            for (int k = seg.start; k <= seg.end; ++k) {
-                int node = def_tour[k];
-                node_pi_est[node] += pival;
-            }
-        }
-
-        for (const Sep::Tooth::Ptr &T : H.get_teeth())
-            for (const Sep::Clique &tpart : T->set_pair())
-                for (const Segment &seg : tpart.seg_list())
-                    for (int k = seg.start; k <= seg.end; ++k) {
-                        int node = def_tour[k];
-
-                        node_pi_est[node] += pival;
-                    }
-    }
 }
 
 void Pricer::price_candidates()

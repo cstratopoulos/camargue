@@ -2,6 +2,7 @@
 #define CMR_HYPERGRAPH_H
 
 #include "cut_structs.hpp"
+#include "lp_interface.hpp"
 #include "cliq.hpp"
 #include "price_util.hpp"
 
@@ -112,6 +113,12 @@ public:
      */
     void get_col(const int end0, const int end1,
                  std::vector<int> &cmatind, std::vector<double> &cmatval);
+
+    void get_duals(const LP::Relaxation &relax,
+                   std::vector<double> &node_pi,
+                   std::vector<double> &node_pi_est,
+                   std::vector<double> &cut_pi,
+                   std::unordered_map<Clique, double> clique_pi) const;
 
 private:
     const int node_count;

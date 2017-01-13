@@ -53,7 +53,6 @@ public:
     int queue_size() const { return edge_q.size(); }
 
 private:
-    void get_duals();
     void price_candidates();
 
     void sort_q();
