@@ -10,6 +10,17 @@ namespace CMR {
 /** Namespace for matters related to cuts and separation of cutting planes. */
 namespace Sep {
 
+struct CutSelect {
+    bool segment = true;
+    bool fast2m = true;
+    bool exact2m = true;
+    bool blkcomb =true ;
+    bool chain = false;
+    bool gomory = false;
+    bool simple_dp = true;
+    bool connect_cuts = true;
+};
+
 /** Class for separation of cutting planes.
  * This class is instantiated with data about active edges in a relaxation
  * and a current lp solution, then used to search for cuts violated by the
@@ -52,6 +63,8 @@ public:
 private:
     const int max_total;
     int running_total;
+
+    CutSelect cut_sel;
     
     Data::GraphGroup &graph_data;
     Data::BestGroup &best_data;

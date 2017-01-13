@@ -53,26 +53,33 @@ Separator::Separator(Data::GraphGroup &graphdata,
 
 bool Separator::find_cuts(CMR::TourGraph &TG) try
 {
-    bool found_seg = segment_sep(TG);
+    bool found_seg = false;
     
-    if (running_total >= max_total)
-        return true;
+    if (cut_sel.segment)
+        if ((found_seg = segment_sep(TG)))
+            if (running_total >= max_total)
+                return true;
+    
+    if (cut_sel.fast2m)
+        if (fast2m_sep(TG))
+            if (running_total >= max_total)
+                return true;
 
-    if (fast2m_sep(TG))
-        if (running_total >= max_total)
-            return true;
+    if (cut_sel.blkcomb)
+        if (blkcomb_sep(TG))
+            if (running_total >= max_total)
+                return true;
 
-    if (blkcomb_sep(TG))
-        if (running_total >= max_total)
-            return true;
-
-    if (!found_seg)
+    if (cut_sel.simple_dp && !found_seg)
         if (simpleDP_sep())
             return true;
 
-    if (running_total == 0)
-        return connect_sep(TG);
-    else
+    if (running_total == 0) {
+        if (cut_sel.connect_cuts)
+            return connect_sep(TG);
+        else
+            return false;
+    } else
         return true;
 } catch (const exception &e) {
     cerr << e.what() << "\n";
