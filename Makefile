@@ -17,7 +17,7 @@ DEPEXT      := d
 OBJEXT      := o
 
 #Flags, Libraries and Includes
-CFLAGS      := -Wall -O3 -pedantic -fopenmp \
+CFLAGS      := -Wall -ggdb -Og -pedantic -fopenmp \
 -Wno-missing-braces -Wno-sign-compare  -Wno-long-long\
 -Wno-variadic-macros\
 -std=c++11
