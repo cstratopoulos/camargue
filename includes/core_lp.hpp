@@ -52,8 +52,6 @@ public:
 
     void add_edges(const std::vector<Edge> &add_batch);
 
-    Data::SupportGroup supp_data;
-
     friend class CMR::Solver;
 
 private:
@@ -63,6 +61,7 @@ private:
     
     Data::GraphGroup &graph_data;
     Data::BestGroup &best_data;
+    Data::SupportGroup supp_data;
 
     Sep::ExternalCuts ext_cuts;
 
