@@ -50,15 +50,13 @@ public:
 
     bool connect_sep(TourGraph &TG);
 
-    LPcutList seg_q;
-    LPcutList fast2m_q;
-    LPcutList blkcomb_q;
+    const LPcutList &segment_q() const { return seg_q; }
+    const LPcutList &fastblossom_q() const { return fast2m_q; }
+    const LPcutList &blockcomb_q() const { return blkcomb_q; }
 
-    CutQueue<dominoparity> dp_q;
+    const CutQueue<dominoparity> &simpleDP_q() const { return dp_q; }
 
-    LPcutList connect_q;
-
-    friend class Solver;
+    const LPcutList &connect_cuts_q() const { return connect_q; }
 
 private:
     const int max_total;
@@ -72,6 +70,14 @@ private:
     Data::KarpPartition &karp_part;
 
     std::vector<int> perm_elist;
+
+    LPcutList seg_q;
+    LPcutList fast2m_q;
+    LPcutList blkcomb_q;
+
+    CutQueue<dominoparity> dp_q;
+
+    LPcutList connect_q;
 };
 
 }
