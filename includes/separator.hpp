@@ -21,21 +21,23 @@ public:
     Separator(Data::GraphGroup &graphdata,
               Data::BestGroup &bestdata,
               Data::SupportGroup &suppdata,
-              Data::KarpPartition &kpart) :
-        max_total(8),
-        graph_data(graphdata), best_data(bestdata), supp_data(suppdata),
-        karp_part(kpart){}
+              Data::KarpPartition &kpart);
 
     Separator(Data::GraphGroup &graphdata,
               Data::BestGroup &bestdata,
               Data::SupportGroup &suppdata,
               Data::KarpPartition &kpart,
-              int round_limit) :
-        max_total(round_limit),
-        graph_data(graphdata), best_data(bestdata), supp_data(suppdata),
-        karp_part(kpart){}
+              int round_limit);
     
-    bool find_cuts(CMR::TourGraph &TG);
+    bool find_cuts(TourGraph &TG);
+
+    bool segment_sep(TourGraph &TG);
+    bool fast2m_sep(TourGraph &TG);
+    bool blkcomb_sep(TourGraph &TG);
+
+    bool simpleDP_sep();
+
+    bool connect_sep(TourGraph &TG);
 
     LPcutList seg_q;
     LPcutList fast2m_q;
@@ -49,11 +51,14 @@ public:
 
 private:
     const int max_total;
+    int running_total;
     
     Data::GraphGroup &graph_data;
     Data::BestGroup &best_data;
     Data::SupportGroup &supp_data;
     Data::KarpPartition &karp_part;
+
+    std::vector<int> perm_elist;
 };
 
 }
