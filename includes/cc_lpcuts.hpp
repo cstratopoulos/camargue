@@ -35,7 +35,8 @@ public:
     int size() const { return cutcount; }
     bool empty() const { return cutcount == 0; }
   
-    CCtsp_lpcut_in* begin() { return head_cut.get(); }
+    CCtsp_lpcut_in *begin() { return head_cut.get(); }
+    const CCtsp_lpcut_in *begin() const { return head_cut.get(); }
 
     void filter_primal(CMR::TourGraph &TG);
 
