@@ -45,8 +45,6 @@ public:
 
     LPcutList connect_q;
 
-    const Data::SupportGroup &support_data() const { return supp_data; }
-
     friend class Solver;
 
 private:
