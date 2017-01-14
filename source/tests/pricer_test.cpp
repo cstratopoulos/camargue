@@ -45,7 +45,7 @@ SCENARIO ("Running the Solver cutting_loop on augmentable or optimal instances",
                                    //prob + ".sol",
                                    0, prefs);
 
-                REQUIRE_NOTHROW(solver.cutting_loop());
+                REQUIRE_NOTHROW(solver.cutting_loop(true));
             }
         }
     }

@@ -100,9 +100,17 @@ void Solver::report_piv(LP::PivType piv, int round)
     cout << endl;
 }
 
-LP::PivType Solver::cutting_loop()
+LP::PivType Solver::cutting_loop(bool do_price)
 {
     runtime_error err("Problem in Solver::cutting_loop.");
+
+    if (do_price)
+        try {
+            edge_pricer = util::make_unique<Price::Pricer>(core_lp,
+                                                           tsp_instance,
+                                                           core_lp.ext_cuts,
+                                                           graph_data);
+        } CMR_CATCH_PRINT_THROW("Couldn't instantiate Pricer", err);
     
     LP::PivType piv = LP::PivType::Frac;
     int round = 0;
@@ -134,21 +142,15 @@ LP::PivType Solver::cutting_loop()
         
         if (piv == LP::PivType::FathomedTour) {
             report_piv(piv, round);
-
-            if (!edge_pricer)
+            
+            if (do_price) {
                 try {
-                    edge_pricer =
-                    util::make_unique<Price::Pricer>(core_lp, tsp_instance,
-                                                     core_lp.ext_cuts,
-                                                     graph_data);
-                } CMR_CATCH_PRINT_THROW("instantiating Pricer", err);
-
-            try {
-                if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full){
-                    continue;
-                } else
-                    break;
-            } CMR_CATCH_PRINT_THROW("adding edges to core", err);
+                    if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full){
+                        continue;
+                    } else
+                        break;
+                } CMR_CATCH_PRINT_THROW("adding edges to core", err);
+            }
             
             break;
         }
@@ -158,17 +160,10 @@ LP::PivType Solver::cutting_loop()
             cout << "\tPruned " << (rowcount - core_lp.num_rows())
                  << " rows from the LP." << endl;
 
-            if (!edge_pricer)
+            if (do_price)
                 try {
-                    edge_pricer =
-                    util::make_unique<Price::Pricer>(core_lp, tsp_instance,
-                                                     core_lp.ext_cuts,
-                                                     graph_data);
-                } CMR_CATCH_PRINT_THROW("instantiating Pricer", err);
-
-            try {
-                edge_pricer->gen_edges(piv);
-            } CMR_CATCH_PRINT_THROW("adding edges to core", err);
+                    edge_pricer->gen_edges(piv);
+                } CMR_CATCH_PRINT_THROW("adding edges to core", err);
             
             piv = LP::PivType::Frac;
 

@@ -1,8 +1,11 @@
+#include "config.hpp"
+
+#ifndef CMR_DO_TESTS
+
 #include "solver.hpp"
 #include "util.hpp"
 #include "io_util.hpp"
 #include "timer.hpp"
-#include "config.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -26,9 +29,6 @@ using std::runtime_error;
 using std::logic_error;
 using std::exception;
 
-
-
-#ifndef CMR_DO_TESTS
 
 static void initial_parse(int argc, char **argv,
                           string &tsp_fname, string &tour_fname,
@@ -69,7 +69,7 @@ int main(int argc, char** argv) try
     CMR::Timer t;
     t.start();
 
-    tsp_solver->cutting_loop();
+    tsp_solver->cutting_loop(true);
 
     t.stop();
     t.report(true);
@@ -160,4 +160,4 @@ static void usage(const std::string &fname)
          << "-t \t load starting tour from path x\n";
 }
 
-#endif
+#endif //CMR_DO_TESTS

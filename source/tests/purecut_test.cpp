@@ -28,7 +28,7 @@ using std::cout;
 
 
 
-SCENARIO ("Running the Solver cutting_loop",
+SCENARIO ("Running the Solver cutting_loop with no pricing.",
           "[Solver][cutting_loop]") {
     vector<string> probs{
         "lin318", "d493", "p654", "pr1002", "d2103", "pr2392"
@@ -42,7 +42,7 @@ SCENARIO ("Running the Solver cutting_loop",
                                    //prob + ".sol",
                                    0, prefs);
 
-                REQUIRE_NOTHROW(solver.cutting_loop());
+                REQUIRE_NOTHROW(solver.cutting_loop(false));
             }
         }
     }
@@ -56,7 +56,7 @@ SCENARIO ("Running random 1k solver cutting_loop",
                 CMR::OutPrefs prefs;
                 CMR::Solver solver(0, 1000, 1000000, prefs);
 
-                REQUIRE_NOTHROW(solver.cutting_loop());
+                REQUIRE_NOTHROW(solver.cutting_loop(false));
             }
         }
     }

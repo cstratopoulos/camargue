@@ -12,29 +12,32 @@
 
 namespace CMR {
 
+/// Class for solution of TSP instances.
 class Solver {
 public:
-    /** Construct a Solver from a TSPLIB instance. */
+    /// Construct a Solver from a TSPLIB instance.
     Solver(const std::string &tsp_fname, const int seed,
-           const CMR::OutPrefs outprefs);
+           const OutPrefs outprefs);
 
-    /** Construct Solver from TSPLIB instance with starting tour from file. */
+    /// Construct Solver from TSPLIB instance with starting tour from file.
     Solver(const std::string &tsp_fname, const std::string &tour_fname,
-           const int seed, const CMR::OutPrefs outprefs);
+           const int seed, const OutPrefs outprefs);
 
-    /** Construct Solver from randomly generated Euclidean TSP instance. */
+    /// Construct Solver from randomly generated Euclidean TSP instance.
     Solver(const int seed, const int node_count, const int gridsize,
-           const CMR::OutPrefs outprefs);
+           const OutPrefs outprefs);
 
-    CMR::LP::PivType cutting_loop();
+    /// Run a primal cutting plane loop of pivoting and cut generation.
+    LP::PivType cutting_loop(bool do_price);
 
-    CMR::LP::Relaxation &relax() { return core_lp; }
+    /// Get the basis of the best tour found thus far.
+    const LP::TourBasis &tour_basis() const { return core_lp.tour_base; }
 
-    const CMR::LP::TourBasis &tour_basis() const { return core_lp.tour_base; }
+    /// Get the active CoreLP relaxation.
+    const LP::CoreLP &get_core_lp() const { return core_lp; }
 
-    const Data::BestGroup &best_info() const { return best_data; }
-
-    
+    /// Get the BestGroup of the best tour found thus far.
+    const Data::BestGroup &best_info() const { return best_data; }    
 
 private:
     void report_piv(CMR::LP::PivType piv, int round);
