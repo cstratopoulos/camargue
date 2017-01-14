@@ -108,7 +108,6 @@ LP::PivType Solver::cutting_loop(bool do_price)
         try {
             edge_pricer = util::make_unique<Price::Pricer>(core_lp,
                                                            tsp_instance,
-                                                           core_lp.ext_cuts,
                                                            graph_data);
         } CMR_CATCH_PRINT_THROW("Couldn't instantiate Pricer", err);
     
