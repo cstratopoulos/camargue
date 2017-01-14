@@ -44,7 +44,7 @@ SCENARIO ("Constructing core LP adjacency lists",
                                                          g_dat.core_graph.get_edges()));
 
                 AND_THEN ("Edge finding in the alist agrees with the edges") {
-                    const vector<CMR::Edge> &edges =
+                    const vector<CMR::Graph::Edge> &edges =
                     g_dat.core_graph.get_edges();
 
                     for (int i = 0; i < edges.size(); ++i) {
@@ -91,7 +91,7 @@ SCENARIO ("Constructing support adjacency lists",
 
                 CMR::Graph::AdjList sup_alist;
                 vector<int> &sup_inds = s_dat.support_indices;
-                const vector<CMR::Edge> &edges = g_dat.core_graph.get_edges();
+                const vector<CMR::Graph::Edge> &edges = g_dat.core_graph.get_edges();
                 
                 REQUIRE_NOTHROW(sup_alist =
                                 CMR::Graph::AdjList(inst.node_count(),
@@ -100,7 +100,7 @@ SCENARIO ("Constructing support adjacency lists",
 
                 AND_THEN ("We find only the edges that should be there") {
                     for (int i = 0; i < edges.size(); ++i) {
-                        CMR::Edge e = edges[i];
+                        CMR::Graph::Edge e = edges[i];
                         auto found_ptr = sup_alist.find_edge(e.end[0],
                                                              e.end[1]);
                         if (lp_edges[i] < CMR::Epsilon::Zero)

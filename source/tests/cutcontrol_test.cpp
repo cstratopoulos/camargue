@@ -33,7 +33,7 @@ SCENARIO ("Adding duplicate cuts",
                     CMR::Data::BestGroup b_dat(inst, g_dat);
                     CMR::LP::CoreLP core(g_dat, b_dat);
 
-                    CMR::TourGraph TG(b_dat.best_tour_edges,
+                    CMR::Graph::TourGraph TG(b_dat.best_tour_edges,
                                       g_dat.core_graph.get_edges(), b_dat.perm);
 
                     REQUIRE_NOTHROW(core.primal_pivot());
@@ -104,9 +104,12 @@ SCENARIO ("Pivoting and adding cuts",
 
                     vector<double> piv1 = core.lp_vec();
 
-                    CMR::Data::SupportGroup &s_dat = core.supp_data;
+                    CMR::Data::SupportGroup s_dat;
+                    s_dat.reset(inst.node_count(),
+                                g_dat.core_graph.get_edges(), piv1,
+                                g_dat.island);
 
-                    CMR::TourGraph TG(b_dat.best_tour_edges,
+                    CMR::Graph::TourGraph TG(b_dat.best_tour_edges,
                                       g_dat.core_graph.get_edges(),
                                       b_dat.perm);
 
@@ -121,15 +124,17 @@ SCENARIO ("Pivoting and adding cuts",
                     REQUIRE(tour1 == tour2);
 
 
-                    std::array<CMR::Sep::LPcutList*,
-                               4> qlist{&control.seg_q, &control.fast2m_q,
-                                        &control.blkcomb_q,
-                                        &control.connect_q};
+                    std::array<const CMR::Sep::LPcutList*,
+                               4> qlist{
+                        &control.segment_q(),
+                        &control.fastblossom_q(),
+                        &control.blockcomb_q(),
+                        &control.connect_cuts_q()};
 
                     for (auto qptr : qlist)
                         REQUIRE_NOTHROW(core.add_cuts(*qptr));
 
-                    REQUIRE_NOTHROW(core.add_cuts(control.dp_q));
+                    REQUIRE_NOTHROW(core.add_cuts(control.simpleDP_q()));
 
                     piv = core.primal_pivot();
                     cout << "Pivoted to: " << CMR::LP::piv_string(piv)

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
  * @file
- * @brief CONFIGURATION MACROS 
+ * @brief Configuration macros.
  *
  * This header file contains macro definitions that are used to conditionally
  * compile sections of the code based on presence or absence of certain 
@@ -12,7 +12,7 @@
 #define CMR_CONFIG_H
 
 /** @name Existence macros
- * These govern whether certain things are downloaded or supported by the 
+ * These govern indicate certain features are downloaded or supported by the 
  * compiler.
  */
 ///@{
@@ -55,7 +55,7 @@
 #ifdef CMR_HAVE_CATCH
 
 /// Define if you want to compile tests and invoke them from the command line.
-//#define CMR_DO_TESTS
+#define CMR_DO_TESTS
 
 #endif //CMR_HAVE_CATCH
 

@@ -1,4 +1,7 @@
 #include "config.hpp"
+
+#ifdef CMR_DO_TESTS
+
 #include "datagroups.hpp"
 
 #include <iostream>
@@ -18,7 +21,7 @@ using std::string;
 using std::to_string;
 using std::pair;
 
-#ifdef CMR_DO_TESTS
+
 
 using probpair = pair<string, int>;
 using randpair = pair<int, int>;
@@ -88,7 +91,7 @@ SCENARIO("Instance constructors initialize data as expected",
 }
 
 SCENARIO("Instance constructors copy and move as expected with no leaking",
-	 "[Data][Instance][valgrind]") {
+	 "[.Data][.Instance][valgrind]") {
   //CMR::Data::Instance instcpy = inst; compiler error, copy construction!
   
   GIVEN("A normally constructed instance") {
@@ -101,7 +104,8 @@ SCENARIO("Instance constructors copy and move as expected with no leaking",
   GIVEN("Another normally constructed instance") {
     CMR::Data::Instance inst(99, 1000, 1000000);
     THEN("We can move construct it, transferring ownership") {
-      REQUIRE_NOTHROW(CMR::Data::Instance intmv = std::move(inst));
+        CMR::Data::Instance instmv;
+        REQUIRE_NOTHROW(instmv = std::move(inst));
     }
   }
 }
