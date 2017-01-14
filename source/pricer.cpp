@@ -23,7 +23,12 @@ using CutType = Sep::HyperGraph::Type;
 namespace Eps = Epsilon;
 
 namespace Price {
-
+/**
+ * @param[in] _relax the Relaxation for grabbing dual values
+ * @param[in] _inst the TSP instance for generating edges
+ * @param[in] _ext_cuts the HyperGraph representation of the cuts in 
+ * \p _relax.
+ */
 Pricer::Pricer(LP::CoreLP &core, const Data::Instance &_inst,
                const Sep::ExternalCuts &_ext_cuts,
                Data::GraphGroup &graphgroup) try :
@@ -58,6 +63,15 @@ Pricer::~Pricer()
     CCtsp_free_edgegenerator(&eg_full);
 }
 
+
+/**
+ * @param[in] piv_stat the PivType from the solution when edge generation 
+ * is called. The partial edge set is scanned iff \p piv_stat is 
+ * PivType::Tour. Full edge set may be scanned if \p piv_stat is 
+ * PivType::FathomedTour, or PivType::Tour with a small enough graph, or
+ * if a partial scan finds no edges to add. 
+ * @returns a ScanStat indicating the outcome of the pricing scan.
+ */
 ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 {
     runtime_error err("Problem in Pricer::gen_edges");

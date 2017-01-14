@@ -20,42 +20,29 @@ namespace CMR {
 /** Namespace for manners related to pricing sets of edges. */
 namespace Price {
 
-/** Class for pricing edges not in the CoreLP. */
+/// Get reduced costs for edges not in the core lp. 
 class Pricer {
 public:
-    /** Construct a Pricer.
-     * @param[in] _relax the Relaxation for grabbing dual values
-     * @param[in] _inst the TSP instance for generating edges
-     * @param[in] _ext_cuts the HyperGraph representation of the cuts in 
-     * \p _relax.
-     */
+    
     Pricer(LP::CoreLP &core, const Data::Instance &_inst,
            const Sep::ExternalCuts &_ext_cuts,
-           Data::GraphGroup &graphgroup);
+           Data::GraphGroup &graphgroup); //!< Construct a Pricer.
 
-    Pricer(const Pricer &P) = delete;
-    Pricer &operator=(const Pricer &P) = delete;
+    Pricer(const Pricer &P) = delete; //!< Deleted copy constructor.
+    Pricer &operator=(const Pricer &P) = delete; //!< Deleted copy assign.
 
     ~Pricer();
 
-    /** Generate edges to add to the CoreLP.
-     * @param[in] piv_stat the PivType from the solution when edge generation 
-     * is called. The partial edge set is scanned iff \p piv_stat is 
-     * PivType::Tour. Full edge set may be scanned if \p piv_stat is 
-     * PivType::FathomedTour, or PivType::Tour with a small enough graph, or
-     * if a partial scan finds no edges to add. 
-     * @returns a ScanStat indicating the outcome of the pricing scan.
-     */
-    ScanStat gen_edges(LP::PivType piv_stat);
+    ScanStat gen_edges(LP::PivType piv_stat); //<! Generate/add edges to core.
 
-    std::vector<Edge> get_pool_chunk();
+    std::vector<Edge> get_pool_chunk(); //<! Get at most AddBatch edges to add.
 
-    int queue_size() const { return edge_q.size(); }
+    int queue_size() const { return edge_q.size(); } //<! Size of edge queue.
 
 private:
-    void price_candidates();
+    void price_candidates(); //<! Get reduced costs for candidate edges.
 
-    void sort_q();
+    void sort_q(); //<! Sort the queue of edges by minimum reduced costs.
     
     LP::CoreLP &core_lp;
     const Data::Instance &inst;
@@ -65,8 +52,8 @@ private:
 
     const int gen_max;
 
-    std::vector<int> gen_elist;
-    std::vector<int> gen_elen;
+    std::vector<int> gen_elist; //<! Raw node-node list of generated edges.
+    std::vector<int> gen_elen; 
 
     std::vector<double> node_pi; //!< pi values for degree eqns.
     std::vector<double> node_pi_est; //!< estimated node pi for dominos.
@@ -75,10 +62,10 @@ private:
 
     std::unordered_map<Sep::Clique, double> clique_pi;
 
-    CCtsp_edgegenerator eg_inside;
-    CCtsp_edgegenerator eg_full;
+    CCtsp_edgegenerator eg_inside; //<! Concorde 50-nearest edge generator.
+    CCtsp_edgegenerator eg_full; //<! Concorde complete graph edge generator.
 
-    util::EdgeHash edge_hash;
+    util::EdgeHash edge_hash; //<! Hash table for tracking generated edges.
 
     std::vector<PrEdge> price_elist; //!< Compute exact RCs for these edges.
     std::vector<PrEdge> edge_q; //!< Queue of edges for inclusion.
