@@ -20,20 +20,6 @@ extern "C" {
 
 namespace CMR {
 
-
-struct Edge : EndPts {
-    Edge() : removable(false) {}
-    Edge(int e0, int e1, int _len) :
-        EndPts(e0, e1), len(_len), removable(false) {}
-
-    bool operator==(const Edge &rhs) const {
-        return ((end[0] == rhs.end[0]) && (end[1] == rhs.end[1]));
-    }
-
-    int len;
-    bool removable;
-};
-
 struct s_adjobj {
   int other_end;
   int edge_index;
@@ -66,6 +52,19 @@ struct SupportGraph {
 /// Classes and functions for working with graphs.
 namespace Graph {
 
+struct Edge : EndPts {
+    Edge() : removable(false) {}
+    Edge(int e0, int e1, int _len) :
+        EndPts(e0, e1), len(_len), removable(false) {}
+
+    bool operator==(const Edge &rhs) const {
+        return ((end[0] == rhs.end[0]) && (end[1] == rhs.end[1]));
+    }
+
+    int len;
+    bool removable;
+};
+
 /** Wrapper to the Concorde CCtsp_lpgraph structure.
  * This class constructs a CCtsp_lpgraph which corresponds to a tour specified
  * by the constructor arguments. It is used to check whether cuts found by 
@@ -76,7 +75,7 @@ public:
     TourGraph() noexcept;
     
     TourGraph(const std::vector<int> &tour_edges,
-              const std::vector<CMR::Edge> &edges,
+              const std::vector<Edge> &edges,
               const std::vector<int> &perm);
 
     TourGraph(TourGraph &&T) noexcept;
@@ -153,12 +152,12 @@ struct Node {
 struct AdjList {
     AdjList() = default;
     
-    AdjList(int ncount, const std::vector<CMR::Edge> &ref_elist);
+    AdjList(int ncount, const std::vector<Edge> &ref_elist);
 
     AdjList(int ncount, const std::vector<Price::PrEdge> &price_elist);
     
     AdjList(int ncount,
-            const std::vector<CMR::Edge> &ref_elist,
+            const std::vector<Edge> &ref_elist,
             const std::vector<double> &ref_elist_caps,
             const std::vector<int> &keep_indices);
 
@@ -197,7 +196,7 @@ public:
 
     int find_edge_ind(int end0, int end1) const;
 
-    CMR::Edge &get_edge(int index) { return edges[index]; }
+    Edge &get_edge(int index) { return edges[index]; }
     
     std::vector<Edge> &get_edges() { return edges; }
     const std::vector<Edge> &get_edges() const { return edges; }
@@ -206,7 +205,7 @@ public:
     void add_edge(const Edge &e);
 
 private:
-    std::vector<CMR::Edge> edges;
+    std::vector<Edge> edges;
     AdjList adj_list;
     int nodecount;
 };
