@@ -33,46 +33,42 @@ namespace Data {
  */
 class Instance {
 public:
-    Instance() = default;
+    Instance() noexcept; //<! Default construct an empty instance.
 
-    /** Construct an instance from a TSPLIB file.
-     * If \p fname is the path to a TSPLIB file from the executable directory,
-     * constructs an Instance specifying the data in \p fname.
-     */
+    /// Construct an Instance from a TSPLIB file with a random seed.
     Instance(const std::string &fname, const int seed);
 
-    ~Instance();
-
-    /** Construct a geometric random TSP instance.
-     * The instance will have \p ncount nodes distributed uniform randomly over
-     * the \p gridsize by \p gridsize grid, with random seed \p seed.
-     */
+    /// Construct a geometric random Instance. 
     Instance(const int seed, const int ncount, const int gridsize);
+
+    Instance(Instance &&I) noexcept; //!< Move constructor.
+    Instance &operator=(Instance &&I) noexcept; //!< Move assign.
   
-    Instance(const Instance &I) = delete;
-    Instance(Instance &&I) noexcept; /**< Move constructor. */
+    Instance(const Instance &I) = delete; //<! Deleted copy constructor.
+    Instance &operator=(const Instance &I) = delete; //<! Deleted copy assign.
+
+    ~Instance(); //<! Destructor, freeing the Concorde handle. 
 
   
-    Instance &operator=(const Instance &I) = delete;
-    Instance &operator=(Instance &&I) noexcept; /**< Move assign. */
-  
-    /** Access the raw pointer to the data, for use by Concorde routines. */
+    /// Access the raw pointer to the data, for use by Concorde routines.
     CCdatagroup* ptr() const { return const_cast<CCdatagroup*>(&dat); }
 
-    /** Get the distance between two nodes in an Instance. */
+    /// Edge length between two nodes in an Instance.
     double edgelen(int end0, int end1) const
         { return CCutil_dat_edgelen(end0, end1, ptr()); }
 
+    /// A function object for the edge length.
     const std::function<double(int, int)> edgelen_func() const
         { return [this](int e0, int e1){ return edgelen(e0, e1); }; }
 
-    int node_count() const { return nodecount; }
-    int seed() const { return random_seed; }
+    int node_count() const { return nodecount; } //<! Number of nodes.
+    int seed() const { return random_seed; } //<! Random seed used.
 
+    /// The TSPLIB instance name or the random problem dimensions.
     const std::string &problem_name() const { return pname; }
   
 private:
-    CCdatagroup dat;
+    CCdatagroup dat; //<! The Concorde data structure being managed.
 
     int nodecount;
     int random_seed;
@@ -80,20 +76,22 @@ private:
     std::string pname;
 };
 
-/** GraphGroup stores pure combinatorial information about the problem.
- * This structure essentially encodes a weighted graph which represents
- * the TSP instance under consideration, generally with a subset of edges
- * from the complete graph.
+/** Pure combinatorial information about the problem.
+ * This structure uses a CoreGraph to encode a weighted undirected graph 
+ * containing the subset of complete graph edges under consideration in the
+ * current CoreLP.
  */
 struct GraphGroup {
     GraphGroup() = default;
+
+    /// Generate edges from an Instance and create the associated Coregraph.
     GraphGroup(const Instance &inst);
 
-    Graph::CoreGraph core_graph;
+    Graph::CoreGraph core_graph; //<! The Edge list and AdjList.
     
-    std::vector<int> island; /**< Stores components from a dfs of m_graph */
-    std::vector<int> delta; /**< Stores edges in delta of some node set */
-    std::vector<int> node_marks; /**< Marks nodes for adjacency computations */
+    std::vector<int> island; //!< Stores components from a dfs of m_graph.
+    std::vector<int> delta; //!< Stores edges in delta of some node set.
+    std::vector<int> node_marks; //!< Marks nodes for adjacency computations.
 };
 
 /** Stores information about the current best tour.

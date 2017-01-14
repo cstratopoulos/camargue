@@ -39,8 +39,18 @@ using std::logic_error;
 namespace CMR {
 namespace Data {
 
+Instance::Instance() noexcept { CCutil_init_datagroup(&dat); }
+
+
+/**
+ * @param[in] fname a path to a TSPLIB file specified from the executable 
+ * directory.
+ * @param[in] seed the random seed to be used throughout.
+ */
 Instance::Instance(const string &fname, const int seed)
 try : random_seed(seed) {
+    CCutil_init_datagroup(&dat);
+    
     if (CCutil_gettsplib(const_cast<char*>(fname.c_str()), &nodecount,
                          ptr()))
         throw runtime_error("CCutil_gettsplib failed.");
@@ -57,8 +67,13 @@ try : random_seed(seed) {
     throw runtime_error("Instance constructor failed.");
 }
 
-Instance::~Instance() { CCutil_freedatagroup(&dat); }
-
+/**
+ * @param[in] seed the random seed used to generate the problem, and for all 
+ * other later random computations.
+ * @param[in] ncount the number of nodes in the problem
+ * @param[in] gridsize the nodes will be generated from a square grid with this
+ * side length.
+ */
 Instance::Instance(const int seed, const int ncount, const int gridsize)
 try : nodecount(ncount), random_seed(seed),
       pname("r" + to_string(ncount) + "g" + to_string(gridsize)) {
@@ -76,6 +91,8 @@ try : nodecount(ncount), random_seed(seed),
   int tmp_gridsize = gridsize;
 
   CCutil_sprand(seed, &rstate);
+
+  CCutil_init_datagroup(&dat);
   
   if (CCutil_getdata((char *) NULL, binary_in, CC_EUCLIDEAN,
 		    &tmp_ncount, ptr(), tmp_gridsize, allow_dups, &rstate))
@@ -93,6 +110,9 @@ try : nodecount(ncount), random_seed(seed),
 Instance::Instance(Instance &&I) noexcept :
     nodecount(I.nodecount), random_seed(I.random_seed), pname(I.pname)
 {
+    cout << "In instance move constructor" << endl
+         << "this dat->x: " << dat.x << endl
+         << "is it null: " << !dat.x << endl;
     CCutil_freedatagroup(&dat);
     dat = I.dat;
     
@@ -102,7 +122,7 @@ Instance::Instance(Instance &&I) noexcept :
     I.pname.clear();
 }
 
-Instance &Instance::operator=(Instance &&I) noexcept
+Instance& Instance::operator=(Instance &&I) noexcept
 {
   nodecount = I.nodecount;
   random_seed = I.random_seed;
@@ -118,6 +138,8 @@ Instance &Instance::operator=(Instance &&I) noexcept
   
   return *this;
 }
+
+Instance::~Instance() { CCutil_freedatagroup(&dat); }
 
 GraphGroup::GraphGroup(const Instance &inst)
 try     
