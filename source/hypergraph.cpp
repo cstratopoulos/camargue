@@ -26,6 +26,12 @@ using lpclique = CCtsp_lpclique;
 namespace CMR {
 namespace Sep {
 
+
+/**
+ * The cut corresponding to \p cc_lpcut will be represented using 
+ * Clique pointers from \p bank, assuming that the cut was found with
+ * \p tour as the resident best tour.
+ */
 HyperGraph::HyperGraph(CliqueBank &bank, const lpcut_in &cc_lpcut,
                        const vector<int> &tour) try :
     sense(cc_lpcut.sense), rhs(cc_lpcut.rhs), source_bank(&bank),
@@ -41,6 +47,12 @@ HyperGraph::HyperGraph(CliqueBank &bank, const lpcut_in &cc_lpcut,
     throw runtime_error("HyperGraph CC lpcut_in constructor failed.");
 }
 
+/**
+ * The cut corresponding to \p dp_cut will be represented using Clique 
+ * pointers from \p bank and Tooth pointers from \p tbank, assuming the cut
+ * was found with \p tour as the resident best tour. The righthand side of the
+ * cut stored shall be \p _rhs.
+ */
 HyperGraph::HyperGraph(CliqueBank &bank, ToothBank &tbank,
                        const dominoparity &dp_cut, const double _rhs,
                        const std::vector<int> &tour) try :
@@ -287,6 +299,10 @@ void ExternalCuts::add_cut(const dominoparity &dp_cut, const double rhs,
     cuts.emplace_back(clique_bank, tooth_bank, dp_cut, rhs, current_tour);
 }
 
+/**
+ * @param[in] delset the entry `delset[i]` shall be one if the cut 
+ * `cuts[i + node_count]` is to be deleted, zero otherwise.
+ */
 void ExternalCuts::del_cuts(const vector<int> &delset)
 {
     int i = 0;
@@ -304,6 +320,15 @@ void ExternalCuts::del_cuts(const vector<int> &delset)
                cuts.end());
 }
 
+
+/**
+ * @param[in] end0 one end of the edge to be added
+ * @param[in] end1 the other end of the edge to be added
+ * @param[in/out] cmatind the indices of the rows having nonzero 
+ * coefficients for the new edge
+ * @param[in/out] cmatval the coefficients corresponding to entries of 
+ * \p cmatind.
+ */
 void ExternalCuts::get_col(const int end0, const int end1,
                            vector<int> &cmatind, vector<double> &cmatval)
 {
@@ -341,6 +366,22 @@ void ExternalCuts::get_col(const int end0, const int end1,
     } CMR_CATCH_PRINT_THROW("Couldn't push back column coeffs/inds", err);
 }
 
+/**
+ * This method will use the LP::Relaxation to query the lp solver for dual 
+ * values, and use the ExternalCuts collection of cuts, cliques, and teeth to
+ * generate clique multiplicities and node pi estimates for use in exactly
+ * pricing edges not currently in the Relaxation.
+ * @param[in] relax the core lp relaxation, for use in grabbing node and cut
+ * pi values from the lp solver.
+ * @param[in/out] node_pi a vector for storing dual values associated to 
+ * degree constraints
+ * @param[in/out] node_pi_est a vector for storing estimated degree constraint
+ * duals, computed Standard HyperGraph duals and by overestimating the 
+ * Domino HyperGraph duals.
+ * @param[in/out] cut_pi the dual values associated to cuts in the Relaxation.
+ * @param[in/out] clique_pi a hash table of multiplicities associated to 
+ * Cliques from the source CliqueBank.
+ */
 void ExternalCuts::get_duals(const LP::Relaxation &relax,
                              vector<double> &node_pi,
                              vector<double> &node_pi_est,
@@ -438,7 +479,6 @@ void ExternalCuts::get_duals(const LP::Relaxation &relax,
                         node_pi_est[node] += pival;
                     }
     }    
-    
 }
 
 
