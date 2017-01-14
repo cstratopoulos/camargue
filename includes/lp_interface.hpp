@@ -86,11 +86,17 @@ public:
     /** Return constraint slacks for the resident solution. */
     std::vector<double> row_slacks(int begin, int end) const;
 
-    /** Get the dual values. */
+    /** Get a range of dual values. */
     void get_pi(std::vector<double> &pi, int begin, int end) const;
 
-    /** Return the dual values. */
+    /** Return a range of dual values. */
     std::vector<double> pi(int begin, int end) const;
+
+    /// Get a range of reduced costs.
+    void get_redcosts(std::vector<double> &redcosts, int begin, int end) const;
+
+    /// Return a range of reduced costs.
+    std::vector<double> redcosts(int begin, int end) const;
 
     ///@}
 

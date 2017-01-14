@@ -438,12 +438,25 @@ vector<double> Relaxation::row_slacks(int begin, int end) const
 
 void Relaxation::get_pi(vector<double> &pi, int begin, int end) const
 {
-    set_info_vec(CPXgetpi, "CPXgetpi", simpl_p->env, simpl_p->lp, pi, begin, end);
+    set_info_vec(CPXgetpi, "CPXgetpi", simpl_p->env, simpl_p->lp, pi, begin,
+                 end);
 }
 
 vector<double> Relaxation::pi(int begin, int end) const
 {
     return info_vec(CPXgetpi, "CPXgetpi", simpl_p->env, simpl_p->lp, begin,
+                    end);
+}
+
+void Relaxation::get_redcosts(vector<double> &rcs, int begin, int end) const
+{
+    set_info_vec(CPXgetdj, "CPXgetdj", simpl_p->env, simpl_p->lp, rcs, begin,
+                 end);
+}
+
+vector<double> Relaxation::redcosts(int begin, int end) const
+{
+    return info_vec(CPXgetdj, "CPXgetdj", simpl_p->env, simpl_p->lp, begin,
                     end);
 }
 
