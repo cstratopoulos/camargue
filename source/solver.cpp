@@ -82,7 +82,8 @@ void Solver::report_piv(LP::PivType piv, int round)
     case LP::PivType::FathomedTour:
         cout << "\tTour optimal for edge set\n"
              << "\t*************************\n"
-             << "\tLP optimal obj val: " << core_lp.opt_objval() << "\n";
+             << "\tLP optimal obj val: " << core_lp.get_objval()
+             << ", dual feas: " << core_lp.dual_feas() << "\n";
         break;
     case LP::PivType::Tour:
         cout << "\tAugmented to tour of length "
@@ -91,7 +92,8 @@ void Solver::report_piv(LP::PivType piv, int round)
     default:
         cout << "\t Pivot status: \t" << LP::piv_string(piv) << "\n"
              << "\t obj val: \t"
-             << core_lp.get_objval() << "\n";
+             << core_lp.get_objval() << ", dual feas: "
+             << core_lp.dual_feas() << "\n";
     }
 
     cout << "\t" << core_lp.num_rows() << " rows, "

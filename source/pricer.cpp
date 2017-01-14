@@ -189,7 +189,8 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                 
                 num_added = add_batch.size();
                 core_lp.add_edges(add_batch);
-                new_objval = core_lp.opt_objval();
+                core_lp.primal_opt();
+                new_objval = core_lp.get_objval();
             } CMR_CATCH_PRINT_THROW("adding edges to lp and optimizing", err);
 
             cout << "\t\tAdded " << num_added << " edges in opt solution.\n";
