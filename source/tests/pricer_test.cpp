@@ -29,7 +29,9 @@ using std::cout;
 SCENARIO ("Comparing Pricer reduced costs to CPLEX",
           "[Price][Pricer][price_edges]") {
     vector<string> probs {
+        "dantzig42",
         "rat99",
+        "lin318",
         };
 
     for (string &fname : probs) {
