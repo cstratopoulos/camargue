@@ -5,7 +5,7 @@
 #include <catch.hpp>
 
 #include "datagroups.hpp"
-#include "Graph.hpp"
+#include "graph.hpp"
 
 #include <iostream>
 #include <string>

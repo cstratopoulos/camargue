@@ -3,7 +3,7 @@
 
 #include "datagroups.hpp"
 #include "cc_lpcuts.hpp"
-#include "Graph.hpp"
+#include "graph.hpp"
 #include "tooth.hpp"
 #include "cut_structs.hpp"
 #include "util.hpp"

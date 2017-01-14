@@ -7,7 +7,7 @@
 #ifndef CMR_CC_LPCUTS_HPP
 #define CMR_CC_LPCUTS_HPP
 
-#include "Graph.hpp"
+#include "graph.hpp"
 #include "datagroups.hpp"
 
 extern "C" {

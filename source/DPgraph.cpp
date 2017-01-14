@@ -1,6 +1,6 @@
 #include "DPgraph.hpp"
 #include "util.hpp"
-#include "Graph.hpp"
+#include "graph.hpp"
 
 #include <iostream>
 #include <iomanip>

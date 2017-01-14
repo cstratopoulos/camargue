@@ -10,7 +10,7 @@
 #ifndef CMR_GRAPH_IO_HPP
 #define CMR_GRAPH_IO_HPP
 
-#include "Graph.hpp"
+#include "graph.hpp"
 
 #include <iostream>
 #include <fstream>

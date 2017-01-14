@@ -1,7 +1,7 @@
 #ifndef CMR_EDGEHASH_H
 #define CMR_EDGEHASH_H
 
-#include "Graph.hpp"
+#include "graph.hpp"
 #include "util.hpp"
 
 extern "C" {

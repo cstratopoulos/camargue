@@ -8,7 +8,7 @@
 #define CMR_BLOSSOMS_H
 
 #include "cut_structs.hpp"
-#include "Graph.hpp"
+#include "graph.hpp"
 
 
 #include <vector>

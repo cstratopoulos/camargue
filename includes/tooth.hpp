@@ -1,7 +1,7 @@
 #ifndef CMR_TOOTH_HPP
 #define CMR_TOOTH_HPP
 
-#include "Graph.hpp"
+#include "graph.hpp"
 #include "datagroups.hpp"
 #include "util.hpp"
 #include "timer.hpp"

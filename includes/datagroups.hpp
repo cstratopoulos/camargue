@@ -8,7 +8,7 @@
 #define CMR_DATAGROUP_H
 
 #include "util.hpp"
-#include "Graph.hpp"
+#include "graph.hpp"
 
 #include <functional>
 #include <memory>
