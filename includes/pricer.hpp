@@ -25,7 +25,6 @@ class Pricer {
 public:
     
     Pricer(LP::CoreLP &core, const Data::Instance &_inst,
-           const Sep::ExternalCuts &_ext_cuts,
            Data::GraphGroup &graphgroup); //!< Construct a Pricer.
 
     Pricer(const Pricer &P) = delete; //!< Deleted copy constructor.
@@ -33,16 +32,17 @@ public:
 
     ~Pricer();
 
+    
+    void price_edges(std::vector<PrEdge> &target_edges, bool compute_duals);
+    
     ScanStat gen_edges(LP::PivType piv_stat); //<! Generate/add edges to core.
 
-    std::vector<Graph::Edge> get_pool_chunk(); //<! Get at most AddBatch edges.
 
     int queue_size() const { return edge_q.size(); } //<! Size of edge queue.
 
 private:
-    void price_candidates(); //<! Get reduced costs for candidate edges.
-
     void sort_q(); //<! Sort the queue of edges by minimum reduced costs.
+    std::vector<Graph::Edge> get_pool_chunk(); //<! Get at most AddBatch edges.
     
     LP::CoreLP &core_lp;
     const Data::Instance &inst;

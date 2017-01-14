@@ -30,9 +30,9 @@ namespace Price {
  * \p _relax.
  */
 Pricer::Pricer(LP::CoreLP &core, const Data::Instance &_inst,
-               const Sep::ExternalCuts &_ext_cuts,
                Data::GraphGroup &graphgroup) try :
-    core_lp(core), inst(_inst), ext_cuts(_ext_cuts), graph_group(graphgroup),
+    core_lp(core), inst(_inst), ext_cuts(core.external_cuts()),
+    graph_group(graphgroup),
     gen_max(EstBatch + ScaleBatch * inst.node_count()),
     gen_elist(vector<int>(2 * gen_max)), gen_elen(gen_max),
     node_pi(vector<double>(inst.node_count())),
@@ -45,12 +45,12 @@ Pricer::Pricer(LP::CoreLP &core, const Data::Instance &_inst,
     
     if (CCtsp_init_edgegenerator(&eg_inside, inst.node_count(), inst.ptr(),
                                  (CCtsp_genadj *) NULL, Nearest, 1, &rstate))
-        throw runtime_error("");
+        throw runtime_error("CCtsp_init_edgegenerator(50) failed.");
 
     if (CCtsp_init_edgegenerator(&eg_full, inst.node_count(), inst.ptr(),
                                  (CCtsp_genadj *) NULL,
                                  CCtsp_PRICE_COMPLETE_GRAPH, 1, &rstate))
-        throw runtime_error("");
+        throw runtime_error("CCtsp_init_edgenerator(complete) failed.");
 
 } catch (const exception &e) {
     cerr << e.what() << "\n";
@@ -136,7 +136,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         }
 
         cout << "\t Pricing candidates\n";
-        price_candidates();
+        price_edges(price_elist, false);
 
         for (const PrEdge &e : price_elist) {
             if (e.redcost < 0.0)
@@ -202,9 +202,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
             cout << "\t\tTour still optimal after adding edges.\n";
 
             try {
-                ext_cuts.get_duals(core_lp, node_pi, node_pi_est, cut_pi,
-                                   clique_pi);
-                price_candidates();
+                price_edges(edge_q, true);
             } CMR_CATCH_PRINT_THROW("getting new duals and re-pricing", err);
 
             penalty = 0.0;
@@ -260,18 +258,26 @@ vector<Graph::Edge> Pricer::get_pool_chunk()
     return result;
 }
 
-void Pricer::price_candidates()
+void Pricer::price_edges(vector<PrEdge> &target_edges, bool compute_duals)
 {
-    if (price_elist.empty() && edge_q.empty())
-        return;
-
-    vector<PrEdge> &target_edges = edge_q.empty() ? price_elist : edge_q;
+    runtime_error err("Problem in Pricer::price_edges.");
     
+    if (compute_duals)
+        try {
+            ext_cuts.get_duals(core_lp, node_pi, node_pi_est, cut_pi,
+                               clique_pi);
+        } CMR_CATCH_PRINT_THROW("Couldn't get duals.", err);
+
     for (PrEdge &e : target_edges)
         e.redcost = inst.edgelen(e.end[0], e.end[1]) - node_pi[e.end[0]]
         - node_pi[e.end[1]];
 
-    Graph::AdjList price_adjlist(inst.node_count(), target_edges);
+    Graph::AdjList price_adjlist;
+
+    try  {
+        price_adjlist = Graph::AdjList(inst.node_count(), target_edges);
+    } CMR_CATCH_PRINT_THROW("Couldn't build price adjlist.", err);
+    
     vector<Graph::Node> &price_nodelist = price_adjlist.nodelist;
     
     const std::vector<int> &def_tour = ext_cuts.get_cbank().ref_tour();
@@ -321,7 +327,7 @@ void Pricer::price_candidates()
 
         for (int j = 0; j < rmatind.size(); ++j)
             target_edges[rmatind[j]].redcost -= pival * rmatval[j];
-    }
+    }   
 }
 
 void Pricer::sort_q()
