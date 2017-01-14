@@ -30,14 +30,20 @@ public:
     /// Run a primal cutting plane loop of pivoting and cut generation.
     LP::PivType cutting_loop(bool do_price);
 
-    /// Get the basis of the best tour found thus far.
-    const LP::TourBasis &tour_basis() const { return core_lp.tour_base; }
+    const Data::Instance &inst_info() const
+        { return tsp_instance; } /// Get the Instance being used.
+    
+    const Data::GraphGroup &graph_info() const
+        { return graph_data; } /// Get the GraphGroup being used.
 
-    /// Get the active CoreLP relaxation.
-    const LP::CoreLP &get_core_lp() const { return core_lp; }
+    const Data::BestGroup &best_info() const
+        { return best_data; } /// Get the BestGroup of the best tour found.
 
-    /// Get the BestGroup of the best tour found thus far.
-    const Data::BestGroup &best_info() const { return best_data; }    
+    const LP::TourBasis &tour_basis() const
+        { return core_lp.tour_base; } /// Get the basis of the best tour found.
+
+    const LP::CoreLP &get_core_lp() const
+        { return core_lp; } /// Get the active CoreLP relaxation.
 
 private:
     void report_piv(CMR::LP::PivType piv, int round);
