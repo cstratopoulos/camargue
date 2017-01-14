@@ -12,6 +12,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <functional>
 
 #include <catch.hpp>
 
@@ -56,11 +57,10 @@ SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
             
             kpart = CMR::Data::KarpPartition(inst);
 
-            CMR::Sep::Separator sep(g_dat, b_dat, s_dat, kpart,
-                                    CMR::IntMax);
-            CMR::TourGraph TG(b_dat.best_tour_edges,
-                              g_dat.core_graph.get_edges(),
-                              b_dat.perm);
+            CMR::Sep::Separator sep(g_dat, b_dat, s_dat, kpart, CMR::IntMax);
+            CMR::Graph::TourGraph TG(b_dat.best_tour_edges,
+                                     g_dat.core_graph.get_edges(),
+                                     b_dat.perm);
 
             CMR::Sep::CliqueBank cbank(b_dat.best_tour_nodes,
                                        b_dat.perm);
@@ -74,19 +74,16 @@ SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
                 REQUIRE(sep.find_cuts(TG));
 
                 THEN ("All the sparse row coeffs match HyperGraph coeffs.") {
-                    std::array<CMR::Sep::LPcutList*,
-                               2> qlist{&sep.fast2m_q,
-                                        &sep.blkcomb_q};
-                    
+                    std::array<const CCtsp_lpcut_in*, 2>
+                    qheads{sep.fastblossom_q().begin(),
+                        sep.blockcomb_q().begin()};
+                                        
                     vector<int> &perm = b_dat.perm;
                     vector<int> &tour = b_dat.best_tour_nodes;
 
-                    for (CMR::Sep::LPcutList *qptr : qlist) {
-                        if (qptr->empty())
-                            continue;
-
-                        for (CCtsp_lpcut_in *cur = qptr->begin(); cur;
-                             cur = cur->next) {
+                    for (const CCtsp_lpcut_in* headptr : qheads)
+                        for (const CCtsp_lpcut_in *cur = headptr;
+                             cur; cur = cur->next) {
                             vector<int> rmatind;
                             vector<double> rmatval;
                             char sense;
@@ -100,7 +97,7 @@ SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
                             for (int i = 0; i < rmatind.size(); ++i) {
                                 int edge_ind = rmatind[i];
                                 double ref_coeff = rmatval[i];
-                                CMR::Edge e =
+                                CMR::Graph::Edge e =
                                 g_dat.core_graph.get_edge(edge_ind);
 
                                 double hg_coeff = hg.get_coeff(e.end[0],
@@ -115,13 +112,13 @@ SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
                             REQUIRE(pr_rmatind == rmatind);
                             REQUIRE(pr_rmatval == rmatval);
                         }
-                    }
+                    
 
-                    if (!sep.dp_q.empty()) {
+                    if (!sep.simpleDP_q().empty()) {
                         cout << "\tFOUND DP CUTS\n";
-                        for (auto it = sep.dp_q.begin();
-                             it != sep.dp_q.end(); ++it) {
-                            CMR::Sep::dominoparity &dp_cut = *it;
+                        for (auto it = sep.simpleDP_q().begin();
+                             it != sep.simpleDP_q().end(); ++it) {
+                            const CMR::Sep::dominoparity &dp_cut = *it;
                             vector<int> rmatind;
                             vector<double> rmatval;
                             char sense;
@@ -136,7 +133,7 @@ SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
                             for (int i = 0; i < rmatind.size(); ++i) {
                                 int edge_ind = rmatind[i];
                                 double ref_coeff = rmatval[i];
-                                CMR::Edge e =
+                                CMR::Graph::Edge e =
                                 g_dat.core_graph.get_edge(edge_ind);
 
                                 double hg_coeff = hg.get_coeff(e.end[0],
