@@ -1,5 +1,5 @@
 #include "blossoms.hpp"
-#include "tests.hpp"
+#include "config.hpp"
 
 extern "C" {
   #include <concorde/INCLUDE/cut.h>

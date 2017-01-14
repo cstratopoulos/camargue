@@ -4,7 +4,7 @@
 
 #include "lp_interface.hpp"
 #include "core_lp.hpp"
-#include "tests.hpp"
+#include "config.hpp"
 #include "err_util.hpp"
 
 #include <cplex.h>

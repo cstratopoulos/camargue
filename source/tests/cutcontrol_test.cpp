@@ -1,4 +1,4 @@
-#include "tests.hpp"
+#include "config.hpp"
 #include "core_lp.hpp"
 #include "datagroups.hpp"
 #include "separator.hpp"

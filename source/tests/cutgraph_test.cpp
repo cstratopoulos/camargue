@@ -1,4 +1,4 @@
-#include "tests.hpp"
+#include "config.hpp"
 #include "datagroups.hpp"
 #include "tooth.hpp"
 #include "DPgraph.hpp"

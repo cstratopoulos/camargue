@@ -1,4 +1,4 @@
-#include "tests.hpp"
+#include "config.hpp"
 #include "cc_lpcuts.hpp"
 #include "datagroups.hpp"
 #include "process_cuts.hpp"

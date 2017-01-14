@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** @file
  * @brief ERROR HANDLING CLASSES AND ROUTINES
+ *
  * This file contains classes for creating cleanup objects and exceptions 
  * derived from standard library runtime error. 
  *

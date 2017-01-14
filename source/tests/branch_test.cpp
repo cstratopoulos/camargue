@@ -1,4 +1,4 @@
-#include "tests.hpp"
+#include "config.hpp"
 
 #ifdef CMR_DO_TESTSfdfds
 

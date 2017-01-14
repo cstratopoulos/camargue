@@ -1,5 +1,5 @@
 #include "tooth.hpp"
-#include "tests.hpp"
+#include "config.hpp"
 
 #include <timsort.hpp>
 

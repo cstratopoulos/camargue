@@ -1,6 +1,6 @@
 #include <catch.hpp>
 
-#include "tests.hpp"
+#include "config.hpp"
 #include "datagroups.hpp"
 #include "karp.hpp"
 #include "tooth.hpp"

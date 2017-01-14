@@ -2,7 +2,7 @@
 #include "util.hpp"
 #include "io_util.hpp"
 #include "timer.hpp"
-#include "tests.hpp"
+#include "config.hpp"
 
 #include <iomanip>
 #include <iostream>

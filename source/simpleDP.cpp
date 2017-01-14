@@ -1,7 +1,7 @@
 #include "simpleDP.hpp"
 #include "util.hpp"
 #include "err_util.hpp"
-#include "tests.hpp"
+#include "config.hpp"
 
 #include <iostream>
 #include <memory>
