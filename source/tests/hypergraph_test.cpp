@@ -5,6 +5,7 @@
 #include "hypergraph.hpp"
 #include "datagroups.hpp"
 #include "separator.hpp"
+#include "solver.hpp"
 #include "util.hpp"
 
 #include <algorithm>
@@ -24,6 +25,7 @@ using std::vector;
 
 using std::string;
 using std::cout;
+
 
 SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
           "[Sep][HyperGraph][get_coeff][get_coeffs]") {
