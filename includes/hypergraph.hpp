@@ -37,6 +37,7 @@ public:
         Standard = true //<! Anything that is not a domino parity inequality.
     };
 
+
     /// Find the Type of this cut.
     Type cut_type() const { return static_cast<Type>(teeth.empty()); }
 
@@ -70,6 +71,13 @@ private:
     CliqueBank *source_bank;
     ToothBank *source_toothbank;
 };
+
+
+inline std::ostream &operator<<(std::ostream &os, HyperGraph::Type t)
+{
+    os << ((t == HyperGraph::Type::Standard) ? "Standard" : "Domino");
+    return os;
+}
 
 /// The external storage of a collection of HyperGraph cuts in a Relaxation.
 class ExternalCuts {
