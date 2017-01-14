@@ -42,8 +42,6 @@ public:
     CoreLP(Data::GraphGroup &graph_data_,
            Data::BestGroup &best_data_);
 
-    double opt_objval();
-
     LP::PivType primal_pivot();
     void pivot_back();
 

@@ -137,17 +137,6 @@ TourBasis::TourBasis(const Graph::CoreGraph &core_graph,
     throw runtime_error("TourBasis constructor failed.");
 }
 
-double CoreLP::opt_objval() try
-{
-    primal_opt();
-    double result = get_objval();
-    pivot_back();
-    return result;
-} catch (const exception &e) {
-    cerr << e.what() << "\n";
-    throw runtime_error("Problem getting opt objval.");
-}
-
 PivType CoreLP::primal_pivot()
 {
     runtime_error err("Problem in CoreLP::primal_pivot.");
