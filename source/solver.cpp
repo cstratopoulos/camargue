@@ -112,11 +112,10 @@ LP::PivType Solver::cutting_loop()
     const vector<Edge> &edges = graph_data.core_graph.get_edges();
     vector<int> &perm = best_data.perm;
 
-    TourGraph TG;
-
+    Graph::TourGraph TG;
 
     try {
-        TG = TourGraph(tour_edges, edges, perm);        
+        TG = Graph::TourGraph(tour_edges, edges, perm);        
     } CMR_CATCH_PRINT_THROW("allocating tour graph", err);
 
 
@@ -174,7 +173,7 @@ LP::PivType Solver::cutting_loop()
             piv = LP::PivType::Frac;
 
             try {
-                TG = TourGraph(tour_edges, edges, perm);
+                TG = Graph::TourGraph(tour_edges, edges, perm);
             } CMR_CATCH_PRINT_THROW("updating tour graph", err);
             
             continue;

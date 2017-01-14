@@ -228,7 +228,7 @@ int Cut<blossom>::build_hypergraph(const blossom &blossom_cut) {
     rval = 1; CMR_GOTO_CLEANUP("Problem pushing back node set, ");
   }
 
-  GraphUtils::get_delta(blossom_cut.handle, edges, &deltacount, delta,
+  Graph::get_delta(blossom_cut.handle, edges, &deltacount, delta,
 			node_marks);
 
   if (deltacount == 0) {

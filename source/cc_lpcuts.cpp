@@ -28,7 +28,7 @@ LPcutList &LPcutList::operator=(LPcutList &&L) noexcept {
   return *this;
 }
 
-void LPcutList::filter_primal(CMR::TourGraph &TG)
+void LPcutList::filter_primal(Graph::TourGraph &TG)
 {
     if (cutcount == 0 || !head_cut) return;
 

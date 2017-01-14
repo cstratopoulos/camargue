@@ -102,7 +102,7 @@ public:
         }
 
 private:
-    const GraphUtils::CoreGraph &core_graph;
+    const Graph::CoreGraph &core_graph;
     std::vector<int> &delta;
     std::vector<int> &node_marks;
 };

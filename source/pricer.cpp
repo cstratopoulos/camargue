@@ -98,7 +98,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         throw err;
     }
 
-    GraphUtils::CoreGraph &core_graph = graph_group.core_graph;
+    Graph::CoreGraph &core_graph = graph_group.core_graph;
     CCrandstate rstate;
 
     CCutil_sprand(inst.seed(), &rstate);
@@ -271,8 +271,8 @@ void Pricer::price_candidates()
         e.redcost = inst.edgelen(e.end[0], e.end[1]) - node_pi[e.end[0]]
         - node_pi[e.end[1]];
 
-    GraphUtils::AdjList price_adjlist(inst.node_count(), target_edges);
-    vector<GraphUtils::Node> &price_nodelist = price_adjlist.nodelist;
+    Graph::AdjList price_adjlist(inst.node_count(), target_edges);
+    vector<Graph::Node> &price_nodelist = price_adjlist.nodelist;
     
     const std::vector<int> &def_tour = ext_cuts.get_cbank().ref_tour();
     int marker = 0;
@@ -288,7 +288,7 @@ void Pricer::price_candidates()
                 for (int k = seg.start; k <= seg.end; ++k) {
                     int node = def_tour[k];
 
-                    for (GraphUtils::AdjObj &a :
+                    for (Graph::AdjObj &a :
                          price_nodelist[node].neighbors) {
                         if (price_nodelist[a.other_end].mark == marker)
                             target_edges[a.edge_index].redcost += add_back;

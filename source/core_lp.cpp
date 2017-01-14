@@ -36,7 +36,7 @@ CoreLP::CoreLP(Data::GraphGroup &graph_data_,
     graph_data(graph_data_), best_data(best_data_),
     ext_cuts(best_data.best_tour_nodes, best_data.perm)
 {
-    GraphUtils::CoreGraph &core_graph = graph_data.core_graph;
+    Graph::CoreGraph &core_graph = graph_data.core_graph;
     int ncount = core_graph.node_count();
 
     char degree_sense = 'E';
@@ -81,7 +81,7 @@ CoreLP::CoreLP(Data::GraphGroup &graph_data_,
     throw runtime_error("Problem in CoreLP constructor.");
 }
 
-TourBasis::TourBasis(const GraphUtils::CoreGraph &core_graph,
+TourBasis::TourBasis(const Graph::CoreGraph &core_graph,
                      const Data::BestGroup &best_data) try :
     best_tour_edges(vector<double>(core_graph.edge_count())),
     colstat(vector<int>(core_graph.edge_count(), BStat::AtLower)),
@@ -153,7 +153,7 @@ PivType CoreLP::primal_pivot()
     runtime_error err("Problem in CoreLP::primal_pivot.");
 
     double low_limit = best_data.min_tour_value - Eps::Zero;
-    GraphUtils::CoreGraph &core_graph = graph_data.core_graph;
+    Graph::CoreGraph &core_graph = graph_data.core_graph;
 
     try {
         get_base(tour_base.colstat, tour_base.rowstat);
@@ -349,7 +349,7 @@ void CoreLP::add_edges(const vector<Edge> &batch)
 {
     runtime_error err("Problem in CoreLP::add_edges");
     
-    GraphUtils::CoreGraph &core_graph = graph_data.core_graph;
+    Graph::CoreGraph &core_graph = graph_data.core_graph;
     int old_ecount = core_graph.edge_count();
     int new_ecount = old_ecount + batch.size();
     

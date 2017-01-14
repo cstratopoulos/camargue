@@ -63,6 +63,9 @@ struct SupportGraph {
   s_adjobj *adjspace;
 };
 
+/// Classes and functions for working with graphs.
+namespace Graph {
+
 /** Wrapper to the Concorde CCtsp_lpgraph structure.
  * This class constructs a CCtsp_lpgraph which corresponds to a tour specified
  * by the constructor arguments. It is used to check whether cuts found by 
@@ -95,8 +98,6 @@ private:
   CCtsp_lpgraph L;
 };
 
-
-namespace GraphUtils {
 int connected (SupportGraph *G, int *icount,
 	       std::vector<int> &island, int starting_node);
 void dfs (int n, SupportGraph *G, int *icount,
@@ -121,7 +122,7 @@ int build_s_graph (int node_count,
 		   SupportGraph *G_s);
 }
 
-namespace GraphUtils {
+namespace Graph {
 
 struct AdjObj {
     AdjObj() = default;

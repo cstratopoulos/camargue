@@ -51,7 +51,7 @@ Separator::Separator(Data::GraphGroup &graphdata,
     throw runtime_error("Separator constructor failed.");
 }
 
-bool Separator::find_cuts(CMR::TourGraph &TG) try
+bool Separator::find_cuts(Graph::TourGraph &TG) try
 {
     bool found_seg = false;
     
@@ -86,7 +86,7 @@ bool Separator::find_cuts(CMR::TourGraph &TG) try
     throw runtime_error("Problem in Separator::find_cuts.");
 }
 
-bool Separator::segment_sep(TourGraph &TG) try
+bool Separator::segment_sep(Graph::TourGraph &TG) try
 {
     SegmentCuts segments(perm_elist, supp_data.support_ecap, TG, seg_q);
     bool result = segments.find_cuts();
@@ -98,7 +98,7 @@ bool Separator::segment_sep(TourGraph &TG) try
     throw runtime_error("Separator::segment_sep failed.");
 }
 
-bool Separator::fast2m_sep( TourGraph &TG) try
+bool Separator::fast2m_sep(Graph::TourGraph &TG) try
 {
     FastBlossoms fast2m(perm_elist, supp_data.support_ecap, TG, fast2m_q);
     bool result = fast2m.find_cuts();
@@ -110,7 +110,7 @@ bool Separator::fast2m_sep( TourGraph &TG) try
     throw runtime_error("Separator::fast2m_sep failed.");
 }
 
-bool Separator::blkcomb_sep(TourGraph &TG) try
+bool Separator::blkcomb_sep(Graph::TourGraph &TG) try
 {
     BlockCombs blkcomb(perm_elist, supp_data.support_ecap, TG, blkcomb_q);
     bool result = blkcomb.find_cuts();
@@ -138,7 +138,7 @@ bool Separator::simpleDP_sep() try {
     throw runtime_error("Separator::simpleDP_sep failed.");
 }
 
-bool Separator::connect_sep(TourGraph &TG) try {
+bool Separator::connect_sep(Graph::TourGraph &TG) try {
     ConnectCuts subtour(perm_elist, supp_data.support_ecap, TG, connect_q);
     bool result = subtour.find_cuts();
 

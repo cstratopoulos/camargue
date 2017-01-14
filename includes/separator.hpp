@@ -40,15 +40,15 @@ public:
               Data::KarpPartition &kpart,
               int round_limit);
     
-    bool find_cuts(TourGraph &TG);
+    bool find_cuts(Graph::TourGraph &TG);
 
-    bool segment_sep(TourGraph &TG);
-    bool fast2m_sep(TourGraph &TG);
-    bool blkcomb_sep(TourGraph &TG);
+    bool segment_sep(Graph::TourGraph &TG);
+    bool fast2m_sep(Graph::TourGraph &TG);
+    bool blkcomb_sep(Graph::TourGraph &TG);
 
     bool simpleDP_sep();
 
-    bool connect_sep(TourGraph &TG);
+    bool connect_sep(Graph::TourGraph &TG);
 
     const LPcutList &segment_q() const { return seg_q; }
     const LPcutList &fastblossom_q() const { return fast2m_q; }

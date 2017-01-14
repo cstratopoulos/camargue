@@ -24,7 +24,7 @@ namespace LP {
 
 struct TourBasis {
     TourBasis() = default;
-    TourBasis(const GraphUtils::CoreGraph &graph,
+    TourBasis(const Graph::CoreGraph &graph,
               const Data::BestGroup &best_data);
 
     std::vector<double> best_tour_edges;

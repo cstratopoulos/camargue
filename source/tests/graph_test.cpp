@@ -25,7 +25,7 @@ using CMR::IntPair;
 
 
 SCENARIO ("Constructing core LP adjacency lists",
-          "[GraphUtils][AdjList]") {
+          "[Graph][AdjList]") {
     vector<string> probs{"dantzig42", "lin318", "pr1002"};
 
     for (string& prob : probs) {
@@ -36,11 +36,11 @@ SCENARIO ("Constructing core LP adjacency lists",
             CMR::Data::Instance inst(probfile, 99);
             CMR::Data::GraphGroup g_dat(inst);
 
-            CMR::GraphUtils::AdjList full_alist;
+            CMR::Graph::AdjList full_alist;
 
             THEN ("We can construct an adj list from the edges") {
                 REQUIRE_NOTHROW(full_alist =
-                                CMR::GraphUtils::AdjList(inst.node_count(),
+                                CMR::Graph::AdjList(inst.node_count(),
                                                          g_dat.core_graph.get_edges()));
 
                 AND_THEN ("Edge finding in the alist agrees with the edges") {
@@ -69,7 +69,7 @@ SCENARIO ("Constructing core LP adjacency lists",
 }
 
 SCENARIO ("Constructing support adjacency lists",
-          "[GraphUtils][AdjList][SupportGraph]") {
+          "[Graph][AdjList][SupportGraph]") {
     vector<string> probs {"pr76", "d493", "fl1577"};
     
     for (string &fname : probs) {
@@ -89,12 +89,12 @@ SCENARIO ("Constructing support adjacency lists",
                                          b_dat, lp_edges, s_dat, inst);
                 int ncount = g_dat.core_graph.node_count();
 
-                CMR::GraphUtils::AdjList sup_alist;
+                CMR::Graph::AdjList sup_alist;
                 vector<int> &sup_inds = s_dat.support_indices;
                 const vector<CMR::Edge> &edges = g_dat.core_graph.get_edges();
                 
                 REQUIRE_NOTHROW(sup_alist =
-                                CMR::GraphUtils::AdjList(inst.node_count(),
+                                CMR::Graph::AdjList(inst.node_count(),
                                                          edges, lp_edges,
                                                          sup_inds));
 

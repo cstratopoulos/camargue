@@ -54,7 +54,7 @@ void make_cut_test(const string &tsp_fname,
     }
 
     int ncount = inst.node_count();
-    GraphUtils::CoreGraph &core_graph = graph_data.core_graph;
+    Graph::CoreGraph &core_graph = graph_data.core_graph;
 
     best_data.min_tour_value = 0.0;
   
@@ -78,7 +78,7 @@ void make_cut_test(const string &tsp_fname,
     vector<int> &best_tour_edges = best_data.best_tour_edges;
 
     try {
-        core_graph = GraphUtils::CoreGraph(best_data.best_tour_nodes,
+        core_graph = Graph::CoreGraph(best_data.best_tour_nodes,
                                            inst.edgelen_func());
 
         delta.resize(core_graph.edge_count(), 0);

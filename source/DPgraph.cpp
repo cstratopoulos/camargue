@@ -332,7 +332,7 @@ int DPCutGraph::grab_cuts(Sep::CutQueue<Sep::dominoparity> &domino_q)
       CMR_SET_GOTO(rval, "Couldn't expand cut nodes. ");
     }
 
-    GraphUtils::get_delta(cut_shore_nodes.size(), &cut_shore_nodes[0],
+    Graph::get_delta(cut_shore_nodes.size(), &cut_shore_nodes[0],
 			  cut_ecap.size(), &cut_elist[0], &deltacount,
 			  &cutgraph_delta[0], &cg_delta_marks[0]);
 

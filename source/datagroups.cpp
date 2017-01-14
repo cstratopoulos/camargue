@@ -144,7 +144,7 @@ try
 
     util::c_array_ptr edge_handle(elist);
 
-    core_graph = GraphUtils::CoreGraph(ncount, ecount, elist,
+    core_graph = Graph::CoreGraph(ncount, ecount, elist,
                                        inst.edgelen_func());
 
     island.resize(ncount);
@@ -165,7 +165,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
     CCrandstate rstate;
     CCutil_sprand(inst.seed(), &rstate);
 
-    GraphUtils::CoreGraph &core_graph = graph_data.core_graph;
+    Graph::CoreGraph &core_graph = graph_data.core_graph;
 
     int ncount = core_graph.node_count();
     int ecount = core_graph.edge_count();
@@ -265,7 +265,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
     perm(best_tour_nodes.size()),
     min_tour_value(DoubleMax)
 {
-    GraphUtils::CoreGraph &core_graph = graph_data.core_graph;
+    Graph::CoreGraph &core_graph = graph_data.core_graph;
 
     int ncount = core_graph.node_count();
 
@@ -346,12 +346,12 @@ void SupportGroup::reset(const int ncount, const vector<CMR::Edge> &edges,
             }
     } CMR_CATCH_PRINT_THROW("pushing back new support data", err);
 
-    if (CMR::GraphUtils::build_s_graph(ncount, edges, support_indices, lp_x,
+    if (CMR::Graph::build_s_graph(ncount, edges, support_indices, lp_x,
                                        &G_s))
         throw err;
 
     int icount = 0;
-    connected = CMR::GraphUtils::connected(&G_s, &icount, island, 0);
+    connected = CMR::Graph::connected(&G_s, &icount, island, 0);
 }
 
 bool SupportGroup::in_subtour_poly()

@@ -15,64 +15,7 @@ using std::exception;
 
 namespace CMR {
 
-TourGraph::TourGraph() noexcept { CCtsp_init_lpgraph_struct(&L); }
-
-TourGraph::TourGraph(const vector<int> &tour_edges,
-		     const vector<Edge> &edges, const vector<int> &perm)
-try
-{
-    vector<int> elist;
-    int ncount = perm.size();
-    int ecount = edges.size();
-
-    for (const Edge &e : edges) {
-        elist.push_back(perm[e.end[0]]);
-        elist.push_back(perm[e.end[1]]);
-    }
-    
-  for (int i : tour_edges)
-      d_tour.push_back(i);
-
-  CCtsp_init_lpgraph_struct(&L);
-  
-  if (CCtsp_build_lpgraph(&L, ncount, ecount, &elist[0], (int *) NULL))
-      throw runtime_error("CCtsp_build_lpgraph failed.");
-  
-  if (CCtsp_build_lpadj(&L, 0, ecount))
-      throw runtime_error("CCtsp_build_lpadj failed.");
-  
-} catch (const std::exception &e) {
-    cerr << e.what() << "\n";
-    throw std::runtime_error("TourGraph constructor failed.");
-}
-
-TourGraph::TourGraph(TourGraph &&T) noexcept : d_tour(std::move(T.d_tour))
-{
-    CCtsp_free_lpgraph(&L);
-    L = T.L;
-
-    CCtsp_init_lpgraph_struct(&T.L);
-    T.d_tour.clear();
-}
-
-TourGraph &TourGraph::operator=(TourGraph &&T) noexcept
-{
-    d_tour = std::move(T.d_tour);
-    
-    CCtsp_free_lpgraph(&L);
-    L = T.L;
-
-    CCtsp_init_lpgraph_struct(&T.L);
-    T.d_tour.clear();
-
-    return *this;
-}
-
-
-
-TourGraph::~TourGraph() {  CCtsp_free_lpgraph(&L); }
-
-int GraphUtils::connected(SupportGraph *G, int *icount,
+int Graph::connected(SupportGraph *G, int *icount,
 			  std::vector<int> &island,
 			  int starting_node) {
   *icount = 0;
@@ -87,7 +30,7 @@ int GraphUtils::connected(SupportGraph *G, int *icount,
     return 0;
 }
 
-void GraphUtils::dfs(int n, SupportGraph *G, int *icount,
+void Graph::dfs(int n, SupportGraph *G, int *icount,
 		     std::vector<int> &island)
 {
   int neighbor;
@@ -106,7 +49,7 @@ void GraphUtils::dfs(int n, SupportGraph *G, int *icount,
   }
 }
 
-void GraphUtils::get_delta (const std::vector<int> &nodelist,
+void Graph::get_delta (const std::vector<int> &nodelist,
 			    std::vector<Edge> &elist,
 			    int *deltacount_p, std::vector<int> &delta,
 			    std::vector<int> &marks) {
@@ -124,7 +67,7 @@ void GraphUtils::get_delta (const std::vector<int> &nodelist,
     marks[nodelist[i]] = 0;
 }
 
-void GraphUtils::get_delta (int nsize, int *nlist, int ecount, int *elist,
+void Graph::get_delta (int nsize, int *nlist, int ecount, int *elist,
 			 int *deltacount, int *delta, int *marks) {
   int i, k = 0;
 
@@ -141,7 +84,7 @@ void GraphUtils::get_delta (int nsize, int *nlist, int ecount, int *elist,
   for (i = 0; i < nsize; i++) marks[nlist[i]] = 0;
 }
 
-void GraphUtils::get_delta(const int interval_start, const int interval_end,
+void Graph::get_delta(const int interval_start, const int interval_end,
 			   const vector<int> &tour_nodes,
 			   const vector<int> &elist,
 			   int &deltacount, vector<int> &delta,
@@ -161,7 +104,7 @@ void GraphUtils::get_delta(const int interval_start, const int interval_end,
     node_marks[tour_nodes[i]] = 0;  
 }
 
-int GraphUtils::build_s_graph (int node_count,
+int Graph::build_s_graph (int node_count,
 			       const vector<Edge> &edges,
 			       const vector<int> &support_indices,
 			       const vector<double> &m_lp_edges,
@@ -218,7 +161,63 @@ int GraphUtils::build_s_graph (int node_count,
   return 0;
 }
 
-namespace GraphUtils {
+namespace Graph {
+
+TourGraph::TourGraph() noexcept { CCtsp_init_lpgraph_struct(&L); }
+
+TourGraph::TourGraph(const vector<int> &tour_edges,
+		     const vector<Edge> &edges, const vector<int> &perm)
+try
+{
+    vector<int> elist;
+    int ncount = perm.size();
+    int ecount = edges.size();
+
+    for (const Edge &e : edges) {
+        elist.push_back(perm[e.end[0]]);
+        elist.push_back(perm[e.end[1]]);
+    }
+    
+  for (int i : tour_edges)
+      d_tour.push_back(i);
+
+  CCtsp_init_lpgraph_struct(&L);
+  
+  if (CCtsp_build_lpgraph(&L, ncount, ecount, &elist[0], (int *) NULL))
+      throw runtime_error("CCtsp_build_lpgraph failed.");
+  
+  if (CCtsp_build_lpadj(&L, 0, ecount))
+      throw runtime_error("CCtsp_build_lpadj failed.");
+  
+} catch (const std::exception &e) {
+    cerr << e.what() << "\n";
+    throw std::runtime_error("TourGraph constructor failed.");
+}
+
+TourGraph::TourGraph(TourGraph &&T) noexcept : d_tour(std::move(T.d_tour))
+{
+    CCtsp_free_lpgraph(&L);
+    L = T.L;
+
+    CCtsp_init_lpgraph_struct(&T.L);
+    T.d_tour.clear();
+}
+
+TourGraph &TourGraph::operator=(TourGraph &&T) noexcept
+{
+    d_tour = std::move(T.d_tour);
+    
+    CCtsp_free_lpgraph(&L);
+    L = T.L;
+
+    CCtsp_init_lpgraph_struct(&T.L);
+    T.d_tour.clear();
+
+    return *this;
+}
+
+
+TourGraph::~TourGraph() {  CCtsp_free_lpgraph(&L); }
 
 AdjList::AdjList(int ncount, const vector<CMR::Edge> &ref_elist) try
     : node_count(ncount), edge_count(ref_elist.size()),

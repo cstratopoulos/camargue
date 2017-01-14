@@ -89,7 +89,7 @@ struct GraphGroup {
     GraphGroup() = default;
     GraphGroup(const Instance &inst);
 
-    GraphUtils::CoreGraph core_graph;
+    Graph::CoreGraph core_graph;
     
     std::vector<int> island; /**< Stores components from a dfs of m_graph */
     std::vector<int> delta; /**< Stores edges in delta of some node set */
