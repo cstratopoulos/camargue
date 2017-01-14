@@ -50,7 +50,7 @@ void Graph::dfs(int n, SupportGraph *G, int *icount,
 }
 
 void Graph::get_delta (const std::vector<int> &nodelist,
-			    std::vector<Edge> &elist,
+                       std::vector<Graph::Edge> &elist,
 			    int *deltacount_p, std::vector<int> &delta,
 			    std::vector<int> &marks) {
   for (int i = 0; i < nodelist.size(); i++)
@@ -105,7 +105,7 @@ void Graph::get_delta(const int interval_start, const int interval_end,
 }
 
 int Graph::build_s_graph (int node_count,
-			       const vector<Edge> &edges,
+                          const vector<Graph::Edge> &edges,
 			       const vector<int> &support_indices,
 			       const vector<double> &m_lp_edges,
                                SupportGraph *G_s)
@@ -219,12 +219,12 @@ TourGraph &TourGraph::operator=(TourGraph &&T) noexcept
 
 TourGraph::~TourGraph() {  CCtsp_free_lpgraph(&L); }
 
-AdjList::AdjList(int ncount, const vector<CMR::Edge> &ref_elist) try
+AdjList::AdjList(int ncount, const vector<Edge> &ref_elist) try
     : node_count(ncount), edge_count(ref_elist.size()),
       nodelist(vector<Node>(node_count, Node((2 * edge_count) / node_count)))
 {
     for (int i = 0; i < edge_count; ++i) {
-        const CMR::Edge &e = ref_elist[i];
+        const Edge &e = ref_elist[i];
 
         nodelist[e.end[0]].neighbors.emplace_back(e.end[1], i, e.len);
         nodelist[e.end[1]].neighbors.emplace_back(e.end[0], i, e.len);
@@ -250,14 +250,14 @@ AdjList::AdjList(int ncount, const vector<Price::PrEdge> &price_elist) try
 }
 
 AdjList::AdjList(int  ncount,
-                 const vector<CMR::Edge> &ref_elist,
+                 const vector<Edge> &ref_elist,
                  const vector<double> &edge_caps,
                  const std::vector<int> &keep_indices) try
     : node_count(ncount), edge_count(keep_indices.size()),
       nodelist(vector<Node>(node_count, Node((2 * edge_count) / node_count)))
 {
     for (int index : keep_indices) {
-        const CMR::Edge &e = ref_elist[index];
+        const Edge &e = ref_elist[index];
         double cap = edge_caps[index];
 
         nodelist[e.end[0]].neighbors.emplace_back(e.end[1], index, cap);

@@ -49,7 +49,7 @@ CoreLP::CoreLP(Data::GraphGroup &graph_data_,
     double lb = 0.0;
     double ub = 1.0;
     
-    for (const CMR::Edge &e : core_graph.get_edges()) {
+    for (const Graph::Edge &e : core_graph.get_edges()) {
         double objval = e.len;
         vector<int> ends{e.end[0], e.end[1]};
 
@@ -345,7 +345,7 @@ void CoreLP::add_cuts(const Sep::CutQueue<Sep::dominoparity> &dpq)
     }
 }
 
-void CoreLP::add_edges(const vector<Edge> &batch)
+void CoreLP::add_edges(const vector<Graph::Edge> &batch)
 {
     runtime_error err("Problem in CoreLP::add_edges");
     
@@ -356,7 +356,7 @@ void CoreLP::add_edges(const vector<Edge> &batch)
     try {
         graph_data.delta.resize(new_ecount, 0);
         best_data.best_tour_edges.resize(new_ecount, 0);        
-        for (const Edge &e : batch)
+        for (const Graph::Edge &e : batch)
             core_graph.add_edge(e);        
     } CMR_CATCH_PRINT_THROW("adding edges to core graph/best group", err);
 
@@ -366,7 +366,7 @@ void CoreLP::add_edges(const vector<Edge> &batch)
     vector<double> cmatval;
 
     try {
-        for (const Edge &e : batch) {
+        for (const Graph::Edge &e : batch) {
             double objval = e.len;
             
             ext_cuts.get_col(e.end[0], e.end[1], cmatind, cmatval);

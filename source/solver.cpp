@@ -109,7 +109,7 @@ LP::PivType Solver::cutting_loop()
     int auground = 0;
 
     vector<int> &tour_edges = best_data.best_tour_edges;
-    const vector<Edge> &edges = graph_data.core_graph.get_edges();
+    const vector<Graph::Edge> &edges = graph_data.core_graph.get_edges();
     vector<int> &perm = best_data.perm;
 
     Graph::TourGraph TG;

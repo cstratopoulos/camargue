@@ -158,7 +158,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
             if (!edge_q.empty()) {
                 sort_q();
                 try {
-                    vector<Edge> add_batch = get_pool_chunk();
+                    vector<Graph::Edge> add_batch = get_pool_chunk();
                     core_lp.add_edges(add_batch);
                 } CMR_CATCH_PRINT_THROW("adding edges for aug tour", err);
                 cout << "\tFound and added edges for aug tour.\n";
@@ -185,7 +185,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
             sort_q();
 
             try {
-                vector<Edge> add_batch = get_pool_chunk();
+                vector<Graph::Edge> add_batch = get_pool_chunk();
                 
                 num_added = add_batch.size();
                 core_lp.add_edges(add_batch);
@@ -239,9 +239,9 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     return ScanStat::FullOpt;
 }
 
-vector<Edge> Pricer::get_pool_chunk()
+vector<Graph::Edge> Pricer::get_pool_chunk()
 {
-    vector<Edge> result;
+    vector<Graph::Edge> result;
 
     if (edge_q.size() <= AddBatch) {
         result.reserve(edge_q.size());

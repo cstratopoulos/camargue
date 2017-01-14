@@ -125,7 +125,7 @@ struct BestGroup {
  * and the information about the associated LP solution
  */
 struct SupportGroup  {
-    void reset(const int node_count, const std::vector<CMR::Edge> &edges,
+    void reset(const int node_count, const std::vector<Graph::Edge> &edges,
                const std::vector<double> &lp_x,
                std::vector<int> &island);
     

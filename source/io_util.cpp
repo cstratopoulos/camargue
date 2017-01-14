@@ -58,7 +58,7 @@ void write_tour_nodes(const std::vector<int> &tour_nodes,
 }
 
 void write_tour_edges(const std::vector<int> &tour_edges,
-		     const std::vector<CMR::Edge> &edges,
+		     const std::vector<Graph::Edge> &edges,
 		     const int node_count,
 		     const std::string &tour_edges_fname)
 {

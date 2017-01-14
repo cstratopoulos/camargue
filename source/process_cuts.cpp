@@ -35,7 +35,7 @@ void CutTranslate::get_sparse_row(const CCtsp_lpcut_in &cc_cut,
 
     int ncount = perm.size();
     map<int, double> coeff_map;
-    const vector<Edge> &edges = core_graph.get_edges();
+    const vector<Graph::Edge> &edges = core_graph.get_edges();
 
     for (int i = 0; i < cc_cut.cliquecount; ++i) {
         vector<bool> node_marks(ncount, false);
@@ -85,7 +85,7 @@ void CutTranslate::get_sparse_row(const dominoparity &dp_cut,
     rhs = 0.0;
     sense = 'L';
 
-    const vector<Edge> &edges = core_graph.get_edges();
+    const vector<Graph::Edge> &edges = core_graph.get_edges();
 
     try {
         coeff_buff.resize(edges.size(), 0.0);
@@ -95,7 +95,7 @@ void CutTranslate::get_sparse_row(const dominoparity &dp_cut,
         node_marks[tour_nodes[node]] = 1;
 
     for (int i = 0; i < edges.size(); ++i) {
-        const Edge &e = edges[i];
+        const Graph::Edge &e = edges[i];
         int sum = node_marks[e.end[0]] + node_marks[e.end[1]];
         coeff_buff[i] += sum;
     }
@@ -111,7 +111,7 @@ void CutTranslate::get_sparse_row(const dominoparity &dp_cut,
         node_marks[tour_nodes[T.root]] = -2;
 
         for (int i = 0; i < edges.size(); ++i) {
-            Edge e = edges[i];
+            Graph::Edge e = edges[i];
             int sum = node_marks[e.end[0]] + node_marks[e.end[1]];
             switch (sum) {
             case 2:

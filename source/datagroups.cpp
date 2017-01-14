@@ -171,7 +171,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
     int ecount = core_graph.edge_count();
     vector<int> elist;
 
-    for(const Edge &e : core_graph.get_edges()) {
+    for(const Graph::Edge &e : core_graph.get_edges()) {
         elist.push_back(e.end[0]);
         elist.push_back(e.end[1]);
     }
@@ -321,7 +321,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
     throw runtime_error("BestGroup file constructor failed.");
 }
 
-void SupportGroup::reset(const int ncount, const vector<CMR::Edge> &edges,
+void SupportGroup::reset(const int ncount, const vector<Graph::Edge> &edges,
                          const vector<double> &lp_x,
                          vector<int> &island)
 {

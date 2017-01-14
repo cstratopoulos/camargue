@@ -50,7 +50,7 @@ public:
     void add_cuts(const Sep::LPcutList &cutq);
     void add_cuts(const Sep::CutQueue<Sep::dominoparity> &dp_q);
 
-    void add_edges(const std::vector<Edge> &add_batch);
+    void add_edges(const std::vector<Graph::Edge> &add_batch);
 
     friend class CMR::Solver;
 

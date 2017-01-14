@@ -29,7 +29,7 @@ public:
     void set(int end1, int end2, int val); /**< Set val for existing pair. */
     void erase(int end1, int end2); /**< Delete a pair. */
 
-    std::vector<Edge> get_all(); /**< Get a vector of all the edges. */
+    std::vector<Graph::Edge> get_all(); /**< Get a vector of all the edges. */
 
     void clear(); /**< Clear all the edges. */
 

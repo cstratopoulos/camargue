@@ -35,7 +35,7 @@ public:
 
     ScanStat gen_edges(LP::PivType piv_stat); //<! Generate/add edges to core.
 
-    std::vector<Edge> get_pool_chunk(); //<! Get at most AddBatch edges to add.
+    std::vector<Graph::Edge> get_pool_chunk(); //<! Get at most AddBatch edges.
 
     int queue_size() const { return edge_q.size(); } //<! Size of edge queue.
 

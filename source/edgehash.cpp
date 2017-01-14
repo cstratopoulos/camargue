@@ -43,7 +43,7 @@ void EdgeHash::erase(int end1, int end2)
     CCutil_edgehash_del(&eh, end1, end2);
 }
 
-vector<Edge> EdgeHash::get_all()
+vector<Graph::Edge> EdgeHash::get_all()
 {
     int ecount = 0;
     int *elist;
@@ -55,10 +55,10 @@ vector<Edge> EdgeHash::get_all()
     util::c_array_ptr elist_owner(elist);
     util::c_array_ptr elen_owner(elen);
 
-    vector<Edge> result(ecount);
+    vector<Graph::Edge> result(ecount);
 
     for (int i = 0; i < ecount; ++i)
-        result[i] = Edge(elist[2 * i], elist[(2 * i) +1], elen[i]);
+        result[i] = Graph::Edge(elist[2 * i], elist[(2 * i) +1], elen[i]);
 
     return result;
 }
