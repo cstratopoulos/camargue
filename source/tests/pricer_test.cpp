@@ -32,6 +32,8 @@ SCENARIO ("Comparing Pricer reduced costs to CPLEX",
         "dantzig42",
         "rat99",
         "lin318",
+        "d493",
+        "p654"
         };
 
     for (string &fname : probs) {
@@ -67,6 +69,57 @@ SCENARIO ("Comparing Pricer reduced costs to CPLEX",
 
                     for (int i = 0; i < pr_edges.size(); ++i) {
                         CHECK(pr_edges[i].redcost == cpx_rc[i]);
+                        if (pr_edges[i].redcost != cpx_rc[i]) {
+                            int dom_t_ct = 0;
+                            int dom_h_ct = 0;
+                            int subct = 0;
+                            int combct = 0;
+                            const vector<int> &perm =
+                            core_lp.external_cuts().get_cbank().ref_perm();
+                            using CutType = CMR::Sep::HyperGraph::Type;
+                            
+                            int e0 = perm[pr_edges[i].end[0]];
+                            int e1 = perm[pr_edges[i].end[1]];
+                            
+                            for (const CMR::Sep::HyperGraph &H :
+                                 core_lp.external_cuts().get_cuts()) {
+                                switch(H.cut_type()) {
+                                case CutType::Subtour:
+                                    if (H.get_cliques()[0]->contains(e0) !=
+                                        H.get_cliques()[0]->contains(e1))
+                                        ++subct;
+                                    break;
+                                case CutType::Comb:
+                                    for (const CMR::Sep::Clique::Ptr &clq :
+                                         H.get_cliques())
+                                        if (clq->contains(e0) !=
+                                            clq->contains(e1))
+                                            ++combct;
+                                    break;
+                                case CutType::Domino:
+                                    if (H.get_cliques()[0]->contains(e0) !=
+                                        H.get_cliques()[0]->contains(e1))
+                                        ++dom_h_ct;
+                                    for (const CMR::Sep::Tooth::Ptr &T :
+                                         H.get_teeth()) {
+                                        if ((T->set_pair()[0].contains(e0) &&
+                                             T->set_pair()[1].contains(e1)) || 
+                                            (T->set_pair()[0].contains(e1) &&
+                                             T->set_pair()[1].contains(e0)) ||
+                                            (T->set_pair()[1].contains(e0) &&
+                                             T->set_pair()[1].contains(e1)))
+                                            ++dom_t_ct;
+                                    }
+                                    break;
+                                }
+                            }
+
+                            cout << "\tcrosses " << subct << " subtours"
+                                 << ", " << combct << " combs, "
+                                 << dom_t_ct << " teeth, " << dom_h_ct
+                                 << " handles.\n";
+                            
+                        }
                     }
                 }
             }
@@ -74,6 +127,7 @@ SCENARIO ("Comparing Pricer reduced costs to CPLEX",
     }
 }
 
+/*
 SCENARIO ("Running the Solver cutting_loop on augmentable or optimal instances",
           "[Price][Pricer][add_edges]") {
     vector<string> probs{
@@ -96,5 +150,6 @@ SCENARIO ("Running the Solver cutting_loop on augmentable or optimal instances",
         }
     }
 }
+*/
 
 #endif //CMR_DO_TESTS

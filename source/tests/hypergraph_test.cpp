@@ -27,7 +27,7 @@ using std::string;
 using std::cout;
 
 
-SCENARIO ("Comparing HyperGraph edge coeffs to sparse rows",
+SCENARIO ("Comparing HyperGraph edge coeffs to comb/domino sparse rows",
           "[Sep][HyperGraph][get_coeff][get_coeffs]") {
     vector<string> probs{
         "dantzig42",
