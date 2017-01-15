@@ -83,6 +83,16 @@ HyperGraph::~HyperGraph()
             source_toothbank->del_tooth(ref);
 }
 
+HyperGraph::Type HyperGraph::cut_type() const
+{
+    using Type = HyperGraph::Type;
+
+    if (!teeth.empty())
+        return Type::Domino;
+
+    return (cliques.size() == 1) ? Type::Subtour : Type::Comb;
+}
+
 double HyperGraph::get_coeff(int end0, int end1) const
 {
     if (end0 == end1)
@@ -90,7 +100,7 @@ double HyperGraph::get_coeff(int end0, int end1) const
     
     double result = 0.0;
     
-    if (cut_type() == Type::Standard) {
+    if (cut_type() != Type::Domino) {
         const vector<int> &perm = source_bank->ref_perm();
 
         int end0_ind = perm[end0];
@@ -174,7 +184,7 @@ void HyperGraph::get_coeffs(const std::vector<Price::PrEdge> &edges,
     std::map<int, double> coeff_map;
     vector<bool> node_marks(ncount, false);
 
-    if (cut_type() == Type::Standard) {
+    if (cut_type() != Type::Domino) {
         for (const Clique::Ptr &clq_ref : cliques) {
             for (const Segment &seg : clq_ref->seg_list())
                 for (int k = seg.start; k <= seg.end; ++k)
@@ -277,6 +287,15 @@ void HyperGraph::get_coeffs(const std::vector<Price::PrEdge> &edges,
         }
 
     
+}
+
+std::ostream &operator<<(std::ostream &os, HyperGraph::Type t)
+{
+    using Type = HyperGraph::Type;
+
+    os << ((t == Type::Subtour) ? "Subtour" :
+           ((t == Type::Comb) ? "Comb" : "Domino"));
+    return os;
 }
 
 ExternalCuts::ExternalCuts(const vector<int> &tour, const vector<int> &perm)
@@ -412,7 +431,7 @@ void ExternalCuts::get_duals(const LP::Relaxation &relax,
     //get clique_pi for non-domino cuts
     for (int i = 0; i < cuts.size(); ++i) {
         const Sep::HyperGraph &H = cuts[i];
-        if (H.cut_type() != CutType::Standard)
+        if (H.cut_type() == CutType::Domino)
             continue;
 
         double pival = cut_pi[i];

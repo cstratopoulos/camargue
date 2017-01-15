@@ -269,11 +269,8 @@ void CoreLP::rebuild_basis()
             if (i < ncount)
                 cout << "Found nonzero infeas on degree eqn\n";
             else {
-                cout << "Found nonzero infeas on cut, type: ";
-                if (ext_cuts.get_cut(i).cut_type() == CutType::Standard)
-                    cout << "subtour, blossom, or comb\n";
-                else
-                    cout << "domino\n";                
+                cout << "Found nonzero infeas on cut, type: "
+                     << ext_cuts.get_cut(i).cut_type() << "\n";
             }
             
             throw runtime_error("tour is now infeasible.");

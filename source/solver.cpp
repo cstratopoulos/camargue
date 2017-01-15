@@ -210,7 +210,7 @@ LP::PivType Solver::cutting_loop(bool do_price)
     int dpcount = 0;
     
     for (const Sep::HyperGraph &H : core_lp.ext_cuts.get_cuts())
-        if (H.cut_type() == CutType::Standard)
+        if (H.cut_type() != CutType::Domino)
             ++stcount;
         else
             ++dpcount;

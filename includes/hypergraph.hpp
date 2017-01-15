@@ -32,14 +32,15 @@ public:
     ~HyperGraph(); //!< Destruct and decrement/delete Clique/Tooth refs.
 
     /// Enumeration for the types of HyperGraph inequalities.
-    enum Type : bool {
-        Domino = false, //<! A domino parity inequality.
-        Standard = true //<! Anything that is not a domino parity inequality.
+    enum Type {
+        Domino = 0, //<! A domino parity inequality.
+        Subtour = 1, //<! Anything that is not a domino parity inequality.
+        Comb = 2
     };
 
 
     /// Find the Type of this cut.
-    Type cut_type() const { return static_cast<Type>(teeth.empty()); }
+    Type cut_type() const;
 
     /// Get the coefficient of an edge specified by endpoints.
     double get_coeff(int end0, int end1) const;
@@ -71,13 +72,6 @@ private:
     CliqueBank *source_bank;
     ToothBank *source_toothbank;
 };
-
-
-inline std::ostream &operator<<(std::ostream &os, HyperGraph::Type t)
-{
-    os << ((t == HyperGraph::Type::Standard) ? "Standard" : "Domino");
-    return os;
-}
 
 /// The external storage of a collection of HyperGraph cuts in a Relaxation.
 class ExternalCuts {

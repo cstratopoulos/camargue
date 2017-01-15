@@ -316,7 +316,7 @@ void Pricer::price_edges(vector<PrEdge> &target_edges, bool compute_duals)
             continue;
 
         const Sep::HyperGraph &H = cutlist[i];
-        if (H.cut_type() == CutType::Standard)
+        if (H.cut_type() != CutType::Domino)
             continue;
 
         try {
