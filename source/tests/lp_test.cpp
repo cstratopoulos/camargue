@@ -1,18 +1,21 @@
-#include <catch.hpp>
+#include "config.hpp"
 
 #ifdef CMR_DO_TESTS
 
+#include <cplex.h>
+
 #include "lp_interface.hpp"
 #include "core_lp.hpp"
-#include "config.hpp"
-#include "err_util.hpp"
+#include "separator.hpp"
 
-#include <cplex.h>
+#include "err_util.hpp"
 
 #include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <catch.hpp>
 
 using std::cout;
 using std::vector;
@@ -21,7 +24,7 @@ using std::string;
 using std::pair;
 
 SCENARIO ("Performing single pivots",
-          "[LP][CoreLP][primal_pivot]") {
+          "[LP][CoreLP][primal_pivot][Sep][Separator]") {
     vector<string> probs{"pr76", "a280", "p654", "pr1002", "rl1304"};
 
     for (string &prob : probs) {
@@ -44,18 +47,59 @@ SCENARIO ("Performing single pivots",
                     double pval = core.get_objval();
 
                     REQUIRE(pval != tourlen);
-                    bool samevec = (tourx == pivx);
-                    REQUIRE_FALSE(samevec);
+                    REQUIRE(tourx != pivx);
+                    cout << "\tPivot val: " << pval << "\n";
 
                     AND_WHEN("We pivot back") {
                         THEN("The tour vector changes back.") {
                             REQUIRE_NOTHROW(core.pivot_back());
-                            pivx = core.lp_vec();
-                            pval = core.get_objval();
+                            REQUIRE(core.get_objval() == tourlen);
+                            REQUIRE(tourx == core.lp_vec());
 
-                            REQUIRE(pval == tourlen);
-                            samevec = (tourx == pivx);
-                            REQUIRE(samevec);
+                            CMR::Data::SupportGroup s_dat;
+
+                            s_dat.reset(inst.node_count(),
+                                        g_dat.core_graph.get_edges(), pivx,
+                                        g_dat.island);
+
+                            CMR::Graph::TourGraph TG(b_dat.best_tour_edges,
+                                                     g_dat.core_graph.
+                                                     get_edges(), b_dat.perm);
+                            CMR::Data::KarpPartition kpart;
+                            CMR::Sep::Separator sep(g_dat, b_dat, s_dat,
+                                                    kpart);
+
+                            bool found_some = false;
+
+                            if (sep.segment_sep(TG)) {
+                                found_some = true;
+                                core.add_cuts(sep.segment_q());
+                            } else if (sep.fast2m_sep(TG)) {
+                                found_some = true;
+                                core.add_cuts(sep.fastblossom_q());
+                            } else if (sep.blkcomb_sep(TG)) {
+                                found_some = true;
+                                core.add_cuts(sep.blockcomb_q());
+                            } else if (sep.connect_sep(TG)) {
+                                found_some = true;
+                                core.add_cuts(sep.connect_cuts_q());
+                            }
+
+                            REQUIRE(found_some);
+                            
+                            AND_WHEN("We pivot again after adding cuts") {
+                                THEN("The tour vector changes again.") {
+                                    core.primal_pivot();
+                                    vector<double> piv2x = core.lp_vec();
+                                    double piv2val = core.get_objval();
+                                    cout << "\tPiv2 val: " << piv2val << "\n";
+
+                                    REQUIRE(piv2x != pivx);
+                                    REQUIRE(piv2val != pval);
+                                    cout << "\t Pivot delta: "
+                                         << (piv2val - pval) << "\n";
+                                }
+                            }
                         }
                     }
                 }
