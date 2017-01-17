@@ -17,6 +17,7 @@
 
 #include <catch.hpp>
 
+using std::abs;
 using std::min;
 using std::max;
 using std::array;
@@ -30,11 +31,13 @@ SCENARIO ("Comparing Pricer reduced costs to CPLEX",
           "[Price][Pricer][price_edges]") {
     vector<string> probs {
         "ulysses16",
-        // "dantzig42",
-        // "rat99",
-        // "lin318",
-        // "d493",
-        // "p654"
+        "dantzig42",
+        "rat99",
+        "lin318",
+        "d493",
+        "p654",
+        "pr1002",
+        "d2103"
         };
 
     for (string &fname : probs) {
@@ -68,12 +71,22 @@ SCENARIO ("Comparing Pricer reduced costs to CPLEX",
                     vector<double> cpx_rc =
                     core_lp.redcosts(0, core_lp.num_cols() - 1);
 
+                    vector<double> node_pi =
+                    core_lp.pi(0, solver.inst_info().node_count() - 1);
+                    vector<double> cut_pi =
+                    core_lp.pi(solver.inst_info().node_count(),
+                               core_lp.num_rows() - 1);
+
+                    const vector<int> &def_tour = solver.best_info().
+                    best_tour_nodes;
+
 
                     for (int i = 0; i < pr_edges.size(); ++i) {
-                        cout << "--------------\n";
-                        CHECK(pr_edges[i].redcost == cpx_rc[i]);
-                        if (1// pr_edges[i].redcost != cpx_rc[i]
-                            ) {
+                        //cout << "--------------\n";
+                        CHECK(pr_edges[i].redcost ==
+                              Approx(cpx_rc[i]).epsilon(CMR::Epsilon::Zero));
+                        if (abs(pr_edges[i].redcost - cpx_rc[i]) >=
+                            CMR::Epsilon::Zero) {
                             int dom_t_ct = 0;
                             int dom_h_ct = 0;
                             int subct = 0;
@@ -81,9 +94,12 @@ SCENARIO ("Comparing Pricer reduced costs to CPLEX",
                             const vector<int> &perm =
                             core_lp.external_cuts().get_cbank().ref_perm();
                             using CutType = CMR::Sep::HyperGraph::Type;
+
+                            int end0 = pr_edges[i].end[0];
+                            int end1 = pr_edges[i].end[1];
                             
-                            int e0 = perm[pr_edges[i].end[0]];
-                            int e1 = perm[pr_edges[i].end[1]];
+                            int e0 = perm[end0];
+                            int e1 = perm[end1];
                             
                             for (const CMR::Sep::HyperGraph &H :
                                  core_lp.external_cuts().get_cuts()) {
@@ -118,13 +134,27 @@ SCENARIO ("Comparing Pricer reduced costs to CPLEX",
                                 }
                             }
 
+                            // cout << "\ti = " << i << ", ends "
+                            //      << end0 << ", " << end1 << "\n";
+
                             cout << "\tcrosses " << subct << " subtours"
                                  << ", " << combct << " combs, "
                                  << dom_t_ct << " teeth, " << dom_h_ct
                                  << " handles.\n";
-                            
+                            // cout << "len: "
+                            //      << solver.inst_info().edgelen(end0, end1)
+                            //      << ", node pi: "
+                            //      << node_pi[end0] << "/" << node_pi[end1]
+                            //      << "\n";
+                            // cout << "only cut pi: " << cut_pi[0] << "\n";
+                            // cout << "\tNodes of only subtour cut:\n";
+                            // for (int i : core_lp.external_cuts().
+                            //      get_cut(16).
+                            //      get_cliques()[0]->node_list(def_tour))
+                            //     cout << i << ", ";
+                            // cout << "\n";
                         }
-                        cout << "--------------\n";
+                        //cout << "--------------\n";
                     }
                 }
             }
