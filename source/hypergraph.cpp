@@ -405,7 +405,7 @@ void ExternalCuts::get_duals(const LP::Relaxation &relax,
                              vector<double> &node_pi,
                              vector<double> &node_pi_est,
                              vector<double> &cut_pi,
-                             unordered_map<Clique, double> clique_pi) const
+                             unordered_map<Clique, double> &clique_pi) const
 {
     runtime_error err("Problem in ExternalCuts::get_duals.");
     using CutType = HyperGraph::Type;

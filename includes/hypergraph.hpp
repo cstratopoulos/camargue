@@ -113,7 +113,7 @@ public:
                    std::vector<double> &node_pi,
                    std::vector<double> &node_pi_est,
                    std::vector<double> &cut_pi,
-                   std::unordered_map<Clique, double> clique_pi) const;
+                   std::unordered_map<Clique, double> &clique_pi) const;
 
 private:
     const int node_count;
