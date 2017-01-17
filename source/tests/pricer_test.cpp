@@ -29,11 +29,12 @@ using std::cout;
 SCENARIO ("Comparing Pricer reduced costs to CPLEX",
           "[Price][Pricer][price_edges]") {
     vector<string> probs {
-        "dantzig42",
-        "rat99",
-        "lin318",
-        "d493",
-        "p654"
+        "ulysses16",
+        // "dantzig42",
+        // "rat99",
+        // "lin318",
+        // "d493",
+        // "p654"
         };
 
     for (string &fname : probs) {
@@ -67,9 +68,12 @@ SCENARIO ("Comparing Pricer reduced costs to CPLEX",
                     vector<double> cpx_rc =
                     core_lp.redcosts(0, core_lp.num_cols() - 1);
 
+
                     for (int i = 0; i < pr_edges.size(); ++i) {
+                        cout << "--------------\n";
                         CHECK(pr_edges[i].redcost == cpx_rc[i]);
-                        if (pr_edges[i].redcost != cpx_rc[i]) {
+                        if (1// pr_edges[i].redcost != cpx_rc[i]
+                            ) {
                             int dom_t_ct = 0;
                             int dom_h_ct = 0;
                             int subct = 0;
@@ -120,6 +124,7 @@ SCENARIO ("Comparing Pricer reduced costs to CPLEX",
                                  << " handles.\n";
                             
                         }
+                        cout << "--------------\n";
                     }
                 }
             }
