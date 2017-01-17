@@ -272,17 +272,18 @@ void Pricer::price_edges(vector<PrEdge> &target_edges, bool compute_duals)
     for (PrEdge &e : target_edges)
         e.redcost = inst.edgelen(e.end[0], e.end[1]) - node_pi[e.end[0]]
         - node_pi[e.end[1]];
-
+    
     Graph::AdjList price_adjlist;
 
     try  {
         price_adjlist = Graph::AdjList(inst.node_count(), target_edges);
     } CMR_CATCH_PRINT_THROW("Couldn't build price adjlist.", err);
-    
+
     vector<Graph::Node> &price_nodelist = price_adjlist.nodelist;
     
     const std::vector<int> &def_tour = ext_cuts.get_cbank().ref_tour();
     int marker = 0;
+
     
     for (const std::pair<Sep::Clique, double> &kv : clique_pi) {
         const Sep::Clique &clq = kv.first;
@@ -291,17 +292,13 @@ void Pricer::price_edges(vector<PrEdge> &target_edges, bool compute_duals)
         if (pival != 0.0) {
             double add_back = 2 * pival;
             ++marker;
-            for (const Segment &seg : clq.seg_list()) {
-                for (int k = seg.start; k <= seg.end; ++k) {
-                    int node = def_tour[k];
-
-                    for (Graph::AdjObj &a :
-                         price_nodelist[node].neighbors) {
-                        if (price_nodelist[a.other_end].mark == marker)
-                            target_edges[a.edge_index].redcost += add_back;
-                    }
-                    price_nodelist[node].mark = marker;
-                }
+            
+            for (int j : clq.node_list(def_tour)) {
+                for (Graph::AdjObj &nbr : price_nodelist[j].neighbors)
+                    if (price_nodelist[nbr.other_end].mark == marker)
+                        target_edges[nbr.edge_index].redcost += add_back;
+                    
+                price_nodelist[j].mark = marker;
             }
         }
     }
