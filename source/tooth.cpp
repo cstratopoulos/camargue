@@ -64,9 +64,9 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
   vector<int> &tour = best_dat.best_tour_nodes;
 
   adj_zones.resize(ncount);
-  for (vector<int>& vec : adj_zones) {
+  for (vector<int> &vec : adj_zones) {
       vec.resize(ncount);
-      for (int & i : vec)
+      for (int &i : vec)
           i = 0;
   }
 
@@ -403,14 +403,20 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   double slack = (cut_val - (2.0 - Epsilon::Cut)) / 2.0;
   
   LinsubCBData *arg = (LinsubCBData *) u_data;
-  if ((cut_end - cut_start + 1) > (arg->G_s.node_count - 2)) return 0;
+  if ((cut_end - cut_start + 1) > (arg->G_s.node_count - 2))
+      return 0;
   
   //distant declarations
-  vector<int>
-    &marks = arg->node_marks, &tour = arg->tour_nodes, &perm = arg->perm;
+  vector<int>  &marks = arg->node_marks;
+  vector<int> &tour = arg->tour_nodes;
+  vector<int> &perm = arg->perm;
+  
   SupportGraph &G = arg->G_s;
+  
   std::unordered_map<int, double> &rb_sums = arg->rb_sums;
+  
   int ncount = G.node_count;
+  
   double rb_lower = cut_val - (1.5 - Epsilon::Cut);
 
   //right-adjacent declarations
