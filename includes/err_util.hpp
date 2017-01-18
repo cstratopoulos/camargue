@@ -62,8 +62,8 @@ ScopeGuard<act_type> make_guard(act_type f)
 /// different errors, meaningful for lookup.
 struct retcode_error : public std::runtime_error {
     /// Construct a retcode_error with retcode and function name.
-    retcode_error(const int rval, const char* func_name) :
-        std::runtime_error(std::string{func_name} + " failed with rval " +
+    retcode_error(const int rval, const std::string &func_name) :
+        std::runtime_error(func_name + " failed with rval " +
                            std::to_string(rval)) {}
 };
 
