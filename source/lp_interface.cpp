@@ -14,12 +14,15 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::to_string;
+using std::string;
 
 using std::runtime_error;
 using std::logic_error;
 using std::exception;
 
 using std::vector;
+
+using std::unique_ptr;
 
 using cpx_err = CMR::util::retcode_error;
 
@@ -92,6 +95,7 @@ Relaxation::solver_impl::~solver_impl()
     }
 }
 
+
 template <typename cplex_query>
 std::vector<double> info_vec(cplex_query F, const char* Fname,
                              const CPXENVptr cplex_env,
@@ -119,6 +123,115 @@ void set_info_vec(cplex_query F, const char *Fname,
     if (rval)
         throw cpx_err(rval, Fname);
 }
+
+class CPXintParamGuard {
+public:
+    CPXintParamGuard(int which, int new_value, CPXENVptr env,
+                  const string &p_desc) try
+        : which_param(which), cplex_env(env), param_desc(p_desc)
+    {
+        int rval = CPXgetintparam(cplex_env, which_param, &old_value);
+        
+        if (rval)
+            throw cpx_err(rval, "CPXgetintparam " + param_desc);
+
+        rval = CPXsetintparam(env, which_param, new_value);
+        if (rval)
+            throw cpx_err(rval, "CPXsetintparam " + param_desc);
+    } catch (const exception & e) {
+        cerr << e.what() << "\n";
+        throw runtime_error("Couldn't create int param guard.");
+    }
+
+    ~CPXintParamGuard()
+    {
+        int rval = CPXsetintparam(cplex_env, which_param, old_value);
+        if (rval) {
+            cerr << "\tFATAL ERROR: Failed to revert int param "
+                 << param_desc << ", rval " << rval << "in destructor.\n";
+            exit(1);
+        }
+    }
+
+private:
+    const int which_param;
+    CPXENVptr cplex_env;
+    const string &param_desc;
+    int old_value;
+};
+
+class CPXdblParamGuard {
+public:
+    CPXdblParamGuard(int which, double new_value, CPXENVptr env,
+                  const string &p_desc) try
+        : which_param(which), cplex_env(env), param_desc(p_desc)
+    {
+        int rval = CPXgetdblparam(cplex_env, which_param, &old_value);
+        
+        if (rval)
+            throw cpx_err(rval, "CPXgetdblparam " + param_desc);
+
+        rval = CPXsetdblparam(env, which_param, new_value);
+        if (rval)
+            throw cpx_err(rval, "CPXsetdblparam " + param_desc);
+    } catch (const exception & e) {
+        cerr << e.what() << "\n";
+        throw runtime_error("Couldn't create double param guard.");
+    }
+
+    ~CPXdblParamGuard()
+    {
+        int rval = CPXsetdblparam(cplex_env, which_param, old_value);
+        if (rval) {
+            cerr << "\tFATAL ERROR: Failed to revert double param "
+                 << param_desc << ", rval " << rval << "in destructor.\n";
+            exit(1);
+        }
+    }
+
+private:
+    const int which_param;
+    CPXENVptr cplex_env;
+    const string &param_desc;
+    double old_value;
+};
+
+class CPXlongParamGuard {
+public:
+    CPXlongParamGuard(int which, CPXLONG new_value, CPXENVptr env,
+                  const string &p_desc) try
+        : which_param(which), cplex_env(env), param_desc(p_desc)
+    {
+        int rval = CPXgetlongparam(cplex_env, which_param, &old_value);
+        
+        if (rval)
+            throw cpx_err(rval, "CPXgetlongparam " + param_desc);
+
+        rval = CPXsetlongparam(env, which_param, new_value);
+        if (rval)
+            throw cpx_err(rval, "CPXsetlongparam " + param_desc);
+    } catch (const exception & e) {
+        cerr << e.what() << "\n";
+        throw runtime_error("Couldn't create long param guard.");
+    }
+
+    ~CPXlongParamGuard()
+    {
+        int rval = CPXsetlongparam(cplex_env, which_param, old_value);
+        if (rval) {
+            cerr << "\tFATAL ERROR: Failed to revert long param "
+                 << param_desc << ", rval " << rval << "in destructor.\n";
+            exit(1);
+        }
+    }
+
+private:
+    const int which_param;
+    CPXENVptr cplex_env;
+    const string &param_desc;
+    CPXLONG old_value;
+};
+
 
 Relaxation::Relaxation()
 try : simpl_p(util::make_unique<solver_impl>())
@@ -275,15 +388,8 @@ void Relaxation::copy_start(const vector<double> &x,
 void Relaxation::factor_basis()
 {
     int rval = 0;
-    CPXLONG old_itlim;
-
-    rval = CPXgetlongparam(simpl_p->env, CPX_PARAM_ITLIM, &old_itlim);
-    if (rval)
-        throw cpx_err(rval, "CPXgetlongparam itlim");
-
-    rval = CPXsetlongparam(simpl_p->env, CPX_PARAM_ITLIM, 0);
-    if (rval)
-        throw cpx_err(rval, "CPXsetlongparam itlim clamp");
+    CPXlongParamGuard it_clamp_guard(CPX_PARAM_ITLIM, 0, simpl_p->env,
+                                     "factor basis itlim clamp");
 
     rval = CPXprimopt(simpl_p->env, simpl_p->lp);
     if (rval)
@@ -292,10 +398,6 @@ void Relaxation::factor_basis()
     int solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
     if (solstat != CPX_STAT_ABORT_IT_LIM)
         throw cpx_err(solstat, "CPXgetstat in factor_basis");
-
-    rval = CPXsetlongparam(simpl_p->env, CPX_PARAM_ITLIM, old_itlim);
-    if (rval)
-        throw cpx_err(rval, "CPXsetlongparam revert itlim");
 }
 
 void Relaxation::primal_opt()
@@ -315,14 +417,10 @@ void Relaxation::dual_opt()
 void Relaxation::nondegen_pivot(const double lowlimit)
 {
     runtime_error err("Problem in Relaxation::nondegen_pivot.");
-    
-    int rval = CPXsetdblparam(simpl_p->env, CPX_PARAM_OBJLLIM, lowlimit);
-    
-    if (rval) {
-        cerr << "CPXsetdblparam failed setting low limit, rval: "
-             << rval << "\n";
-        throw err;
-    }
+    int rval = 0;
+
+    CPXdblParamGuard obj_ll(CPX_PARAM_OBJLLIM, lowlimit, simpl_p->env,
+                            "nondegen_pivot obj limit");
 
     rval = CPXprimopt(simpl_p->env, simpl_p->lp);
     if (rval) {
@@ -341,29 +439,14 @@ void Relaxation::nondegen_pivot(const double lowlimit)
         solstat != CPX_STAT_ABORT_OBJ_LIM ) {
         cerr << "Solstat: " << solstat << "\n";
         throw err;
-    }
-
-    rval = CPXsetdblparam(simpl_p->env, CPX_PARAM_OBJLLIM, -1E75);
-    if (rval) {
-        cerr << "CPXsetdblparam failed reverting low limit, rval: "
-             << rval << "\n";
-        throw err;
     }    
 }
 
 void Relaxation::single_pivot() try
 {
     int rval = 0;
-    CPXLONG old_itlim;
-    CPXLONG single_itlim = 1;
-
-    rval = CPXgetlongparam(simpl_p->env, CPX_PARAM_ITLIM, &old_itlim);
-    if (rval)
-        throw cpx_err(rval, "CPXgetlongparam itlim");
-
-    rval = CPXsetlongparam(simpl_p->env, CPX_PARAM_ITLIM, single_itlim);
-    if (rval)
-        throw cpx_err(rval, "CPXsetlongparam itlim");
+    CPXlongParamGuard it_clamp(CPX_PARAM_ITLIM, 1, simpl_p->env,
+                               "single pivot itlim clamp");
 
     rval = CPXprimopt(simpl_p->env, simpl_p->lp);
     if (rval)
@@ -377,10 +460,7 @@ void Relaxation::single_pivot() try
         solstat != CPX_STAT_ABORT_IT_LIM &&
         solstat != CPX_STAT_OPTIMAL_INFEAS)
         throw cpx_err(solstat, "CPXprimopt solstat");
-
-    rval = CPXsetlongparam(simpl_p->env, CPX_PARAM_ITLIM, old_itlim);
-    if (rval)
-        throw cpx_err(rval, "CPXsetlongparam itlim");
+    
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Problem in Relaxation::single_pivot.");
@@ -478,44 +558,19 @@ void Relaxation::dual_strong_branch(const vector<int> &indices,
                                     vector<double> &upobj,
                                     int itlim, double upperbound)
 {
-    double old_ub;
-    int old_perind;
     int rval = 0;
 
-    //Grabbing old upper bound and perturb index
-    rval = CPXgetdblparam(simpl_p->env, CPX_PARAM_OBJULIM, &old_ub);
-    if (rval)
-        throw cpx_err(rval, "CPXgetdblparam obj ulim");
+    CPXdblParamGuard obj_lim(CPX_PARAM_OBJULIM, upperbound, simpl_p->env,
+                             "dual_strong_branch obj ulim");
 
-    rval = CPXgetintparam(simpl_p->env, CPX_PARAM_PERIND, &old_perind);
-    if (rval)
-        throw cpx_err(rval, "CPXgetintparam perturb ind");
-    ////
+    CPXintParamGuard per_ind(CPX_PARAM_PERIND, 0, simpl_p->env,
+                             "dual_strong_branch perturb");
 
-    //Setting upper bound to upperbound, disabling perturbation
-    rval = CPXsetdblparam(simpl_p->env, CPX_PARAM_OBJULIM, upperbound);
-    if (rval)
-        throw cpx_err(rval, "CPXsetdblparam obj ulim");
-
-    rval = CPXsetintparam(simpl_p->env, CPX_PARAM_PERIND, 0);
-    if (rval)
-        throw cpx_err(rval, "CPXsetdblparam perturb ind");
-    ////
 
     rval = CPXstrongbranch(simpl_p->env, simpl_p->lp, &indices[0],
                            indices.size(), &downobj[0], &upobj[0], itlim);
     if (rval)
         throw cpx_err(rval, "CPXstrongbranch");
-    
-    //Reverting upper bound and perturbation
-    rval = CPXsetdblparam(simpl_p->env, CPX_PARAM_OBJULIM, old_ub);
-    if (rval)
-        throw cpx_err(rval, "CPXsetdblparam obj ulim");
-
-    rval = CPXsetintparam(simpl_p->env, CPX_PARAM_PERIND, old_perind);
-    if (rval)
-        throw cpx_err(rval, "CPXsetdblparam perturb ind");
-    ////
 }
 
 void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
@@ -526,47 +581,19 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                                       vector<double> &upobj,
                                       int itlim, double upperbound)
 {
-    double old_ub;
-    int old_perind;
-    int old_primal_price;
-    CPXLONG old_itlim;
     int rval = 0;
+    
+    CPXdblParamGuard obj_ulim(CPX_PARAM_OBJULIM, upperbound, simpl_p->env,
+                              "primal_strong_branch obj ulim");
+    
+    CPXintParamGuard per_ind(CPX_PARAM_PERIND, 0, simpl_p->env,
+                             "primal_strong_branch perturb");
 
-    //Grabbing old upper bound and perturb index
-    rval = CPXgetdblparam(simpl_p->env, CPX_PARAM_OBJULIM, &old_ub);
-    if (rval)
-        throw cpx_err(rval, "CPXgetdblparam obj ulim");
+    CPXintParamGuard price_ind(CPX_PARAM_PPRIIND, CPX_PPRIIND_STEEP,
+                               simpl_p->env, "primal_strong_branch pricing");
 
-    rval = CPXgetintparam(simpl_p->env, CPX_PARAM_PERIND, &old_perind);
-    if (rval)
-        throw cpx_err(rval, "CPXgetintparam perturb ind");
-
-    rval = CPXgetintparam(simpl_p->env, CPX_PARAM_PPRIIND, &old_primal_price);
-    if (rval)
-        throw cpx_err(rval, "CPXgetintparam primal price");
-
-    rval = CPXgetlongparam(simpl_p->env, CPX_PARAM_ITLIM, &old_itlim);
-    if (rval)
-        throw cpx_err(rval, "CPXgetlongparam itlim");
-    ////
-
-    //Setting upper bound to upperbound, disabling perturbation
-    rval = CPXsetdblparam(simpl_p->env, CPX_PARAM_OBJULIM, upperbound);
-    if (rval)
-        throw cpx_err(rval, "CPXsetdblparam obj ulim");
-
-    rval = CPXsetintparam(simpl_p->env, CPX_PARAM_PERIND, 0);
-    if (rval)
-        throw cpx_err(rval, "CPXsetdblparam perturb ind");
-
-    rval = CPXsetintparam(simpl_p->env, CPX_PARAM_PPRIIND, CPX_PPRIIND_STEEP);
-    if (rval)
-        throw cpx_err(rval, "CPXsetintparam primal price");
-
-    rval = CPXsetlongparam(simpl_p->env, CPX_PARAM_ITLIM, itlim);
-    if (rval)
-        throw cpx_err(rval, "CPXsetintparam itlim");
-    ////
+    CPXlongParamGuard it_lim(CPX_PARAM_ITLIM, itlim, simpl_p->env,
+                             "primal_strong_branch it lim");
 
     downobj.reserve(indices.size());
     upobj.reserve(indices.size());
@@ -633,26 +660,6 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
 
     copy_start(tour_vec, colstat, rowstat);
     factor_basis();
-
-
-    //Reverting upper bound and perturbation
-    rval = CPXsetdblparam(simpl_p->env, CPX_PARAM_OBJULIM, old_ub);
-    if (rval)
-        throw cpx_err(rval, "CPXsetdblparam obj ulim");
-
-    rval = CPXsetintparam(simpl_p->env, CPX_PARAM_PERIND, old_perind);
-    if (rval)
-        throw cpx_err(rval, "CPXsetdblparam perturb ind");
-
-    rval = CPXsetintparam(simpl_p->env, CPX_PARAM_PPRIIND, old_primal_price);
-    if (rval)
-        throw cpx_err(rval, "CPXsetintparam primal price");
-
-    rval = CPXsetlongparam(simpl_p->env, CPX_PARAM_ITLIM, old_itlim);
-    if (rval)
-        throw cpx_err(rval, "CPXsetlongparam itlim");
-    ////
-
 }
 
 
