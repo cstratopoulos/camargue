@@ -146,9 +146,12 @@ LP::PivType Solver::cutting_loop(bool do_price)
             
             if (do_price) {
                 try {
-                    if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full){
+                    if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full) {
+                        core_lp.rebuild_basis();
+                        core_lp.pivot_back();
                         continue;
-                    } else
+                    }
+                    else
                         break;
                 } CMR_CATCH_PRINT_THROW("adding edges to core", err);
             }
@@ -203,8 +206,10 @@ LP::PivType Solver::cutting_loop(bool do_price)
 
     timer.stop();
     timer.report(false);
-    cout << "\tFinal LP has " << core_lp.num_rows() << " rows, "
+    cout << "\n\tFinal LP has " << core_lp.num_rows() << " rows, "
          << core_lp.num_cols() << " cols.\n";
+    cout << "Obj val: " << core_lp.get_objval() << ", dual feas: "
+         << core_lp.dual_feas() << "\n";
     
     int stcount = 0;
     int dpcount = 0;
