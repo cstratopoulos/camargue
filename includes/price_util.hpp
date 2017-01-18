@@ -4,6 +4,8 @@
 #include "util.hpp"
 
 #include <array>
+#include <iostream>
+#include <string>
 
 namespace CMR {
 
@@ -25,6 +27,30 @@ enum class ScanStat {
     Full, //!< Scanned all edges, found some with negative reduced cost.
     FullOpt //!< Scanned all edges, none had negative reduced cost. 
 };
+
+
+inline std::ostream &operator<<(std::ostream &os, ScanStat stat)
+{
+    std::string out;
+    switch (stat) {
+    case ScanStat::Partial:
+        out = "Found edges in Partial";
+        break;
+    case ScanStat::PartOpt:
+        out = "Optimal for Partial";
+        break;
+    case ScanStat::Full:
+        out = "Found edges in Full";
+        break;
+    case ScanStat::FullOpt:
+        out = "Optimal for Full";
+        break;
+    }
+
+    os << out;
+    return os;
+}
+
 
 struct PrEdge : EndPts {
     PrEdge() = default;
