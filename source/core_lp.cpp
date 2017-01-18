@@ -15,6 +15,7 @@ using std::cerr;
 
 using std::vector;
 
+using std::abs;
 using std::min;
 using std::max;
 
@@ -170,7 +171,11 @@ PivType CoreLP::primal_pivot()
             result =  PivType::Subtour;
         }
     } else {
-        result = PivType::Frac;
+        if (dual_feas() &&
+            abs(get_objval() - best_data.min_tour_value) < Eps::Zero)
+            result = PivType::FathomedTour;
+        else
+            result = PivType::Frac;
     }
 
     if (result == PivType::Tour) {
