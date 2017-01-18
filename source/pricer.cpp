@@ -75,6 +75,7 @@ Pricer::~Pricer()
 ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 {
     runtime_error err("Problem in Pricer::gen_edges");
+    ScanStat result;
     
     edge_hash.clear();
 
@@ -107,8 +108,10 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
     int finished = 0;
     int outercount = 0;
+    int total_added = 0;
 
     double penalty = 0.0;
+    double tourlen = core_lp.get_objval();
 
     while (!finished) {
         cout << "\tEntering EG loop, pass " << ++outercount << "\n\t";
@@ -173,8 +176,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         //this loop is only entered for fathomed tours
         //we use the concorde termination criteria, but also terminate within
         //the loop if adding edges and optimizing takes us to a new lp solution
-        double opt_tourlen = core_lp.get_objval();
-        double new_objval = opt_tourlen;
+        double new_objval = 0.0;
         int num_added = 0;
         int innercount = 0;
         
@@ -188,6 +190,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                 vector<Graph::Edge> add_batch = get_pool_chunk();
                 
                 num_added = add_batch.size();
+                total_added += num_added;
                 core_lp.add_edges(add_batch);
                 core_lp.primal_opt();
                 new_objval = core_lp.get_objval();
@@ -195,12 +198,14 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
             cout << "\t\tAdded " << num_added << " edges in opt solution.\n";
 
-            if (std::abs(new_objval - opt_tourlen) >= Eps::Zero) {
-                cout << "\tTour no longer optimal after adding edges.\n";
-                return ScanStat::Full;
+            if (std::abs(new_objval - tourlen) >= Eps::Zero) {
+                if (innercount == 1)
+                    cout << "\tTour no longer optimal after adding edges.\n";
+                result = ScanStat::Full;
+            } else {
+                cout << "\t\tTour still optimal after adding edges.\n";
+                result = ScanStat::FullOpt;
             }
-
-            cout << "\t\tTour still optimal after adding edges.\n";
 
             try {
                 price_edges(edge_q, true);
@@ -234,8 +239,10 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                  << edge_q.size() << ", finished: " << finished << "\n";
         }
     }
-    cout << "\t Finished: " << finished << ", tour seems genuinely optimal.\n";
-    return ScanStat::FullOpt;
+    cout << "\t Finished: " << finished << ", stat "
+         << result << "\n";
+    cout << "\tAdded " << total_added << " edges.\n";
+    return result;
 }
 
 vector<Graph::Edge> Pricer::get_pool_chunk()
