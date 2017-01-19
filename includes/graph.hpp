@@ -196,7 +196,7 @@ public:
 
     int find_edge_ind(int end0, int end1) const;
 
-    Edge &get_edge(int index) { return edges[index]; }
+    Edge get_edge(int index) const { return edges[index]; }
     
     std::vector<Edge> &get_edges() { return edges; }
     const std::vector<Edge> &get_edges() const { return edges; }
