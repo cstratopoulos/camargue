@@ -208,7 +208,7 @@ LP::PivType Solver::cutting_loop(bool do_price)
     timer.report(false);
     cout << "\n\tFinal LP has " << core_lp.num_rows() << " rows, "
          << core_lp.num_cols() << " cols.\n";
-    cout << "Obj val: " << core_lp.get_objval() << ", dual feas: "
+    cout << "\tObj val: " << core_lp.get_objval() << ", dual feas: "
          << core_lp.dual_feas() << "\n";
     
     int stcount = 0;

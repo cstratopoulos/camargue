@@ -130,7 +130,7 @@ public:
      * column and row basis provided by \p colstat and \p rowstat, 
      * respectively. Instead of using dual
      * steepest edge simplex pivots, this function will perform at most
-     * \p itlim primal steepeste edge simplex pivots, with the tour solution
+     * \p itlim primal steepest edge simplex pivots, with the tour solution
      * and  basis as a starting point. 
      */
     void primal_strong_branch(const std::vector<double> &tour_vec,

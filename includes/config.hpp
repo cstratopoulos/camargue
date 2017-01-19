@@ -55,7 +55,7 @@
 #ifdef CMR_HAVE_CATCH
 
 /// Define if you want to compile tests and invoke them from the command line.
-//#define CMR_DO_TESTS
+#define CMR_DO_TESTS
 
 #endif //CMR_HAVE_CATCH
 
