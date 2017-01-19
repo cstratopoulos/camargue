@@ -2,6 +2,7 @@
 #include "err_util.hpp"
 #include "util.hpp"
 
+#include <algorithm>
 #include <stdexcept>
 #include <iostream>
 #include <limits>
@@ -9,6 +10,12 @@
 #include <string>
 
 #include <cplex.h>
+
+using std::abs;
+
+using std::vector;
+
+using std::unique_ptr;
 
 using std::cout;
 using std::cerr;
@@ -20,14 +27,14 @@ using std::runtime_error;
 using std::logic_error;
 using std::exception;
 
-using std::vector;
-
-using std::unique_ptr;
 
 using cpx_err = CMR::util::retcode_error;
 
 
 namespace CMR {
+
+namespace Eps = CMR::Epsilon;
+
 namespace LP {
 
 constexpr double CPXzero = 1E-10;
@@ -363,6 +370,17 @@ void Relaxation::get_base(vector<int> &colstat,
         throw cpx_err(rval, "CPXgetbase");
 }
 
+vector<int> Relaxation::col_stat() const
+{
+    vector<int> result(num_cols());
+
+    int rval = CPXgetbase(simpl_p->env, simpl_p->lp, &result[0], NULL);
+    if (rval)
+        throw cpx_err(rval, "CPXgetbase");
+
+    return result;
+}
+
 void Relaxation::copy_start(const vector<double> &x)
 {
     int rval = CPXcopystart(simpl_p->env, simpl_p->lp,
@@ -540,19 +558,6 @@ vector<double> Relaxation::redcosts(int begin, int end) const
                     end);
 }
 
-void Relaxation::get_penalties(const vector<int> &indices,
-                               vector<double> &downratio,
-                               vector<double> &upratio)
-{
-    downratio.resize(indices.size());
-    upratio.resize(indices.size());
-
-    int rval = CPXmdleave(simpl_p->env, simpl_p->lp, &indices[0],
-                          indices.size(), &downratio[0], &upratio[0]);
-    if (rval)
-        throw cpx_err(rval, "CPXmdleave");
-}
-
 void Relaxation::dual_strong_branch(const vector<int> &indices,
                                     vector<double> &downobj,
                                     vector<double> &upobj,
@@ -595,6 +600,8 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
     CPXlongParamGuard it_lim(CPX_PARAM_ITLIM, itlim, simpl_p->env,
                              "primal_strong_branch it lim");
 
+    downobj.clear();
+    upobj.clear();
     downobj.reserve(indices.size());
     upobj.reserve(indices.size());
 
@@ -607,6 +614,7 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
         
         /////down clamp/////
         copy_start(tour_vec, colstat, rowstat);
+        factor_basis();
         
         rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &ind, &upper,
                              &zero);
@@ -633,6 +641,7 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
         
         /////up clamp////
         copy_start(tour_vec, colstat, rowstat);
+        factor_basis();
         
         rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &ind, &lower, &one);
         if (rval)

@@ -79,6 +79,8 @@ public:
     void get_base(std::vector<int> &colstat,
                   std::vector<int> &rowstat) const;
 
+    std::vector<int> col_stat() const; //<! Get the column basis.
+
     /** Get constraint slacks for the resident solution. */
     void get_row_slacks(std::vector<double> &slack, int begin,
                         int end) const;
@@ -102,11 +104,6 @@ public:
 
     /**@name Branch variable selection methods. */
     ///@{
-
-    /** Get the Driebeek penalties for specified indices. */
-    void get_penalties(const std::vector<int> &indices,
-                       std::vector<double> &downratio,
-                       std::vector<double> &upratio);
 
     /** Get strong branching objective values. 
      * This function will evaluate the variables in \p indices (which should
