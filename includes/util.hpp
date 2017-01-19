@@ -10,6 +10,7 @@
 #ifndef CMR_UTIL_H
 #define CMR_UTIL_H
 
+#include <algorithm>
 #include <array>
 #include <iostream>
 #include <limits>
@@ -79,52 +80,48 @@ struct OutPrefs {
 /** Namespace for classes, constants, and enums related to %LP relaxations. */
 namespace LP {
 
-/** The CPLEX default iteration limit for simplex optimizers */
-constexpr long long DEFAULT_ITLIM = 9223372036800000000;
 
-/** Enum class for primal pricing protocols. 
- * Pricing is an enum class for methods by which pivot variables may be
- * selected in the primal simplex method. See CPLEX documentation for more
- * info. These appear in order of least to most computationally intensive and,
- * theoretically, least to most effective at identifying non-degenerate pivots.
- */
+///Primal pricing protocols. 
 enum class Pricing {
-  Devex, /**< Devex pricing. */
-  SlackSteepest, /**< Steepest edge with slack initial norms. */
-  Steepest /**< True steepest edge. */
+  Devex, //!< Devex pricing. */
+  SlackSteepest, //!< Steepest edge with slack initial norms. */
+  Steepest //!< True steepest edge. */
 };
 
-/** Enum class for categorizing lp solutions. */
+/// Enum class for categorizing lp solutions.
 enum class PivType {
-  Frac, /**< Fractional solution. */
-  Subtour, /**< Integral subtour. */
-  Tour, /**< A new or augmented tour. */
-  FathomedTour /**< A Tour with a dual feasible basis in the current lp. */
+    Frac, //!< Fractional solution.
+    Subtour, //!< Integral subtour.
+    Tour, //!< A new or augmented tour.
+    FathomedTour //!< A tour with a dual feasible basis in the current lp.
 };
 
 /** Function for converting PivType to a string for output. */
+/// @todo replace this with ofstream
 std::string piv_string(PivType piv);
 
 }
 
 
-/** Numerical tolerances used in this project. */
+/// Numerical tolerances used in this project.
 namespace Epsilon {
 
 
 constexpr double Zero = 0.000001; //<! Numbers less than this treated as zero.
 
-/** Cuts are not considered violated unless violated by at least this much. */
+/// Cuts are not considered violated unless violated by at least this much.
 constexpr double Cut = 0.0001; 
 
 }
 
 namespace util {
-/** CPU time function. */
-double zeit (void);
 
-/** Wall-clock time function. */
-double real_zeit (void);
+/// Is a zero-one variable considered integral.
+inline bool var_integral(double d)
+{ return std::abs(d) < Epsilon::Zero || std::abs(d) > 1 - Epsilon::Zero; }
+
+double zeit (void); //<! CPU time function.
+double real_zeit (void); //<! Wall clock time function.
 
 /** Exception-safe creation of a unique_ptr, from Herb Sutter.
  * This is a c++14 feature which is ported to c++11 under the CMR namespace,
@@ -220,6 +217,7 @@ struct Segment {
     int end; /**< The end index of the Segment. */
 };
 
+/// Simple base class for storing edge of a graph as a sorted pair of nodes.
 struct EndPts {
     EndPts() = default;
     EndPts(int e0, int e1) : end{{e0, e1}}
