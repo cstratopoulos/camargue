@@ -39,9 +39,7 @@ SCENARIO ("Performing single pivots",
                     vector<double> tourx = core.lp_vec();
                     double tourlen = core.get_objval();
 
-                    CMR::LP::PivType piv;
-
-                    REQUIRE_NOTHROW(piv = core.primal_pivot());
+                    REQUIRE_NOTHROW(core.primal_pivot());
 
                     vector<double> pivx = core.lp_vec();
                     double pval = core.get_objval();
