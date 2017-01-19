@@ -39,61 +39,51 @@ SCENARIO ("Computing branching edges",
         "lin318",
     };
 
+    using namespace CMR;
+
     for (string &prob : probs) {
         GIVEN ("A run of cutting loop on " + prob) {
             THEN ("If the solution is fractional we can rank edges") {
-                CMR::OutPrefs prefs;
-                CMR::Solver solver("problems/" + prob + ".tsp",
+                OutPrefs prefs;
+                Solver solver("problems/" + prob + ".tsp",
                                    //prob + ".sol",
                                    99, prefs);
-                CMR::LP::PivType piv = solver.cutting_loop(false);
+                LP::PivType piv = solver.cutting_loop(false);
 
-                if (piv == CMR::LP::PivType::Frac) {
-                    CMR::LP::CoreLP &core =
-                    const_cast<CMR::LP::CoreLP &>(solver.get_core_lp());
-                    CMR::LP::Relaxation &rel = core;
+                if (piv == LP::PivType::Frac) {
+                    LP::CoreLP &core =
+                    const_cast<LP::CoreLP &>(solver.get_core_lp());
+                    LP::Relaxation &rel = core;
 
-                    vector<int> colstat;
-                    vector<int> rowstat;
-                    vector<double> x = rel.lp_vec();
                     vector<int> md_indices;
-                    
-                    rel.get_base(colstat, rowstat);
-
-                    for (int i = 0; i < colstat.size(); ++i)
-                        if (colstat[i] == CMR::LP::BStat::Basic &&
-                            !CMR::util::var_integral(x[i]))
-                            md_indices.push_back(i);
-
-                    REQUIRE_FALSE(md_indices.empty());
-
                     vector<double> downest;
                     vector<double> upest;
 
-                    REQUIRE_NOTHROW(rel.get_penalties(md_indices, downest,
-                                                      upest));
-                    
-                    vector<CMR::ABC::ScorePair> md_cands;
-
-                    REQUIRE_NOTHROW(md_cands =
-                                    CMR::ABC::ranked_cands(md_indices, downest,
-                                                           upest, 10, 5));
+                    vector<double> x = rel.lp_vec();
+                    vector<int> colstat = rel.col_stat();
                     const vector<double> &tour_edges =
-                    solver.tour_basis().best_tour_edges;
-                    
+                    solver.tour_basis().best_tour_edges;                    
                     double tourval = solver.best_info().min_tour_value;
 
-                    vector<int> sb1inds;
+                    vector<int> lw_inds;
 
-                    cout << "\t" << md_cands.size() << " driebek cands\n";
+                    for (int i = 0; i < colstat.size(); ++i)
+                        if (colstat[i] == 1 && !util::var_integral(x[i]))
+                            lw_inds.push_back(i);
                     
-                    for (auto &sp : md_cands) {
-                        int ind = sp.first;
-                        sb1inds.push_back(ind);
-                        cout << "\tEdge " << ind << "\n\t\ttour: "
-                             << tour_edges[ind] << "\t"
-                             << "lp: " << x[ind] << "\t"
-                             << "Est: " << sp.second << "\n";
+                    vector<int> sb1inds =
+                        ABC::length_weighted_cands(solver.graph_info().
+                                                   core_graph.get_edges(),
+                                                   lw_inds, x, 5);
+
+                    cout << "\t" << sb1inds.size()
+                         << " best length weighted cands.\n";
+                    for (int ind : sb1inds) {
+                        cout << "Edge " << ind << ", tour "
+                             << tour_edges[ind] << ", lp " << x[ind] << "\n"
+                             << "\tLen "
+                             << solver.graph_info().core_graph.get_edge(ind).len
+                             << "\n";
                     }
                     cout << "\n";
 
@@ -105,22 +95,43 @@ SCENARIO ("Computing branching edges",
                                                              sb1inds, downest,
                                                              upest, 100,
                                                              tourval));
-                    vector<CMR::ABC::ScorePair> sb1cands;
+                    vector<ABC::ScoreTuple> sb1cands;
 
                     REQUIRE_NOTHROW(sb1cands =
-                                    CMR::ABC::ranked_cands(sb1inds, downest,
-                                                           upest, 100, 2));
+                                    ABC::ranked_cands(sb1inds, downest,
+                                                      upest, 100, tourval, 2));
 
                     cout << "\t" << sb1cands.size() << " sb1 cands\n";
-                    for (auto &sp : sb1cands) {
-                        int ind = sp.first;
-                        sb1inds.push_back(ind);
-                        cout << "\tEdge " << ind << "\n\t\ttour: "
-                             << tour_edges[ind] << "\t"
-                             << "lp: " << x[ind] << "\t"
-                             << "Est: " << sp.second << "\n";
+                    for (auto &st : sb1cands) {
+                        int ind = st.index;
+                        cout << "Edge " << ind << ", tour "
+                             << tour_edges[ind] << ", lp " << x[ind] << "\n"
+                             << "\tDown " << st.down_est
+                             << "\tUp " << st.up_est
+                             << "\tScore " << st.score << "\n\n";
                     }
-                    cout << "\n";                    
+
+                    vector<int> sb2inds{sb1cands[0].index, sb1cands[1].index};
+
+                    REQUIRE_NOTHROW(rel.primal_strong_branch(tour_edges,
+                                                             tourcol, tourrow,
+                                                             sb2inds, downest,
+                                                             upest, 500,
+                                                             tourval));
+
+                    vector<ABC::ScoreTuple> sb2cands;
+                    sb2cands = ABC::ranked_cands(sb2inds, downest, upest, 100,
+                                                 tourval, 1);
+
+                    cout << "\tWinner of sb eval\n";
+                    ABC::ScoreTuple win = sb2cands[0];
+                    int ind = win.index;
+                    cout << "Edge " << ind << ", tour "
+                         << tour_edges[ind] << ", lp " << x[ind] << "\n"
+                         << "\tDown " << win.down_est
+                         << "\tUp " << win.up_est 
+                         << "\tScore " << win.score << "\n\n";
+                        
                 }
             }
         }
