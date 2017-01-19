@@ -1,8 +1,13 @@
 #include "branch_util.hpp"
+#include "util.hpp"
 
 #include <algorithm>
+#include <iostream>
 
 using std::vector;
+
+using std::cout;
+using std::cerr;
 
 namespace CMR {
 namespace ABC {
@@ -19,39 +24,108 @@ namespace ABC {
  */
 double var_score(double mult, double v0, double v1)
 {
-    return  ((v0 < v1) ? (mult * v0 + v1) : (v0 + mult * v1)) / (mult + 1);
+    double denom = mult + 1;
+    double num;
+    
+    if (v0 < v1)
+        num = mult * v0 + v1;
+    else
+        num = v0 + mult * v1;
+
+    return num / denom;
+}
+
+ScoreTuple::ScoreTuple(int ind, double down, double up, double mult,
+                       double ub)
+    : index(ind), down_est(down), up_est(up)
+{
+    if (down_est > ub || up_est > ub) 
+        score = DoubleMax;
+    else
+        score = var_score(mult, down, up);
 }
 
 /**
- * @param[in] cand_inds candidate branching indices
- * @param[in] down_est fix-to-zero estimates for \p cand_inds
- * @param[in] up_est fix-to-one estimates for \p cand_inds
- * @param[in] num_return the max number of variables to be returned
- * @pre `cand_inds.size() == down_est.size() == up_est.size()`
- * @pre each entry of \p down_est and \p up_est is the estimate for the
- * corresponding entry of \p cand_inds.
- * @returns A vector of at most \p num_return ScorePair objects, the 
- * \p num_return highest scored indices from \p cand_inds found by 
- * applying var_score to each index.
+ * @param[in] edges the list of Edges in the core lp.
+ * @param[in] indices the indices of fractional basic variables from \p edges
+ * @param[in] x the lp solution
+ * @param[in] num_return the maximum number of candidate indices returned. 
  */
-
-vector<ScorePair> ranked_cands(const vector<int> &cand_inds,
-                               const vector<double> &down_est,
-                               const vector<double> &up_est,
-                               double mult, int num_return)    
+vector<int> length_weighted_cands(const vector<Graph::Edge> &edges,
+                                  const vector<int> &indices,
+                                  const vector<double> &x,
+                                  const int num_return)
 {
-    vector<ScorePair> result;
-    
-    for (int i = 0; i < cand_inds.size(); ++i)
-        result.push_back(ScorePair(cand_inds[i], var_score(mult, down_est[i],
-                                                           up_est[i])));
+    double max_under = 0.0;
+    double min_over = 1.0;
+
+    for (int i : indices) {
+        double val = x[i];
+        if (val == 0.5) {
+            max_under = 0.5;
+            min_over = 0.5;
+            break;
+        }
+        if (val < 0.5) {
+            if (val > max_under)
+                max_under = val;
+        } else if (val < min_over)
+            min_over = val;
+    }
+
+    double lower_bd = 0.75 * max_under;
+    double upper_bd = min_over + (0.25 * (1.0 - min_over));
+    vector<int> result;
+
+    for (int i : indices)
+        if (x[i] >= lower_bd && x[i] <= upper_bd)
+            result.push_back(i);
 
     std::sort(result.begin(), result.end(),
-              [](const ScorePair &o, const ScorePair &p)
-              { return o.first > p.first; });
+              [&edges] (int a, int b)
+              { return edges[a].len > edges[b].len; });
 
-    result.resize(std::min((int) result.size(), num_return));
-    return result;
+    if (result.size() <= num_return)
+        return result;
+    else
+        return vector<int>(result.begin(), result.begin() + num_return);
+}
+
+
+/**
+ * @param[in] cand_inds the candidate indices to be ranked.
+ * @param[in] down_est estimates for setting corresponding entry of cand_inds
+ * to zero.
+ * @param[in] up_est like down_est but for setting to one.
+ * @param[in] mult the multiplier used to generate the variable score.
+ * @param[in] ub current upperbound for the problem. If a variable has down or
+ * up estimate bigger than this that is a hint the LP was infeasible or can 
+ * be pruned by lower bound. 
+ * @param[in] num_return return at most this many ranked candidates. 
+ * @pre `cand_inds.size() == down_est.size() == up_est.size()`
+ * @returns a vector of ScoreTuple objects sorted in non-increasing order by
+ * score. 
+ */
+vector<ScoreTuple> ranked_cands(const vector<int> &cand_inds,
+                                const vector<double> &down_est,
+                                const vector<double> &up_est,
+                                const double mult, const double ub,
+                                const int num_return)
+{
+    vector<ScoreTuple> result;
+
+    for (int i = 0; i < cand_inds.size(); ++i)
+        result.emplace_back(cand_inds[i], down_est[i], up_est[i], mult, ub);
+
+    std::sort(result.begin(), result.end(),
+              [](const ScoreTuple &p, const ScoreTuple &q)
+              { return p.score > q.score; });
+
+    if (result.size() <= num_return)
+        return result;
+    else
+        return vector<ScoreTuple>(result.begin(), result.begin() + num_return);
+
 }
 
 int num_digits(const double val)
