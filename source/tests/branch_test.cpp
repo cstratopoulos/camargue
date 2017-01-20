@@ -37,6 +37,8 @@ SCENARIO ("Computing branching edges",
         "pr152",
         "a280",
         "lin318",
+        "d493",
+        "pr1002",
     };
 
     using namespace CMR;
