@@ -634,7 +634,7 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
             downobj.push_back(CMR::DoubleMax);
         else 
             throw cpx_err(solstat, "CPXgetstat in down clamp");
-        
+
         rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &ind, &upper, &one);
         if (rval)
             throw cpx_err(rval, "CPXtightenbds down unclamp");
@@ -669,6 +669,15 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
 
     copy_start(tour_vec, colstat, rowstat);
     factor_basis();
+}
+
+void Relaxation::tighten_bound(const int index, const char sense,
+                               const double val)
+{
+    int rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &index, &sense,
+                             &val);
+    if (rval)
+        throw cpx_err(rval, "CPXtightenbds");
 }
 
 

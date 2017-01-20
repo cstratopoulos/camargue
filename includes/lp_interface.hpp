@@ -102,7 +102,7 @@ public:
 
     ///@}
 
-    /**@name Branch variable selection methods. */
+    /**@name Branching methods. */
     ///@{
 
     /** Get strong branching objective values. 
@@ -137,6 +137,9 @@ public:
                               std::vector<double> &downobj,
                               std::vector<double> &upobj,
                               int itlim, double upperbound);
+
+    /// Tighten the bound on a variable. 
+    void tighten_bound(const int index, const char sense, const double val);
 
     ///@}
 
