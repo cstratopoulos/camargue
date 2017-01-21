@@ -3,6 +3,7 @@
 #ifdef CMR_DO_TESTS
 
 #include "lp_interface.hpp"
+#include "brancher.hpp"
 #include "branch_util.hpp"
 #include "solver.hpp"
 #include "util.hpp"
@@ -14,6 +15,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <memory>
 #include <utility>
 
 #include <cstdlib>
@@ -31,8 +33,81 @@ using std::string;
 using std::to_string;
 using std::cout;
 
+SCENARIO ("Instating a Brancher and getting problems",
+          "[ABC][Brancher]") {
+    vector<string> probs{
+        "pr152",
+        "a280",
+        "lin318",
+        "d493",
+        };
+
+    using namespace CMR;
+
+    for (string &prob : probs) {
+        GIVEN ("A cutting loop run on " + prob) {
+            THEN ("We can get a first prob from Brancher and try to enforce it")
+            {
+                OutPrefs prefs;
+                Solver solver("problems/" + prob + ".tsp",
+                              //prob + ".sol",
+                              99, prefs);
+                LP::PivType piv = solver.cutting_loop(false);
+
+                if (piv == LP::PivType::Frac) {
+                    LP::CoreLP &core =
+                    const_cast<LP::CoreLP &>(solver.get_core_lp());
+                    LP::Relaxation &rel = core;
+
+                    std::unique_ptr<ABC::Brancher> branch;
+                    
+                    const vector<Graph::Edge> &edges = solver.graph_info().
+                    core_graph.get_edges();
+
+                    const LP::TourBasis &tbase = solver.tour_basis();
+
+                    const double tourlen = solver.best_info().min_tour_value;
+                    vector<double> frac_vec = rel.lp_vec();
+
+                    REQUIRE_NOTHROW(branch =
+                                    util::make_unique<ABC::Brancher>(rel,
+                                                                     edges,
+                                                                     tbase,
+                                                                     tourlen));
+                    ABC::Problem &prob = branch->next_prob();
+                    cout << "\t" << prob << "\n";
+                    
+                    int ind = prob.edge_ind;
+                    double tour_entry = tbase.best_tour_edges[ind];
+                    double lp_entry = frac_vec[ind];
+
+                    cout << "\tLP " << lp_entry << "\tTour " << tour_entry
+                         << "\n";
+
+                    
+                    double zero_coeff;
+                    double one_coeff;
+
+                    ABC::dive_coeffs(tourlen, zero_coeff, one_coeff);
+                    cout << "\tSuggested dive coeffs\t" << zero_coeff << "\t"
+                         << one_coeff << "\n";
+
+                    core.pivot_back();
+                    double changeto = tour_entry == 0 ? one_coeff : zero_coeff;
+                    
+                    REQUIRE_NOTHROW(rel.change_obj(ind, changeto));
+                    core.primal_pivot();
+                    double new_lp_entry = rel.lp_vec()[ind];
+                    REQUIRE(new_lp_entry != tour_entry);
+                    cout << "\tDived objval: " << rel.get_objval() << "\n\n";
+                }
+            }
+        }
+    }
+}
+
 SCENARIO ("Computing branching edges",
-          "[ABC]") {
+          "[.ABC]") {
     vector<string> probs{
         "pr152",
         "a280",
