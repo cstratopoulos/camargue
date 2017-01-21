@@ -5,6 +5,7 @@
 #include "graph.hpp"
 #include "branch_util.hpp"
 
+#include <iostream>
 #include <stack>
 #include <vector>
 
@@ -38,6 +39,9 @@ struct Problem {
     int edge_ind;
 };
 
+std::ostream &operator<<(std::ostream &os, Problem::Type type);
+std::ostream &operator<<(std::ostream &os, Problem::Status stat);
+std::ostream &operator<<(std::ostream &os, Problem &prob);
 
 
 

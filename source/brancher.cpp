@@ -8,6 +8,7 @@ using std::vector;
 
 using std::cout;
 using std::cerr;
+using std::ostream;
 
 using std::runtime_error;
 using std::logic_error;
@@ -22,6 +23,46 @@ using Ptype = Problem::Type;
 using Pstat = Problem::Status;
 
 Problem Brancher::solved_prob(Ptype::Root, Pstat::Pruned, -1);
+
+ostream &operator<<(ostream &os, Ptype type)
+{
+    switch (type) {
+    case Ptype::Root:
+        os << "Root";
+        break;
+    case Ptype::Affirm:
+        os << "Affirm";
+        break;
+    case Ptype::Contra:
+        os << "Contra";
+        break;
+    }
+
+    return os;
+}
+
+ostream &operator<<(ostream &os, Pstat stat)
+{
+    switch (stat) {
+    case Pstat::Pruned:
+        os << "Pruned";
+        break;
+    case Pstat::Unseen:
+        os << "Unseen";
+        break;
+    case Pstat::Seen:
+        os << "Seen";
+        break;
+    }
+    return os;
+}
+
+ostream &operator<<(ostream &os, Problem &prob)
+{
+    os << prob.status << " " << prob.type << " branch on edge "
+       << prob.edge_ind;
+    return os;
+}
 
 Brancher::Brancher(LP::Relaxation &lp_rel,
                    const vector<Edge> &edges, const LP::TourBasis &tbase,
@@ -99,24 +140,24 @@ void Brancher::split_prob(int edge)
 
 void Brancher::enact_top()
 {
-    if (subprobs.empty() || subprobs.top().type == Ptype::Root)
-        return;
+    // if (subprobs.empty() || subprobs.top().type == Ptype::Root)
+    //     return;
 
-    const Problem &top = subprobs.top();
-    const int ind = top.edge_ind;
+    // const Problem &top = subprobs.top();
+    // const int ind = top.edge_ind;
 
-    if (top.type == Ptype::Affirm) {
-        double tour_entry = tour_base.best_tour_edges[ind];
+    // if (top.type == Ptype::Affirm) {
+    //     double tour_entry = tour_base.best_tour_edges[ind];
         
-        if (top.status == Pstat::Unseen)
-            lp_relax.tighten_bound(ind, (tour_entry == 1) ? 'L' : 'U',
-                                   tour_entry);
-        else 
-            lp_relax.tighten_bound(ind, (tour_entry == 1) ? 'U' : 'L',
-                                   tour_entry);
-    } else {
-        cout << "Not yet set up for contra branching.\n";
-    }
+    //     if (top.status == Pstat::Unseen)
+    //         lp_relax.tighten_bound(ind, (tour_entry == 1) ? 'L' : 'U',
+    //                                tour_entry);
+    //     else 
+    //         lp_relax.tighten_bound(ind, (tour_entry == 1) ? 'U' : 'L',
+    //                                tour_entry);
+    // } else {
+    //     cout << "Not yet set up for contra branching.\n";
+    // }
 }
 
 }
