@@ -680,6 +680,13 @@ void Relaxation::tighten_bound(const int index, const char sense,
         throw cpx_err(rval, "CPXtightenbds");
 }
 
+void Relaxation::change_obj(const int index, const double val)
+{
+    int rval = CPXchgobj(simpl_p->env, simpl_p->lp, 1, &index, &val);
+    if (rval)
+        throw cpx_err(rval, "CPXchgobj");
+}
+
 
 }
 }

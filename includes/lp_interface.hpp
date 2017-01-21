@@ -141,6 +141,9 @@ public:
     /// Tighten the bound on a variable. 
     void tighten_bound(const int index, const char sense, const double val);
 
+    /// Change an objective function coefficient.
+    void change_obj(const int index, const double val);
+
     ///@}
 
 
