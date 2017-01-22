@@ -53,13 +53,13 @@ public:
 
     static std::vector<std::vector<int>> adj_zones;
     static std::vector<IteratorMat> seen_ranges;
+    std::vector<std::array<int, 3>> list_sizes;
     std::vector<ListStat> stats;
 
 private:
     friend class DPwitness;
   
-    std::vector<int> endmark;
-    std::vector<std::array<int, 3>> list_sizes;
+    std::vector<int> endmark;    
   
     static void add_tooth(ToothList &teeth,
                           const std::vector<std::vector<int>> &zones,

@@ -106,12 +106,19 @@ TEST_CASE("New candidate teeth with elim",
       
             REQUIRE_NOTHROW(cands.get_light_teeth());
 
+            cands.sort_by_root();
+
             int numfound = 0;
-            for (auto &v : cands.light_teeth)
+            for (auto &v : cands.light_teeth) {
                 numfound += v.size();
+                REQUIRE(std::is_sorted(v.begin(), v.end(),
+                                       [](const Sep::SimpleTooth::Ptr &S,
+                                          const Sep::SimpleTooth::Ptr &T)
+                                       { return S->body_size() <
+                                           T->body_size();}));
+            }
             cout << "Got collection of " << numfound << ".\n";
 
-            cands.sort_by_root();
 
             int f_count = 0;
             int m_count = 0;
