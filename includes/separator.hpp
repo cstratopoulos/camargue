@@ -7,18 +7,19 @@
 
 namespace CMR {
 
-/** Namespace for matters related to cuts and separation of cutting planes. */
+/// Matters related to cuts and separation of cutting planes.
 namespace Sep {
 
+/// POD struct for choosing which cuts to search for.
 struct CutSelect {
-    bool segment = true;
-    bool fast2m = true;
-    bool exact2m = true;
-    bool blkcomb =true ;
-    bool chain = false;
-    bool gomory = false;
-    bool simple_dp = true;
-    bool connect_cuts = true;
+    bool segment = true; //!< Segment cuts.
+    bool fast2m = true; //!< Fast primal blossom inequalities.
+    bool exact2m = true; //!< Exact primal blossom inequalities.
+    bool blkcomb =true ; //!< Primal block combs.
+    bool chain = false; //!< Primal chain constraints.
+    bool gomory = false; //!< Primal GMI inequalities. 
+    bool simple_dp = true; //!< Primal simple domino parity inequalities.
+    bool connect_cuts = true; //!< Standard connected component cuts.
 };
 
 /** Class for separation of cutting planes.
@@ -29,11 +30,13 @@ struct CutSelect {
 class Separator {
 public:
 
+    /// Construct a Separator using problem data.
     Separator(Data::GraphGroup &graphdata,
               Data::BestGroup &bestdata,
               Data::SupportGroup &suppdata,
               Data::KarpPartition &kpart);
 
+    /// Construct a Separator, but with limit of number of cuts returned.
     Separator(Data::GraphGroup &graphdata,
               Data::BestGroup &bestdata,
               Data::SupportGroup &suppdata,

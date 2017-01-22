@@ -32,36 +32,26 @@ namespace Data {
  */
 class KarpPartition {
 public:
-    KarpPartition() = default; /**< Construct an empty partition */
+    KarpPartition() = default; //!< Default construct an empty partition.
 
+    /// Construct a partition from an Instance \p inst.
     KarpPartition(const Data::Instance &inst);
 
-  /** Construct a partition from a TSP instance.
-   * The data in \p dat is used to construct a Karp partition for a TSP 
-   * instance on \p ncount nodes, with random seed \p seed.
-   */
-  KarpPartition(const int ncount, CCdatagroup *dat, const int seed);
+    /// Construct a partition from a TSP instance. (Deprecated)
+    KarpPartition(const int ncount, CCdatagroup *dat, const int seed);
 
-  /** The number of sub-regions into which the data has been partitioned. */
-  int num_parts() const { return part_list.size(); }
+    /// The number of sub-regions into which the data has been partitioned.
+    int num_parts() const { return part_list.size(); }
 
-  /** Returns a vector containing the nodes of the \p i th partition.
-   * Valid values are in the range `0...num_parts()`.
-   */
-  const std::vector<int> &operator[](int i) const { return part_list[i]; }
+    const std::vector<int> &operator[](int i) const
+        { return part_list[i]; } //!< The nodes of the \p i th partition.
 
-  /** Maximum partition size as a function of the number of nodes.
-   * Reasonable choices are a fraction of \p ncount, or a scalar multiple of
-   * `sqrt(ncount)` or something like that.
-   * @remark By exhaustively computing simple DP inequalities with no 
-   * partitioning, it may be possible to empirically determine the best value
-   * for this function.
-   */
-  static int bucket_size(const int ncount);
+    /// Maximum partition size as function of number of nodes \p ncount.
+    static int bucket_size(const int ncount);
 
 private:
-  /** A ragged matrix of partitions. */
-  std::vector<std::vector<int>> part_list;
+    /// A ragged matrix storing the partitions.
+    std::vector<std::vector<int>> part_list;
 };
 
 }

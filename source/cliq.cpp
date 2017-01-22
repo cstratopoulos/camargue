@@ -24,6 +24,13 @@ using lpcut_in = CCtsp_lpcut_in;
 namespace CMR {
 namespace Sep {
 
+
+/** 
+ * If \p cc_cliq is the clique and \p current_tour was the resident
+ * best tour when the clique was found, construct a Clique where the
+ * nodes in \p cc_cliq are represented as indices from \p saved_tour with
+ * corresponding permutation vector \p saved_perm.
+ */
 Clique::Clique(const lpclique &cc_clq,
                const vector<int> &saved_tour, const vector<int> &saved_perm,
                const vector<int> &current_tour)
@@ -72,6 +79,17 @@ try
     throw runtime_error("Clique CCtsp_lpclique constructor failed.");
 }
 
+
+/** 
+ * @param[in] start the start index of the Clique.
+ * @param[in] end the end index of the Clique.
+ * @param[in] saved_tour the indices which will be used to express the Clique.
+ * @param[in] saved_perm the permutation vector for saved_tour.
+ * @param[in] current_tour the tour resident when the Clique was found.
+ * Constructs the Clique corresponding to the nodes
+ * `current_tour[start]` up to `current_tour[end]`,
+ * as indices from \p saved_tour.
+ */
 Clique::Clique(int start, int end,
                const vector<int> &saved_tour, const vector<int> &saved_perm,
                const vector<int> &current_tour) try
@@ -114,6 +132,13 @@ Clique::Clique(int start, int end,
     throw runtime_error("Clique seg constructor failed.");
 }
 
+
+/** 
+ * @param[in] nodes a list of nodes in the graph as per some absolute order
+ * not dependent on the current tour.
+ * @param[in] perm the clique will be built using indices from perm, hence
+ * implicitly reprsented in terms of the tour corresponding to \p perm.
+ */
 Clique::Clique(std::vector<int> &nodes, const std::vector<int> &perm)
 try
 {
@@ -143,6 +168,14 @@ try
     throw runtime_error("Clique nodelist constructor failed.");
 }
 
+
+/** 
+ * @param[in] saved_tour the tour that was active when this Clique was 
+ * constructed. 
+ * @returns  a vector of the literal nodes
+ * obtained by dereferencing \p saved_tour for the ranges specified
+ * in the segment list. 
+ */
 vector<int> Clique::node_list(const vector<int> &saved_tour) const
 {
     vector<int> result;
@@ -154,6 +187,15 @@ vector<int> Clique::node_list(const vector<int> &saved_tour) const
     return result;
 }
 
+
+/** 
+ * @param[in] T the SimpleTooth to be represented.
+ * @param[in] saved_tour the dereferencing tour for this Tooth
+ * @param[in] saved_perm the dereferencing perm for this Tooth
+ * @param[in] current_tour the active tour when \p T was found.
+ * Uses current_tour along with saved_tour and saved_perm to convert a 
+ * SimpleTooth into a tooth which can be stored as a pair of Cliques. 
+ */
 Tooth::Tooth(const SimpleTooth &T,
              const vector<int> &saved_tour, const vector<int> &saved_perm,
              const vector<int> &current_tour) try
@@ -179,22 +221,43 @@ Clique::Ptr CliqueBank::add_clique(const Clique &clq)
     return bank[clq];
 }
 
+/** 
+ * Same as the overload taking a Clique, but will construct a Clique
+ * from the CCtsp_lpclique \p cc_cliq, with \p tour as the tour active
+ * when \p cc_cliq was obtained.
+ */
 Clique::Ptr CliqueBank::add_clique(const CCtsp_lpclique &cc_clq,
                                     const vector<int> &tour)
 {
     return add_clique(Clique(cc_clq, saved_tour, saved_perm, tour));
 }
 
+/**
+ * Constructs a Clique in place and adds it to the bank, using the Clique 
+ * constructor taking start and end points.
+ */
 Clique::Ptr CliqueBank::add_clique(int start, int end, const vector<int> &tour)
 {
     return add_clique(Clique(start, end, saved_tour, saved_perm, tour));
 }
 
+/** 
+ * @param[in] nodes shall be a list of nodes to be included in the
+ * Clique. 
+ * @warning The elements of \p nodes are sorted by this function, but
+ * unchanged otherwise.
+ */
 Clique::Ptr CliqueBank::add_clique(vector<int> &nodes)
 {
     return add_clique(Clique(nodes, saved_perm));
 }
 
+/** 
+ * The Clique pointed to by \p clq_ptr will be nullified, thereby
+ * decrementing the reference count of every other reference to it. 
+ * If its reference count in the CliqueBank drops to one, it will be
+ * erased, decreasing the size of the CliqueBank.
+ */
 void CliqueBank::del_clique(Clique::Ptr &clq_ptr)
 {
     if (!clq_ptr)
@@ -224,6 +287,10 @@ catch (const exception &e) {
     throw runtime_error("ToothBank constructor from CliqueBank failed.");
 }
 
+/**
+ * @param[in] T the SimpleTooth to add to the bank.
+ * @param[in] tour the tour that was active when \p T was found.
+ */
 Tooth::Ptr ToothBank::add_tooth(const SimpleTooth &T, const vector<int> &tour)
 {
     Tooth t(T, saved_tour, saved_perm, tour);

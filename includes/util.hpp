@@ -77,7 +77,7 @@ struct OutPrefs {
   std::string probname; /**< The name of the problem. */
 };
 
-/** Namespace for classes, constants, and enums related to %LP relaxations. */
+/// Namespace for classes, constants, and enums related to %LP relaxations.
 namespace LP {
 
 
@@ -107,26 +107,24 @@ std::string piv_string(PivType piv);
 namespace Epsilon {
 
 
-constexpr double Zero = 0.000001; //<! Numbers less than this treated as zero.
+constexpr double Zero = 0.000001; //!< Numbers less than this treated as zero.
 
 /// Cuts are not considered violated unless violated by at least this much.
 constexpr double Cut = 0.0001; 
 
 }
 
+/// Utility functions/structures used miscellaneous places in the project.
 namespace util {
 
 /// Is a zero-one variable considered integral.
 inline bool var_integral(double d)
 { return std::abs(d) < Epsilon::Zero || std::abs(d) > 1 - Epsilon::Zero; }
 
-double zeit (void); //<! CPU time function.
-double real_zeit (void); //<! Wall clock time function.
+double zeit (void); //!< CPU time function.
+double real_zeit (void); //!< Wall clock time function.
 
-/** Exception-safe creation of a unique_ptr, from Herb Sutter.
- * This is a c++14 feature which is ported to c++11 under the CMR namespace,
- * since it exists as std::make_unique in c++14 and onwards.
- */
+/// As per Herb Sutter, port of C++14's make_unique faculty. 
 template<typename T, typename ...Args>
 std::unique_ptr<T> make_unique( Args&& ...args )
 {
@@ -141,6 +139,7 @@ std::unique_ptr<T> make_unique( Args&& ...args )
  */
 template <typename T>
 struct C_resource_deleter {
+    /// Call operator for deleting the managed pointer.
     void operator()(T* ptr) const {
         if (ptr) free(ptr);
         ptr = nullptr;

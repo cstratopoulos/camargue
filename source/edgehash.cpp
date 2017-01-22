@@ -23,21 +23,32 @@ EdgeHash::EdgeHash(int size) try
 
 EdgeHash::~EdgeHash() { CCutil_edgehash_free(&eh); }
 
+/**
+ * Add the edge with endpoints \p end1 and \p end2 to the EdgeHash, with 
+ * lookup value set to \p val.
+ */
 void EdgeHash::add(int end1, int end2, int val)
 {
     if (CCutil_edgehash_add(&eh, end1, end2, val))
         throw runtime_error("CCutil_edgehash_add failed.");
 }
 
+/**
+ * If the edge with endpoints \p end1 \p end2 is already in the EdgeHash, set
+ * its value to \p val.
+ */
 void EdgeHash::set(int end1, int end2, int val)
 {
     if (CCutil_edgehash_set(&eh, end1, end2, val))
         throw runtime_error("CCutil_edgehash_set failed.");
 }
 
-//we ignore errors from Concorde, hence do not consider it an error to erase
-//no element from an empty hash, or to attempt to erase an element which was
-//not there in the first place.
+/**
+ * Erase the edge with endpoints \p end1 \p end2 from the EdgeHash.
+ * @remark we ignore errors from Concorde, hence do not consider it an error 
+ * to erase no element from an empty hash, or to attempt to erase an element 
+ * which was not there in the first place.
+ */
 void EdgeHash::erase(int end1, int end2)
 {
     CCutil_edgehash_del(&eh, end1, end2);

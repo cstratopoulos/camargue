@@ -25,64 +25,39 @@ namespace Sep {
  */
 class Clique {
 public:
-    Clique() = default;
-
-    /** Construct a Clique from a Concorde clique. 
-     * If \p cc_cliq is the clique and \p current_tour was the resident
-     * best tour when the clique was found, construct a Clique where the
-     * nodes in \p cc_cliq are represented as indices from \p saved_tour with
-     * corresponding permutation vector \p saved_perm.
-     */
+    Clique() = default; //!< Default construct an empty Clique.
+    
+    /// Construct a Clique from a Concorde clique. 
     Clique(const CCtsp_lpclique &cc_cliq,
            const std::vector<int> &saved_tour,
            const std::vector<int> &saved_perm,
            const std::vector<int> &current_tour);
 
-    /** Construct a Clique from start and end indices.
-     * If \p current_tour is the resident best tour, constructs the Clique
-     * corresponding to the nodes
-     * `current_tour[start]` up to `current_tour[end]`,
-     * as indices from \p saved_tour.
-     */
+    /// Construct a Clique from start and end indices.
     Clique(int start, int end,
            const std::vector<int> &saved_tour,
            const std::vector<int> &saved_perm,
            const std::vector<int> & current_tour);
 
-    /** Construct a Clique from a list of literal nodes.
-     * The vector \p nodes shall be a list of nodes in the graph relative
-     * to some absolute order rather than one dependent on a given tour. 
-     * They will be stored in a list of CMR::Segment objects using indices
-     * obtained from \p perm, hence implicitly represented in terms of the 
-     * tour corresponding to \p perm.
-     */
-    Clique(std::vector<int> &nodes,
-           const std::vector<int> &perm);
+    /// Construct a Clique from a list of literal nodes.
+    Clique(std::vector<int> &nodes, const std::vector<int> &perm);
 
 
-    using Ptr = std::shared_ptr<Clique>; /**< shared_ptr alias declaration. */
+    using Ptr = std::shared_ptr<Clique>; //!< shared_ptr alias declaration.
 
-    /** How many segments are used to represent the Clique. */
+    /// How many segments are used to represent the Clique.
     int seg_count() const { return seglist.size(); }
 
-    /** A constant reference to the list of segments in the Clique. */
+    /// A constant reference to the list of segments in the Clique.
     const std::vector<CMR::Segment> &seg_list() const { return seglist; }
 
-    /** A list of literal nodes represented by the Clique.
-     * Given a Clique, if \p saved_tour was the active tour when the Clique
-     * was constructed, this method returns a vector of the literal nodes
-     * obtained by dereferencing \p saved_tour for the ranges specified
-     * in the segment list. 
-     */
+    /// A list of literal nodes represented by the Clique.
     std::vector<int> node_list(const std::vector<int> &saved_tour) const;
     
-    /** Equality operator. */
-    bool operator==(const Clique &rhs) const { return seglist == rhs.seglist; }
+    bool operator==(const Clique &rhs) const
+        { return seglist == rhs.seglist; } //!< Equality operator.
 
-    /** Returns true iff the Clique contains \p index.
-     * \p index an index from a tour, assumed to be the same as the one used
-     * to dereference the Clique.
-     */
+    /// Returns true iff the Clique contains \p index.
     bool contains(const int index) const {
         for (const Segment &seg : seglist)
             if (seg.contains(index))
@@ -91,6 +66,7 @@ public:
     }
     
 private:
+    /// A vector of start and endpoints of tour intervals stored as Segment.
     std::vector<CMR::Segment> seglist;
 };
 
@@ -106,27 +82,24 @@ private:
  */
 class Tooth {
 public:
-    Tooth() = default;
+    Tooth() = default; //!< Default construct an empty tooth.
 
-    /** Construct a Tooth from a SimpleTooth.
-     * @param saved_tour the dereferencing tour for this Tooth
-     * @param saved_perm the dereferencing perm for this Tooth
-     * @param current_tour the active tour when \p T was found.
-     */
+    /// Construct a Tooth from a SimpleTooth.
     Tooth(const SimpleTooth &T,
           const std::vector<int> &saved_tour,
           const std::vector<int> &saved_perm,
           const std::vector<int> &current_tour);
 
-    /** Reference to defining set pair. */
+    /// Constant reference to the defining sets.
     const std::array<Clique, 2> &set_pair() const { return sets; }
 
-    using Ptr = std::shared_ptr<Tooth>; /** Pointer alias declaration. */
+    using Ptr = std::shared_ptr<Tooth>; //!< Pointer alias declaration.
 
-    /** Equality operator. */
-    bool operator==(const Tooth &rhs) const { return sets == rhs.sets; }
+    bool operator==(const Tooth &rhs) const
+        { return sets == rhs.sets; } //!< Equality operator.
 
 private:
+    /// Teeth are represented as a pair of Cliques for the handle and body.
     std::array<Clique, 2> sets;
 };
 
@@ -136,10 +109,10 @@ private:
 
 namespace std {
 
-/** Partial specialization of std::hash taken from CCtsp_hashclique. */
+/// Partial specialization of std::hash taken from CCtsp_hashclique.
 template<>
 struct hash<CMR::Sep::Clique> {
-    /** Call operator for hashing a Clique. */
+    /// Call operator for hashing a Clique.
     size_t operator()(const CMR::Sep::Clique &clq) const
         {
             size_t val = 0;
@@ -151,10 +124,10 @@ struct hash<CMR::Sep::Clique> {
         }
 };
 
-/** Partial specialization of std::hash from CCtsp_hashdomino. */
+/// Partial specialization of std::hash from CCtsp_hashdomino.
 template<>
 struct hash<CMR::Sep::Tooth> {
-    /** Call operator for hashing a Tooth. */
+    /// Call operator for hashing a Tooth.
     size_t operator()(const CMR::Sep::Tooth &T) const
         {
             size_t val = 0;
@@ -178,82 +151,69 @@ namespace Sep {
  * a Clique to be passed to the CliqueBank. A pointer to the Clique will be
  * added to the bank if one does not exist already, or else the use count
  * of the pointer will be incremented. This pointer is then returned for other
- * use.
- *The Cliques contained
+ * use. The Cliques contained
  * therein are meaningless without reference to a fixed tour and perm vector,
  * which shall be used to construct Clique objects and turn them back into
  * lists of nodes or sparse cut rows.
  */
 class CliqueBank {
 public:
-    /** Construct a CliqueBank to be dereferenced by \p tour and \p perm. */
+    /// Construct a CliqueBank to be dereferenced by \p tour and \p perm.
     CliqueBank(const std::vector<int> &tour, const std::vector<int> &perm);
 
-    /** Add a Clique to the bank, and get a reference to it. 
-     * This function returns a reference counted pointer to a Clique stored
-     * in the bank.
-     */
+    /// Add a Clique to the bank, and get a reference to it.
     Sep::Clique::Ptr add_clique(const Sep::Clique &clq);
 
-    /** Construct a Clique in place, add it, and get a reference to it.
-     * Same as the overload taking a Clique, but will construct a Clique
-     * from the CCtsp_lpclique \p cc_cliq, with \p tour as the tour active
-     * when \p cc_cliq was obtained.
-     */
+    /// Construct a Clique in place, add it, and get a reference to it.
     Sep::Clique::Ptr add_clique(const CCtsp_lpclique &cc_cliq,
                                 const std::vector<int> &tour);
 
-    /** Construct/add/get a reference to the Clique from endpoints. */
+    /// Construct/add/get a reference to the Clique from endpoints.
     Sep::Clique::Ptr add_clique(int start, int end,
                                 const std::vector<int> &tour);
 
-    /** Construct/add/get a reference to a Clique from a node list.
-     * The vector \p nodes shall be a list of nodes to be included in the
-     * Clique. 
-     * @warning The elements of \p nodes are sorted by this function, but
-     * unchanged otherwise.
-     */
+    /// Construct/add/get a reference to a Clique from a node list.
     Sep::Clique::Ptr add_clique(std::vector<int> &nodes);
 
-    /** Decrement the reference count of a Clique, possibly removing it.
-     * The Clique pointed to by \p clq_ptr will be nullified, thereby
-     * decrementing the reference count of every other reference to it. 
-     * If its reference count in the CliqueBank drops to one, it will be
-     * erased, decreasing the size of the CliqueBank.
-     */
+    /// Decrement the reference count of a Clique, possibly removing it.
     void del_clique(Sep::Clique::Ptr &clq_ptr);
 
+    int size() const
+        { return bank.size(); } //!< The number of unique Cliques in the bank.
 
-    /** The number of unique Cliques in the bank. */
-    int size() const { return bank.size(); }
-
-    /** Alias declaration for Clique hash table. */
+    /// Alias declaration for Clique hash table.
     using CliqueHash = std::unordered_map<Sep::Clique,
                                           Sep::Clique::Ptr>;
 
 
-    using Itr = CliqueHash::iterator; /**< Iterator alias. */
-    using ConstItr = CliqueHash::const_iterator; /**< Const iter alias. */
+    using Itr = CliqueHash::iterator; //!< Iterator alias.
+    using ConstItr = CliqueHash::const_iterator; //!< Const iter alias. */
 
 
-    Itr begin() { return bank.begin(); } /**< Begin iterator. */
-    ConstItr begin() const { return bank.begin(); } /**< Const begin iter. */
+    Itr begin()
+        { return bank.begin(); } //!< Begin iterator.
+    
+    ConstItr begin() const
+        { return bank.begin(); } //!< Const begin iter.
 
     
-    Itr end() { return bank.end(); } /**< Past the end iterator. */    
-    ConstItr end() const { return bank.end(); } /**< Const past end iter. */
+    Itr end()
+        { return bank.end(); } //!< Past the end iterator.
+    
+    ConstItr end() const
+        { return bank.end(); } //!< Const past end iter.
 
-    /** Get a const reference to the saved tour for dereferencing. */
-    const std::vector<int> &ref_tour() const { return saved_tour; }
+    const std::vector<int> &ref_tour() const
+        { return saved_tour; } //!< Const ref to saved tour for dereferencing.
 
-    /** Get a const reference to the saved perm for dereferencing. */
-    const std::vector<int> &ref_perm() const { return saved_perm; }
+    const std::vector<int> &ref_perm() const
+        { return saved_perm; } //<! Const ref to saved perm for dereferncing.
 
     
 private:
-    const std::vector<int> saved_tour;
-    const std::vector<int> saved_perm;
-    CliqueHash bank;
+    const std::vector<int> saved_tour; //<! Saved tour for dereferencing.
+    const std::vector<int> saved_perm; //<! Permutation vector for saved_tour.
+    CliqueHash bank; //<! Hash table of Clique and Clique::Ptr.
 };
 
 
@@ -263,44 +223,50 @@ private:
  */
 class ToothBank {
 public:
-    /** Construct a ToothBank to be dereferenced by \p tour and \p perm. */
+    /// Construct a ToothBank to be dereferenced by \p tour and \p perm.
     ToothBank(const std::vector<int> &tour, const std::vector<int> &perm);
 
-    /** Construct a ToothBank with reference vectors matching a CliqueBank. */
+    /// Construct a ToothBank with reference vectors matching a CliqueBank.
     ToothBank(const CliqueBank &cbank);
 
-    /** Add a Tooth to the bank and get a reference to it. */
+    /// Add a Tooth to the bank and get a reference to it.
     Tooth::Ptr add_tooth(const SimpleTooth &T,
                          const std::vector<int> &tour);
 
-    /** Decrement the reference count of a Tooth, possibly deleting it. */
+    /// Decrement the reference count of a Tooth, possibly deleting it.
     void del_tooth(Tooth::Ptr &T_ptr);
 
-    /** Number of unique Teeth in the bank. */
-    int size() const { return bank.size(); }
+    int size() const
+        { return bank.size(); } //!< Number of teeth in the bank.
 
-    /** Alias declaration for Tooth hash table. */
+    /// Alias declaration for Tooth hash table.
     using ToothHash = std::unordered_map<Tooth, Tooth::Ptr>;
 
-    using Itr = ToothHash::iterator; /**< Iterator alias. */
-    using ConstItr = ToothHash::const_iterator; /**< Const iterator alias. */
+    using Itr = ToothHash::iterator; //!< Iterator alias.
+    using ConstItr = ToothHash::const_iterator; //!< Const iterator alias.
 
-    Itr begin() { return bank.begin(); } /**< Begin iterator. */
-    ConstItr begin() const { return bank.begin(); } /**< Const begin. */
+    Itr begin()
+        { return bank.begin(); } //!< Begin iterator.
+    
+    ConstItr begin() const
+        { return bank.begin(); } //!< Const begin iterator.
 
-    Itr end() { return bank.end(); } /**< Past the end. */
-    ConstItr end() const { return bank.end(); } /**< Const past the end. */
+    Itr end()
+        { return bank.end(); } //!< Past the end iterator.
+    
+    ConstItr end() const
+        { return bank.end(); } //!< Const past the end iterator.
 
-    /** Get a const reference to the saved tour for dereferencing. */
-    const std::vector<int> &ref_tour() const { return saved_tour; }
+    const std::vector<int> &ref_tour() const
+        { return saved_tour; } //!< Const ref to saved tour for dereferencing.
 
-    /** Get a const reference to the saved perm for dereferencing. */
-    const std::vector<int> &ref_perm() const { return saved_perm; }
+    const std::vector<int> &ref_perm() const
+        { return saved_perm; } //!< Const ref to saved perm for dereferencing.
 
 private:
-    const std::vector<int> saved_tour;
-    const std::vector<int> saved_perm;
-    ToothHash bank;
+    const std::vector<int> saved_tour; //!< Saved tour for dereferencing.
+    const std::vector<int> saved_perm; //!< Permutation vec for saved_tour.
+    ToothHash bank; //!< Hash table of Tooth to Tooth::Ptr.
 };
 
 }

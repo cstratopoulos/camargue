@@ -171,6 +171,12 @@ double HyperGraph::get_coeff(int end0, int end1) const
     return static_cast<double>(pre_result);
 }
 
+/**
+ * @param[in] edges the list of edges for which to generate coefficients.
+ * @param[in,out] rmatind the indices of edges with nonzero coefficients.
+ * @param[in,out] rmatval the coefficients corresponding to entries of 
+ * \p rmatind.
+ */
 void HyperGraph::get_coeffs(const std::vector<Price::PrEdge> &edges,
                             vector<int> &rmatind,
                             vector<double> &rmatval) const
@@ -306,12 +312,21 @@ try : node_count(tour.size()), clique_bank(tour, perm), tooth_bank(tour, perm)
     throw runtime_error("ExternalCuts constructor failed.");
 }
 
+/**
+ * @param[in] cc_lpcut the Concorde cut to be added.
+ * @param[in] current_tour the tour active when cc_lpcut was found.
+ */
 void ExternalCuts::add_cut(const lpcut_in &cc_lpcut,
                            const vector<int> &current_tour)
 {
     cuts.emplace_back(clique_bank, cc_lpcut, current_tour);
 }
 
+/**
+ * @param[in] dp_cut the domino parity inequality to be added.
+ * @param[in] rhs the righthand-side of the cut.
+ * @param[in] current_tour the tour active when dp_cut was found. 
+ */
 void ExternalCuts::add_cut(const dominoparity &dp_cut, const double rhs,
                            const vector<int> &current_tour)
 {
@@ -343,9 +358,9 @@ void ExternalCuts::del_cuts(const vector<int> &delset)
 /**
  * @param[in] end0 one end of the edge to be added
  * @param[in] end1 the other end of the edge to be added
- * @param[in/out] cmatind the indices of the rows having nonzero 
+ * @param[in,out] cmatind the indices of the rows having nonzero 
  * coefficients for the new edge
- * @param[in/out] cmatval the coefficients corresponding to entries of 
+ * @param[in,out] cmatval the coefficients corresponding to entries of 
  * \p cmatind.
  */
 void ExternalCuts::get_col(const int end0, const int end1,
@@ -392,13 +407,13 @@ void ExternalCuts::get_col(const int end0, const int end1,
  * pricing edges not currently in the Relaxation.
  * @param[in] relax the core lp relaxation, for use in grabbing node and cut
  * pi values from the lp solver.
- * @param[in/out] node_pi a vector for storing dual values associated to 
+ * @param[in,out] node_pi a vector for storing dual values associated to 
  * degree constraints
- * @param[in/out] node_pi_est a vector for storing estimated degree constraint
+ * @param[in,out] node_pi_est a vector for storing estimated degree constraint
  * duals, computed Standard HyperGraph duals and by overestimating the 
  * Domino HyperGraph duals.
- * @param[in/out] cut_pi the dual values associated to cuts in the Relaxation.
- * @param[in/out] clique_pi a hash table of multiplicities associated to 
+ * @param[in,out] cut_pi the dual values associated to cuts in the Relaxation.
+ * @param[in,out] clique_pi a hash table of multiplicities associated to 
  * Cliques from the source CliqueBank.
  */
 void ExternalCuts::get_duals(const LP::Relaxation &relax,

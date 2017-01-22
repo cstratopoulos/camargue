@@ -34,13 +34,11 @@ public:
     /// Enumeration for the types of HyperGraph inequalities.
     enum Type {
         Domino = 0, //<! A domino parity inequality.
-        Subtour = 1, //<! Anything that is not a domino parity inequality.
-        Comb = 2
+        Subtour = 1, //<! An SEC.
+        Comb = 2 //<! A comb-like constraint.
     };
 
-
-    /// Find the Type of this cut.
-    Type cut_type() const;
+    Type cut_type() const; //!< Find the Type of this cut.
 
     /// Get the coefficient of an edge specified by endpoints.
     double get_coeff(int end0, int end1) const;
@@ -50,27 +48,27 @@ public:
                     std::vector<int> &rmatind,
                     std::vector<double> &rmatval) const;
 
-    char get_sense() const { return sense; } //!< Get the sense of the cut.
-    
+    char get_sense() const { return sense; } //!< Get the sense of the cut.    
     double get_rhs() const { return rhs; } //!< Get the rhs of the cut.
 
-    /// Get a constant reference to the vector of Clique refs.
-    const std::vector<Clique::Ptr> &get_cliques() const { return cliques; }
+    
+    const std::vector<Clique::Ptr> &get_cliques() const
+        { return cliques; } //!< Constant ref to the vector of Clique refs.
 
-    ///Get a constant reference to the vector of Tooth refs
-    const std::vector<Tooth::Ptr> &get_teeth() const { return teeth; }
+    const std::vector<Tooth::Ptr> &get_teeth() const
+        { return teeth; } //!< Constant ref to the vector of Tooth refs.
 
     friend class ExternalCuts;
     
 private:
-    char sense;
-    double rhs;
+    char sense; //<! The inequality sense of the cut.
+    double rhs; //<! The righthand-side of the cut.
     
-    std::vector<Clique::Ptr> cliques;
-    std::vector<Tooth::Ptr> teeth;
+    std::vector<Clique::Ptr> cliques; //<! The cliques comprising the cut.
+    std::vector<Tooth::Ptr> teeth; //<! The teeth comprising the cut.
 
-    CliqueBank *source_bank;
-    ToothBank *source_toothbank;
+    CliqueBank *source_bank; //<! The CliqueBank for dereferencing the cliques.
+    ToothBank *source_toothbank; //<! The ToothBank for the teeth.
 };
 
 /// The external storage of a collection of HyperGraph cuts in a Relaxation.
@@ -116,12 +114,14 @@ public:
                    std::unordered_map<Clique, double> &clique_pi) const;
 
 private:
-    const int node_count;
+    /// Number of nodes in the Instance being tracked.
+    /// Used to compute offsets for indices of cuts from LP::Relaxation.
+    const int node_count; 
 
-    CliqueBank clique_bank;
-    ToothBank tooth_bank;
+    CliqueBank clique_bank; //!< Bank for adding and dispensing cliques.
+    ToothBank tooth_bank; //!< Bank for adding and dispensing teeth.
 
-    std::vector<HyperGraph> cuts;
+    std::vector<HyperGraph> cuts; //<! List of the cuts in the LP::Relaxation.
 };
 
 }
