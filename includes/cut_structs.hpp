@@ -1,8 +1,7 @@
 #ifndef CMR_CUT_STRUCTS_H
 #define CMR_CUT_STRUCTS_H
 
-#include "tooth.hpp"
-
+#include "util.hpp"
 #include <vector>
 
 namespace CMR {
@@ -25,6 +24,54 @@ struct blossom {
     double cut_val;
 };
 
+struct ToothBody : Segment {
+    ToothBody() = default;
+    ToothBody(int _start, int _end, double _slack) :
+        Segment(_start, _end), slack(_slack) {}
+    ToothBody(int _start, int _end) : Segment(_start, _end), slack(1.0) {}
+
+    double slack;
+};
+
+struct SimpleTooth {
+    SimpleTooth(int _root, int _body_start, int _body_end, double _slack) :
+        root(_root), body_start(_body_start), body_end(_body_end),
+        slack(_slack) {}
+
+    SimpleTooth(int _root, ToothBody &seg, double _slack) :
+        root(_root), body_start(seg.start), body_end(seg.end), slack(_slack) {}
+
+    typedef std::unique_ptr<SimpleTooth> Ptr;
+
+    int root, body_start, body_end;
+    int cutgraph_index;
+    double slack;
+
+    enum Type {
+        LeftAdj = 0,
+        RightAdj = 1,
+        Dist = 2
+    };
+
+    Type type() const
+        {
+            if (body_start == root + 1)
+                return LeftAdj;
+            if (body_end + 1 == root)
+                return RightAdj;
+            return Dist;
+        }
+
+    int body_size() const { return body_end - body_start + 1; }
+    bool body_contains(int i) const { return body_start <= i && i <= body_end; }
+    bool is_subset_of(const SimpleTooth &T) const {
+        return root == T.root &&
+        T.body_start <= body_start &&
+        body_end <= T.body_end;
+    }
+    
+};
+
 /** Structure for storing simple DP inequalities.
  * In all cases, all numbers and indices refer to position in some `tour_nodes`
  * vector. They must be translated by deferencing, e.g., if `(i, j)` is an
@@ -33,14 +80,14 @@ struct blossom {
  */
 struct dominoparity {
     dominoparity() = default;
-    dominoparity(std::vector<CMR::SimpleTooth> &_used_teeth,
+    dominoparity(std::vector<SimpleTooth> &_used_teeth,
                  std::vector<int> &_degree_nodes,
                  std::vector<IntPair> &_nonneg_edges) :
         used_teeth(_used_teeth), degree_nodes(_degree_nodes),
         nonneg_edges(_nonneg_edges) {}
 
     /** Simple tooth inequalities to be aggregated to get the simple DP ineq. */
-    std::vector<CMR::SimpleTooth> used_teeth;
+    std::vector<SimpleTooth> used_teeth;
 
     /** The handle of the inequality, nodes where the degree eqns are used. */
     std::vector<int> degree_nodes;
