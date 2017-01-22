@@ -61,9 +61,8 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
         
         double tt = CMR::util::zeit();
         CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);	      
-        REQUIRE_FALSE(cands.get_light_teeth());
-        cands.unmerged_weak_elim();
-        REQUIRE_FALSE(cands.merge_and_sort());
+        REQUIRE_NOTHROW(cands.get_light_teeth());
+        cands.sort_by_root();
         tt = CMR::util::zeit() - tt;
 	      
         int orig_sz = 0;

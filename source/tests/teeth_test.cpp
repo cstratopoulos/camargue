@@ -60,48 +60,12 @@ TEST_CASE("New tiny candidate teeth with no elim",
       
 
       CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);
-      REQUIRE_FALSE(cands.get_light_teeth());
+      REQUIRE_NOTHROW(cands.get_light_teeth());
       
       int numfound = 0;
-
-      cout << "\tLEFT ADJACENT TEETH\n";
-      for (vector<CMR::SimpleTooth::Ptr> &vec : cands.left_teeth) {
-	numfound += vec.size();
-	for (const CMR::SimpleTooth::Ptr &T : vec) {
-	  cands.print_tooth(*T, ncount < 20);
-	}
-      }
-
-      cout << "\tRIGHT ADJACENT TEETH\n";
-      for (vector<CMR::SimpleTooth::Ptr> &vec : cands.right_teeth) {
-	numfound += vec.size();
-	for (const CMR::SimpleTooth::Ptr &T : vec) {
-	  cands.print_tooth(*T, ncount < 20);
-	}
-      }
-
-      cout << "\tDISTANT TEETH\n";
-      for (vector<CMR::SimpleTooth::Ptr> &vec : cands.dist_teeth) {
-	numfound += vec.size();
-	for (const CMR::SimpleTooth::Ptr &T : vec) {
-	  cands.print_tooth(*T, ncount < 20);
-	}
-      }
-      cout << "\t" << numfound << " after first finding.\n";
-
-      int ucnt = 0;
-      cands.unmerged_weak_elim();
-      for (auto &vec : cands.left_teeth) ucnt += vec.size();
-      for (auto &vec : cands.right_teeth) ucnt += vec.size();
-      for (auto &vec : cands.dist_teeth) ucnt += vec.size();
-      cout << "\t" << ucnt << " after unmerged elim\n";
-
-      cands.complement_elim();
-      int ccnt = 0;
-      for (auto &vec : cands.left_teeth) ccnt += vec.size();
-      for (auto &vec : cands.right_teeth) ccnt += vec.size();
-      for (auto &vec : cands.dist_teeth) ccnt += vec.size();
-      cout << "\t" << ccnt << " after complement elim\n";
+      for (auto &v : cands.light_teeth)
+          numfound += v.size();
+      cout << "\t" << numfound << " teeth found.\n";
       
       cout << "\n\n";
     }
@@ -138,43 +102,25 @@ TEST_CASE("New candidate teeth with elim",
 
       cout << "Did adj zones preprocessing.\n";
       
-      REQUIRE_FALSE(cands.get_light_teeth());
+      REQUIRE_NOTHROW(cands.get_light_teeth());
 
       int numfound = 0;
-      for (int i = 0; i < ncount; ++i)
-	numfound += (cands.left_teeth[i].size() + cands.right_teeth[i].size()
-		       + cands.dist_teeth[i].size());
-      cout << "Got initial collection of " << numfound
-	   << ", eliminating in place.\n";
+      for (auto &v : cands.light_teeth)
+          numfound += v.size();
+      cout << "Got collection of " << numfound << ".\n";
 
-      int after_unmerged = 0;
-      cands.unmerged_weak_elim();
+      cands.sort_by_root();
 
-      for (int i = 0; i < ncount; ++i) {
-	after_unmerged += (cands.left_teeth[i].size() +
-			   cands.right_teeth[i].size() +
-			   cands.dist_teeth[i].size());
-      }
-
-      cout << "Got " << after_unmerged << " after unmerged elim (eliminated "
-	   << (numfound - after_unmerged) << ")\n";
-
-      cands.complement_elim();
-
-      REQUIRE_FALSE(cands.merge_and_sort());
-      
-      int after_elim = 0;
-      for (auto &vec : cands.light_teeth) after_elim += vec.size();
-
-      cout << "Got " << after_elim << " after complement elim (eliminated "
-	   << (after_elim - after_unmerged) << ")\n";
-
-      int s_count = 0;
+      int f_count = 0;
+      int m_count = 0;
       for (auto &stat : cands.stats)
 	if (stat == CMR::ListStat::Full)
-	  ++s_count;
-      cout << "Did " << s_count << " full sorts ("
-	   << (ncount - s_count) << " untouched!)\n";
+	  ++f_count;
+        else if (stat == CMR::ListStat::Merge)
+            ++m_count;
+      cout << "Did " << f_count << " full sorts, " << m_count
+           << " merge sorts ("
+	   << (ncount - (f_count + m_count)) << " untouched!)\n";
 
       cands.profile();
       cout << "\n";
@@ -286,9 +232,8 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
 		   << ", actual: " << vx.adj_objs[d].other_end << "\n";
 	      cout << "seg1 contains: " << seg1.contains(end1) << ", seg 2: "
 		   << seg2.contains(end1) << "\n";
-	      IntPair s1_range, s2_range;
-	      cands.get_range(root, seg1, s1_range, zones);
-	      cands.get_range(root, seg2, s2_range, zones);
+	      IntPair s1_range = cands.get_range(root, seg1, zones);
+	      IntPair s2_range = cands.get_range(root, seg2, zones);
 	      cout << "seg1 range: " << s1_range.first << ", "
 		   << s1_range.second << " seg2 range: "
 		   << s2_range.first << ", " << s2_range.second << "\n\n";

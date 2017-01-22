@@ -37,8 +37,7 @@ bool Sep::SimpleDP::find_cuts()
 
   try {
     candidates.get_light_teeth();
-    candidates.unmerged_weak_elim();
-    candidates.merge_and_sort();
+    candidates.sort_by_root();
   } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
 
   for (int i = 0; i < kpart.num_parts(); ++i) {
@@ -68,8 +67,7 @@ bool Sep::SimpleDP::find_cuts()
 
     try {
         candidates.get_light_teeth();
-        candidates.unmerged_weak_elim();
-        candidates.merge_and_sort();
+        candidates.sort_by_root();
     } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
 
     #pragma omp parallel for
