@@ -3,6 +3,7 @@
 #include "datagroups.hpp"
 #include "timer.hpp"
 
+#include <array>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -18,6 +19,8 @@ extern "C" {
 
 using std::cout;
 using std::setw;
+
+using std::array;
 using std::vector;
 using std::string;
 using std::pair;
@@ -109,14 +112,37 @@ TEST_CASE("New candidate teeth with elim",
             cands.sort_by_root();
 
             int numfound = 0;
-            for (auto &v : cands.light_teeth) {
+            for (int i = 0; i < cands.light_teeth.size(); ++i) {
+                auto &v = cands.light_teeth[i];
+                int num_left = 0;
+                int num_right = 0;
+                int num_dist = 0;
                 numfound += v.size();
                 REQUIRE(std::is_sorted(v.begin(), v.end(),
                                        [](const Sep::SimpleTooth::Ptr &S,
                                           const Sep::SimpleTooth::Ptr &T)
                                        { return S->body_size() <
                                            T->body_size();}));
+                for (auto &T : v) {
+                    using Ttype = Sep::SimpleTooth::Type;
+                    Ttype type = T->type();
+                    switch(type) {
+                    case Ttype::LeftAdj:
+                        ++num_left;
+                        break;
+                    case Ttype::RightAdj:
+                        ++num_right;
+                        break;
+                    case Ttype::Dist:
+                        ++num_dist;
+                        break;
+                    }
+                }
+
+                array<int, 3> sizes{num_left, num_right, num_dist};
+                REQUIRE(sizes == cands.list_sizes[i]);                
             }
+            
             cout << "Got collection of " << numfound << ".\n";
 
 
