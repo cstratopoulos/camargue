@@ -13,18 +13,18 @@ extern "C" {
 }
 
 namespace CMR {
-//namespace Sep {
+namespace Sep {
 
 /** Class for building miniature simple DP witness cutgraphs. */
 class DPwitness {
 public:
   /** Construct a mini cutgraph induced by a partition. */
-  DPwitness(CMR::CandidateTeeth &cands,
+  DPwitness(CandidateTeeth &cands,
             const std::vector<int> &partition_nodes);
   ~DPwitness();
   
   /** Create a cutgraph and grab odd cuts from it. */
-  bool simple_DP_sep(Sep::CutQueue<Sep::dominoparity> &domino_q);
+  bool simple_DP_sep(CutQueue<dominoparity> &domino_q);
   
 private:
   void build_light_tree();  /**< Build the tooth inequality tree. */
@@ -37,15 +37,15 @@ private:
   void expand_cut(CC_GHnode *n, std::vector<int> &cut_nodes);
 
   /** Get simple DP inequalities from fundamental cuts of the GH tree. */
-  void grab_dominos(Sep::CutQueue<Sep::dominoparity> &domino_q);
+  void grab_dominos(CutQueue<dominoparity> &domino_q);
 
-  std::vector<std::vector<CMR::SimpleTooth>> light_teeth;
+  std::vector<std::vector<SimpleTooth>> light_teeth;
 
   const Data::SupportGroup &supp_dat;
 
   const std::vector<int> &perm;
 
-  std::vector<CMR::SimpleTooth*> cutgraph_nodes;
+  std::vector<SimpleTooth*> cutgraph_nodes;
 
   std::vector<int> cut_elist;
   std::vector<double> cut_ecap;
@@ -55,15 +55,15 @@ private:
   std::vector<int> cutgraph_delta;
   std::vector<int> cg_delta_marks;
 
-  Sep::CutQueue<CC_GHnode *> CC_gh_q;
+  CutQueue<CC_GHnode *> CC_gh_q;
 
   CC_GHtree gh_tree;
   
-  void grab_cuts(Sep::CutQueue<Sep::dominoparity> &domino_q);
+  void grab_cuts(CutQueue<dominoparity> &domino_q);
 
 };
 
-//}
+}
 }
 
 #endif

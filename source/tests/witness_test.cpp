@@ -27,43 +27,46 @@ using std::pair;
 
 SCENARIO("Finding simple DP inequalities via karp partition witnesses",
          "[karp][.simpleDP][DPwitness]") {
-  vector<string> probs {
-    // "lin318", "d493", "att532", "u724",
-    // "dsj1000", "pr1002",
-    // "d2103", "pr2392"// ,
-    "pcb3038",
-    "rl5915", "pla7397",
-    "usa13509"
-  };
 
-  for (string &fname : probs) {
-    string
-    probfile = "problems/" + fname + ".tsp",
-    solfile = "test_data/tours/" + fname + ".sol",
-    subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-    CMR::Data::GraphGroup g_dat;
-    CMR::Data::BestGroup b_dat;
-    CMR::Data::SupportGroup s_dat;
-    vector<double> lp_edges;
-    CMR::Data::Instance inst;
-    CMR::Data::KarpPartition kpart;
+    using namespace CMR;
+    
+    vector<string> probs {
+        // "lin318", "d493", "att532", "u724",
+        // "dsj1000", "pr1002",
+        // "d2103", "pr2392"// ,
+        "pcb3038",
+        "rl5915", "pla7397",
+        "usa13509"
+        };
+
+    for (string &fname : probs) {
+        string
+        probfile = "problems/" + fname + ".tsp",
+        solfile = "test_data/tours/" + fname + ".sol",
+        subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
+        Data::GraphGroup g_dat;
+        Data::BestGroup b_dat;
+        Data::SupportGroup s_dat;
+        vector<double> lp_edges;
+        Data::Instance inst;
+        Data::KarpPartition kpart;
 
     GIVEN("A karp partition and candidate teeth for " + fname) {
       THEN("We can get simple DP inequalities in a mini cutgraph") {
-        REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
+        REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile,
                                                  subtourfile, g_dat, b_dat,
                                                  lp_edges, s_dat, inst));
         int ncount = g_dat.core_graph.node_count();
 
-        REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(ncount,
+        REQUIRE_NOTHROW(kpart = Data::KarpPartition(ncount,
                                                          inst.ptr(), 99));
-        CMR::Sep::CutTranslate translator(g_dat);
+        Sep::CutTranslate translator(g_dat);
         
-        double tt = CMR::util::zeit();
-        CMR::CandidateTeeth cands(g_dat, b_dat, s_dat);	      
+        double tt = util::zeit();
+        Sep::CandidateTeeth cands(g_dat, b_dat, s_dat);	      
         REQUIRE_NOTHROW(cands.get_light_teeth());
         cands.sort_by_root();
-        tt = CMR::util::zeit() - tt;
+        tt = util::zeit() - tt;
 	      
         int orig_sz = 0;
         for (auto &vec : cands.light_teeth) orig_sz += vec.size();
@@ -75,12 +78,12 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
         double total_time = 0;
         
         for (int i = 0; i < kpart.num_parts(); ++i) {
-          double sep = CMR::util::zeit();
-          CMR::DPwitness dpgraph(cands, kpart[i]);
-          CMR::Sep::CutQueue<CMR::Sep::dominoparity> dp_q(25);
+          double sep = util::zeit();
+          Sep::DPwitness dpgraph(cands, kpart[i]);
+          Sep::CutQueue<Sep::dominoparity> dp_q(25);
           
           REQUIRE_NOTHROW(dpgraph.simple_DP_sep(dp_q));          
-          sep = CMR::util::zeit() - sep;
+          sep = util::zeit() - sep;
           if (dp_q.empty()) {
             total_time += sep;
             continue;
@@ -93,7 +96,7 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
             char sense;
             double rhs;
 	  
-            const CMR::Sep::dominoparity &dp_cut = dp_q.peek_front();
+            const Sep::dominoparity &dp_cut = dp_q.peek_front();
             vector<int> &bt = b_dat.best_tour_nodes;
             double tour_activity, lp_activity;
             REQUIRE_NOTHROW(translator.get_sparse_row(dp_cut, bt, rmatind,

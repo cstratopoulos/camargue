@@ -27,9 +27,9 @@ public:
   bool find_cuts();
 
 private:
-  CMR::CandidateTeeth candidates;
+  CandidateTeeth candidates;
   Data::KarpPartition &kpart;
-  Sep::CutQueue<dominoparity> &dp_q;
+  CutQueue<dominoparity> &dp_q;
 };
 
 }
