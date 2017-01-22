@@ -39,8 +39,6 @@ using IteratorMat = CandidateTeeth::IteratorMat;
 static inline bool ptr_cmp(const SimpleTooth::Ptr &S, const SimpleTooth::Ptr &T)
 { return S->body_size() < T->body_size(); }
 
-static inline bool ptr_elim(const SimpleTooth::Ptr &S) { return S->root == -1; }
-
 static inline bool elim_less_tie(const SimpleTooth::Ptr &S,
 				 const SimpleTooth::Ptr &T)
 {
@@ -64,9 +62,9 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
 			       Data::BestGroup &_best_dat,
 			       Data::SupportGroup &_supp_dat) :
   light_teeth(std::vector<ToothList>(_supp_dat.G_s.node_count)),
+  list_sizes(_supp_dat.G_s.node_count, {{0, 0, 0}}),
   stats(_supp_dat.G_s.node_count, ListStat::None),
   endmark(_supp_dat.G_s.node_count, CC_LINSUB_BOTH_END),
-  list_sizes(_supp_dat.G_s.node_count, {{0, 0, 0}}),
   graph_dat(_graph_dat),
   best_dat(_best_dat),
   supp_dat(_supp_dat),
@@ -335,7 +333,8 @@ inline void CandidateTeeth::add_tooth(ToothList &teeth,
         if (rit != teeth.rend()) {
             elim = true;
             double old_slack = (*rit)->slack;
-            if (slack < old_slack) {
+            if (slack < old_slack ||
+                (slack <= old_slack && body.size() < (*rit)->body_size())) {
                 --sizes[static_cast<int>((*rit)->type())];
                 *rit = util::make_unique<SimpleTooth>(root, body, slack);
                 ++sizes[static_cast<int>((*rit)->type())];
