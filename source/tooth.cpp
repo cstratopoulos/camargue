@@ -337,7 +337,7 @@ void CandidateTeeth::unmerged_weak_elim()
   t_elim.stop();
 }
 
-void CandidateTeeth::get_range(const int root, const tooth_seg &s,
+void CandidateTeeth::get_range(const int root, const ToothBody &s,
 			       IntPair &range,
 			       const vector<vector<int>> &zones)
 {
@@ -372,8 +372,8 @@ void CandidateTeeth::get_range(const int root, const tooth_seg &s,
   range = IntPair(start + 1, end);// fmax(start + 1, end - 1));
 }
 
-bool CandidateTeeth::root_equivalent(const int root, const tooth_seg &s1,
-				     const tooth_seg &s2,
+bool CandidateTeeth::root_equivalent(const int root, const ToothBody &s1,
+				     const ToothBody &s2,
 				     const vector<vector<int>> &zones)
 {
   IntPair s1_range, s2_range;
@@ -383,8 +383,8 @@ bool CandidateTeeth::root_equivalent(const int root, const tooth_seg &s1,
   return s1_range == s2_range;
 }
 
-bool CandidateTeeth::root_equivalent(const int root, const tooth_seg &s1,
-				     const tooth_seg &s2) const
+bool CandidateTeeth::root_equivalent(const int root, const ToothBody &s1,
+				     const ToothBody &s2) const
 {
   return root_equivalent(root, s1, s2, adj_zones);
 }
@@ -416,7 +416,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   double rb_lower = cut_val - (1.5 - Epsilon::Cut);
 
   //right-adjacent declarations
-  tooth_seg &old_seg = arg->old_seg;
+  ToothBody &old_seg = arg->old_seg;
   vector<vector<int>> &zones = arg->adj_zones;
   vector<util::SquareUT<ToothList::reverse_iterator>> &ranges = arg->ranges;
 
@@ -478,7 +478,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
  CLEANUP:
   if (rval)
     cerr << "CandidateTeeth::tooth_cb failed.\n";
-  old_seg = tooth_seg(cut_start, cut_end, slack); //right adjacent update
+  old_seg = ToothBody(cut_start, cut_end, slack); //right adjacent update
   return rval;
 }
 
@@ -491,7 +491,7 @@ inline void CandidateTeeth::add_tooth(ToothList &teeth,
                                       const int body_end, const double slack)
 {
     bool elim = false;
-    tooth_seg body(body_start, body_end);
+    ToothBody body(body_start, body_end);
     IntPair range;
     get_range(root, body, range, zones);
   

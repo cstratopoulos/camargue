@@ -25,27 +25,12 @@ struct ToothBody : Segment {
     double slack;
 };
 
-struct tooth_seg {
-  tooth_seg(int _start, int _end, double _slack) :
-    start(_start), end(_end), slack(_slack) {}
-  tooth_seg(int _start, int _end) : start(_start), end(_end), slack(1.0) {}
-
-  int body_size() const { return end - start + 1; }
-  bool contains(int vx) const { return start <= vx && vx <= end; }
-  bool subset_of(tooth_seg &S) const {
-    return S.start <= start && end <= S.end;
-  }
-
-  int start, end;
-  double slack;
-};
-
 struct SimpleTooth {
   SimpleTooth(int _root, int _body_start, int _body_end, double _slack) :
     root(_root), body_start(_body_start), body_end(_body_end),
     slack(_slack) {}
 
-  SimpleTooth(int _root, tooth_seg &seg, double _slack) :
+  SimpleTooth(int _root, ToothBody &seg, double _slack) :
     root(_root), body_start(seg.start), body_end(seg.end), slack(_slack) {}
 
   typedef std::unique_ptr<SimpleTooth> Ptr;
@@ -72,15 +57,15 @@ public:
 
     int get_light_teeth();
 
-    static void get_range(const int root, const tooth_seg &s, IntPair &range,
+    static void get_range(const int root, const ToothBody &s, IntPair &range,
                           const std::vector<std::vector<int>> &zones);
 
-    static bool root_equivalent(const int root, const tooth_seg &s1,
-                                const tooth_seg &s2,
+    static bool root_equivalent(const int root, const ToothBody &s1,
+                                const ToothBody &s2,
                                 const std::vector<std::vector<int>> &zones);
 
-    bool root_equivalent(const int root, const tooth_seg &s1,
-                         const tooth_seg &s2) const;
+    bool root_equivalent(const int root, const ToothBody &s1,
+                         const ToothBody &s2) const;
 
     int merge_and_sort(const int root);
     int merge_and_sort();
@@ -148,7 +133,7 @@ private:
 
       CMR::SupportGraph &G_s;
 
-      tooth_seg old_seg;
+      ToothBody old_seg;
     
       std::unordered_map<int, double> rb_sums;
   };
