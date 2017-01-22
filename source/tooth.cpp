@@ -31,8 +31,10 @@ using std::runtime_error;
 using std::exception;
 
 namespace CMR {
+namespace Sep {
 
 using ToothList = CandidateTeeth::ToothList;
+using IteratorMat = CandidateTeeth::IteratorMat;
 
 static inline bool ptr_cmp(const SimpleTooth::Ptr &S, const SimpleTooth::Ptr &T)
 { return S->body_size() < T->body_size(); }
@@ -56,7 +58,7 @@ static void tlist_sort(ToothList &T)
 }
 
 vector<vector<int>> CandidateTeeth::adj_zones;
-vector<util::SquareUT<ToothList::reverse_iterator>> CandidateTeeth::seen_ranges;
+vector<IteratorMat> CandidateTeeth::seen_ranges;
 
 CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
 			       Data::BestGroup &_best_dat,
@@ -111,8 +113,7 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
 	i = label;
     }
 
-    seen_ranges[root_ind] =
-    util::SquareUT<ToothList::reverse_iterator>(label + 1,
+    seen_ranges[root_ind] = IteratorMat(label + 1,
                                         light_teeth[root_ind].rend());
   }
   
@@ -251,7 +252,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
 
   ToothBody &old_seg = arg->old_seg;
   vector<vector<int>> &zones = arg->adj_zones;
-  vector<util::SquareUT<ToothList::reverse_iterator>> &ranges = arg->ranges;
+  vector<IteratorMat> &ranges = arg->ranges;
 
   //distant add
   if (cut_start == old_seg.start) {
@@ -318,10 +319,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
 
 inline void CandidateTeeth::add_tooth(ToothList &teeth,
                                       const vector<vector<int>> &zones,
-                                      vector<
-                                      util::SquareUT<
-                                      ToothList::reverse_iterator>
-                                      > &ranges,
+                                      vector<IteratorMat> &ranges,
                                       array<int, 3> &sizes,
                                       const int root, const int body_start,
                                       const int body_end, const double slack)
@@ -406,4 +404,5 @@ void CandidateTeeth::profile()
   t_all.report(true);
 }
 
+}
 }

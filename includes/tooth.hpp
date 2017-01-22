@@ -3,6 +3,7 @@
 
 #include "graph.hpp"
 #include "datagroups.hpp"
+#include "cut_structs.hpp"
 #include "util.hpp"
 #include "timer.hpp"
 
@@ -14,56 +15,9 @@
 #include <vector>
 
 namespace CMR {
+namespace Sep {
 
 enum class ListStat {None, Merge, Full};
-
-struct ToothBody : Segment {
-    ToothBody() = default;
-    ToothBody(int _start, int _end, double _slack) :
-        Segment(_start, _end), slack(_slack) {}
-    ToothBody(int _start, int _end) : Segment(_start, _end), slack(1.0) {}
-
-    double slack;
-};
-
-struct SimpleTooth {
-    SimpleTooth(int _root, int _body_start, int _body_end, double _slack) :
-        root(_root), body_start(_body_start), body_end(_body_end),
-        slack(_slack) {}
-
-    SimpleTooth(int _root, ToothBody &seg, double _slack) :
-        root(_root), body_start(seg.start), body_end(seg.end), slack(_slack) {}
-
-    typedef std::unique_ptr<SimpleTooth> Ptr;
-
-    int root, body_start, body_end;
-    int cutgraph_index;
-    double slack;
-
-    enum Type {
-        LeftAdj = 0,
-        RightAdj = 1,
-        Dist = 2
-    };
-
-    Type type() const
-        {
-            if (body_start == root + 1)
-                return LeftAdj;
-            if (body_end + 1 == root)
-                return RightAdj;
-            return Dist;
-        }
-
-    int body_size() const { return body_end - body_start + 1; }
-    bool body_contains(int i) const { return body_start <= i && i <= body_end; }
-    bool is_subset_of(const SimpleTooth &T) const {
-        return root == T.root &&
-        T.body_start <= body_start &&
-        body_end <= T.body_end;
-    }
-    
-};
 
 class CandidateTeeth {
 public:
@@ -93,11 +47,12 @@ public:
     void profile();
 
     using ToothList = std::vector<SimpleTooth::Ptr>;
+    using IteratorMat = util::SquareUT<ToothList::reverse_iterator>;
 
     std::vector<ToothList> light_teeth;
 
     static std::vector<std::vector<int>> adj_zones;
-    static std::vector<util::SquareUT<ToothList::reverse_iterator>> seen_ranges;
+    static std::vector<IteratorMat> seen_ranges;
     std::vector<ListStat> stats;
 
 private:
@@ -108,9 +63,7 @@ private:
   
     static void add_tooth(ToothList &teeth,
                           const std::vector<std::vector<int>> &zones,
-                          std::vector<
-                          util::SquareUT<ToothList::reverse_iterator>
-                          > &ranges,
+                          std::vector<IteratorMat> &ranges,
                           std::array<int, 3> &sizes,
                           const int root, const int body_start,
                           const int body_end, const double slack);
@@ -121,7 +74,7 @@ private:
   struct LinsubCBData {
       LinsubCBData(std::vector<ToothList> &_light_teeth,
                    std::vector<std::vector<int>> &_adj_zones,
-                   std::vector<util::SquareUT<ToothList::reverse_iterator>>
+                   std::vector<IteratorMat>
                    &_ranges,
                    std::vector<std::array<int, 3>> &_list_sizes,
                    std::vector<int> &_node_marks,
@@ -138,7 +91,7 @@ private:
 
       std::vector<std::vector<SimpleTooth::Ptr>> &light_teeth;
       std::vector<std::vector<int>> &adj_zones;
-      std::vector<util::SquareUT<ToothList::reverse_iterator>> &ranges;
+      std::vector<IteratorMat> &ranges;
       std::vector<std::array<int, 3>> &list_sizes;
 
       std::vector<int> &node_marks;
@@ -161,6 +114,7 @@ private:
   CMR::Timer t_sort;
 };
 
+}
 }
 
 #endif
