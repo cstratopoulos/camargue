@@ -1,7 +1,9 @@
 #include "tooth.hpp"
 #include "config.hpp"
 
+#if CMR_HAVE_TIMSORT
 #include <timsort.hpp>
+#endif
 
 extern "C" {
 #include <concorde/INCLUDE/cut.h>
@@ -23,6 +25,8 @@ using std::inplace_merge;
 
 namespace CMR {
 
+using ToothList = CandidateTeeth::ToothList;
+
 static inline bool ptr_cmp(const SimpleTooth::Ptr &S, const SimpleTooth::Ptr &T)
 { return S->body_size() < T->body_size(); }
 
@@ -35,7 +39,14 @@ static inline bool elim_less_tie(const SimpleTooth::Ptr &S,
     std::make_tuple(T->slack, T->body_size());
 }
 
-using ToothList = CandidateTeeth::ToothList;
+static void tooth_sort(ToothList &T)
+{
+#if CMR_HAVE_TIMSORT
+    gfx::timsort(T.begin(), T.end(), ptr_cmp);
+#else
+    std::sort(T.begin(), T.end(), ptr_cmp);
+#endif
+}
 
 vector<vector<int>> CandidateTeeth::adj_zones;
 vector<util::SquareUT<ToothList::reverse_iterator>> CandidateTeeth::seen_ranges;
@@ -158,7 +169,7 @@ int CandidateTeeth::merge_and_sort()
 int CandidateTeeth::merge_and_sort(const int root)
 {
     ToothList &teeth = light_teeth[root];
-    gfx::timsort(teeth.begin(), teeth.end(), ptr_cmp);
+    tooth_sort(teeth);
     stats[root] = ListStat::Full;
 
   return 0;
