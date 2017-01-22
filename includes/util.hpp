@@ -1,9 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
  * @file
- * @brief UTILITY FUNCTIONS AND MACROS/ENUM CLASSES
- *
- * This header contains namespace and enum classes for labels/constants that
- * are used elsewhere in the code, as well as some very simple structures
+ * @brief Utility functions, macros, and structures.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -154,6 +151,45 @@ struct C_resource_deleter {
  * appropriately when necessary.
  */
 using c_array_ptr = std::unique_ptr<int, C_resource_deleter<int>>;
+
+/// Class template for a square upper triangular matrix.
+template<class T>
+class SquareUT {
+public:
+    SquareUT() = default; //!< Default construct an empty matrix.
+
+    /// Move constructor.
+    SquareUT(SquareUT &&M) noexcept : data(std::move(M.data)) {}
+
+    /// Move assignment.
+    SquareUT &operator=(SquareUT &&M) noexcept
+        { data = std::move(M.data); return *this; }
+    
+
+    /// Construct a matrix of dimension \p size.
+    SquareUT(size_t size) : data(size)
+        {
+            for (auto i = 0; i < size; ++i)
+                data[i] = std::vector<T>(size - i);
+        }
+
+    /// Construct a matrix of dimension \p size with \p val as all entries. 
+    SquareUT(size_t size, T val) : data(size)
+        {
+            for (auto i = 0; i < size; ++i)
+                data[i] = std::vector<T>(size - i, val);
+        }
+
+    /// Access entry by matrix subscripting. 
+    T &operator()(size_t row, size_t column)
+        {
+            return data[row][column - row];
+        }
+
+private:
+    /// The entries of the matrix, stored as a ragged vector of vectors.
+    std::vector<std::vector<T>> data;
+};
 
 }
 
