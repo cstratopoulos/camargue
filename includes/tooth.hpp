@@ -66,40 +66,45 @@ struct SimpleTooth {
 
 class CandidateTeeth {
 public:
-  CandidateTeeth(Data::GraphGroup &_graph_dat,
-		 Data::BestGroup &_best_dat,
-		 Data::SupportGroup &_supp_dat);
+    CandidateTeeth(Data::GraphGroup &_graph_dat,
+                   Data::BestGroup &_best_dat,
+                   Data::SupportGroup &_supp_dat);
 
-  int get_light_teeth();
+    int get_light_teeth();
 
-  static void get_range(const int root, const tooth_seg &s, IntPair &range,
-			const std::vector<std::vector<int>> &zones);
+    static void get_range(const int root, const tooth_seg &s, IntPair &range,
+                          const std::vector<std::vector<int>> &zones);
 
-  static bool root_equivalent(const int root, const tooth_seg &s1,
-			      const tooth_seg &s2,
-			      const std::vector<std::vector<int>> &zones);
+    static bool root_equivalent(const int root, const tooth_seg &s1,
+                                const tooth_seg &s2,
+                                const std::vector<std::vector<int>> &zones);
 
-  bool root_equivalent(const int root, const tooth_seg &s1,
-		       const tooth_seg &s2) const;
+    bool root_equivalent(const int root, const tooth_seg &s1,
+                         const tooth_seg &s2) const;
 
-  int merge_and_sort(const int root);
-  int merge_and_sort();
+    int merge_and_sort(const int root);
+    int merge_and_sort();
   
-  void unmerged_weak_elim();
-  void complement_elim();
+    void unmerged_weak_elim();
+    void complement_elim();
   
-  static void print_tooth(const SimpleTooth &T, bool full,
-			  const std::vector<int> &tour_nodes);
-  void print_tooth(const SimpleTooth &T, bool full);
-  std::string print_label(const SimpleTooth &T);
+    static void print_tooth(const SimpleTooth &T, bool full,
+                            const std::vector<int> &tour_nodes);
+    void print_tooth(const SimpleTooth &T, bool full);
+    std::string print_label(const SimpleTooth &T);
 
-  void profile();
+    void profile();
 
-  std::vector<std::vector<SimpleTooth::Ptr>>
-  light_teeth, left_teeth, right_teeth, dist_teeth;
+    using ToothList = std::vector<SimpleTooth::Ptr>;
 
-  static std::vector<std::vector<int>> adj_zones;
-  std::vector<ListStat> stats;
+    std::vector<ToothList> light_teeth;
+    std::vector<ToothList> left_teeth;
+    std::vector<ToothList> right_teeth;
+    std::vector<ToothList> dist_teeth;
+
+    static std::vector<std::vector<int>> adj_zones;
+    static std::vector<util::SquareUT<ToothList::reverse_iterator>> seen_ranges;
+    std::vector<ListStat> stats;
 
 private:
   friend class DPCutGraph;
@@ -107,8 +112,10 @@ private:
   
   std::vector<int> endmark;
   
-  static void add_tooth(std::vector<SimpleTooth::Ptr> &teeth,
+  static void add_tooth(ToothList &teeth,
 			const std::vector<std::vector<int>> &zones,
+                        std::vector<util::SquareUT<ToothList::reverse_iterator>>
+                        &ranges,
 			const int root, const int body_start,
 			const int body_end, const double slack);
   
@@ -116,38 +123,34 @@ private:
 		      void *u_data);
 
   struct LinsubCBData {
-    LinsubCBData(std::vector<std::vector<SimpleTooth::Ptr>> &_r_teeth,
-		 std::vector<std::vector<SimpleTooth::Ptr>> &_l_teeth,
-		 std::vector<std::vector<SimpleTooth::Ptr>> &_d_teeth,
-		 std::vector<std::vector<int>> &_adj_zones,
-		 std::vector<int> &_node_marks,
-		 std::vector<int> &_tour_nodes,
-		 std::vector<int> &_perm,
-		 CMR::SupportGraph &_G_s) :
-      r_teeth(_r_teeth), l_teeth(_l_teeth), d_teeth(_d_teeth),
-      adj_zones(_adj_zones),
-      node_marks(_node_marks),
-      tour_nodes(_tour_nodes), perm(_perm),
-      G_s(_G_s),
-      old_seg(_G_s.node_count - 1, _G_s.node_count - 1, 0.0),
-      prev_slacks(std::vector<
-		  std::pair<int, double>
-		  >(_G_s.node_count,
-		    std::pair<int, double>(_G_s.node_count + 1, 1.0)))
-    {}
+      LinsubCBData(std::vector<ToothList> &_light_teeth,
+                   std::vector<std::vector<int>> &_adj_zones,
+                   std::vector<util::SquareUT<ToothList::reverse_iterator>>
+                   &_ranges,
+                   std::vector<int> &_node_marks,
+                   std::vector<int> &_tour_nodes,
+                   std::vector<int> &_perm,
+                   CMR::SupportGraph &_G_s) :
+          light_teeth(_light_teeth),
+          adj_zones(_adj_zones), ranges(_ranges),
+          node_marks(_node_marks),
+          tour_nodes(_tour_nodes), perm(_perm),
+          G_s(_G_s),
+          old_seg(_G_s.node_count - 1, _G_s.node_count - 1, 0.0)
+          {}
 
-    std::vector<std::vector<SimpleTooth::Ptr>> &r_teeth, &l_teeth, &d_teeth;
-    std::vector<std::vector<int>> &adj_zones;
+      std::vector<std::vector<SimpleTooth::Ptr>> &light_teeth;
+      std::vector<std::vector<int>> &adj_zones;
+      std::vector<util::SquareUT<ToothList::reverse_iterator>> &ranges;
 
-    std::vector<int> &node_marks;
-    std::vector<int> &tour_nodes, &perm;
+      std::vector<int> &node_marks;
+      std::vector<int> &tour_nodes, &perm;
 
-    CMR::SupportGraph &G_s;
+      CMR::SupportGraph &G_s;
 
-    tooth_seg old_seg;
+      tooth_seg old_seg;
     
-    std::unordered_map<int, double> rb_sums;
-    std::vector<std::pair<int, double>> prev_slacks;
+      std::unordered_map<int, double> rb_sums;
   };
 
   Data::GraphGroup &graph_dat;
