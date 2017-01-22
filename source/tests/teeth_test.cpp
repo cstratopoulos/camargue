@@ -28,8 +28,8 @@ using CMR::IntPair;
 static int dump_segment(double cut_val, int cut_start, int cut_end,
 			void *u_data)
 {
-  vector<CMR::tooth_seg> *vec = (vector<CMR::tooth_seg> *) u_data;
-  vec->emplace_back(CMR::tooth_seg(cut_start, cut_end, cut_val));
+  vector<CMR::ToothBody> *vec = (vector<CMR::ToothBody> *) u_data;
+  vec->emplace_back(CMR::ToothBody(cut_start, cut_end, cut_val));
 
   return 0;
 }
@@ -232,7 +232,7 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
 	}
       }
 
-      vector<CMR::tooth_seg> seg_vec;
+      vector<CMR::ToothBody> seg_vec;
       vector<int> &tour = b_dat.best_tour_nodes;
       vector<int> &perm = b_dat.perm;
       vector<int> endmark(ncount, CC_LINSUB_BOTH_END);
@@ -248,7 +248,7 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
       vector<vector<int>> &zones = cands.adj_zones;
       for (auto s1 = seg_vec.begin(); s1 != seg_vec.end() - 1; ++s1) {
 	for (auto s2 = s1 + 1; s2 != seg_vec.end(); ++s2) {
-	  CMR::tooth_seg seg1 = *s1, seg2 = *s2;
+	  CMR::ToothBody seg1 = *s1, seg2 = *s2;
 	  
 	  int min_start = fmin(seg1.start, seg2.start);
 	  int max_end = fmin(seg1.end, seg2.end);
