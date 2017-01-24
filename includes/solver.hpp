@@ -12,9 +12,9 @@
 
 namespace CMR {
 
-/// Class for solution of TSP instances.
+/// Solution of TSP instances.
 class Solver {
-public:
+public:    
     /// Construct a Solver from a TSPLIB instance.
     Solver(const std::string &tsp_fname, const int seed,
            const OutPrefs outprefs);
@@ -29,6 +29,9 @@ public:
 
     /// Run a primal cutting plane loop of pivoting and cut generation.
     LP::PivType cutting_loop(bool do_price);
+
+    /// Embed cutting_loop in an augment and branch and cut search.
+    LP::PivType abc(bool do_price);
 
     const Data::Instance &inst_info() const
         { return tsp_instance; } /// Get the Instance being used.
@@ -46,7 +49,7 @@ public:
         { return core_lp; } /// Get the active CoreLP relaxation.
 
 private:
-    void report_piv(CMR::LP::PivType piv, int round);
+    void report_piv(CMR::LP::PivType piv, int round, bool full_opt);
     
     Data::Instance tsp_instance;
     Data::KarpPartition karp_part;
