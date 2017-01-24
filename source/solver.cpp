@@ -26,6 +26,7 @@ using std::vector;
 namespace CMR {
 
 using CutType = Sep::HyperGraph::Type;
+using PivType = LP::PivType;
 
 inline static int make_seed(const int seed)
 {
@@ -74,35 +75,34 @@ try : tsp_instance(make_seed(seed), node_count, gridsize),
     throw runtime_error("Solver random constructor failed.");
 }
 
-void Solver::report_piv(LP::PivType piv, int round)
+void Solver::report_piv(PivType piv, int round, bool full_opt)
 {
-    cout << "\n\t\tRound " << round << endl;
-    
-    switch (piv) {
-    case LP::PivType::FathomedTour:
-        cout << "\tTour optimal for edge set\n"
-             << "\t*************************\n"
-             << "\tLP optimal obj val: " << core_lp.get_objval()
-             << ", dual feas: " << core_lp.dual_feas() << "\n";
-        break;
-    case LP::PivType::Tour:
-        cout << "\tAugmented to tour of length "
-             << core_lp.get_objval() << "\n";
-        break;
-    default:
-        cout << "\t Pivot status: \t" << LP::piv_string(piv) << "\n"
-             << "\t obj val: \t"
-             << core_lp.get_objval() << ", dual feas: "
-             << core_lp.dual_feas() << "\n";
-    }
-
+    cout << "\n\t\tRound " << round << "\n"
+         << "\tLP objective value: " << core_lp.get_objval()
+         << ", dual feasible: " << core_lp.dual_feas() << "\n";
     cout << "\t" << core_lp.num_rows() << " rows, "
          << core_lp.num_cols() << " cols in LP.\n";
+    
+    switch (piv) {
+    case PivType::FathomedTour:
+        if (full_opt) {
+            cout << "\tCurrent tour is optimal\n"
+                 << "\t*************************\n";
+        } else {
+            cout << "\tTour optimal for edge set, pricing edges...\n";
+        }
+        break;
+    case PivType::Tour:
+        cout << "\tAugmented to new tour.\n";
+        break;
+    default:
+        cout << "\t Pivot status: \t" << LP::piv_string(piv) << "\n";
+    }
     
     cout << endl;
 }
 
-LP::PivType Solver::cutting_loop(bool do_price)
+PivType Solver::cutting_loop(bool do_price)
 {
     runtime_error err("Problem in Solver::cutting_loop.");
 
@@ -113,7 +113,7 @@ LP::PivType Solver::cutting_loop(bool do_price)
                                                            graph_data);
         } CMR_CATCH_PRINT_THROW("Couldn't instantiate Pricer", err);
     
-    LP::PivType piv = LP::PivType::Frac;
+    PivType piv = PivType::Frac;
     int round = 0;
     int auground = 0;
 
@@ -141,8 +141,8 @@ LP::PivType Solver::cutting_loop(bool do_price)
             piv = core_lp.primal_pivot();
         } CMR_CATCH_PRINT_THROW("performing primal pivot", err);
         
-        if (piv == LP::PivType::FathomedTour) {
-            report_piv(piv, round);
+        if (piv == PivType::FathomedTour) {
+            report_piv(piv, round, !do_price);
             
             if (do_price) {
                 try {
@@ -150,8 +150,7 @@ LP::PivType Solver::cutting_loop(bool do_price)
                         core_lp.rebuild_basis();
                         core_lp.pivot_back();
                         continue;
-                    }
-                    else
+                    } else
                         break;
                 } CMR_CATCH_PRINT_THROW("adding edges to core", err);
             }
@@ -159,8 +158,8 @@ LP::PivType Solver::cutting_loop(bool do_price)
             break;
         }
 
-        if (piv == LP::PivType::Tour) {
-            report_piv(piv, round);
+        if (piv == PivType::Tour) {
+            report_piv(piv, round, false);
             cout << "\tPruned " << (rowcount - core_lp.num_rows())
                  << " rows from the LP." << endl;
 
@@ -169,7 +168,7 @@ LP::PivType Solver::cutting_loop(bool do_price)
                     edge_pricer->gen_edges(piv);
                 } CMR_CATCH_PRINT_THROW("adding edges to core", err);
             
-            piv = LP::PivType::Frac;
+            piv = PivType::Frac;
 
             try {
                 TG = Graph::TourGraph(tour_edges, edges, perm);
@@ -184,7 +183,7 @@ LP::PivType Solver::cutting_loop(bool do_price)
 
         try {
             if (!separator.find_cuts(TG)) {
-                report_piv(piv, round);
+                report_piv(piv, round, false);
                 cout << "\tNo cuts found.\n";
                 break;
             }
@@ -205,11 +204,10 @@ LP::PivType Solver::cutting_loop(bool do_price)
     }
 
     timer.stop();
-    timer.report(false);
-    cout << "\n\tFinal LP has " << core_lp.num_rows() << " rows, "
-         << core_lp.num_cols() << " cols.\n";
-    cout << "\tObj val: " << core_lp.get_objval() << ", dual feas: "
-         << core_lp.dual_feas() << "\n";
+    timer.report(true);
+
+    if (piv == PivType::FathomedTour && do_price)
+        report_piv(piv, round, true);
     
     int stcount = 0;
     int dpcount = 0;
