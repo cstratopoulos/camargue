@@ -26,6 +26,7 @@ double util::real_zeit (void)
     return (double) time (0);
 }
 
+namespace LP {
 /**
  * @param[out] os the output stream to write to.
  * @param[in] piv the pivot to streamify.
@@ -46,4 +47,5 @@ std::ostream &operator<<(std::ostream &os, LP::PivType piv)
     return os;
 }
 
+}
 }
