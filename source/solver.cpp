@@ -96,7 +96,7 @@ void Solver::report_piv(PivType piv, int round, bool full_opt)
         cout << "\tAugmented to new tour.\n";
         break;
     default:
-        cout << "\t Pivot status: \t" << LP::piv_string(piv) << "\n";
+        cout << "\t Pivot status: \t" << piv << "\n";
     }
     
     cout << endl;
@@ -220,6 +220,22 @@ PivType Solver::cutting_loop(bool do_price)
     cout << "\t" << stcount << " standard cuts, " << dpcount << " dp cuts.\n";
     cout << "\n";
     return piv;
+}
+
+PivType Solver::abc(bool do_price)
+{
+    runtime_error err("Problem in Solver::abc.");
+
+    PivType piv = cutting_loop(do_price);
+    
+    if (piv != PivType::Frac) {
+        if (piv == PivType::FathomedTour)
+            return piv;
+        else {
+            
+        }
+            
+    }
 }
 
 }

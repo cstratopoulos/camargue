@@ -99,7 +99,7 @@ SCENARIO ("Pivoting and adding cuts",
                     vector<double> tour1 = core.lp_vec();
 
                     CMR::LP::PivType piv = core.primal_pivot();
-                    cout << "Pivoted to: " << CMR::LP::piv_string(piv)
+                    cout << "Pivoted type: " << piv
                          << ", piv val: " << core.get_objval() << "\n";
 
                     vector<double> piv1 = core.lp_vec();
@@ -137,7 +137,7 @@ SCENARIO ("Pivoting and adding cuts",
                     REQUIRE_NOTHROW(core.add_cuts(control.simpleDP_q()));
 
                     piv = core.primal_pivot();
-                    cout << "Pivoted to: " << CMR::LP::piv_string(piv)
+                    cout << "Pivoted type: " << piv
                          << ", piv val: " << core.get_objval() << "\n";
 
                     vector<double> piv2 = core.lp_vec();

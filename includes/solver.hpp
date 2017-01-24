@@ -5,6 +5,7 @@
 #include "karp.hpp"
 #include "datagroups.hpp"
 #include "pricer.hpp"
+#include "brancher.hpp"
 #include "util.hpp"
 
 #include <memory>
@@ -59,6 +60,7 @@ private:
     LP::CoreLP core_lp;
 
     std::unique_ptr<Price::Pricer> edge_pricer;
+    std::unique_ptr<ABC::Brancher> brancher;
 
     OutPrefs output_prefs;
 };
