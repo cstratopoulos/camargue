@@ -78,13 +78,6 @@ struct OutPrefs {
 namespace LP {
 
 
-///Primal pricing protocols. 
-enum class Pricing {
-  Devex, //!< Devex pricing. */
-  SlackSteepest, //!< Steepest edge with slack initial norms. */
-  Steepest //!< True steepest edge. */
-};
-
 /// Enum class for categorizing lp solutions.
 enum class PivType {
     Frac, //!< Fractional solution.
@@ -93,9 +86,8 @@ enum class PivType {
     FathomedTour //!< A tour with a dual feasible basis in the current lp.
 };
 
-/** Function for converting PivType to a string for output. */
-/// @todo replace this with ofstream
-std::string piv_string(PivType piv);
+/// Operator overload for writing LP::PivType to output stream. 
+std::ostream &operator<<(std::ostream &os, PivType piv);
 
 }
 

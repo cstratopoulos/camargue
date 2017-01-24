@@ -26,22 +26,24 @@ double util::real_zeit (void)
     return (double) time (0);
 }
 
-std::string LP::piv_string(LP::PivType piv)
+/**
+ * @param[out] os the output stream to write to.
+ * @param[in] piv the pivot to streamify.
+ */
+std::ostream &operator<<(std::ostream &os, LP::PivType piv)
 {
-    switch (piv) {
-    case PivType::FathomedTour:
-        return "Fathomed tour";
-    case PivType::Frac:
-        return "Fractional";
-    case PivType::Subtour:
-        return "Integral subtour";
-    case PivType::Tour:
-        return "Tour";
-    default:
-        return "";
-    }
+    using Ptype = LP::PivType;
 
-    return "";
+    if (piv == Ptype::Frac)
+        os << "Fractional";
+    else if (piv == Ptype::Subtour)
+        os << "Integral subtour";
+    else if (piv == Ptype::Tour)
+        os << "Tour";
+    else if (piv == Ptype::FathomedTour)
+        os << "Optimal tour";
+
+    return os;
 }
 
 }
