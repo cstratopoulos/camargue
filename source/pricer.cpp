@@ -76,8 +76,8 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 {
     runtime_error err("Problem in Pricer::gen_edges");
     ScanStat result =
-    (piv_stat == LP::PivType::Tour) ? ScanStat::Partial : ScanStat::Full;
-    bool silent = true;
+    (piv_stat == LP::PivType::Tour) ? ScanStat::PartOpt : ScanStat::FullOpt;
+    bool silent = false;
     
     edge_hash.clear();
 
