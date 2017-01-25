@@ -111,7 +111,7 @@ PivType Solver::cutting_loop(bool do_price)
             edge_pricer = util::make_unique<Price::Pricer>(core_lp,
                                                            tsp_instance,
                                                            graph_data);
-        } CMR_CATCH_PRINT_THROW("Couldn't instantiate Pricer", err);
+        } CMR_CATCH_PRINT_THROW("instantiating/allocating Pricer", err);
     
     PivType piv = PivType::Frac;
     int round = 0;
@@ -232,10 +232,43 @@ PivType Solver::abc(bool do_price)
         if (piv == PivType::FathomedTour)
             return piv;
         else {
-            
-        }
-            
+            cerr << "Pivot status " << piv << " in abc.\n";
+            throw logic_error("Invalid pivot type for running Solver::abc.");
+        }            
     }
+
+    try {
+        brancher = util::make_unique<ABC::Brancher>(core_lp,
+                                                    graph_data.core_graph
+                                                    .get_edges(), tour_basis(),
+                                                    best_data.min_tour_value,
+                                                    ABC::ContraStrat::Fix);
+    } CMR_CATCH_PRINT_THROW("allocating/instantiating Brancher", err);
+
+    using ProbStat = ABC::Problem::Status;
+    ABC::Problem &prob = brancher->next_prob();
+
+    while (!brancher->solved(prob)) {
+        cout << "\tBRANCH TASK: " << prob << "\n";
+        piv = cutting_loop(do_price);
+        
+        if (piv == PivType::FathomedTour)
+            prob.status = ProbStat::Pruned;
+        else if (piv == PivType::Frac)
+            prob.status = ProbStat::Seen;
+        else {
+            cerr << "Pivot status " << piv << " in abc loop.\n";
+            throw runtime_error("Invalid piv stat for further branching.");
+        }
+        
+        cout << "\tUPDATED TASK: " << prob << "\n";
+        cout << "Calling next prob...." << endl;
+        prob = brancher->next_prob();
+    }
+
+    cout << "\tABC search complete.\n";
+    
+    return piv;    
 }
 
 }
