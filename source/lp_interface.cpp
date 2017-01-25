@@ -278,6 +278,45 @@ int Relaxation::it_count() const
     return CPXgetitcnt(simpl_p->env, simpl_p->lp);
 }
 
+double Relaxation::get_coeff(int row, int col) const
+{
+    double result;
+    int rval = CPXgetcoef(simpl_p->env, simpl_p->lp, row, col, &result);
+    if (rval)
+        throw cpx_err(rval, "CPXgetcoef");
+    return result;
+}
+
+void Relaxation::get_col(const int col, vector<int> &cmatind,
+                           vector<double> &cmatval) const
+{
+    int surplus = 0;
+    int cmatbeg = 0;
+    int nzcnt = 0;
+
+    int rval = CPXgetcols(simpl_p->env, simpl_p->lp,
+                          &nzcnt, &cmatbeg,
+                          &cmatind[0], &cmatval[0], 0,
+                          &surplus, col, col);
+    if (rval != CPXERR_NEGATIVE_SURPLUS)
+        throw cpx_err(rval, "CPXgetcols initial");
+
+    try {
+        cmatind.resize(-surplus);
+        cmatval.resize(-surplus);
+    } catch (const exception &e) {
+        cerr << e.what() << "\n";
+        throw runtime_error("Couldn't resize vectors in Relaxation::get_col");
+    }
+
+    rval = CPXgetcols(simpl_p->env, simpl_p->lp,
+                      &nzcnt, &cmatbeg,
+                      &cmatind[0], &cmatval[0], cmatind.size(),
+                      &surplus, col, col);
+    if (rval)
+        throw cpx_err(rval, "CPXgetcols actual");
+}
+
 void Relaxation::new_row(const char sense, const double rhs)
 {
     int rval = CPXnewrows(simpl_p->env, simpl_p->lp, 1, &rhs, &sense, NULL,
