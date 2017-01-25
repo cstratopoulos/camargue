@@ -33,6 +33,28 @@ using std::string;
 using std::to_string;
 using std::cout;
 
+SCENARIO ("Running a Solver with contra Fix Brancher",
+          "[ABC][Brancher][ContraStrat][Fix]") {
+    using namespace CMR;
+    vector<string> probs{
+        "dantzig42",
+        };
+
+    for (string &prob : probs) {
+        GIVEN ("A Solver for " + prob) {
+            THEN ("We can run a contra fixing ABC") {
+                OutPrefs prefs;
+                Solver solver("problems/" + prob + ".tsp", 99, prefs);
+                LP::PivType piv;
+
+                REQUIRE_NOTHROW(piv = solver.abc(true));
+                cout << piv << "\n";
+            }
+        }
+    }
+    
+}
+
 SCENARIO ("Instating a Brancher and getting problems",
           "[ABC][Brancher]") {
     vector<string> probs{
@@ -73,11 +95,12 @@ SCENARIO ("Instating a Brancher and getting problems",
                                     util::make_unique<ABC::Brancher>(rel,
                                                                      edges,
                                                                      tbase,
-                                                                     tourlen));
-                    ABC::Problem &prob = branch->next_prob();
-                    cout << "\t" << prob << "\n";
+                                                                     tourlen,
+                                                                     ABC::ContraStrat::Fix));
+
+                    int ind = branch->branch_edge_index();
+                    cout << "\tIndex " << ind << " should be next branch.\n";
                     
-                    int ind = prob.edge_ind;
                     double tour_entry = tbase.best_tour_edges[ind];
                     double lp_entry = frac_vec[ind];
 
