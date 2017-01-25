@@ -107,7 +107,7 @@ public:
 
     /// Get the column associated with an edge to be added to the lp.
     void get_col(const int end0, const int end1,
-                 std::vector<int> &cmatind, std::vector<double> &cmatval);
+                 std::vector<int> &cmatind, std::vector<double> &cmatval) const;
 
     /// Retrieve exact/estimated duals for use in computing reduced costs.
     template <typename numtype>

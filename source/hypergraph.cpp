@@ -364,7 +364,7 @@ void ExternalCuts::del_cuts(const vector<int> &delset)
  * \p cmatind.
  */
 void ExternalCuts::get_col(const int end0, const int end1,
-                           vector<int> &cmatind, vector<double> &cmatval)
+                           vector<int> &cmatind, vector<double> &cmatval) const
 {
     runtime_error err("Problem in ExternalCuts::get_col");
     
