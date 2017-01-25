@@ -128,6 +128,8 @@ private:
     std::vector<HyperGraph> cuts; //<! List of the cuts in the LP::Relaxation.
 };
 
+//////////////////// TEMPLATE METHOD IMPLEMENTATION ///////////////////////////
+
 /**
  * This method will use the LP::Relaxation to query the lp solver for dual 
  * values, and use the ExternalCuts collection of cuts, cliques, and teeth to
@@ -154,6 +156,9 @@ void ExternalCuts::get_duals(const LP::Relaxation &relax,
 {
     using CutType = HyperGraph::Type;
     using std::vector;
+    using std::cout;
+    using std::cerr;
+    using std::endl;
     
     std::runtime_error err("Problem in ExternalCuts::get_duals.");
 
@@ -162,9 +167,9 @@ void ExternalCuts::get_duals(const LP::Relaxation &relax,
 
 
     if (relax.num_rows() != node_count + cuts.size()) {
-        std::cerr << "Relaxation row count: " << relax.num_rows() << ", "
-                  << "ExternalCuts expects: "
-                  << (node_count + cuts.size()) << "\n";
+        cerr << "Relaxation row count: " << relax.num_rows() << ", "
+             << "ExternalCuts expects: "
+             << (node_count + cuts.size()) << "\n";
         throw std::logic_error("Size mismatch in ExternalCuts::get_duals.");
     }
 
@@ -175,11 +180,10 @@ void ExternalCuts::get_duals(const LP::Relaxation &relax,
 
         relax.get_pi(d_node_pi, 0, node_count - 1);
 
-
-        if (!cuts.empty())
+        if (!cuts.empty()) 
             relax.get_pi(d_cut_pi, node_count, relax.num_rows() - 1);
     } CMR_CATCH_PRINT_THROW("getting/allocating double pi containers.", err);
-
+    
     try {
         node_pi = vector<numtype>(d_node_pi.begin(), d_node_pi.end());
         cut_pi = vector<numtype>(d_cut_pi.begin(), d_cut_pi.end());
