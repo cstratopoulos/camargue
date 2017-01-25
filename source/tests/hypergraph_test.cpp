@@ -26,6 +26,68 @@ using std::vector;
 using std::string;
 using std::cout;
 
+SCENARIO ("Comparing HyperGraph edge coeffs to CPLEX coefs",
+          "[HyperGraph][get_coeff][Sep][LP]")
+{
+    using namespace CMR;
+    vector<string> probs {
+        "ulysses16",
+        "dantzig42",
+        "eil51",
+        "rat99",
+        "lin318",
+        "d493",
+        "p654",
+        "u724",
+        "dsj1000",
+        "pr1002",
+        "d2103",
+        };
+
+    for (string &fname : probs) {
+        GIVEN ("A priceless cutting_loop run on " + fname) {
+            WHEN ("We get coefficients of individual edges") {
+                THEN ("They agree with those from CPLEX") {
+                    string probfile = "problems/" + fname + ".tsp";
+
+                    OutPrefs outprefs;        
+                    Solver solver(probfile, 99, outprefs);
+                    
+                    solver.cutting_loop(false);
+
+                    const Data::GraphGroup &g_dat = solver.graph_info();
+                    const LP::CoreLP &core_lp = solver.get_core_lp();
+
+                    const vector<Graph::Edge> &edges = g_dat.core_graph
+                    .get_edges();
+                    
+                    int ncount = g_dat.core_graph.node_count();
+                    int numrows = core_lp.num_rows();
+
+                    for (int i = 0; i < edges.size(); ++i) {
+                        vector<int> ex_cmatind;
+                        vector<double> ex_cmatval;
+                        vector<int> cpx_cmatind;
+                        vector<double> cpx_cmatval;
+
+                        REQUIRE_NOTHROW(core_lp.external_cuts()
+                                        .get_col(edges[i].end[0],
+                                                 edges[i].end[1],
+                                                 ex_cmatind,
+                                                 ex_cmatval));
+                        REQUIRE_NOTHROW(core_lp.get_col(i, cpx_cmatind,
+                                                        cpx_cmatval));
+
+                        REQUIRE(ex_cmatind.size() == cpx_cmatind.size());
+                        REQUIRE(ex_cmatind == cpx_cmatind);
+                        REQUIRE(ex_cmatval == cpx_cmatval);
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 SCENARIO ("Comparing HyperGraph edge coeffs to comb/domino sparse rows",
           "[Sep][HyperGraph][get_coeff][get_coeffs]") {
