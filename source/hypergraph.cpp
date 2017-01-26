@@ -295,15 +295,6 @@ void HyperGraph::get_coeffs(const std::vector<Price::PrEdge> &edges,
     
 }
 
-std::ostream &operator<<(std::ostream &os, HyperGraph::Type t)
-{
-    using Type = HyperGraph::Type;
-
-    os << ((t == Type::Subtour) ? "Subtour" :
-           ((t == Type::Comb) ? "Comb" : "Domino"));
-    return os;
-}
-
 ExternalCuts::ExternalCuts(const vector<int> &tour, const vector<int> &perm)
 try : node_count(tour.size()), clique_bank(tour, perm), tooth_bank(tour, perm)
 {

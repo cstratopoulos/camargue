@@ -74,6 +74,20 @@ private:
     ToothBank *source_toothbank; //<! The ToothBank for the teeth.
 };
 
+inline std::ostream &operator<<(std::ostream &os, HyperGraph::Type t)
+{
+    using T = HyperGraph::Type;
+    if (t == T::Domino)
+        os << "Domino";
+    else if (t == T::Subtour)
+        os << "Subtour";
+    else if (t == T::Comb)
+        os << "Blossom or comb";
+    else
+        os << "Error unkown type";
+    return os;
+}
+
 /// The external storage of a collection of HyperGraph cuts in a Relaxation.
 class ExternalCuts {
 public:
