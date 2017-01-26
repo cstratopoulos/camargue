@@ -329,13 +329,33 @@ void Pricer::price_edges(vector<PrEdge> &target_edges, bool compute_duals)
 
     for (int i = 0; i < cutlist.size(); ++i) {
         double pival = cut_pi[i];
-        if (pival <= 0.0)
-            continue;
+        // cout << "\tCut " << i << " " << cutlist[i].cut_type()
+        //      << " has pival " << pival << "\n";
+        
+        // vector<int> rmatind;
+        // vector<double> rmatval;
+
+        // core_lp.get_row(def_tour.size() + i, rmatind, rmatval);
+        // cout << "nz entries of row\n";
+        // for (int i : rmatind)
+        //     cout << i << ", ";
+        // cout << "\n";
 
         const Sep::HyperGraph &H = cutlist[i];
         if (H.cut_type() != CutType::Domino)
             continue;
 
+
+        ///the problem is somewhere here....maybe pricing should just never
+        /// be run without dual feasible solutions.....
+        if (core_lp.dual_feas()) {
+            if (pival >= 0.0)
+                continue;
+        } else {
+            if (pival <= 0.0)
+                continue;
+        }
+        
         try {
             H.get_coeffs(target_edges, rmatind, rmatval);
         } catch (const exception &e) {
