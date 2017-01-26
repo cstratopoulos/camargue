@@ -40,7 +40,7 @@ SCENARIO ("Running the Solver cutting_loop with no pricing.",
             THEN ("We can instantiate a Solver and run cutting_loop") {
                 CMR::OutPrefs prefs;
                 CMR::Solver solver("problems/" + prob + ".tsp",
-                                   "test_data/tours/" + prob + ".sol",
+                                   //"test_data/tours/" + prob + ".sol",
                                    0, prefs);
 
                 REQUIRE_NOTHROW(solver.cutting_loop(false));
