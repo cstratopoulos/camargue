@@ -51,6 +51,8 @@ public:
 
 private:
     void report_piv(CMR::LP::PivType piv, int round, bool full_opt);
+
+    LP::PivType cut_and_piv(int &round);
     
     Data::Instance tsp_instance;
     Data::KarpPartition karp_part;
@@ -58,6 +60,8 @@ private:
     Data::BestGroup best_data;
 
     LP::CoreLP core_lp;
+
+    Graph::TourGraph TG;
 
     std::unique_ptr<Price::Pricer> edge_pricer;
     std::unique_ptr<ABC::Brancher> brancher;
