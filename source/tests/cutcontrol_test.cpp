@@ -1,4 +1,7 @@
 #include "config.hpp"
+
+#ifdef CMR_DO_TESTS
+
 #include "core_lp.hpp"
 #include "datagroups.hpp"
 #include "separator.hpp"
@@ -17,7 +20,7 @@ using std::vector;
 using std::string;
 using std::cout;
 
-#ifdef CMR_DO_TESTS
+
 
 /*
 SCENARIO ("Adding duplicate cuts",
@@ -81,6 +84,7 @@ SCENARIO ("Adding duplicate cuts",
 
 SCENARIO ("Pivoting and adding cuts",
          "[LP][Sep][CoreLP][Separator]") {
+    using namespace CMR;
     vector<string> probs{"dantzig42", "st70", "pr76", "lin105",
                          "lin318", "d493", "att532", "pr1002", "rl1304",
                          "d2103", "pr2392"};
@@ -89,33 +93,33 @@ SCENARIO ("Pivoting and adding cuts",
         GIVEN ("The TSP instance " + prob) {
             WHEN ("We pivot to a new solution") {
                 THEN ("We can find cuts, add them, and pivot back") {
-                    CMR::Data::Instance inst("problems/" + prob + ".tsp", 99);
-                    CMR::Data::GraphGroup g_dat(inst);
-                    CMR::Data::BestGroup b_dat(inst, g_dat);
-                    CMR::LP::CoreLP core(g_dat, b_dat);
-                    CMR::Data::KarpPartition kpart(b_dat.perm.size(),
+                    Data::Instance inst("problems/" + prob + ".tsp", 99);
+                    Data::GraphGroup g_dat(inst);
+                    Data::BestGroup b_dat(inst, g_dat);
+                    LP::CoreLP core(g_dat, b_dat);
+                    Data::KarpPartition kpart(b_dat.perm.size(),
                                                    inst.ptr(), 99);
 
                     vector<double> tour1 = core.lp_vec();
 
-                    CMR::LP::PivType piv = core.primal_pivot();
+                    LP::PivType piv = core.primal_pivot();
                     cout << "Pivoted type: " << piv
                          << ", piv val: " << core.get_objval() << "\n";
 
                     vector<double> piv1 = core.lp_vec();
 
-                    CMR::Data::SupportGroup s_dat;
+                    Data::SupportGroup s_dat;
                     s_dat.reset(inst.node_count(),
                                 g_dat.core_graph.get_edges(), piv1,
                                 g_dat.island);
 
-                    CMR::Graph::TourGraph TG(b_dat.best_tour_edges,
+                    Graph::TourGraph TG(b_dat.best_tour_edges,
                                       g_dat.core_graph.get_edges(),
                                       b_dat.perm);
 
-                    CMR::Sep::Separator control(g_dat, b_dat, s_dat, kpart);
+                    Sep::Separator control(g_dat, b_dat, s_dat, kpart, TG);
 
-                    REQUIRE(control.find_cuts(TG));
+                    REQUIRE(control.find_cuts());
 
                     REQUIRE_NOTHROW(core.pivot_back());
 
@@ -124,7 +128,7 @@ SCENARIO ("Pivoting and adding cuts",
                     REQUIRE(tour1 == tour2);
 
 
-                    std::array<const CMR::Sep::LPcutList*,
+                    std::array<const Sep::LPcutList*,
                                4> qlist{
                         &control.segment_q(),
                         &control.fastblossom_q(),

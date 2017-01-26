@@ -25,16 +25,17 @@ using std::pair;
 
 SCENARIO ("Performing single pivots",
           "[LP][CoreLP][primal_pivot][Sep][Separator]") {
+    using namespace CMR;
     vector<string> probs{"pr76", "a280", "p654", "pr1002", "rl1304"};
 
     for (string &prob : probs) {
         GIVEN ("The TSP instance " + prob) {
             WHEN ("We pivot to a new solution") {
                 THEN ("The LP vector changes") {
-                    CMR::Data::Instance inst("problems/" + prob + ".tsp", 99);
-                    CMR::Data::GraphGroup g_dat(inst);
-                    CMR::Data::BestGroup b_dat(inst, g_dat);
-                    CMR::LP::CoreLP core(g_dat, b_dat);
+                    Data::Instance inst("problems/" + prob + ".tsp", 99);
+                    Data::GraphGroup g_dat(inst);
+                    Data::BestGroup b_dat(inst, g_dat);
+                    LP::CoreLP core(g_dat, b_dat);
 
                     vector<double> tourx = core.lp_vec();
                     double tourlen = core.get_objval();
@@ -54,31 +55,31 @@ SCENARIO ("Performing single pivots",
                             REQUIRE(core.get_objval() == tourlen);
                             REQUIRE(tourx == core.lp_vec());
 
-                            CMR::Data::SupportGroup s_dat;
+                            Data::SupportGroup s_dat;
 
                             s_dat.reset(inst.node_count(),
                                         g_dat.core_graph.get_edges(), pivx,
                                         g_dat.island);
 
-                            CMR::Graph::TourGraph TG(b_dat.best_tour_edges,
+                            Graph::TourGraph TG(b_dat.best_tour_edges,
                                                      g_dat.core_graph.
                                                      get_edges(), b_dat.perm);
-                            CMR::Data::KarpPartition kpart;
-                            CMR::Sep::Separator sep(g_dat, b_dat, s_dat,
-                                                    kpart);
+                            Data::KarpPartition kpart;
+                            Sep::Separator sep(g_dat, b_dat, s_dat,
+                                                    kpart, TG);
 
                             bool found_some = false;
 
-                            if (sep.segment_sep(TG)) {
+                            if (sep.segment_sep()) {
                                 found_some = true;
                                 core.add_cuts(sep.segment_q());
-                            } else if (sep.fast2m_sep(TG)) {
+                            } else if (sep.fast2m_sep()) {
                                 found_some = true;
                                 core.add_cuts(sep.fastblossom_q());
-                            } else if (sep.blkcomb_sep(TG)) {
+                            } else if (sep.blkcomb_sep()) {
                                 found_some = true;
                                 core.add_cuts(sep.blockcomb_q());
-                            } else if (sep.connect_sep(TG)) {
+                            } else if (sep.connect_sep()) {
                                 found_some = true;
                                 core.add_cuts(sep.connect_cuts_q());
                             }
@@ -108,20 +109,21 @@ SCENARIO ("Performing single pivots",
 
 SCENARIO ("Consructing a Core LP",
           "[LP][CoreLP]") {
+    using namespace CMR;
     vector<string> probs{"dantzig42", "lin318", "d493", "pr1002", "pcb3038"};
 
     for (string& prob : probs) {
         GIVEN ("The TSP instance " + prob) {
             WHEN ("A core LP is constructed") {
-                CMR::Data::Instance inst("problems/" + prob + ".tsp", 99);
-                CMR::Data::GraphGroup g_dat(inst);
-                CMR::Data::BestGroup b_dat(inst, g_dat);
+                Data::Instance inst("problems/" + prob + ".tsp", 99);
+                Data::GraphGroup g_dat(inst);
+                Data::BestGroup b_dat(inst, g_dat);
                 THEN ("Its constructor doesn't throw.") {
-                    REQUIRE_NOTHROW(CMR::LP::CoreLP core(g_dat, b_dat));
+                    REQUIRE_NOTHROW(LP::CoreLP core(g_dat, b_dat));
                 }
 
                 AND_THEN ("The degree LP is feasible at the best tour") {
-                    CMR::LP::CoreLP core(g_dat, b_dat);
+                    LP::CoreLP core(g_dat, b_dat);
                     vector<double> feas;
                     vector<double> tour = core.lp_vec();
                     REQUIRE_NOTHROW(core.get_row_infeas(tour, feas, 0,
@@ -143,16 +145,17 @@ SCENARIO ("Consructing a Core LP",
 
 SCENARIO ("Constructing LP Relaxations",
           "[.LP][.Relaxation][valgrind]") {
+    using namespace CMR;
     WHEN("A relaxation is constructed"){
         THEN("Its constructor doesn't throw"){
-            REQUIRE_NOTHROW(CMR::LP::Relaxation rel);            
+            REQUIRE_NOTHROW(LP::Relaxation rel);            
         }
     }
 
     GIVEN ("A constructed Relaxation") {
-        CMR::LP::Relaxation rel;
+        LP::Relaxation rel;
         WHEN ("Another one is constructed") {
-            CMR::LP::Relaxation rel2;
+            LP::Relaxation rel2;
             THEN ("It can be move assigned with no leaks or exceptions") {
                 REQUIRE_NOTHROW(rel = std::move(rel2));
             }

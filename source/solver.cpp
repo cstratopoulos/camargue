@@ -179,10 +179,10 @@ PivType Solver::cutting_loop(bool do_price)
 
         Data::SupportGroup &supp_data = core_lp.supp_data;
         Sep::Separator separator(graph_data, best_data, supp_data,
-                                  karp_part);
+                                 karp_part, TG);
 
         try {
-            if (!separator.find_cuts(TG)) {
+            if (!separator.find_cuts()) {
                 report_piv(piv, round, false);
                 cout << "\tNo cuts found.\n";
                 break;
