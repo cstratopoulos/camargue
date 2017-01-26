@@ -38,6 +38,7 @@ SCENARIO ("Running a Solver with contra Fix Brancher",
     using namespace CMR;
     vector<string> probs{
         "dantzig42",
+        "pr76",
         };
 
     for (string &prob : probs) {

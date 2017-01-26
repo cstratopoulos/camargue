@@ -246,22 +246,24 @@ PivType Solver::abc(bool do_price)
     } CMR_CATCH_PRINT_THROW("allocating/instantiating Brancher", err);
 
     using ProbStat = ABC::Problem::Status;
-    ABC::Problem &prob = brancher->next_prob();
+    ABC::Problem prob = brancher->next_prob();
+
+    cout << "\n\n\t\t///Beginning ABC search\n\n";
 
     while (!brancher->solved(prob)) {
         cout << "\tBRANCH TASK: " << prob << "\n";
         piv = cutting_loop(do_price);
-        
-        if (piv == PivType::FathomedTour)
-            prob.status = ProbStat::Pruned;
-        else if (piv == PivType::Frac)
-            prob.status = ProbStat::Seen;
-        else {
+
+        cout << "\tTASK STATUS: ";
+        if (piv == PivType::FathomedTour) {
+            brancher->pop_problem(ProbStat::Pruned);
+        } else if (piv == PivType::Frac) {
+            brancher->pop_problem(ProbStat::Seen);
+        } else {
             cerr << "Pivot status " << piv << " in abc loop.\n";
             throw runtime_error("Invalid piv stat for further branching.");
         }
         
-        cout << "\tUPDATED TASK: " << prob << "\n";
         cout << "Calling next prob...." << endl;
         prob = brancher->next_prob();
     }

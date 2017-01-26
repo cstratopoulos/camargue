@@ -74,7 +74,10 @@ public:
              const ContraStrat strat);
 
     /// Pick an edge/branching problem to examine, modifying the Relaxation.
-    Problem &next_prob();
+    Problem next_prob();
+
+    /// Mark the top problem as \p stat, undoing and splitting if neccessary.
+    void pop_problem(const Problem::Status stat);
 
     /// Just get the next edge to branch on, without modifying the Relaxation.
     int branch_edge_index();

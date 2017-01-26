@@ -38,25 +38,40 @@ Brancher::Brancher(LP::Relaxation &lp_rel,
     throw runtime_error("Brancher constructor failed.");
 }
 
-Problem &Brancher::next_prob()
+Problem Brancher::next_prob()
 {
     runtime_error err("Problem in Brancher::next_prob.");
 
     while (!subprobs.empty()) {
         Problem &top = subprobs.top();
-
-        enact_top();
-
-        if (top.status == Pstat::Unseen)
-            return top;
-
-        subprobs.pop();
         
-        if (top.status == Pstat::Seen)
-            split_prob(branch_edge_index());
+        if (top.status != Pstat::Unseen)
+            pop_problem(top.status);
+        else {
+            enact_top();
+            return top;
+        }
     }
 
     return solved_prob;
+}
+
+void Brancher::pop_problem(const Problem::Status stat)
+{
+    runtime_error err("Problem in Brancher::pop_problem.");
+    using Pstat = Problem::Status;
+
+    if (stat == Pstat::Unseen)
+        throw logic_error("Tried to pop unseen problem.");
+
+    subprobs.top().status = stat;
+    try { enact_top(); } CMR_CATCH_PRINT_THROW("enacting", err);
+    subprobs.pop();    
+
+    if (stat == Pstat::Seen)
+        try {
+            split_prob(branch_edge_index());
+        } CMR_CATCH_PRINT_THROW("splitting seen problem", err);
 }
 
 int Brancher::branch_edge_index()
