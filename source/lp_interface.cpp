@@ -317,6 +317,36 @@ void Relaxation::get_col(const int col, vector<int> &cmatind,
         throw cpx_err(rval, "CPXgetcols actual");
 }
 
+void Relaxation::get_row(const int row, vector<int> &rmatind,
+                           vector<double> &rmatval) const
+{
+    int surplus = 0;
+    int rmatbeg = 0;
+    int nzcnt = 0;
+
+    int rval = CPXgetrows(simpl_p->env, simpl_p->lp,
+                          &nzcnt, &rmatbeg,
+                          &rmatind[0], &rmatval[0], 0,
+                          &surplus, row, row);
+    if (rval != CPXERR_NEGATIVE_SURPLUS)
+        throw cpx_err(rval, "CPXgetrows initial");
+
+    try {
+        rmatind.resize(-surplus);
+        rmatval.resize(-surplus);
+    } catch (const exception &e) {
+        cerr << e.what() << "\n";
+        throw runtime_error("Couldn't resize vectors in Relaxation::get_row");
+    }
+
+    rval = CPXgetrows(simpl_p->env, simpl_p->lp,
+                      &nzcnt, &rmatbeg,
+                      &rmatind[0], &rmatval[0], rmatind.size(),
+                      &surplus, row, row);
+    if (rval)
+        throw cpx_err(rval, "CPXgetrows actual");
+}
+
 void Relaxation::new_row(const char sense, const double rhs)
 {
     int rval = CPXnewrows(simpl_p->env, simpl_p->lp, 1, &rhs, &sense, NULL,

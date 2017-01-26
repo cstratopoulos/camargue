@@ -66,6 +66,9 @@ public:
     void get_col(const int col, std::vector<int> &cmatind,
                  std::vector<double> &cmatval) const;
 
+    void get_row(const int row, std::vector<int> &rmatind,
+                 std::vector<double> &rmatval) const;
+
     /** Check the feasibility status of a given solution.
      * If \p x is an lp solution, the `i`th entry of \p feas_stat will be
      * nonzero if \p x violates the constraint in row `i`.
