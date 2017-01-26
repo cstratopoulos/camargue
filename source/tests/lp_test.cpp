@@ -10,6 +10,7 @@
 
 #include "err_util.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -17,11 +18,122 @@
 
 #include <catch.hpp>
 
+using std::abs;
 using std::cout;
 using std::vector;
 using std::unique_ptr;
 using std::string;
 using std::pair;
+
+SCENARIO ("Benchmarking rounds of cuts",
+          "[LP][CoreLP][primal_pivot][Sep][Separator][benchmark]") {
+    using namespace CMR;
+    vector<string> probs{"pr76", "a280", "p654", "pr1002", "rl1304"};
+
+    for (string &prob : probs) {
+        GIVEN ("The TSP instance " + prob) {
+            THEN ("We test the changes from adding cuts in rounds") {
+                    Data::Instance inst("problems/" + prob + ".tsp", 99);
+                    Data::GraphGroup g_dat(inst);
+                    Data::BestGroup b_dat(inst, g_dat);
+                    LP::CoreLP core(g_dat, b_dat);
+
+                    vector<double> tourx = core.lp_vec();
+                    double tourlen = core.get_objval();
+
+                    REQUIRE_NOTHROW(core.primal_pivot());
+
+                    vector<double> pivx = core.lp_vec();
+                    double pval = core.get_objval();
+                    cout << "\tFirst pivot val: " << pval << "\n";
+
+                    Data::SupportGroup s_dat;
+                    int ncount = inst.node_count();
+
+                    s_dat.reset(ncount,
+                                g_dat.core_graph.get_edges(), pivx,
+                                g_dat.island);
+
+                    Graph::TourGraph TG(b_dat.best_tour_edges,
+                                        g_dat.core_graph.
+                                        get_edges(), b_dat.perm);
+                    Data::KarpPartition kpart;
+
+                    unique_ptr<Sep::Separator> sep =
+                    util::make_unique<Sep::Separator>(g_dat, b_dat, s_dat,
+                                                      kpart, TG);
+
+                    if (sep->connect_sep()) {
+                        core.pivot_back();
+                        core.add_cuts(sep->connect_cuts_q());
+                        LP::PivType piv = core.primal_pivot();
+                        vector<double> newx = core.lp_vec();
+                        double newpiv = core.get_objval();
+                        double delta = abs(newpiv - pval);
+                        cout << "\tConnect pivot val: " << newpiv << "\n"
+                             << "\t\tDelta " << delta << "\t"
+                             << (delta / tourlen) << " tour ratio\n"
+                             << "\tStat " << piv << "\n";
+                        pivx = newx;
+                        pval = newpiv;
+                        s_dat.reset(ncount, g_dat.core_graph.get_edges(), pivx,
+                                    g_dat.island);
+                        sep = (util::make_unique<Sep::Separator>(g_dat,
+                                                                    b_dat,
+                                                                    s_dat,
+                                                                    kpart,
+                                                                    TG));
+                    }
+
+                    if (sep->fast2m_sep()) {
+                        core.pivot_back();
+                        core.add_cuts(sep->fastblossom_q());
+                        LP::PivType piv = core.primal_pivot();
+                        vector<double> newx = core.lp_vec();
+                        double newpiv = core.get_objval();
+                        double delta = abs(newpiv - pval);
+                        cout << "\tIs fast2m piv dif from first piv: "
+                             << (newx == pivx) << "\n";
+                        cout << "\tFast2m pivot val: " << newpiv << "\n"
+                             << "\t\tDelta " << delta << "\t"
+                             << (delta / tourlen) << " tour ratio\n"
+                             << "\tStat " << piv << "\n";
+                        pivx = newx;
+                        pval = newpiv;
+                        s_dat.reset(ncount, g_dat.core_graph.get_edges(), pivx,
+                                    g_dat.island);
+                        sep = (util::make_unique<Sep::Separator>(g_dat,
+                                                                    b_dat,
+                                                                    s_dat,
+                                                                    kpart,
+                                                                    TG));
+                    }
+
+                    if (sep->blkcomb_sep()) {
+                        core.pivot_back();
+                        core.add_cuts(sep->blockcomb_q());
+                        LP::PivType piv = core.primal_pivot();
+                        vector<double> newx = core.lp_vec();
+                        double newpiv = core.get_objval();
+                        double delta = abs(newpiv - pval);
+                        cout << "\tBlkcomb pivot val: " << newpiv << "\n"
+                             << "\t\tDelta " << delta << "\t"
+                             << (delta / tourlen) << " tour ratio\n"
+                             << "\tStat " << piv << "\n";
+                        pivx = newx;
+                        pval = newpiv;
+                        s_dat.reset(ncount, g_dat.core_graph.get_edges(), pivx,
+                                    g_dat.island);
+                        sep = (util::make_unique<Sep::Separator>(g_dat,
+                                                                    b_dat,
+                                                                    s_dat,
+                                                                    kpart,
+                                                                    TG));
+                    }
+            }
+        }
+    }
+}
 
 SCENARIO ("Performing single pivots",
           "[LP][CoreLP][primal_pivot][Sep][Separator]") {
