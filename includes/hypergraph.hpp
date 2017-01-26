@@ -176,6 +176,8 @@ void ExternalCuts::get_duals(const LP::Relaxation &relax,
     
     std::runtime_error err("Problem in ExternalCuts::get_duals.");
 
+    vector<double> full_pi;
+
     vector<double> d_node_pi;
     vector<double> d_cut_pi;
 
@@ -192,16 +194,22 @@ void ExternalCuts::get_duals(const LP::Relaxation &relax,
     try {
         clique_pi.reserve(clique_bank.size());
 
-        relax.get_pi(d_node_pi, 0, node_count - 1);
-
-        if (!cuts.empty()) 
-            relax.get_pi(d_cut_pi, node_count, relax.num_rows() - 1);
+        relax.get_pi(full_pi, 0, relax.num_rows() - 1);
     } CMR_CATCH_PRINT_THROW("getting/allocating double pi containers.", err);
     
     try {
-        node_pi = vector<numtype>(d_node_pi.begin(), d_node_pi.end());
-        cut_pi = vector<numtype>(d_cut_pi.begin(), d_cut_pi.end());
+        node_pi = vector<numtype>(full_pi.begin(),
+                                  full_pi.begin() + node_count);
         node_pi_est = node_pi;
+
+        if (!cuts.empty())
+            cut_pi = vector<numtype>(full_pi.begin() + node_count,
+                                     full_pi.end());
+        else
+            cut_pi.clear();
+
+        if (node_pi.size() != node_count || cut_pi.size() != cuts.size())
+            throw std::logic_error("Node pi or cut pi size mismatch");
     } CMR_CATCH_PRINT_THROW("copying to result vectors", err);
 
     //get clique_pi for non-domino cuts
