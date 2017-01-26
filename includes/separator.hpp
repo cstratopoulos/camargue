@@ -34,24 +34,26 @@ public:
     Separator(Data::GraphGroup &graphdata,
               Data::BestGroup &bestdata,
               Data::SupportGroup &suppdata,
-              Data::KarpPartition &kpart);
+              Data::KarpPartition &kpart,
+              Graph::TourGraph &_TG);
 
     /// Construct a Separator, but with limit of number of cuts returned.
     Separator(Data::GraphGroup &graphdata,
               Data::BestGroup &bestdata,
               Data::SupportGroup &suppdata,
               Data::KarpPartition &kpart,
+              Graph::TourGraph &_TG,
               int round_limit);
     
-    bool find_cuts(Graph::TourGraph &TG);
+    bool find_cuts();
 
-    bool segment_sep(Graph::TourGraph &TG);
-    bool fast2m_sep(Graph::TourGraph &TG);
-    bool blkcomb_sep(Graph::TourGraph &TG);
+    bool segment_sep();
+    bool fast2m_sep();
+    bool blkcomb_sep();
 
     bool simpleDP_sep();
 
-    bool connect_sep(Graph::TourGraph &TG);
+    bool connect_sep();
 
     const LPcutList &segment_q() const { return seg_q; }
     const LPcutList &fastblossom_q() const { return fast2m_q; }
@@ -71,6 +73,8 @@ private:
     Data::BestGroup &best_data;
     Data::SupportGroup &supp_data;
     Data::KarpPartition &karp_part;
+
+    Graph::TourGraph &TG;
 
     std::vector<int> perm_elist;
 

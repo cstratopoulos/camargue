@@ -21,12 +21,12 @@ namespace CMR {
 namespace Sep {
 
 Separator::Separator(Data::GraphGroup &graphdata,
-                      Data::BestGroup &bestdata,
-                      Data::SupportGroup &suppdata,
-                      Data::KarpPartition &kpart) try
+                     Data::BestGroup &bestdata,
+                     Data::SupportGroup &suppdata,
+                     Data::KarpPartition &kpart, Graph::TourGraph &_TG) try
     : max_total(8), running_total(0),
       graph_data(graphdata), best_data(bestdata), supp_data(suppdata),
-      karp_part(kpart), perm_elist(supp_data.support_elist)
+      karp_part(kpart), TG(_TG), perm_elist(supp_data.support_elist)
 {
     for (int i = 0; i < perm_elist.size(); ++i)
         perm_elist[i] = best_data.perm[perm_elist[i]];
@@ -38,11 +38,11 @@ Separator::Separator(Data::GraphGroup &graphdata,
 Separator::Separator(Data::GraphGroup &graphdata,
                      Data::BestGroup &bestdata,
                      Data::SupportGroup &suppdata,
-                     Data::KarpPartition &kpart,
+                     Data::KarpPartition &kpart, Graph::TourGraph &_TG,
                      int round_limit) try
     : max_total(round_limit), running_total(0),
       graph_data(graphdata), best_data(bestdata), supp_data(suppdata),
-      karp_part(kpart), perm_elist(supp_data.support_elist)
+      karp_part(kpart), TG(_TG), perm_elist(supp_data.support_elist)
 {
     for (int i = 0; i < perm_elist.size(); ++i)
         perm_elist[i] = best_data.perm[perm_elist[i]];
@@ -51,22 +51,22 @@ Separator::Separator(Data::GraphGroup &graphdata,
     throw runtime_error("Separator constructor failed.");
 }
 
-bool Separator::find_cuts(Graph::TourGraph &TG) try
+bool Separator::find_cuts() try
 {
     bool found_seg = false;
     
     if (cut_sel.segment)
-        if ((found_seg = segment_sep(TG)))
+        if ((found_seg = segment_sep()))
             if (running_total >= max_total)
                 return true;
     
     if (cut_sel.fast2m)
-        if (fast2m_sep(TG))
+        if (fast2m_sep())
             if (running_total >= max_total)
                 return true;
 
     if (cut_sel.blkcomb)
-        if (blkcomb_sep(TG))
+        if (blkcomb_sep())
             if (running_total >= max_total)
                 return true;
 
@@ -76,7 +76,7 @@ bool Separator::find_cuts(Graph::TourGraph &TG) try
 
     if (running_total == 0) {
         if (cut_sel.connect_cuts)
-            return connect_sep(TG);
+            return connect_sep();
         else
             return false;
     } else
@@ -86,7 +86,7 @@ bool Separator::find_cuts(Graph::TourGraph &TG) try
     throw runtime_error("Problem in Separator::find_cuts.");
 }
 
-bool Separator::segment_sep(Graph::TourGraph &TG) try
+bool Separator::segment_sep() try
 {
     SegmentCuts segments(perm_elist, supp_data.support_ecap, TG, seg_q);
     bool result = segments.find_cuts();
@@ -98,7 +98,7 @@ bool Separator::segment_sep(Graph::TourGraph &TG) try
     throw runtime_error("Separator::segment_sep failed.");
 }
 
-bool Separator::fast2m_sep(Graph::TourGraph &TG) try
+bool Separator::fast2m_sep() try
 {
     FastBlossoms fast2m(perm_elist, supp_data.support_ecap, TG, fast2m_q);
     bool result = fast2m.find_cuts();
@@ -110,7 +110,7 @@ bool Separator::fast2m_sep(Graph::TourGraph &TG) try
     throw runtime_error("Separator::fast2m_sep failed.");
 }
 
-bool Separator::blkcomb_sep(Graph::TourGraph &TG) try
+bool Separator::blkcomb_sep() try
 {
     BlockCombs blkcomb(perm_elist, supp_data.support_ecap, TG, blkcomb_q);
     bool result = blkcomb.find_cuts();
@@ -138,7 +138,7 @@ bool Separator::simpleDP_sep() try {
     throw runtime_error("Separator::simpleDP_sep failed.");
 }
 
-bool Separator::connect_sep(Graph::TourGraph &TG) try {
+bool Separator::connect_sep() try {
     ConnectCuts subtour(perm_elist, supp_data.support_ecap, TG, connect_q);
     bool result = subtour.find_cuts();
 
