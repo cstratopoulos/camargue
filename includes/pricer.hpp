@@ -17,7 +17,7 @@ extern "C" {
 
 namespace CMR {
 
-/** Namespace for manners related to pricing sets of edges. */
+/// Matters related to pricing sets of edges.
 namespace Price {
 
 /// Get reduced costs for edges not in the core lp. 
@@ -30,36 +30,36 @@ public:
     Pricer(const Pricer &P) = delete; //!< Deleted copy constructor.
     Pricer &operator=(const Pricer &P) = delete; //!< Deleted copy assign.
 
-    ~Pricer();
+    ~Pricer(); //!< Destruct and free resource handles.
 
+    void price_edges(std::vector<PrEdge> &target_edges,
+                     bool compute_duals); //!< Price a list of edges.
     
-    void price_edges(std::vector<PrEdge> &target_edges, bool compute_duals);
-    
-    ScanStat gen_edges(LP::PivType piv_stat); //<! Generate/add edges to core.
-
+    ScanStat gen_edges(LP::PivType piv_stat); //!< Generate/add edges to core.
 
     int queue_size() const { return edge_q.size(); } //<! Size of edge queue.
 
 private:
-    void sort_q(); //<! Sort the queue of edges by minimum reduced costs.
-    std::vector<Graph::Edge> get_pool_chunk(); //<! Get at most AddBatch edges.
+    void sort_q(); //!< Sort the queue of edges by minimum reduced costs.
+    std::vector<Graph::Edge> get_pool_chunk(); //!< Get at most AddBatch edges.
     
-    LP::CoreLP &core_lp;
-    const Data::Instance &inst;
-    const Sep::ExternalCuts &ext_cuts;
+    LP::CoreLP &core_lp; //!< The LP relaxation to query/modify.
+    const Data::Instance &inst; //!< To get lengths for edges not in core_lp.
+    const Sep::ExternalCuts &ext_cuts;  //!< For computing duals.
 
-    Data::GraphGroup &graph_group;
+    Data::GraphGroup &graph_group; //!< Graph data for the core_lp.
 
-    const int gen_max;
+    const int gen_max; //!< The max number of edges to generate at a time.
 
     std::vector<int> gen_elist; //<! Raw node-node list of generated edges.
-    std::vector<int> gen_elen; 
+    std::vector<int> gen_elen;  //<! Unused dummy parameter to pass.
 
     std::vector<double> node_pi; //!< pi values for degree eqns.
     std::vector<double> node_pi_est; //!< estimated node pi for dominos.
     
     std::vector<double> cut_pi; //!< pi values for cuts.
 
+    /// Dual values/multiplicities for Cliques. 
     std::unordered_map<Sep::Clique, double> clique_pi;
 
     CCtsp_edgegenerator eg_inside; //<! Concorde 50-nearest edge generator.

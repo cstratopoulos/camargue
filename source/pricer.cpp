@@ -279,6 +279,15 @@ vector<Graph::Edge> Pricer::get_pool_chunk()
     return result;
 }
 
+/**
+ * Computes reduced costs for a set of edges which need not be present in the
+ * CoreLP. This function is a partial re-write of the unexported function 
+ * price_list from Concorde in the file tsp_lp.c.
+ * @param[in,out] target_edges the list of edges for which to compute reduced
+ * costs. The redcost field of each edge will be modified.
+ * @param[in] compute_duals if true, retrieve a fresh set of dual values from
+ * the lp.
+ */
 void Pricer::price_edges(vector<PrEdge> &target_edges, bool compute_duals)
 {
     runtime_error err("Problem in Pricer::price_edges.");
@@ -346,15 +355,17 @@ void Pricer::price_edges(vector<PrEdge> &target_edges, bool compute_duals)
             continue;
 
 
-        ///the problem is somewhere here....maybe pricing should just never
-        /// be run without dual feasible solutions.....
-        if (core_lp.dual_feas()) {
-            if (pival >= 0.0)
-                continue;
-        } else {
-            if (pival <= 0.0)
-                continue;
-        }
+        ///the problem is somewhere here....
+        // if (core_lp.dual_feas()) {
+        //     if (pival >= 0.0)
+        //         continue;
+        // } else {
+        //     if (pival <= 0.0)
+        //         continue;
+        // }
+
+        if (pival == 0)
+            continue;
         
         try {
             H.get_coeffs(target_edges, rmatind, rmatval);

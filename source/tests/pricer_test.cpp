@@ -8,10 +8,11 @@
 
 
 #include <algorithm>
-#include <vector>
-#include <string>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <cstdlib>
 
@@ -20,6 +21,7 @@
 using std::abs;
 using std::min;
 using std::max;
+
 using std::array;
 using std::vector;
 
@@ -30,39 +32,44 @@ using std::cout;
 SCENARIO ("Comparing Pricer reduced costs to CPLEX",
           "[Price][Pricer][price_edges]") {
     using namespace CMR;
-    vector<string> probs {
-        "ulysses16",
-        "eil51",
-        "rat99", //1485393818
-        "lin318", //1485393598
-        "d493",
-        "p654",
-        "u724",
-        "dsj1000",
-        "pr1002",
-        "d2103",
-        "u2319",
-        "pr2392",
-        "pcb3038"
-        };
+    using ProbPair = std::pair<string, int>;
 
-    for (string &fname : probs) {
-        GIVEN ("A priceless cutting_loop run on " + fname) {
+vector<ProbPair> probs {
+    ProbPair("ulysses16", 1485441991),
+    ProbPair("eil51", 0),
+    ProbPair("rat99", 0/*1485393818*/),
+    ProbPair("lin318", 0/*1485393598*/),
+    ProbPair("d493", 0),
+    ProbPair("p654", 0),
+    ProbPair("u724", 0),
+    ProbPair("dsj1000", 0),
+    ProbPair("pr1002", 0/*99*/),
+    ProbPair("d2103", 0),
+    ProbPair("pr2392", 0),
+    ProbPair("pcb3038", 0),
+    };
+
+    for (ProbPair &prob : probs) {
+        GIVEN ("A priceless cutting_loop run on " + prob.first) {
             WHEN ("We instantiate a Pricer from the final data") {
                 THEN("It produces the same core edge reduced costs as CPLEX") {
+                    string fname = prob.first;
+                    int seed = prob.second;
                     string probfile = "problems/" + fname + ".tsp";
 
                     OutPrefs outprefs;        
-                    Solver solver(probfile, 0, outprefs);
+                    Solver solver(probfile, seed, outprefs);
                     
                     solver.cutting_loop(false);
 
                     Data::GraphGroup &g_dat =
                     const_cast<Data::GraphGroup&>(solver.graph_info());
-                    int ncount = g_dat.core_graph.node_count();
 
                     LP::CoreLP &core_lp =
                     const_cast<LP::CoreLP&>(solver.get_core_lp());
+
+                    int ncount = g_dat.core_graph.node_count();
+                    int rowcount = core_lp.num_rows();
                 
                     Price::Pricer pricer(core_lp, solver.inst_info(), g_dat);
                     vector<Price::PrEdge> pr_edges;
@@ -78,12 +85,11 @@ SCENARIO ("Comparing Pricer reduced costs to CPLEX",
                     vector<double> cpx_rc =
                     core_lp.redcosts(0, core_lp.num_cols() - 1);
 
-                    vector<double> node_pi =
-                    core_lp.pi(0, solver.inst_info().node_count() - 1);
+                    vector<double> node_pi = core_lp.pi(0, ncount - 1);
                     
-                    vector<double> cut_pi =
+                    vector<double> cut_pi = (rowcount > ncount) ?
                     core_lp.pi(solver.inst_info().node_count(),
-                               core_lp.num_rows() - 1);
+                               core_lp.num_rows() - 1) : vector<double>();
 
                     vector<int> colstat = core_lp.col_stat();
 
@@ -119,6 +125,16 @@ SCENARIO ("Comparing Pricer reduced costs to CPLEX",
                             }
                         }
                     }
+
+                    for (int i = 0; i < cut_pi.size(); ++i)
+                        if (cut_pi[i] != 0.0 &&
+                            core_lp.external_cuts()
+                            .get_cuts()[i]
+                            .cut_type() == Sep::HyperGraph::Type::Domino){
+                            cout << "\t\tExample had nonzero pi domino cut.\n";
+                            break;
+                        }
+                    cout << "\n";
                 }
             }
         }
