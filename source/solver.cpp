@@ -3,6 +3,7 @@
 #include "timer.hpp"
 #include "err_util.hpp"
 
+#include <functional>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -23,8 +24,8 @@ using std::logic_error;
 using std::exception;
 
 using std::unique_ptr;
-
 using std::vector;
+using std::function;
 
 
 namespace CMR {
@@ -32,6 +33,29 @@ namespace CMR {
 using CutType = Sep::HyperGraph::Type;
 using PivType = LP::PivType;
 namespace Eps = Epsilon;
+
+template<class Qtype>
+bool call_separator(const function<bool()> &sepcall, const Qtype &sep_q,
+                    PivType &piv, LP::CoreLP &core_lp,
+                    const double tourlen, double &prev_val,
+                    double &total_delta,double &delta_ratio)
+{
+    bool result = sepcall();
+    if (result) {
+        core_lp.pivot_back();
+        core_lp.add_cuts(sep_q);
+        piv = core_lp.primal_pivot();
+
+        double new_val = core_lp.get_objval();
+        double delta = std::abs(new_val - prev_val);
+        prev_val = new_val;
+        
+        total_delta += delta;
+        delta_ratio = (delta / tourlen);
+    }
+
+    return result;
+}
 
 inline static int make_seed(const int seed)
 {
@@ -269,6 +293,7 @@ PivType Solver::cut_and_piv(int &round, int &stag_rounds)
     const double tourlen = core_lp.get_objval();
     double prev_val = tourlen;
     double total_delta = 0.0;
+    double delta_ratio = 0.0;
     
     PivType piv;
 
@@ -297,153 +322,91 @@ PivType Solver::cut_and_piv(int &round, int &stag_rounds)
     bool found_primal = false;
 
     try {
-        if (sep->segment_sep()) {
+        if (call_separator([&sep]() { return sep->segment_sep(); },
+                           sep->segment_q(), piv, core_lp,
+                           tourlen, prev_val, total_delta, delta_ratio)) {
+            found_primal = true;
             found_seg = true;
-            found_primal = true;
-        
-            core_lp.pivot_back();
-            core_lp.add_cuts(sep->segment_q());
-            piv = core_lp.primal_pivot();
-
-            double new_val = core_lp.get_objval();
-            double delta = abs(new_val - prev_val);
-            total_delta += delta;
-
-            if (!silent)
-                cout << "\tAdded " << sep->segment_q().size() << " segments, "
-                     << piv << ", delta ratio " << (delta / tourlen) << "\n";
-
             if (piv == PivType::Tour || piv == PivType::FathomedTour)
                 return piv;
 
-            if (piv == PivType::Subtour || (delta / tourlen > Eps::SepRound))
+            if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
                 return cut_and_piv(round, stag_rounds);
 
-            prev_val = new_val;
             sep = util::make_unique<Sep::Separator>(graph_data, best_data,
                                                     supp_data, karp_part, TG);
-        } else if (!silent) {
-            cout << "\tNo segments.\n";
         }
-    } CMR_CATCH_PRINT_THROW("doing segment sep", err);
-    
+    } CMR_CATCH_PRINT_THROW("calling segment sep", err);
+
     try {
-        if (sep->fast2m_sep()) {
+        if (call_separator([&sep]() { return sep->fast2m_sep(); },
+                           sep->fastblossom_q(), piv, core_lp,
+                           tourlen, prev_val, total_delta, delta_ratio)) {
             found_primal = true;
-            core_lp.pivot_back();
-            core_lp.add_cuts(sep->fastblossom_q());
-            piv = core_lp.primal_pivot();
-
-            double new_val = core_lp.get_objval();
-            double delta = abs(new_val - prev_val);
-            total_delta += delta;
-
-            if (!silent)
-                cout << "\tAdded " << sep->fastblossom_q().size()
-                     << " blossoms, " << piv << ", delta ratio "
-                     << (delta / tourlen) << "\n";
-
             if (piv == PivType::Tour || piv == PivType::FathomedTour)
                 return piv;
 
-            if (piv == PivType::Subtour || (delta / tourlen > Eps::SepRound))
+            if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
                 return cut_and_piv(round, stag_rounds);
 
-            prev_val = new_val;
             sep = util::make_unique<Sep::Separator>(graph_data, best_data,
                                                     supp_data, karp_part, TG);
-        } else if (!silent) {
-            cout << "\tNo fastblossoms\n";
         }
-    } CMR_CATCH_PRINT_THROW("doing fastblossom sep", err);
+    } CMR_CATCH_PRINT_THROW("calling fast2m sep", err);
 
     try {
-        if (sep->blkcomb_sep()) {
+        if (call_separator([&sep]() { return sep->blkcomb_sep(); },
+                           sep->blockcomb_q(), piv, core_lp,
+                           tourlen, prev_val, total_delta, delta_ratio)) {
             found_primal = true;
-            core_lp.pivot_back();
-            core_lp.add_cuts(sep->blockcomb_q());
-            piv = core_lp.primal_pivot();
-
-            double new_val = core_lp.get_objval();
-            double delta = abs(new_val - prev_val);
-            total_delta += delta;
-
-            if (!silent)
-                cout << "\tAdded " << sep->blockcomb_q().size()
-                     << " blk combs, " << piv << ", delta ratio "
-                     << (delta / tourlen) << "\n";
-
             if (piv == PivType::Tour || piv == PivType::FathomedTour)
                 return piv;
 
             if (piv == PivType::Subtour || found_seg || !supp_data.connected)
                 return cut_and_piv(round, stag_rounds);
 
-            prev_val = new_val;
             sep = util::make_unique<Sep::Separator>(graph_data, best_data,
                                                     supp_data, karp_part, TG);
-        } else if (!silent) {
-            cout << "\tno blkcomb\n";
         }
-    } CMR_CATCH_PRINT_THROW("doing block comb sep", err);
+    } CMR_CATCH_PRINT_THROW("calling blkcomb sep", err);
 
     try {
-        if (!found_seg && supp_data.connected && sep->simpleDP_sep()) {
-            found_primal = true;
-            core_lp.pivot_back();
-            core_lp.add_cuts(sep->simpleDP_q());
-            piv = core_lp.primal_pivot();
-
-            double new_val = core_lp.get_objval();
-            double delta = abs(new_val - prev_val);
-            total_delta += delta;
-
-            if (!silent)
-                cout << "\tAdded " << sep->simpleDP_q().size() << " dominos, "
-                     << piv << ", delta ratio " << (delta / tourlen) << "\n";
-
+        if (!found_seg && supp_data.connected &&
+            call_separator([&sep]() { return sep->simpleDP_sep(); },
+                           sep->simpleDP_q(), piv, core_lp,
+                           tourlen, prev_val, total_delta, delta_ratio)) {
             if (piv == PivType::Tour || piv == PivType::FathomedTour)
                 return piv;
             else
                 return cut_and_piv(round, stag_rounds);
-
-            prev_val = new_val;
-            sep = util::make_unique<Sep::Separator>(graph_data, best_data,
-                                                    supp_data, karp_part,
-                                                    TG);
-        } else if (!silent) {
-            cout << "\tNo dominos.\n";
         }
-    } CMR_CATCH_PRINT_THROW("doing simple DP sep", err);
+    } CMR_CATCH_PRINT_THROW("calling simpleDP sep", err);
 
     if (!found_primal && !supp_data.connected) {
         int num_add = 0;
         while (!supp_data.connected) {
             try {
-                core_lp.pivot_back();
-            
-                if (!sep->connect_sep())
-                    throw logic_error("No connect cuts in subtour solution.");
-                total_delta += 1.0;
+                if (call_separator([&sep]() { return sep->connect_sep(); },
+                                   sep->connect_cuts_q(), piv, core_lp,
+                                   tourlen, prev_val, total_delta,
+                                   delta_ratio)) {
+                    num_add += sep->connect_cuts_q().size();
+                    sep = util::make_unique<Sep::Separator>(graph_data,
+                                                            best_data,
+                                                            supp_data,
+                                                            karp_part, TG);
 
-                core_lp.add_cuts(sep->connect_cuts_q());
-                
-                num_add += sep->connect_cuts_q().size();
-                
-                piv = core_lp.primal_pivot();
-                prev_val = core_lp.get_objval();
-                sep = util::make_unique<Sep::Separator>(graph_data, best_data,
-                                                        supp_data, karp_part,
-                                                        TG);
+                } else {
+                    throw logic_error("No connect cuts but disconnected??");
+                }                
             } CMR_CATCH_PRINT_THROW("doing connect cut loop", err);
         }
-        if (!silent)
-            cout << "\tAdded " << num_add
-                 << " connect cuts, piv " << piv << "\n";
-        if (piv == PivType::Tour || piv == PivType::FathomedTour)
+        
+        if (piv == PivType::Tour || piv == PivType::FathomedTour) {
             return piv;
-        else
+        } else {
             return cut_and_piv(round, stag_rounds);
+        }
     } else if (!silent) {
         cout << "\tcuts: " << found_primal << ",connected "
              << supp_data.connected << "\n";
