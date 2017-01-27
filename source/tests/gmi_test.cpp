@@ -39,9 +39,12 @@ SCENARIO ("Generating safe Gomory cuts",
           "[Sep][SafeGomory]") {
     using namespace CMR;
     vector<string> probs{
+        "a280",
         "lin318",
         "d493",
         "pr1002",
+        "rl1304",
+        "d2103",
     };
 
     for (string &prob : probs) {
