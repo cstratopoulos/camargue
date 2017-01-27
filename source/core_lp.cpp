@@ -232,8 +232,9 @@ void CoreLP::handle_aug()
     get_base(tour_base.colstat, tour_base.rowstat);
 
     vector<double> slacks = row_slacks(ncount, num_rows() - 1);
-    
-    vector<int> delrows(num_rows(), 0);
+
+    int orig_numrows = num_rows();
+    vector<int> delrows(orig_numrows, 0);
 
     int rownum = ncount;
 
@@ -246,6 +247,7 @@ void CoreLP::handle_aug()
     del_set_rows(delrows);
     ext_cuts.del_cuts(delrows);
     factor_basis();
+    cout << "\tPruned "  << (orig_numrows - num_rows()) << "rows from LP.\n";
 }
 
 void CoreLP::rebuild_basis()

@@ -145,8 +145,6 @@ PivType Solver::cutting_loop(bool do_price)
             piv = cut_and_piv(round, stag_round);
         } CMR_CATCH_PRINT_THROW("invoking cut and piv", err);
 
-        int rowcount = core_lp.num_rows();
-        
         if (piv == PivType::FathomedTour) {
             report_piv(piv, round, !do_price);
             
@@ -165,8 +163,6 @@ PivType Solver::cutting_loop(bool do_price)
 
         if (piv == PivType::Tour) {
             report_piv(piv, round, false);
-            cout << "\tPruned " << (rowcount - core_lp.num_rows())
-                 << " rows from the LP." << endl;
 
             if (do_price)
                 try {
@@ -281,7 +277,7 @@ PivType Solver::cut_and_piv(int &round, int &stag_rounds)
     ++round;
     if (!silent)
         cout << "\nRound " << round << "\n";
-    if (stag_rounds > 0) {
+    if (stag_rounds > 10) {
         if (!silent)
             cout << "\tTerminating due to stagnation.\n";
         return PivType::Frac;
