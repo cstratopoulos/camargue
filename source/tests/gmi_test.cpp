@@ -45,6 +45,8 @@ SCENARIO ("Generating safe Gomory cuts",
         "pr1002",
         "rl1304",
         "d2103",
+        "pcb3038",
+        "pla7397",
     };
 
     for (string &prob : probs) {
@@ -66,6 +68,8 @@ SCENARIO ("Generating safe Gomory cuts",
 
                     unique_ptr<Sep::SafeGomory> gmi;
 
+                    Timer t("Safe GMI sep for " + prob);
+                    t.start();
                     REQUIRE_NOTHROW(gmi =
                                     util::make_unique<Sep::SafeGomory>(core,
                                                                        tour,
@@ -74,7 +78,10 @@ SCENARIO ("Generating safe Gomory cuts",
 
                     bool result;
                     REQUIRE_NOTHROW(result = gmi->find_cuts());
-                    CHECK(result);                    
+                    CHECK(result);
+                    t.stop();
+                    t.report(false);
+                    cout << "\n";
                 }
             }
         }
