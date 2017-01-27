@@ -122,7 +122,8 @@ SCENARIO ("Pivoting and adding cuts",
                     bool fast2m = control.fast2m_sep();
                     bool blkcomb = control.blkcomb_sep();
                     bool dp = control.simpleDP_sep();
-                    bool found = fast2m || blkcomb || dp;
+                    bool con = control.connect_sep();
+                    bool found = fast2m || blkcomb || dp || con;
                     REQUIRE(found);
 
                     REQUIRE_NOTHROW(core.pivot_back());
