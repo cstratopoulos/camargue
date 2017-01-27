@@ -247,7 +247,7 @@ void CoreLP::handle_aug()
     del_set_rows(delrows);
     ext_cuts.del_cuts(delrows);
     factor_basis();
-    cout << "\tPruned "  << (orig_numrows - num_rows()) << "rows from LP.\n";
+    cout << "\tPruned "  << (orig_numrows - num_rows()) << " rows from LP.\n";
 }
 
 void CoreLP::rebuild_basis()

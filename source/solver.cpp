@@ -164,12 +164,13 @@ PivType Solver::cutting_loop(bool do_price)
         if (piv == PivType::Tour) {
             report_piv(piv, round, false);
 
-            if (do_price)
+            if (do_price) {
                 try {
                     edge_pricer->gen_edges(piv);
                     core_lp.rebuild_basis();
                     core_lp.pivot_back();
                 } CMR_CATCH_PRINT_THROW("adding edges to core", err);
+            }
             
             try {
                 TG = Graph::TourGraph(tour_edges, edges, perm);
