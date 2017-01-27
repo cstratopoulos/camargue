@@ -51,41 +51,6 @@ Separator::Separator(Data::GraphGroup &graphdata,
     throw runtime_error("Separator constructor failed.");
 }
 
-bool Separator::find_cuts() try
-{
-    bool found_seg = false;
-    
-    if (cut_sel.segment)
-        if ((found_seg = segment_sep()))
-            if (running_total >= max_total)
-                return true;
-    
-    if (cut_sel.fast2m)
-        if (fast2m_sep())
-            if (running_total >= max_total)
-                return true;
-
-    if (cut_sel.blkcomb)
-        if (blkcomb_sep())
-            if (running_total >= max_total)
-                return true;
-
-    if (cut_sel.simple_dp && !found_seg)
-        if (simpleDP_sep())
-            return true;
-
-    if (running_total == 0) {
-        if (cut_sel.connect_cuts)
-            return connect_sep();
-        else
-            return false;
-    } else
-        return true;
-} catch (const exception &e) {
-    cerr << e.what() << "\n";
-    throw runtime_error("Problem in Separator::find_cuts.");
-}
-
 bool Separator::segment_sep() try
 {
     SegmentCuts segments(perm_elist, supp_data.support_ecap, TG, seg_q);

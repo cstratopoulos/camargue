@@ -10,18 +10,6 @@ namespace CMR {
 /// Matters related to cuts and separation of cutting planes.
 namespace Sep {
 
-/// POD struct for choosing which cuts to search for.
-struct CutSelect {
-    bool segment = true; //!< Segment cuts.
-    bool fast2m = true; //!< Fast primal blossom inequalities.
-    bool exact2m = true; //!< Exact primal blossom inequalities.
-    bool blkcomb =true ; //!< Primal block combs.
-    bool chain = false; //!< Primal chain constraints.
-    bool gomory = false; //!< Primal GMI inequalities. 
-    bool simple_dp = true; //!< Primal simple domino parity inequalities.
-    bool connect_cuts = true; //!< Standard connected component cuts.
-};
-
 /** Class for separation of cutting planes.
  * This class is instantiated with data about active edges in a relaxation
  * and a current lp solution, then used to search for cuts violated by the
@@ -45,8 +33,6 @@ public:
               Graph::TourGraph &_TG,
               int round_limit);
     
-    bool find_cuts();
-
     bool segment_sep();
     bool fast2m_sep();
     bool blkcomb_sep();
@@ -66,8 +52,6 @@ public:
 private:
     const int max_total;
     int running_total;
-
-    CutSelect cut_sel;
     
     Data::GraphGroup &graph_data;
     Data::BestGroup &best_data;
