@@ -138,7 +138,11 @@ SCENARIO ("Comparing HyperGraph edge coeffs to comb/domino sparse rows",
                 pr_edges[i].end = g_dat.core_graph.get_edge(i).end;
 
             WHEN ("Cuts are found") {
-                REQUIRE(sep.find_cuts());
+                bool fast2m = sep.fast2m_sep();
+                bool blkcomb = sep.blkcomb_sep();
+                bool dp = sep.simpleDP_sep();
+                bool found = fast2m || blkcomb || dp;
+                REQUIRE(found);
 
                 THEN ("All the sparse row coeffs match HyperGraph coeffs.") {
                     std::array<const CCtsp_lpcut_in*, 2>

@@ -119,7 +119,11 @@ SCENARIO ("Pivoting and adding cuts",
 
                     Sep::Separator control(g_dat, b_dat, s_dat, kpart, TG);
 
-                    REQUIRE(control.find_cuts());
+                    bool fast2m = control.fast2m_sep();
+                    bool blkcomb = control.blkcomb_sep();
+                    bool dp = control.simpleDP_sep();
+                    bool found = fast2m || blkcomb || dp;
+                    REQUIRE(found);
 
                     REQUIRE_NOTHROW(core.pivot_back());
 
