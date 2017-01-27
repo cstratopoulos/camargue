@@ -44,6 +44,7 @@ bool SafeGomory::find_cuts()
 
     int num_added = 0;
     int total_num_added = 0;
+    int numcols = lp_relax.num_cols();
 
     using sp_rowlist = CUTSsprowlist_t<double>;
     using rowlist_elem = CUTSrowListElem_t<double>;
@@ -69,7 +70,7 @@ bool SafeGomory::find_cuts()
                         mir_data.full_x.get(),
                         mir_data.var_info.get(),
                         false, NULL,
-                        lp_relax.num_cols(),
+                        numcols,
                         gen_cuts,
                         &mir_data.vranking[0])) {
         CUTSfreeRowList(&gen_cuts);
@@ -108,7 +109,9 @@ bool SafeGomory::find_cuts()
 
         if (tour_act == rhs && lp_viol >= Epsilon::Cut) {
             SparseRow primal_row;
-            cout << "\tFound GMI cut with viol " << lp_viol << "\n";
+            cout << "\tFound GMI cut with viol " << lp_viol << ", "
+                 << nz << " nonzeros, density "
+                 << ((int) (100 * ((double) nz / numcols))) << "%\n";
             try {
                 primal_row.rmatind.resize(nz);
                 primal_row.rmatval.resize(nz);
@@ -132,7 +135,6 @@ bool SafeGomory::find_cuts()
     }
 
     // sort by lexicographically preferring violation, then sparsity
-    int numcols = lp_relax.num_cols();
     std::sort(primal_found.begin(), primal_found.end(),
               [numcols](const SparseRow &a, const SparseRow &b)
               {
