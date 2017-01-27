@@ -7,6 +7,12 @@
 #ifndef CMR_LP_INTERFACE_H
 #define CMR_LP_INTERFACE_H
 
+#include "config.hpp"
+
+#if CMR_HAVE_SAFEGMI
+#include "mirgroup.hpp"
+#endif
+
 #include <vector>
 #include <memory>
 
@@ -220,6 +226,16 @@ public:
     /** Perform exactly one primal simplex pivot. */
     void single_pivot();
     
+    ///@}
+
+
+    /**@name Safe GMI initializer.. */
+    ///@{
+    
+#if CMR_HAVE_SAFEGMI
+    void init_mir_data(Sep::MIRgroup &mir_data);
+#endif
+
     ///@}
 
 private:

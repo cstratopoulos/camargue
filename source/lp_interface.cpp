@@ -2,12 +2,32 @@
 #include "err_util.hpp"
 #include "util.hpp"
 
+#if CMR_HAVE_SAFEGMI
+
+#ifndef DO_SAFE_MIR_DBL
+#define DO_SAFE_MIR_DBL 1
+#endif
+
+#ifndef SAFE_MIR_DEBUG_LEVEL
+#define SAFE_MIR_DEBUG_LEVEL DBG_LEVEL_HIGH
+#endif
+
+#define CUTSslackSign( row ) ( row->sense == 'L' ? 1 :\
+			       (row->sense == 'E' ? 0 : -1 ) )
+
+#include <safemir/src/cplex_slvr.cpp>
+#include <safemir/src/ds_slvr.cpp>
+
+#endif
+
 #include <algorithm>
 #include <stdexcept>
 #include <iostream>
 #include <limits>
-#include <typeinfo>
 #include <string>
+#include <typeinfo>
+#include <utility>
+
 
 #include <cplex.h>
 
@@ -755,6 +775,129 @@ void Relaxation::change_obj(const int index, const double val)
     if (rval)
         throw cpx_err(rval, "CPXchgobj");
 }
+
+#if CMR_HAVE_SAFEGMI
+
+void Relaxation::init_mir_data(Sep::MIRgroup &mir_data)
+{
+    runtime_error err("Problem in Relaxation::init_mir_data.");
+
+    using mir_lp = SLVRcplex_t;
+    using mir_system = CUTSsystem_t<double>;
+    using mir_varinfo = CUTSvarInfo_t<double>;
+    using mir_basinfo = SLVRbasisInfo_t;
+
+    // Initialize the solver/constraint info //
+    
+    int numcols = num_cols();
+    vector<char> ctype;
+
+    try {
+        ctype = vector<char>(numcols, 'B');
+    } CMR_CATCH_PRINT_THROW("allocating ctype", err);
+
+    mir_lp lp_obj;
+    lp_obj.env = simpl_p->env;
+    lp_obj.prob = simpl_p->lp;
+    lp_obj.ctype = &ctype[0];
+
+    //might need to change all these to be just a pointer and have the deleter
+    //call on the address of the stored pointer....
+    mir_system **constraint_matrix;
+    *constraint_matrix = (mir_system *) NULL;
+
+    if(SLVRformulationRows(&lp_obj, constraint_matrix)) {
+        cerr << "SLVRformulationrows failed.\n";
+        throw err;
+    }
+
+    mir_data.constraint_matrix =
+    unique_ptr<mir_system *, Sep::SystemDeleter>(constraint_matrix);
+
+    mir_basinfo **binfo;
+    if (SLVRgetBasisInfo(&lp_obj, binfo)) {
+        cerr << "SLVRgetBasisInfo failed.\n";
+        throw err;
+    }
+
+    struct BinfoDeleter {
+        void operator()(mir_basinfo **P) {
+            SLVRfreeBasisInfo(P);
+        }
+    };
+
+    unique_ptr<mir_basinfo *, BinfoDeleter> basis_info(binfo);
+
+    mir_varinfo **vinfo;
+    if (SLVRgetVarInfo(&lp_obj, true, vinfo)) {
+        cerr << "SLVRgetVarInfo failed.\n";
+        throw err;
+    }
+
+    mir_data.var_info = unique_ptr<mir_varinfo *, Sep::VinfoDeleter>(vinfo);
+
+    vector<double> x;
+    try { get_x(x); } CMR_CATCH_PRINT_THROW("getting x", err);
+
+    mir_data.full_x =
+    util::c_array_ptr<double>(SLVRgetFullX(&lp_obj, *mir_data.constraint_matrix,
+                                     &x[0]));
+    
+    if (mir_data.full_x.get() == NULL) {
+        cerr << "SLVRgetFullX failed.\n";
+        throw err;
+    }
+
+    // now rank fractional basic structural variables and get tableau rows //
+
+    using VarPair = std::pair<int, double>;
+    vector<double> &lp_vranking = mir_data.vranking;
+    vector<int> colstat;
+    vector<VarPair> frac_basic_vars;
+
+    try {
+        //only want cuts from structural variables but the vector needs to be
+        //size of full_x, so those are just left with a -1 ranking.
+        lp_vranking.resize(num_rows() + num_cols(), -1.0);
+        colstat = col_stat();
+    } CMR_CATCH_PRINT_THROW("resizing and getting col stat", err);
+
+    for (int i = 0; i < x.size(); ++i) {
+        if (colstat[i] == 1 && !util::var_integral(x[i])) {
+            lp_vranking[i] = (-(x[i] - 0.5) * (x[i] - 0.5)) + 0.25;
+            try {
+                frac_basic_vars.emplace_back(i, x[i]);
+            } CMR_CATCH_PRINT_THROW("pushing back frac basic var", err);
+        }
+    }
+
+    std::sort(frac_basic_vars.begin(), frac_basic_vars.end(),
+              [](VarPair a, VarPair b)
+              { return abs(0.5 - a.second) < abs(0.5 - b.second); });
+
+    mir_system **tab_rows;
+    if (CUTSnewSystem(tab_rows, frac_basic_vars.size())) {
+        cerr << "CUTSnewSystem failed.\n";
+        throw err;
+    }
+
+    for (VarPair v : frac_basic_vars) {
+        if (SLVRgetTableauRow(&lp_obj, mir_data.constraint_matrix.get(),
+                              &((*tab_rows)->rows[(*tab_rows)->sys_rows]),
+                              basis_info.get(), v.first)) {
+            CUTSfreeSystem(tab_rows);
+            cerr << "SLVRgetTableauRow failed.\n";
+            throw err;
+        }
+
+        (*tab_rows)->sys_rows += 1;
+    }
+
+    mir_data.tableau_rows = unique_ptr<mir_system *,
+                                       Sep::SystemDeleter>(tab_rows);
+}
+
+#endif
 
 
 }
