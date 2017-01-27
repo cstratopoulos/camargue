@@ -164,7 +164,7 @@ try
                        &ecount, &elist, 1, &rstate))
         throw runtime_error("CCedgegen_edges failed.");
 
-    util::c_array_ptr edge_handle(elist);
+    util::c_array_ptr<int> edge_handle(elist);
 
     core_graph = Graph::CoreGraph(ncount, ecount, elist,
                                        inst.edgelen_func());

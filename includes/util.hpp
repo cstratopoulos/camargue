@@ -116,7 +116,8 @@ struct C_resource_deleter {
  * was dynamically allocated by a C routine, freeing its memory 
  * appropriately when necessary.
  */
-using c_array_ptr = std::unique_ptr<int, C_resource_deleter<int>>;
+template<typename numtype>
+using c_array_ptr = std::unique_ptr<numtype, C_resource_deleter<numtype>>;
 
 /// Class template for a square upper triangular matrix.
 template<class T>

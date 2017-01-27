@@ -63,8 +63,8 @@ vector<Graph::Edge> EdgeHash::get_all()
     if (CCutil_edgehash_getall(&eh, &ecount, &elist, &elen))
         throw runtime_error("CCutil_edgehash_getall failed.");
 
-    util::c_array_ptr elist_owner(elist);
-    util::c_array_ptr elen_owner(elen);
+    util::c_array_ptr<int> elist_owner(elist);
+    util::c_array_ptr<int> elen_owner(elen);
 
     vector<Graph::Edge> result(ecount);
 
