@@ -99,7 +99,10 @@ namespace Epsilon {
 constexpr double Zero = 0.000001; //!< Numbers less than this treated as zero.
 
 /// Cuts are not considered violated unless violated by at least this much.
-constexpr double Cut = 0.0001; 
+constexpr double Cut = 0.0001;
+
+/// Try another separation routine if pivot delta is less than this much.
+constexpr double SepRound = 0.0001;
 
 }
 
