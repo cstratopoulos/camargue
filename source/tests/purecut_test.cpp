@@ -31,8 +31,14 @@ using std::cout;
 SCENARIO ("Running the Solver cutting_loop with no pricing.",
           "[Solver][cutting_loop]") {
     vector<string> probs{
-        "dantzig42", "pr76",
-        "lin318", "d493", "p654", "pr1002", "d2103", "pr2392"
+        "dantzig42",
+        "pr76",
+        "lin318",
+        "d493",
+        "p654",
+        "pr1002",
+        "d2103",
+        "pr2392"
     };
 
     for (string &prob : probs) {
@@ -41,7 +47,7 @@ SCENARIO ("Running the Solver cutting_loop with no pricing.",
                 CMR::OutPrefs prefs;
                 CMR::Solver solver("problems/" + prob + ".tsp",
                                    //"test_data/tours/" + prob + ".sol",
-                                   0, prefs);
+                                   99, prefs);
 
                 REQUIRE_NOTHROW(solver.cutting_loop(false));
             }
