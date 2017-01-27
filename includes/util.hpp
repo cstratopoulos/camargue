@@ -17,36 +17,7 @@
 #include <utility>
 #include <vector>
 
-
-/** Macro for printing error message and going to exit label. 
- * Prints the message \a message to stderr and goes to CLEANUP. Thus CLEANUP
- * must have been defined as a labelled section in function scope.
- */
-#define CMR_GOTO_CLEANUP(message) { std::cerr << message; goto CLEANUP; }
-
-/** Conditional version of #CMR_GOTO_CLEANUP(message).
- * Only prints the error \a message if \a rval is nonzero.
- */
-#define CMR_CHECK_RVAL(rval, message) {	\
-    if ((rval)) {				\
-      std::cerr << message;			\
-      goto CLEANUP;				\
-    }						\
-  }
-
-/** Version of #CMR_GOTO_CLEANUP(message) for setting return code.
- * This macro sets rval to 1, prints \a message to stderr, and goes to 
- * CLEANUP. Its intended use is in mixing try/catch blocks with retcodes, and
- * in function calls where subtasks have their own retcodes. For example,
- * `try { task } catch (...) { CMR_SET_GOTO(rval, "task threw exception"); }`
- * or `subval = sub_task(); if(subval) CMR_SET_GOTO(rval, "sub_task error")`
- */
-#define CMR_SET_GOTO(rval, message) {		\
-    rval = 1;					\
-    std::cerr << message;			\
-    goto CLEANUP; }
-
-/** The namespace for this project. */
+/// The namespace for this project.
 namespace CMR {
 
 /** A POD struct for preferences related to tour file output.
