@@ -45,8 +45,8 @@ SCENARIO ("Generating safe Gomory cuts",
         "pr1002",
         "rl1304",
         "d2103",
-        "pcb3038",
-        "pla7397",
+        // "pcb3038",
+        // "pla7397",
     };
 
     for (string &prob : probs) {
