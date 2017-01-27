@@ -52,7 +52,7 @@ public:
 private:
     void report_piv(CMR::LP::PivType piv, int round, bool full_opt);
 
-    LP::PivType cut_and_piv(int &round);
+    LP::PivType cut_and_piv(int &round, int &stag_rounds);
     
     Data::Instance tsp_instance;
     Data::KarpPartition karp_part;
