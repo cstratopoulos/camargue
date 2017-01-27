@@ -46,7 +46,7 @@ SCENARIO ("Running a Solver with contra Fix Brancher",
             THEN ("We can run a contra fixing ABC") {
                 OutPrefs prefs;
                 Solver solver("problems/" + prob + ".tsp", 99, prefs);
-                LP::PivType piv;
+                LP::PivType piv = LP::PivType::Frac;
 
                 REQUIRE_NOTHROW(piv = solver.abc(true));
                 cout << piv << "\n";
