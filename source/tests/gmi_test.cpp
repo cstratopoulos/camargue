@@ -68,7 +68,10 @@ SCENARIO ("Generating safe Gomory cuts",
                                                                        tour,
                                                                        x)
                         );
-                    CHECK(gmi->find_cuts());                    
+
+                    bool result;
+                    REQUIRE_NOTHROW(result = gmi->find_cuts());
+                    CHECK(result);                    
                 }
             }
         }

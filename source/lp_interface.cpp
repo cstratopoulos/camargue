@@ -4,17 +4,6 @@
 
 #if CMR_HAVE_SAFEGMI
 
-#ifndef DO_SAFE_MIR_DBL
-#define DO_SAFE_MIR_DBL 1
-#endif
-
-#ifndef SAFE_MIR_DEBUG_LEVEL
-#define SAFE_MIR_DEBUG_LEVEL DBG_LEVEL_HIGH
-#endif
-
-#define CUTSslackSign( row ) ( row->sense == 'L' ? 1 :\
-			       (row->sense == 'E' ? 0 : -1 ) )
-
 #include <safemir/src/cplex_slvr.cpp>
 #include <safemir/src/ds_slvr.cpp>
 
@@ -801,47 +790,45 @@ void Relaxation::init_mir_data(Sep::MIRgroup &mir_data)
     lp_obj.prob = simpl_p->lp;
     lp_obj.ctype = &ctype[0];
 
-    //might need to change all these to be just a pointer and have the deleter
-    //call on the address of the stored pointer....
-    mir_system **constraint_matrix;
-    *constraint_matrix = (mir_system *) NULL;
+    mir_system *constraint_matrix = (mir_system *) NULL;
 
-    if(SLVRformulationRows(&lp_obj, constraint_matrix)) {
+    if(SLVRformulationRows(&lp_obj, &constraint_matrix)) {
         cerr << "SLVRformulationrows failed.\n";
         throw err;
     }
 
     mir_data.constraint_matrix =
-    unique_ptr<mir_system *, Sep::SystemDeleter>(constraint_matrix);
+    unique_ptr<mir_system, Sep::SystemDeleter>(constraint_matrix);
 
-    mir_basinfo **binfo;
-    if (SLVRgetBasisInfo(&lp_obj, binfo)) {
+    mir_basinfo *binfo = (mir_basinfo *) NULL;
+    if (SLVRgetBasisInfo(&lp_obj, &binfo)) {
         cerr << "SLVRgetBasisInfo failed.\n";
         throw err;
     }
 
     struct BinfoDeleter {
-        void operator()(mir_basinfo **P) {
-            SLVRfreeBasisInfo(P);
+        void operator()(mir_basinfo *P) {
+            SLVRfreeBasisInfo(&P);
         }
     };
 
-    unique_ptr<mir_basinfo *, BinfoDeleter> basis_info(binfo);
+    unique_ptr<mir_basinfo, BinfoDeleter> basis_info(binfo);
 
-    mir_varinfo **vinfo;
-    if (SLVRgetVarInfo(&lp_obj, true, vinfo)) {
+    mir_varinfo *vinfo = (mir_varinfo *) NULL;
+    if (SLVRgetVarInfo(&lp_obj, true, &vinfo)) {
         cerr << "SLVRgetVarInfo failed.\n";
         throw err;
     }
 
-    mir_data.var_info = unique_ptr<mir_varinfo *, Sep::VinfoDeleter>(vinfo);
+    mir_data.var_info = unique_ptr<mir_varinfo, Sep::VinfoDeleter>(vinfo);
 
     vector<double> x;
     try { get_x(x); } CMR_CATCH_PRINT_THROW("getting x", err);
 
     mir_data.full_x =
-    util::c_array_ptr<double>(SLVRgetFullX(&lp_obj, *mir_data.constraint_matrix,
-                                     &x[0]));
+    util::c_array_ptr<double>(SLVRgetFullX(&lp_obj,
+                                           mir_data.constraint_matrix.get(),
+                                           &x[0]));
     
     if (mir_data.full_x.get() == NULL) {
         cerr << "SLVRgetFullX failed.\n";
@@ -875,29 +862,31 @@ void Relaxation::init_mir_data(Sep::MIRgroup &mir_data)
               [](VarPair a, VarPair b)
               { return abs(0.5 - a.second) < abs(0.5 - b.second); });
 
-    mir_system **tab_rows;
-    if (CUTSnewSystem(tab_rows, frac_basic_vars.size())) {
+    mir_system *tab_rows = (mir_system *) NULL;
+    if (CUTSnewSystem(&tab_rows, frac_basic_vars.size())) {
         cerr << "CUTSnewSystem failed.\n";
         throw err;
     }
 
     for (VarPair v : frac_basic_vars) {
-        if (SLVRgetTableauRow(&lp_obj, mir_data.constraint_matrix.get(),
-                              &((*tab_rows)->rows[(*tab_rows)->sys_rows]),
-                              basis_info.get(), v.first)) {
-            CUTSfreeSystem(tab_rows);
+        if (SLVRgetTableauRow(&lp_obj,
+                              &constraint_matrix,
+                              &(tab_rows->rows[tab_rows->sys_rows]),
+                              &binfo,
+                              v.first)) {
+            CUTSfreeSystem(&tab_rows);
             cerr << "SLVRgetTableauRow failed.\n";
             throw err;
         }
 
-        (*tab_rows)->sys_rows += 1;
+        tab_rows->sys_rows += 1;
     }
 
-    mir_data.tableau_rows = unique_ptr<mir_system *,
+    mir_data.tableau_rows = unique_ptr<mir_system,
                                        Sep::SystemDeleter>(tab_rows);
 }
 
-#endif
+#endif //CMR_HAVE_SAFEGMI
 
 
 }

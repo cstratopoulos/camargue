@@ -2,17 +2,10 @@
 
 #if CMR_HAVE_SAFEGMI
 
-#ifndef DO_SAFE_MIR_DBL
-#define DO_SAFE_MIR_DBL 1
-#endif
-
-#ifndef SAFE_MIR_DEBUG_LEVEL
-#define SAFE_MIR_DEBUG_LEVEL DBG_LEVEL_HIGH
-#endif
-
 #include <safemir/src/util_cuts.hpp>
 #include <safemir/src/cutmaster_slvr.cpp>
 #include <safemir/src/ds_cuts.cpp>
+#include <safemir/src/safe_mir_dbl.cpp>
 #include <safemir/src/gen_mir.cpp>
 
 #include "util.hpp"
@@ -57,36 +50,36 @@ bool SafeGomory::find_cuts()
     using sp_row = CUTSsprow_t<double>;
     
     struct RowlistDeleter {
-        void operator()(sp_rowlist **p) {
-            CUTSfreeRowList(p);
+        void operator()(sp_rowlist *p) {
+            CUTSfreeRowList(&p);
         }
     };
 
-    sp_rowlist **gen_cuts;
-    if (CUTSnewRowList(gen_cuts)) {
+    sp_rowlist *gen_cuts = (sp_rowlist *) NULL;
+    if (CUTSnewRowList(&gen_cuts)) {
         cerr << "CUTSnewRowList failed.\n";
         throw err;
     }
 
     if (SLVRcutter_iter(0,
                         &mir_data.settings,
-                        *mir_data.constraint_matrix,
-                        *mir_data.tableau_rows,
+                        mir_data.constraint_matrix.get(),
+                        mir_data.tableau_rows.get(),
                         &total_num_added, &num_added,
                         mir_data.full_x.get(),
-                        *mir_data.var_info,
+                        mir_data.var_info.get(),
                         false, NULL,
                         lp_relax.num_cols(),
-                        *gen_cuts,
+                        gen_cuts,
                         &mir_data.vranking[0])) {
-        CUTSfreeRowList(gen_cuts);
+        CUTSfreeRowList(&gen_cuts);
         cerr << "SLVRcutter_iter failed.\n";
         throw err;
     }
 
-    unique_ptr<sp_rowlist *, RowlistDeleter> generated_cuts(gen_cuts);
+    unique_ptr<sp_rowlist, RowlistDeleter> generated_cuts(gen_cuts);
 
-    if ((*generated_cuts)->size == 0) {
+    if (generated_cuts->size == 0) {
         cout << "\tNo safe Gomory cuts generated.\n";
         return false;
     }
@@ -94,7 +87,7 @@ bool SafeGomory::find_cuts()
     using SparseRow = Sep::SparseRow;
     vector<SparseRow> primal_found;
 
-    for(rowlist_elem *it = (*generated_cuts)->first; it; it = it->next) {
+    for(rowlist_elem *it = generated_cuts->first; it; it = it->next) {
         sp_row *row = it->row;
         double rhs = row->rhs;
         int nz = row->nz;
