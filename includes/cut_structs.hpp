@@ -96,6 +96,15 @@ struct dominoparity {
     std::vector<IntPair> nonneg_edges;
 };
 
+/// Simple struct representing sparse matrix row for passing to LP solver. 
+struct SparseRow {    
+    std::vector<int> rmatind;
+    std::vector<double> rmatval;
+    char sense;
+    double rhs;
+    double lp_viol;
+};
+
 }  
 }
 

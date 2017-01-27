@@ -338,6 +338,21 @@ void CoreLP::add_cuts(const Sep::CutQueue<Sep::dominoparity> &dpq)
     }
 }
 
+void CoreLP::add_cuts(const Sep::CutQueue<Sep::SparseRow> &gmi_q)
+{
+    if (gmi_q.empty())
+        return;
+
+    runtime_error err("Problem in CoreLP::add_cuts(Sep::SparseRow)");
+
+    for (Sep::CutQueue<Sep::SparseRow>::ConstItr it = gmi_q.begin();
+         it != gmi_q.end(); ++it) {
+        try {
+            add_cut(it->rhs, it->sense, it->rmatind, it->rmatval);
+        } CMR_CATCH_PRINT_THROW("adding sparse cut row", err);
+    }
+}
+
 void CoreLP::add_edges(const vector<Graph::Edge> &batch)
 {
     runtime_error err("Problem in CoreLP::add_edges");
