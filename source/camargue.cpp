@@ -77,7 +77,7 @@ int main(int argc, char** argv) try
     return 0;
     
 } catch (const exception &e) {
-    cerr << e.what() << " in Camargue main.\n";
+    cerr << "Exception in Camargue main: " << e.what() << "\n";
     return 1;
 }
 
