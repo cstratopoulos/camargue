@@ -28,6 +28,15 @@ using std::exception;
 namespace CMR {
 namespace Sep {
 
+/**
+ * Get density of the cut \p r as a ratio of the number of nonzeros in \p r
+ * to the number of columsn \p numcols in the LP.
+ */
+inline static double density(const Sep::SparseRow &r, const int numcols)
+{
+    return (double) r.rmatind.size() / numcols;
+}
+
 SafeGomory::SafeGomory(LP::Relaxation &rel, const vector<double> &_tour_edges,
                        const vector<double> &lp_edges) try
     : lp_relax(rel), gmi_q(15), tour_edges(_tour_edges), frac_x(lp_edges)
@@ -109,9 +118,9 @@ bool SafeGomory::find_cuts()
 
         if (tour_act == rhs && lp_viol >= Epsilon::Cut) {
             SparseRow primal_row;
-            cout << "\tFound GMI cut with viol " << lp_viol << ", "
-                 << nz << " nonzeros, density "
-                 << ((int) (100 * ((double) nz / numcols))) << "%\n";
+            // cout << "\tFound GMI cut with viol " << lp_viol << ", "
+            //      << nz << " nonzeros, density "
+            //      << ((int) (100 * ((double) nz / numcols))) << "%\n";
             try {
                 primal_row.rmatind.resize(nz);
                 primal_row.rmatval.resize(nz);
@@ -144,12 +153,18 @@ bool SafeGomory::find_cuts()
                   std::make_tuple(b.lp_viol, numcols - b.rmatind.size());
               });
 
-    primal_found.resize(gmi_q.q_capacity);
+    // if the best cut is more than 5% dense we only add one.
+    if (density(primal_found.front(), numcols) >= 0.05)
+        primal_found.resize(1);
+    else
+        primal_found.resize(gmi_q.q_capacity);
 
     try {
         for (SparseRow &a : primal_found)
             gmi_q.push_back(std::move(a));
     } CMR_CATCH_PRINT_THROW("putting found cuts in cut q", err);
+
+    cout << "\tFound round of " << gmi_q.size() << " primal Gomory cuts.\n";
 
     return true;    
 }
