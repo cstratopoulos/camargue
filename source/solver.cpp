@@ -1,5 +1,13 @@
+#include "config.hpp"
 #include "solver.hpp"
 #include "separator.hpp"
+
+#if CMR_HAVE_SAFEGMI
+
+#include "safeGMI.hpp"
+
+#endif
+
 #include "timer.hpp"
 #include "err_util.hpp"
 
@@ -67,10 +75,8 @@ try : tsp_instance(fname, make_seed(seed)),
       karp_part(tsp_instance),
       graph_data(tsp_instance), best_data(tsp_instance, graph_data),
       core_lp(graph_data, best_data),
-      output_prefs(outprefs)
-    
-{
-} catch (const exception &e) {
+      output_prefs(outprefs)  
+{} catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Solver TSPLIB constructor failed.");
 }
@@ -83,9 +89,7 @@ try : tsp_instance(fname, make_seed(seed)),
       best_data(tsp_instance, graph_data, tour_fname),
       core_lp(graph_data, best_data),
       output_prefs(outprefs)
-{
-    
-} catch (const exception &e) {
+{} catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Solver TSPLIB/tour constructor failed.");
 }
@@ -97,9 +101,7 @@ try : tsp_instance(make_seed(seed), node_count, gridsize),
       graph_data(tsp_instance), best_data(tsp_instance, graph_data),
       core_lp(graph_data, best_data),
       output_prefs(outprefs)
-{
-    
-} catch (const exception &e) {
+{} catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Solver random constructor failed.");
 }
@@ -145,7 +147,6 @@ PivType Solver::cutting_loop(bool do_price)
     PivType piv = PivType::Frac;
     int round = 0;
     int auground = 0;
-    int stag_round = 0;
 
     vector<int> &tour_edges = best_data.best_tour_edges;
     const vector<Graph::Edge> &edges = graph_data.core_graph.get_edges();
@@ -158,15 +159,13 @@ PivType Solver::cutting_loop(bool do_price)
 
     CMR::Timer timer(tsp_instance.problem_name());
     
-    timer.start();
-
-    
+    timer.start();    
 
     while (true) {
         ++auground;
 
         try {
-            piv = cut_and_piv(round, stag_round);
+            piv = cut_and_piv(round, do_price);
         } CMR_CATCH_PRINT_THROW("invoking cut and piv", err);
 
         if (piv == PivType::FathomedTour) {
@@ -217,6 +216,7 @@ PivType Solver::cutting_loop(bool do_price)
     int subcount = 0;
     int combcount = 0;
     int dpcount = 0;
+    int gmicount = 0;
     
     for (const Sep::HyperGraph &H : core_lp.ext_cuts.get_cuts()) {
         CutType t = H.cut_type();
@@ -226,10 +226,12 @@ PivType Solver::cutting_loop(bool do_price)
             ++combcount;
         else if (t == CutType::Domino)
             ++dpcount;
+        else if (t == CutType::Non)
+            ++gmicount;
     }
 
     cout << "\t" << subcount << " SECs, " << combcount << " combs/blossoms, "
-         << dpcount << " dp cuts.\n";
+         << dpcount << " dp cuts, " << gmicount << " GMI cuts.\n";
     cout << "\n";
     return piv;
 }
@@ -285,7 +287,7 @@ PivType Solver::abc(bool do_price)
     return piv;    
 }
 
-PivType Solver::cut_and_piv(int &round, int &stag_rounds)
+PivType Solver::cut_and_piv(int &round, bool do_price)
 {
     runtime_error err("Problem in Solver::cut_and_piv");
     bool silent = true;
@@ -303,11 +305,6 @@ PivType Solver::cut_and_piv(int &round, int &stag_rounds)
     ++round;
     if (!silent)
         cout << "\nRound " << round << "\n";
-    if (stag_rounds > 10) {
-        if (!silent)
-            cout << "\tTerminating due to stagnation.\n";
-        return PivType::Frac;
-    }
 
     try {
         piv = core_lp.primal_pivot();
@@ -331,7 +328,7 @@ PivType Solver::cut_and_piv(int &round, int &stag_rounds)
                 return piv;
 
             if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
-                return cut_and_piv(round, stag_rounds);
+                return cut_and_piv(round,  do_price);
 
             sep = util::make_unique<Sep::Separator>(graph_data, best_data,
                                                     supp_data, karp_part, TG);
@@ -347,7 +344,7 @@ PivType Solver::cut_and_piv(int &round, int &stag_rounds)
                 return piv;
 
             if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
-                return cut_and_piv(round, stag_rounds);
+                return cut_and_piv(round,  do_price);
 
             sep = util::make_unique<Sep::Separator>(graph_data, best_data,
                                                     supp_data, karp_part, TG);
@@ -363,7 +360,7 @@ PivType Solver::cut_and_piv(int &round, int &stag_rounds)
                 return piv;
 
             if (piv == PivType::Subtour || found_seg || !supp_data.connected)
-                return cut_and_piv(round, stag_rounds);
+                return cut_and_piv(round,  do_price);
 
             sep = util::make_unique<Sep::Separator>(graph_data, best_data,
                                                     supp_data, karp_part, TG);
@@ -378,7 +375,7 @@ PivType Solver::cut_and_piv(int &round, int &stag_rounds)
             if (piv == PivType::Tour || piv == PivType::FathomedTour)
                 return piv;
             else
-                return cut_and_piv(round, stag_rounds);
+                return cut_and_piv(round,  do_price);
         }
     } CMR_CATCH_PRINT_THROW("calling simpleDP sep", err);
 
@@ -405,20 +402,41 @@ PivType Solver::cut_and_piv(int &round, int &stag_rounds)
         if (piv == PivType::Tour || piv == PivType::FathomedTour) {
             return piv;
         } else {
-            return cut_and_piv(round, stag_rounds);
+            return cut_and_piv(round,  do_price);
         }
     } else if (!silent) {
         cout << "\tcuts: " << found_primal << ",connected "
              << supp_data.connected << "\n";
     }
 
+    if (total_delta < Eps::Zero)
+        found_primal = false;
+
     if (found_primal) {
-        if (total_delta < Eps::Zero)
-            ++stag_rounds;
-        else
-            stag_rounds = 0;
-        return cut_and_piv(round, stag_rounds);
+        return cut_and_piv(round, do_price);
     }
+
+#if CMR_HAVE_SAFEGMI
+
+    if (!do_price) {
+        try {
+            vector<double> lp_x = core_lp.lp_vec();
+            Sep::SafeGomory gmi_sep(core_lp, core_lp.tour_base.best_tour_edges,
+                                    lp_x);
+            if (call_separator([&gmi_sep]() { return gmi_sep.find_cuts(); },
+                               gmi_sep.gomory_q(), piv, core_lp,
+                               tourlen, prev_val, total_delta, delta_ratio)) {
+                if (piv == PivType::Tour || piv == PivType::FathomedTour)
+                    return piv;
+
+                if (total_delta > Eps::Zero)
+                    return cut_and_piv(round, do_price);
+            }
+        } CMR_CATCH_PRINT_THROW("doing safe GMI sep", err);
+    }
+    
+#endif
+
 
     if (!silent)
         cout << "\tTried all routines, returning " << piv << "\n";
