@@ -858,6 +858,9 @@ void Relaxation::init_mir_data(Sep::MIRgroup &mir_data)
         }
     }
 
+    if (frac_basic_vars.empty())
+        throw logic_error("Tried init_mir_data w no fractional basic vars.");
+
     std::sort(frac_basic_vars.begin(), frac_basic_vars.end(),
               [](VarPair a, VarPair b)
               { return abs(0.5 - a.second) < abs(0.5 - b.second); });
