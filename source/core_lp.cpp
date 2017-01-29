@@ -247,7 +247,8 @@ void CoreLP::handle_aug()
     del_set_rows(delrows);
     ext_cuts.del_cuts(delrows);
     factor_basis();
-    cout << "\tPruned "  << (orig_numrows - num_rows()) << " rows from LP.\n";
+    cout << "\n\tPruned "  << (orig_numrows - num_rows())
+         << " rows from LP.\n";
 }
 
 void CoreLP::rebuild_basis()
@@ -349,6 +350,7 @@ void CoreLP::add_cuts(const Sep::CutQueue<Sep::SparseRow> &gmi_q)
          it != gmi_q.end(); ++it) {
         try {
             add_cut(it->rhs, it->sense, it->rmatind, it->rmatval);
+            ext_cuts.add_cut();
         } CMR_CATCH_PRINT_THROW("adding sparse cut row", err);
     }
 }

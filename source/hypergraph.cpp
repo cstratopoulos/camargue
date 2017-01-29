@@ -87,6 +87,9 @@ HyperGraph::Type HyperGraph::cut_type() const
 {
     using Type = HyperGraph::Type;
 
+    if (source_bank == nullptr && source_toothbank == nullptr)
+        return Type::Non;
+
     if (!teeth.empty())
         return Type::Domino;
 
@@ -97,6 +100,9 @@ double HyperGraph::get_coeff(int end0, int end1) const
 {
     if (end0 == end1)
         throw logic_error("Edge has same endpoints in HyperGraph::get_coeff.");
+
+    if (cut_type() == Type::Non)
+        throw logic_error("Tried HyperGraph::get_coeff on Non cut.");
     
     double result = 0.0;
     
@@ -181,6 +187,9 @@ void HyperGraph::get_coeffs(const std::vector<Price::PrEdge> &edges,
                             vector<int> &rmatind,
                             vector<double> &rmatval) const
 {
+    if (cut_type() == Type::Non)
+        throw logic_error("Tried HyperGraph::get_coeffs on Non cut.");
+    
     rmatind.clear();
     rmatval.clear();
 
@@ -323,6 +332,13 @@ void ExternalCuts::add_cut(const dominoparity &dp_cut, const double rhs,
 {
     cuts.emplace_back(clique_bank, tooth_bank, dp_cut, rhs, current_tour);
 }
+
+/**
+ * Add a branching constraint or Non HyperGraph cut to the list. Maintains 
+ * indexing that agrees with the Relaxation for bookkeeping and cut pruning 
+ * purposes. 
+ */
+void ExternalCuts::add_cut() { cuts.emplace_back(); }
 
 /**
  * @param[in] delset the entry `delset[i]` shall be one if the cut 
