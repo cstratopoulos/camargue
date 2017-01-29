@@ -19,7 +19,8 @@ namespace Sep {
 /// External representation of a cut added to the lp relaxation.
 class HyperGraph {
 public:
-    HyperGraph() = default;
+    /// Default construct an empty Non HyperGraph cut. 
+    HyperGraph() : source_bank(nullptr), source_toothbank(nullptr) {}
     
 
     /// Construct a HyperGraph from a Concorde cut.
@@ -38,7 +39,8 @@ public:
     enum Type {
         Domino = 0, //<! A domino parity inequality.
         Subtour = 1, //<! An SEC.
-        Comb = 2 //<! A comb-like constraint.
+        Comb = 2, //<! A comb-like constraint.
+        Non = 3, //<! Non HyperGraph cut: Gomory cut or branching constraint.
     };
 
     Type cut_type() const; //!< Find the Type of this cut.
@@ -83,8 +85,8 @@ inline std::ostream &operator<<(std::ostream &os, HyperGraph::Type t)
         os << "Subtour";
     else if (t == T::Comb)
         os << "Blossom or comb";
-    else
-        os << "Error unkown type";
+    else if (t == T::Non)
+        os << "Non HyperGraph Gomory cut or branch constraint.";
     return os;
 }
 
@@ -101,6 +103,9 @@ public:
     /// Add a simple DP cut.
     void add_cut(const dominoparity &dp_cut, const double rhs,
                  const std::vector<int> &current_tour);
+
+    /// Add a Non HyperGraph cut.
+    void add_cut();
 
     /// Delete a specified set of cuts.
     void del_cuts(const std::vector<int> &delset);
@@ -215,6 +220,10 @@ void ExternalCuts::get_duals(const LP::Relaxation &relax,
     //get clique_pi for non-domino cuts
     for (int i = 0; i < cuts.size(); ++i) {
         const Sep::HyperGraph &H = cuts[i];
+
+        if (H.cut_type() == CutType::Non)
+            throw std::logic_error("Tried to get_duals with Non cut present.");
+        
         if (H.cut_type() == CutType::Domino)
             continue;
 
