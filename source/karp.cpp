@@ -18,8 +18,21 @@ namespace CMR {
 namespace Data{
 
 KarpPartition::KarpPartition(const int ncount, CCdatagroup *dat,
-			     const int seed) try {
+			     const int seed) try
+{
+    bool dummy_part = false;
     if (ncount < 100) {
+        dummy_part = true;
+        cout << "Problem less than 100 nodes, using trivial Karp partition.\n";
+    }
+
+    if (!dummy_part)
+        if ((dat->norm & CC_NORM_SIZE_BITS) != CC_D2_NORM_SIZE) {
+            dummy_part = true;
+            cout << "Incompatible norm, using trivial Karp partition\n.";
+        }
+    
+    if (dummy_part) {
         part_list.resize(1);
         part_list[0].resize(ncount);
         for (int i = 0; i < ncount; ++i)
@@ -62,8 +75,21 @@ KarpPartition::KarpPartition(const Instance &inst) try
 {
     int ncount = inst.node_count();
     int seed = inst.seed();
-    
+    int norm = inst.ptr()->norm;
+
+    bool dummy_part = false;
     if (ncount < 100) {
+        dummy_part = true;
+        cout << "Problem less than 100 nodes, using trivial Karp partition.\n";
+    }
+
+    if (!dummy_part)
+        if ((norm & CC_NORM_SIZE_BITS) != CC_D2_NORM_SIZE) {
+            dummy_part = true;
+            cout << "Incompatible norm, using trivial Karp partition\n.";
+        }
+    
+    if (dummy_part) {
         part_list.resize(1);
         part_list[0].resize(ncount);
         for (int i = 0; i < ncount; ++i)
