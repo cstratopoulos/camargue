@@ -16,6 +16,8 @@
 #include <iomanip>
 #include <stdexcept>
 
+using std::abs;
+
 using std::unique_ptr;
 
 using std::vector;
@@ -105,6 +107,7 @@ bool SafeGomory::find_cuts()
     double std_dense = 0.0;
     double std_avg_slack = 0.0;
     double std_min_slack = 1.0;
+    double std_max_slack = 0.0;
 
     for(rowlist_elem *it = generated_cuts->first; it; it = it->next) {
         sp_row *row = it->row;
@@ -125,7 +128,11 @@ bool SafeGomory::find_cuts()
             throw err;
         }
 
-        if (tour_act == rhs && lp_viol >= Epsilon::Cut) {
+        double slack = tour_act - rhs;
+
+        if (slack == 0.0 && lp_viol >= Epsilon::Cut && tour_act >= rhs
+            // tour_act == rhs && lp_viol >= Epsilon::Cut
+            ) {
             SparseRow primal_row; 
             // cout << "\tFound GMI cut with viol " << lp_viol << ", "
             //      << nz << " nonzeros, density "
@@ -151,6 +158,9 @@ bool SafeGomory::find_cuts()
             double slack = abs(tour_act - rhs);
             if (slack < std_min_slack)
                 std_min_slack = slack;
+            else if (slack > std_max_slack)
+                std_max_slack = slack;
+            
             std_avg_slack += slack;
             
             ++std_found;
@@ -161,10 +171,11 @@ bool SafeGomory::find_cuts()
     cout << "\t" << p_found << " primal cuts found, avg density "
          << (p_dense / p_found) << "\n"
          << "\t" << std_found << " non-primal viol cuts found, avg density "
-         << (std_dense / std_found) << "\n"
-         << "\tTightest non-tight cut: " << std::setprecision(10)
-         << std_min_slack << std::setprecision(6) << ", avg slack: "
-         << (std_avg_slack / std_found) << "\n\n";
+         << (std_dense / std_found) << "\n";
+    // cout << "\tTightest non-tight cut: " << std::setprecision(10)
+    //      << std_min_slack << "\n\tmax: "
+    //      << std_max_slack << std::setprecision(6) << ", avg slack: "
+    //      << (std_avg_slack / (double) std_found) << "\n";
 
     if (primal_found.empty()) {
         cout << "\tFound safe Gomory cuts but none were tight.\n";
@@ -184,7 +195,7 @@ bool SafeGomory::find_cuts()
     // if the best cut is more than 5% dense we only add one.
     if (density(primal_found.front(), numcols) >= 0.05)
         primal_found.resize(1);
-    else
+    else if (primal_found.size() >= gmi_q.q_capacity)
         primal_found.resize(gmi_q.q_capacity);
 
     try {
@@ -192,7 +203,7 @@ bool SafeGomory::find_cuts()
             gmi_q.push_back(std::move(a));
     } CMR_CATCH_PRINT_THROW("putting found cuts in cut q", err);
 
-    cout << "\tFound round of " << gmi_q.size() << " primal Gomory cuts.\n";
+    cout << "\tEnqueued " << gmi_q.size() << " primal Gomory cuts.\n\n";
 
     return true;    
 }
