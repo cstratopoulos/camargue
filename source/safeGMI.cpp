@@ -96,6 +96,12 @@ bool SafeGomory::find_cuts()
 
     using SparseRow = Sep::SparseRow;
     vector<SparseRow> primal_found;
+    
+    int p_found = 0;
+    double p_dense = 0.0;
+
+    int std_found = 0;
+    double std_dense = 0.0;
 
     for(rowlist_elem *it = generated_cuts->first; it; it = it->next) {
         sp_row *row = it->row;
@@ -117,7 +123,7 @@ bool SafeGomory::find_cuts()
         }
 
         if (tour_act == rhs && lp_viol >= Epsilon::Cut) {
-            SparseRow primal_row;
+            SparseRow primal_row; 
             // cout << "\tFound GMI cut with viol " << lp_viol << ", "
             //      << nz << " nonzeros, density "
             //      << ((int) (100 * ((double) nz / numcols))) << "%\n";
@@ -128,6 +134,9 @@ bool SafeGomory::find_cuts()
                 primal_row.rhs = rhs;
                 primal_row.lp_viol = lp_viol;
 
+                ++p_found;
+                p_dense += density(primal_row, numcols);
+
                 for (int i = 0; i < nz; ++i) {
                     primal_row.rmatind[i] = row->rowind[i];
                     primal_row.rmatval[i] = row->rowval[i];
@@ -135,8 +144,16 @@ bool SafeGomory::find_cuts()
 
                 primal_found.push_back(primal_row);
             } CMR_CATCH_PRINT_THROW("allocating/pushing primal row", err);
+        } else {
+            ++std_found;
+            std_dense += (double) nz / numcols;
         }
     }
+
+    cout << "\t" << p_found << " primal cuts found, avg density "
+         << (p_dense / p_found) << "\n"
+         << "\t" << std_found << " non-primal viol cuts found, avg density "
+         << (std_dense / std_found) << "\n\n";
 
     if (primal_found.empty()) {
         cout << "\tFound safe Gomory cuts but none were tight.\n";
