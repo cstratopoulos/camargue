@@ -92,6 +92,9 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         current_eg = &eg_full;
         if (!silent)
             cout << "\tRunning full eg\n";
+        cout << "\n\tChecking exact lb for opt tour.....\n";
+        exact_lb();
+        cout << "\n\n";
     } else if (piv_stat == PivType::Tour){
         current_eg = &eg_inside;
         if (!silent)
@@ -259,6 +262,42 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     return result;
 }
 
+void Pricer::exact_lb()
+{
+    using f64 = util::Fixed64;
+    runtime_error err("Problem in Pricer::exact_lb.");
+    
+    vector<f64> x_node_pi;
+    vector<f64> x_node_pi_est;
+    vector<f64> x_cut_pi;
+
+    std::unordered_map<Sep::Clique, f64> x_clq_pi;
+
+    try {
+        core_lp.external_cuts().get_duals(true, core_lp, x_node_pi,
+                                          x_node_pi_est, x_cut_pi, x_clq_pi);
+    } CMR_CATCH_PRINT_THROW("getting exact duals", err);
+
+    f64 lb = 0.0;
+
+    for (f64 &pi : x_node_pi)
+        lb.add_mult(pi, 2);
+
+    for (auto i = 0; i < x_cut_pi.size(); ++i) {
+        const Sep::HyperGraph &H = core_lp.external_cuts().get_cuts()[i];
+        if (H.cut_type() == CutType::Non)
+            throw logic_error("Non hypergraph cut in Pricer::exact_lb.");
+
+        if (H.get_sense() == 'G')
+            lb.add_mult(x_cut_pi[i], -H.get_rhs());
+        else
+            lb.add_mult(x_cut_pi[i], H.get_rhs());
+    }
+
+    cout << "\tComputed f64 lower bound: " << lb << "\n";
+    
+}
+
 vector<Graph::Edge> Pricer::get_pool_chunk()
 {
     vector<Graph::Edge> result;
@@ -339,34 +378,13 @@ void Pricer::price_edges(vector<PrEdge> &target_edges, bool compute_duals)
 
     for (int i = 0; i < cutlist.size(); ++i) {
         double pival = cut_pi[i];
-        // cout << "\tCut " << i << " " << cutlist[i].cut_type()
-        //      << " has pival " << pival << "\n";
-        
-        // vector<int> rmatind;
-        // vector<double> rmatval;
-
-        // core_lp.get_row(def_tour.size() + i, rmatind, rmatval);
-        // cout << "nz entries of row\n";
-        // for (int i : rmatind)
-        //     cout << i << ", ";
-        // cout << "\n";
-
         const Sep::HyperGraph &H = cutlist[i];
+        
         if (H.cut_type() == CutType::Non)
             throw logic_error("Called pricing with Non HyperGraph present.");
         
         if (H.cut_type() != CutType::Domino)
             continue;
-
-
-        ///the problem is somewhere here....
-        // if (core_lp.dual_feas()) {
-        //     if (pival >= 0.0)
-        //         continue;
-        // } else {
-        //     if (pival <= 0.0)
-        //         continue;
-        // }
 
         if (pival == 0)
             continue;

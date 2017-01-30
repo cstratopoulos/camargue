@@ -5,6 +5,7 @@
 #include "datagroups.hpp"
 #include "hypergraph.hpp"
 #include "price_util.hpp"
+#include "fixed64.hpp"
 #include "edgehash.hpp"
 
 extern "C" {
@@ -31,11 +32,13 @@ public:
     Pricer &operator=(const Pricer &P) = delete; //!< Deleted copy assign.
 
     ~Pricer(); //!< Destruct and free resource handles.
+    
+    ScanStat gen_edges(LP::PivType piv_stat); //!< Generate/add edges to core.
+
+    void exact_lb();
 
     void price_edges(std::vector<PrEdge> &target_edges,
                      bool compute_duals); //!< Price a list of edges.
-    
-    ScanStat gen_edges(LP::PivType piv_stat); //!< Generate/add edges to core.
 
     int queue_size() const { return edge_q.size(); } //<! Size of edge queue.
 
@@ -50,7 +53,7 @@ private:
     Data::GraphGroup &graph_group; //!< Graph data for the core_lp.
 
     const int gen_max; //!< The max number of edges to generate at a time.
-
+    
     std::vector<int> gen_elist; //<! Raw node-node list of generated edges.
     std::vector<int> gen_elen;  //<! Unused dummy parameter to pass.
 
