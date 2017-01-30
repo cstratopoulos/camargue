@@ -82,7 +82,8 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     edge_hash.clear();
 
     try {
-        ext_cuts.get_duals(core_lp, node_pi, node_pi_est, cut_pi, clique_pi);
+        ext_cuts.get_duals(false, core_lp, node_pi, node_pi_est, cut_pi,
+                           clique_pi);
     } CMR_CATCH_PRINT_THROW("populating clique pi", err);
 
     CCtsp_edgegenerator *current_eg;
@@ -294,7 +295,7 @@ void Pricer::price_edges(vector<PrEdge> &target_edges, bool compute_duals)
     
     if (compute_duals)
         try {
-            ext_cuts.get_duals(core_lp, node_pi, node_pi_est, cut_pi,
+            ext_cuts.get_duals(false, core_lp, node_pi, node_pi_est, cut_pi,
                                clique_pi);
         } CMR_CATCH_PRINT_THROW("Couldn't get duals.", err);
 

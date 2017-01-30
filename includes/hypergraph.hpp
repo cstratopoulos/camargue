@@ -125,12 +125,13 @@ public:
     const ToothBank &get_tbank() const { return tooth_bank; };
 
     /// Get the column associated with an edge to be added to the lp.
-    void get_col(const int end0, const int end1,
+    void get_col(int end0, int end1,
                  std::vector<int> &cmatind, std::vector<double> &cmatval) const;
 
     /// Retrieve exact/estimated duals for use in computing reduced costs.
     template <typename numtype>
-    void get_duals(const LP::Relaxation &relax,
+    void get_duals(bool remove_neg,
+                   const LP::Relaxation &relax,
                    std::vector<numtype> &node_pi,
                    std::vector<numtype> &node_pi_est,
                    std::vector<numtype> &cut_pi,
@@ -166,7 +167,8 @@ private:
  * Cliques from the source CliqueBank.
  */
 template <typename numtype>
-void ExternalCuts::get_duals(const LP::Relaxation &relax,
+void ExternalCuts::get_duals(bool remove_neg,
+                             const LP::Relaxation &relax,
                              std::vector<numtype> &node_pi,
                              std::vector<numtype> &node_pi_est,
                              std::vector<numtype> &cut_pi,
@@ -207,7 +209,7 @@ void ExternalCuts::get_duals(const LP::Relaxation &relax,
                                   full_pi.begin() + node_count);
         node_pi_est = node_pi;
 
-        if (!cuts.empty())
+        if (!cuts.empty()) 
             cut_pi = vector<numtype>(full_pi.begin() + node_count,
                                      full_pi.end());
         else
@@ -216,6 +218,18 @@ void ExternalCuts::get_duals(const LP::Relaxation &relax,
         if (node_pi.size() != node_count || cut_pi.size() != cuts.size())
             throw std::logic_error("Node pi or cut pi size mismatch");
     } CMR_CATCH_PRINT_THROW("copying to result vectors", err);
+
+    if (remove_neg) {
+        for (int i = 0; i < cuts.size(); ++i) {
+            if (cuts[i].sense == 'G') {
+                if (cut_pi[i] < 0)
+                    cut_pi[i] = 0;
+            } else if (cuts[i].sense == 'L') {
+                if (cut_pi[i] > 0)
+                    cut_pi[i] = 0;
+            }
+        }
+    }
 
     //get clique_pi for non-domino cuts
     for (int i = 0; i < cuts.size(); ++i) {
