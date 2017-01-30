@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
 #include <stdexcept>
 
 using std::unique_ptr;
@@ -161,7 +162,8 @@ bool SafeGomory::find_cuts()
          << (p_dense / p_found) << "\n"
          << "\t" << std_found << " non-primal viol cuts found, avg density "
          << (std_dense / std_found) << "\n"
-         << "\tTightest non-tight cut: " << std_min_slack << ", avg slack: "
+         << "\tTightest non-tight cut: " << std::setprecision(10)
+         << std_min_slack << std::setprecision(6) << ", avg slack: "
          << (std_avg_slack / std_found) << "\n\n";
 
     if (primal_found.empty()) {
