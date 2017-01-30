@@ -102,6 +102,8 @@ bool SafeGomory::find_cuts()
 
     int std_found = 0;
     double std_dense = 0.0;
+    double std_avg_slack = 0.0;
+    double std_min_slack = 1.0;
 
     for(rowlist_elem *it = generated_cuts->first; it; it = it->next) {
         sp_row *row = it->row;
@@ -145,6 +147,11 @@ bool SafeGomory::find_cuts()
                 primal_found.push_back(primal_row);
             } CMR_CATCH_PRINT_THROW("allocating/pushing primal row", err);
         } else {
+            double slack = abs(tour_act - rhs);
+            if (slack < std_min_slack)
+                std_min_slack = slack;
+            std_avg_slack += slack;
+            
             ++std_found;
             std_dense += (double) nz / numcols;
         }
@@ -153,7 +160,9 @@ bool SafeGomory::find_cuts()
     cout << "\t" << p_found << " primal cuts found, avg density "
          << (p_dense / p_found) << "\n"
          << "\t" << std_found << " non-primal viol cuts found, avg density "
-         << (std_dense / std_found) << "\n\n";
+         << (std_dense / std_found) << "\n"
+         << "\tTightest non-tight cut: " << std_min_slack << ", avg slack: "
+         << (std_avg_slack / std_found) << "\n\n";
 
     if (primal_found.empty()) {
         cout << "\tFound safe Gomory cuts but none were tight.\n";
