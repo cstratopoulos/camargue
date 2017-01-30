@@ -5,6 +5,8 @@ extern "C" {
 #include <concorde/INCLUDE/bigguy.h>
 }
 
+#include <iostream>
+
 namespace CMR {
 namespace util {
 
@@ -45,7 +47,13 @@ public:
         { return CCbigguy_cmp(bg, f.bg) == 0; } //!< Equality operator.
 
     bool operator>(const Fixed64 &f) const
-        { return CCbigguy_cmp(bg, f.bg) == 1; } //!< Greater than operator. 
+        { return CCbigguy_cmp(bg, f.bg) == 1; } //!< Greater than operator.
+
+    bool operator<=(const Fixed64 &f) const
+        { return CCbigguy_cmp(bg, f.bg) <= 0; }
+
+    bool operator>=(const Fixed64 &f) const
+        { return CCbigguy_cmp(bg, f.bg) >= 0; }
 
 
 private:
@@ -54,6 +62,9 @@ private:
 
 inline Fixed64 operator+(Fixed64 a, Fixed64 b) { return a += b; }
 inline Fixed64 operator-(Fixed64 a, Fixed64 b) { return a -= b; }
+
+inline std::ostream &operator<<(std::ostream &os, const Fixed64 &f)
+{ os << (f.to_d()); return os; }
 
 }
 }
