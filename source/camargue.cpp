@@ -69,7 +69,7 @@ int main(int argc, char** argv) try
     CMR::Timer t;
     t.start();
 
-    tsp_solver->cutting_loop(false);
+    tsp_solver->cutting_loop(true);
 
     t.stop();
     t.report(true);
