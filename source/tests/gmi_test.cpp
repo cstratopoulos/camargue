@@ -39,14 +39,18 @@ SCENARIO ("Generating safe Gomory cuts",
           "[Sep][SafeGomory]") {
     using namespace CMR;
     vector<string> probs{
-        "a280",
-        "lin318",
-        "d493",
-        "pr1002",
-        "rl1304",
+        // "a280",
+        // "lin318",
+        // "d493",
+        // "pr1002",
+        // "rl1304",
         "d2103",
-        // "pcb3038",
-        // "pla7397",
+        "u2319",
+        "pcb3038",
+        "fnl4461",
+        "rl5915",
+        "rl5934",
+        "pla7397",
     };
 
     for (string &prob : probs) {
@@ -55,7 +59,7 @@ SCENARIO ("Generating safe Gomory cuts",
                 OutPrefs prefs;
                 Solver solver("problems/" + prob + ".tsp",
                                    //"test_data/tours/" + prob + ".sol",
-                                   99, prefs);
+                                   999, prefs);
                 LP::PivType piv = solver.cutting_loop(false);
 
                 if (piv == LP::PivType::Frac) {
