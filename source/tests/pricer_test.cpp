@@ -72,12 +72,14 @@ vector<ProbPair> probs {
                     int rowcount = core_lp.num_rows();
                 
                     Price::Pricer pricer(core_lp, solver.inst_info(), g_dat);
-                    vector<Price::PrEdge> pr_edges;
+                    vector<Price::PrEdge<double>> pr_edges;
 
                     for (const Graph::Edge &e : g_dat.core_graph.get_edges())
                         pr_edges.emplace_back(e.end[0], e.end[1]);
 
-                    REQUIRE_NOTHROW(pricer.price_edges(pr_edges, true));
+                    std::unique_ptr<LP::DualGroup<double>> dgp;
+
+                    REQUIRE_NOTHROW(pricer.price_edges(pr_edges, dgp));
 
                     cout << "Dual feasible before getting cpx_rc: "
                          << core_lp.dual_feas() << "\n";

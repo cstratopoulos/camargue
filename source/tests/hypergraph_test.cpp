@@ -133,7 +133,7 @@ SCENARIO ("Comparing HyperGraph edge coeffs to comb/domino sparse rows",
                                        b_dat.perm);
             Sep::ToothBank tbank(cbank);
 
-            vector<Price::PrEdge> pr_edges(g_dat.core_graph.edge_count());
+            vector<Price::PrEdge<double>> pr_edges(g_dat.core_graph.edge_count());
             for (int i = 0; i < pr_edges.size(); ++i)
                 pr_edges[i].end = g_dat.core_graph.get_edge(i).end;
 
