@@ -54,16 +54,17 @@ inline std::ostream &operator<<(std::ostream &os, ScanStat stat)
 }
 
 
+template <typename numtype>
 struct PrEdge : EndPts {
     PrEdge() = default;
     
     PrEdge(int end0, int end1) : EndPts(end0, end1), redcost(1.0) {}
 
-    PrEdge(int end0, int end1, double rc) : EndPts(end0, end1), redcost(rc) {}
+    PrEdge(int end0, int end1, numtype rc) : EndPts(end0, end1), redcost(rc) {}
 
     bool operator<(const PrEdge &rhs) const { return redcost < rhs.redcost; }
     
-    double redcost;
+    numtype redcost;
 };
 
 }
