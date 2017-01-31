@@ -94,8 +94,8 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         current_eg = &eg_full;
         if (!silent)
             cout << "\tRunning full eg\n";
-        cout << "\n\tChecking exact lb for opt tour.....\n";
-        exact_lb();
+        // cout << "\n\tChecking exact lb for opt tour.....\n";
+        // exact_lb();
         cout << "\n\n";
     } else if (piv_stat == PivType::Tour){
         current_eg = &eg_inside;
