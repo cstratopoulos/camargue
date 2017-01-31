@@ -21,6 +21,17 @@ namespace CMR {
 /// Matters related to pricing sets of edges.
 namespace Price {
 
+struct PrEdge64 : EndPts {
+    PrEdge64() = default;
+
+    PrEdge64(int end0, int end1) : EndPts(end0, end1), redcost(1.0) {}
+
+    PrEdge64(int end0, int end1, util::Fixed64 rc) :
+        EndPts(end0, end1), redcost(rc) {}
+
+    util::Fixed64 redcost;
+};
+
 /// Get reduced costs for edges not in the core lp. 
 class Pricer {
 public:
@@ -45,6 +56,17 @@ public:
 private:
     void sort_q(); //!< Sort the queue of edges by minimum reduced costs.
     std::vector<Graph::Edge> get_pool_chunk(); //!< Get at most AddBatch edges.
+
+    bool f64_gen_edges(const std::vector<util::Fixed64> &node_pi_est,
+                       std::vector<PrEdge64> &gen_edges,
+                       int &loop1, int &loop2);
+
+    void f64_price_edges(std::vector<PrEdge64> &target_edges,
+                         std::vector<util::Fixed64> &node_pi,
+                         std::vector<util::Fixed64> &node_pi_est,
+                         std::vector<util::Fixed64> &cut_pi,
+                         std::unordered_map<Sep::Clique,
+                         util::Fixed64> &clique_pi);
     
     LP::CoreLP &core_lp; //!< The LP relaxation to query/modify.
     const Data::Instance &inst; //!< To get lengths for edges not in core_lp.

@@ -19,10 +19,12 @@ namespace CMR {
 
 using LP::PivType;
 using CutType = Sep::HyperGraph::Type;
+using f64 = util::Fixed64;
 
 namespace Eps = Epsilon;
 
 namespace Price {
+
 /**
  * @param[in] _relax the Relaxation for grabbing dual values
  * @param[in] _inst the TSP instance for generating edges
@@ -264,7 +266,6 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
 void Pricer::exact_lb()
 {
-    using f64 = util::Fixed64;
     runtime_error err("Problem in Pricer::exact_lb.");
     
     vector<f64> x_node_pi;
@@ -280,8 +281,12 @@ void Pricer::exact_lb()
 
     f64 lb = 0.0;
 
-    for (f64 &pi : x_node_pi)
-        lb.add_mult(pi, 2);
+    for (f64 &pi : x_node_pi){
+        lb += pi;
+//        lb.add_mult(pi, 2);
+    }
+
+    cout << "\tNode pi rhs: " << lb << "\n";
 
     for (auto i = 0; i < x_cut_pi.size(); ++i) {
         const Sep::HyperGraph &H = core_lp.external_cuts().get_cuts()[i];
@@ -289,13 +294,36 @@ void Pricer::exact_lb()
             throw logic_error("Non hypergraph cut in Pricer::exact_lb.");
 
         if (H.get_sense() == 'G')
-            lb.add_mult(x_cut_pi[i], -H.get_rhs());
-        else
             lb.add_mult(x_cut_pi[i], H.get_rhs());
+        else
+            lb.add_mult(x_cut_pi[i], -H.get_rhs());
     }
 
-    cout << "\tComputed f64 lower bound: " << lb << "\n";
+    cout << "\tComputed f64 initial rhs: " << lb << "\n";
+
+    vector<PrEdge64> gen_edges;
+    f64 penalty = 0.0;
     
+    int loop1 = 0;
+    int loop2 = 1;
+
+    bool finished = false;
+
+    while (!finished) {
+        try {
+            finished = f64_gen_edges(x_node_pi_est, gen_edges, loop1, loop2);
+            f64_price_edges(gen_edges, x_node_pi, x_node_pi_est, x_cut_pi,
+                            x_clq_pi);
+        } CMR_CATCH_PRINT_THROW("in generating/pricing f64 edges", err);
+
+        for (auto &e : gen_edges)
+            if (e.redcost < 0.0)
+                penalty += e.redcost;
+    }
+    
+    lb += penalty;
+    cout << "\tPenalty: " << penalty << "\n";
+    cout << "\tAfter subtracting penalty: " << lb << "\n";
 }
 
 vector<Graph::Edge> Pricer::get_pool_chunk()
@@ -405,6 +433,118 @@ void Pricer::sort_q()
 {
     std::sort(edge_q.begin(), edge_q.end(),
               [](const PrEdge &e, const PrEdge &f) {return f < e; });
+}
+
+/**
+ * A rewrite of the unexported Concorde function big_generate_edges from 
+ * ex_price.c. Scans through the edges of the complete graph, building a list 
+ * of edges that may have negative reduced cost.
+ */
+bool Pricer::f64_gen_edges(const vector<f64> &node_pi_est,
+                           vector<PrEdge64> &gen_edges,
+                           int &loop1, int &loop2)
+{
+    int ncount = inst.node_count();
+    int i = loop1;
+    int j = loop2;
+    int first = 1;
+
+    gen_edges.clear();
+
+    if (i >= ncount)
+        return true;
+
+    for(; i < ncount; ++i) {        
+        int stop = ncount;
+        if (first == 0)
+            j = i + 1;
+        first = 0;
+        for(; j < stop; ++j) {
+            int end = j;
+            f64 rc = inst.edgelen(i, j) - node_pi_est[i] - node_pi_est[j];
+            if (rc < 0.0) {
+                gen_edges.emplace_back(i, end, rc);
+                if (gen_edges.size() == f64Batch) {
+                    loop1 = i;
+                    loop2 = j + 1;
+                    return false;
+                }
+            }
+        }
+    }
+
+    loop1 = ncount;
+    loop2 = ncount;
+    return true;
+}
+
+void Pricer::f64_price_edges(vector<PrEdge64> &target_edges,
+                             vector<f64> &node_pi,
+                             vector<f64> &node_pi_est,
+                             vector<f64> &cut_pi,
+                             std::unordered_map<Sep::Clique, f64> &clique_pi)
+{
+    int ncount = inst.node_count();
+    vector<Graph::Edge> temp_elist;
+    vector<PrEdge> tmp_predges;
+    
+    for (PrEdge64 &e : target_edges) {
+        e.redcost = inst.edgelen(e.end[0], e.end[1]) - node_pi[e.end[0]]
+        - node_pi[e.end[1]];
+        temp_elist.emplace_back(e.end[0], e.end[1], 0.0);
+        tmp_predges.emplace_back(e.end[0], e.end[1]);
+    }
+
+    Graph::AdjList price_adjlist(ncount, temp_elist);
+    vector<Graph::Node> &price_nodelist = price_adjlist.nodelist;
+    const vector<int> &def_tour = ext_cuts.get_cbank().ref_tour();
+    int marker = 0;
+
+    for (const auto &kv : clique_pi) {
+        const Sep::Clique &clq = kv.first;
+        f64 pival = kv.second;
+
+        if (pival != 0.0) {
+            f64 add_back = pival + pival;
+            ++marker;
+
+            for (int j : clq.node_list(def_tour)) {
+                for (Graph::AdjObj &nbr : price_nodelist[j].neighbors)
+                    if (price_nodelist[nbr.other_end].mark == marker)
+                        target_edges[nbr.edge_index].redcost += add_back;
+                    
+                price_nodelist[j].mark = marker;
+            }
+        }
+    }
+
+    const vector<Sep::HyperGraph> &cutlist = ext_cuts.get_cuts();
+    vector<int> rmatind;
+    vector<double> rmatval;
+
+    for (int i = 0; i < cutlist.size(); ++i) {
+        f64 pival = cut_pi[i];
+        const Sep::HyperGraph &H = cutlist[i];
+        
+        if (H.cut_type() == CutType::Non)
+            throw logic_error("Called pricing with Non HyperGraph present.");
+        
+        if (H.cut_type() != CutType::Domino)
+            continue;
+
+        if (pival == 0)
+            continue;
+        
+        try {
+            H.get_coeffs(tmp_predges, rmatind, rmatval);
+        } catch (const exception &e) {
+            cerr << e.what() << "\n";
+            throw runtime_error("Couldn't get price edge domino coeffs.");
+        }
+
+        for (int j = 0; j < rmatind.size(); ++j)
+            target_edges[rmatind[j]].redcost.add_mult(pival, -rmatval[j]);
+    }
 }
 
 
