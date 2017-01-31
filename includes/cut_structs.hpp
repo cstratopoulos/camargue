@@ -41,7 +41,7 @@ struct SimpleTooth {
     SimpleTooth(int _root, ToothBody &seg, double _slack) :
         root(_root), body_start(seg.start), body_end(seg.end), slack(_slack) {}
 
-    typedef std::unique_ptr<SimpleTooth> Ptr;
+    using Ptr = std::unique_ptr<SimpleTooth>;
 
     int root, body_start, body_end;
     int cutgraph_index;
