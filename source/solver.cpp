@@ -387,7 +387,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
             }
         } CMR_CATCH_PRINT_THROW("calling simpleDP sep", err);
 
-    if (cut_sel.connect)
+    if (cut_sel.connect) {
         if (!found_primal && !supp_data.connected) {
             int num_add = 0;
             while (!supp_data.connected) {
@@ -403,19 +403,20 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                                                                 karp_part, TG);
 
                     } else {
-                        throw logic_error("No connect cuts but disconnected??");
+                        throw logic_error("Disconnected w no connect cuts??");
                     }                
                 } CMR_CATCH_PRINT_THROW("doing connect cut loop", err);
             }
         
-        if (piv == PivType::Tour || piv == PivType::FathomedTour) {
-            return piv;
-        } else {
-            return cut_and_piv(round,  do_price);
+            if (piv == PivType::Tour || piv == PivType::FathomedTour) {
+                return piv;
+            } else {
+                return cut_and_piv(round,  do_price);
+            }
+        } else if (!silent) {
+            cout << "\tcuts: " << found_primal << ",connected "
+                 << supp_data.connected << "\n";
         }
-    } else if (!silent) {
-        cout << "\tcuts: " << found_primal << ",connected "
-             << supp_data.connected << "\n";
     }
 
     if (total_delta < Eps::Zero)
