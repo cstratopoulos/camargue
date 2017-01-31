@@ -18,6 +18,8 @@ constexpr int PoolSize = 1000; //<! Number of negative rc edges to keep in pool.
 constexpr int EstBatch = 20000; //<! Max number of edges to estimate red cost.
 constexpr int ScaleBatch = 3; //<! Scale factor for EstBatch.
 
+constexpr int f64Batch = 5000000; //!< Max number to generate during exact lb.
+
 constexpr double MaxPenalty = 0.10;
 
 /// Return type for edge pricing routines.
