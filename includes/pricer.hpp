@@ -32,8 +32,8 @@ public:
     Pricer(LP::CoreLP &core, const Data::Instance &_inst,
            Data::GraphGroup &graphgroup); //!< Construct a Pricer.
 
-    Pricer(const Pricer &P) = delete; //!< Deleted copy constructor.
-    Pricer &operator=(const Pricer &P) = delete; //!< Deleted copy assign.
+    Pricer(const Pricer &P) = delete;
+    Pricer &operator=(const Pricer &P) = delete;
 
     ~Pricer(); //!< Destruct and free resource handles.
     

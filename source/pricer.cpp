@@ -77,7 +77,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     runtime_error err("Problem in Pricer::gen_edges");
     ScanStat result =
     (piv_stat == LP::PivType::Tour) ? ScanStat::PartOpt : ScanStat::FullOpt;
-    bool silent = true;
+    bool silent = false;
     
     edge_hash.clear();
 
@@ -87,7 +87,6 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                                                  core_lp.external_cuts());
     } CMR_CATCH_PRINT_THROW("populating clique pi", err);
 
-    vector<double> &node_pi_est = reg_duals->node_pi_est;
     CCtsp_edgegenerator *current_eg;
 
     if (piv_stat == PivType::FathomedTour){
@@ -102,7 +101,8 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     } else
         throw logic_error("Tried to run pricing on non tour.");
 
-    if (CCtsp_reset_edgegenerator(current_eg, &node_pi_est[0], silent)) {
+    if (CCtsp_reset_edgegenerator(current_eg,
+                                  &(reg_duals->node_pi_est[0]), silent)) {
         cerr << "CCtsp_reset_edgegenerator failed.\n";
         throw err;
     }
@@ -123,7 +123,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     vector<d_PrEdge> edge_q;
 
     while (!finished) {
-        if (!silent)
+        if (!silent) 
             cout << "\tEntering EG loop, pass " << ++outercount << "\n\t";
 
         int num_gen = 0;
@@ -226,6 +226,8 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
             try {
                 reg_duals.reset();
+                cout << "boolean of reg duals after reset: "
+                     << ((bool) reg_duals) << "\n";
                 price_edges(edge_q, reg_duals);
             } CMR_CATCH_PRINT_THROW("getting new duals and re-pricing", err);
 
@@ -242,7 +244,8 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
 
             if (num_added > 0) {
-                if (CCtsp_reset_edgegenerator(current_eg, &node_pi_est[0],
+                if (CCtsp_reset_edgegenerator(current_eg,
+                                              &(reg_duals->node_pi_est[0]),
                                               silent)) {
                     cerr << "CCtsp_reset_edgegenerator failed.\n";
                     throw err;
