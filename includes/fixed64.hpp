@@ -31,10 +31,8 @@ public:
     Fixed64 &operator-=(Fixed64 f)
         { CCbigguy_sub(&bg, f.bg); return *this; } //!< Minus decrement.
 
-
-    /// Plus increment this number by adding integer multiple \p m times \p f.
-    void add_mult(Fixed64 f, int m) { CCbigguy_addmult(&bg, f.bg, m); }
-
+    friend void add_mult(Fixed64 &f, const Fixed64 &g, int m);
+    
     /// Integer ceiling.
     Fixed64 ceil() const
         { Fixed64 result; result.bg = CCbigguy_ceil(bg); return result; }
@@ -65,6 +63,16 @@ private:
 
 inline Fixed64 operator+(Fixed64 a, Fixed64 b) { return a += b; }
 inline Fixed64 operator-(Fixed64 a, Fixed64 b) { return a -= b; }
+
+inline void add_mult(Fixed64 &f, const Fixed64 &g, int m)
+{
+    CCbigguy_addmult(&f.bg, g.bg, m);
+}
+
+inline void add_mult(double &d, const double &g, int m)
+{
+    d += m * g;
+}
 
 inline std::ostream &operator<<(std::ostream &os, const Fixed64 &f)
 { os << (f.to_d()); return os; }
