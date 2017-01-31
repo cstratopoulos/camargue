@@ -46,6 +46,9 @@ public:
     bool operator==(const Fixed64 &f) const
         { return CCbigguy_cmp(bg, f.bg) == 0; } //!< Equality operator.
 
+    bool operator!=(const Fixed64 &f) const
+        { return CCbigguy_cmp(bg, f.bg) != 0; }
+
     bool operator>(const Fixed64 &f) const
         { return CCbigguy_cmp(bg, f.bg) == 1; } //!< Greater than operator.
 
