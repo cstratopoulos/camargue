@@ -49,6 +49,18 @@ public:
     const LP::CoreLP &get_core_lp() const
         { return core_lp; } /// Get the active CoreLP relaxation.
 
+    /// Which separation routines should be called.
+    struct CutSel {
+        bool segment = true; //!< Primal SECs.
+        bool fast2m = true; //!< Standard fast blossom heuristics.
+        bool blkcomb = true; //!< Standard block comb heuristics.
+        bool simpleDP = true; //!< Primal simple DP separation.
+        bool safeGMI = false; //!< Primal safe Gomory cuts.
+        bool connect = true; //!< Standard connect cut SECs.
+    };
+
+    CutSel cut_sel;
+
 private:
     void report_piv(CMR::LP::PivType piv, int round, bool full_opt);
 
