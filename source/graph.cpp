@@ -2,8 +2,6 @@
 
 #include <algorithm>
 #include <fstream>		   
-#include <iostream>
-#include <stdexcept>
 
 using std::vector;
 using std::cout;
@@ -234,20 +232,6 @@ AdjList::AdjList(int ncount, const vector<Edge> &ref_elist) try
     throw runtime_error("AdjList elist constructor failed.");
 }
 
-AdjList::AdjList(int ncount, const vector<Price::PrEdge> &price_elist) try
-    : node_count(ncount), edge_count(price_elist.size()),
-      nodelist(vector<Node>(node_count, Node((2 * edge_count) / node_count)))
-{
-    for (int i = 0; i < edge_count; ++i) {
-        const Price::PrEdge &e = price_elist[i];
-
-        nodelist[e.end[0]].neighbors.emplace_back(e.end[1], i, e.redcost);
-        nodelist[e.end[1]].neighbors.emplace_back(e.end[0], i, e.redcost);
-    }
-} catch (const exception &e) {
-    cerr << e.what() << "\n";
-    throw runtime_error("AdjList price_elist constructor failed.");
-}
 
 AdjList::AdjList(int  ncount,
                  const vector<Edge> &ref_elist,

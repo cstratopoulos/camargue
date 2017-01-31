@@ -9,6 +9,7 @@
 #include <iostream>
 #include <memory>
 #include <queue>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -154,7 +155,8 @@ struct AdjList {
     
     AdjList(int ncount, const std::vector<Edge> &ref_elist);
 
-    AdjList(int ncount, const std::vector<Price::PrEdge> &price_elist);
+    template <typename EndPt_type>
+    AdjList(int ncount, const std::vector<EndPt_type> &elist);
     
     AdjList(int ncount,
             const std::vector<Edge> &ref_elist,
@@ -209,6 +211,26 @@ private:
     AdjList adj_list;
     int nodecount;
 };
+
+
+///////////////// TEMPLATE METHOD IMPLEMENTATIONS /////////////////////////////
+
+template <typename EndPt_type>
+AdjList::AdjList(int ncount, const std::vector<EndPt_type> &elist) try
+    : node_count(ncount), edge_count(elist.size()),
+      nodelist(std::vector<Node>(node_count,
+                                 Node((2 * edge_count) / node_count)))
+{
+    for (int i = 0; i < edge_count; ++i) {
+        const auto &e = elist[i];
+
+        nodelist[e.end[0]].neighbors.emplace_back(e.end[1], i, 0.0);
+        nodelist[e.end[1]].neighbors.emplace_back(e.end[0], i, 0.0);
+    }
+} catch (const std::exception &e) {
+    std::cerr << e.what() << "\n";
+    throw std::runtime_error("AdjList EndPt_type constructor failed.");
+}
 
 }
 }
