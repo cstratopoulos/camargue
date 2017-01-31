@@ -110,9 +110,6 @@ try : nodecount(ncount), random_seed(seed),
 Instance::Instance(Instance &&I) noexcept :
     nodecount(I.nodecount), random_seed(I.random_seed), pname(I.pname)
 {
-    cout << "In instance move constructor" << endl
-         << "this dat->x: " << dat.x << endl
-         << "is it null: " << !dat.x << endl;
     CCutil_freedatagroup(&dat);
     dat = I.dat;
     
