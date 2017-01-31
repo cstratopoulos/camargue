@@ -48,8 +48,9 @@ public:
     /// Get the coefficient of an edge specified by endpoints.
     double get_coeff(int end0, int end1) const;
 
-    /// Get sparse coefficient row for a list of edges.
-    void get_coeffs(const std::vector<Price::PrEdge> &edges,
+    /// Get sparse coefficient row for a list of endpoints.
+    template <typename EndPt_type>
+    void get_coeffs(const std::vector<EndPt_type> &edges,
                     std::vector<int> &rmatind,
                     std::vector<double> &rmatval) const;
 
@@ -148,7 +149,139 @@ private:
     std::vector<HyperGraph> cuts; //<! List of the cuts in the LP::Relaxation.
 };
 
-//////////////////// TEMPLATE METHOD IMPLEMENTATION ///////////////////////////
+//////////////////// TEMPLATE METHOD IMPLEMENTATIONS //////////////////////////
+
+/**
+ * @tparam EndPt_type a structure derived from EndPts that stores an edge `e` 
+ * as a length-two array accessed as `e.end[0]` and `e.end[1]`
+ * @param[in] edges the list of edges for which to generate coefficients.
+ * @param[in,out] rmatind the indices of edges with nonzero coefficients.
+ * @param[in,out] rmatval the coefficients corresponding to entries of 
+ * \p rmatind.
+ */
+template <typename EndPt_type>
+void HyperGraph::get_coeffs(const std::vector<EndPt_type> &edges,
+                            std::vector<int> &rmatind,
+                            std::vector<double> &rmatval) const
+{
+    using std::vector;
+    
+    if (cut_type() == Type::Non)
+        throw std::logic_error("Tried HyperGraph::get_coeffs on Non cut.");
+    
+    rmatind.clear();
+    rmatval.clear();
+
+    const vector<int> &def_tour = source_bank->ref_tour();
+    int ncount = def_tour.size();
+    
+    std::map<int, double> coeff_map;
+    vector<bool> node_marks(ncount, false);
+
+    if (cut_type() != Type::Domino) {
+        for (const Clique::Ptr &clq_ref : cliques) {
+            for (const Segment &seg : clq_ref->seg_list())
+                for (int k = seg.start; k <= seg.end; ++k)
+                    node_marks[def_tour[k]] = true;
+
+            for (int i = 0; i < edges.size(); ++i) {
+                if (node_marks[edges[i].end[0]] !=
+                    node_marks[edges[i].end[1]]) {
+                    if (coeff_map.count(i))
+                        coeff_map[i] += 1.0;
+                    else
+                        coeff_map[i] = 1.0;
+                }
+            }
+
+            node_marks = vector<bool>(ncount, false);
+        }
+
+        rmatind.reserve(coeff_map.size());
+        rmatval.reserve(coeff_map.size());
+
+        for (std::pair<const int, double> &kv : coeff_map) {
+            rmatind.push_back(kv.first);
+            rmatval.push_back(kv.second);
+        }
+
+        return;
+    } //else it is a domino cut
+
+    const Clique::Ptr &handle_ref = cliques[0];
+    for (const Segment &seg : handle_ref->seg_list())
+        for (int k = seg.start; k <= seg.end; ++k)
+            node_marks[def_tour[k]] = true;
+
+    for (int i = 0; i < edges.size(); ++i) {
+        bool e0 = node_marks[edges[i].end[0]];
+        bool e1 = node_marks[edges[i].end[1]];
+
+        if (e0 && e1) {
+            if (coeff_map.count(i)) coeff_map[i] += 2.0;
+            else coeff_map[i] = 2.0;
+        } else if (e0 != e1) {
+            if (coeff_map.count(i)) coeff_map[i] += 1.0;
+            else coeff_map[i] = 1.0;
+        }
+    }
+
+    node_marks = vector<bool>(ncount, false);
+
+    const vector<int> &tooth_perm = source_toothbank->ref_perm();
+
+    for (const Tooth::Ptr &t_ref : teeth) {
+        const Clique &root_clq = t_ref->set_pair()[0];
+        const Clique &bod_clq = t_ref->set_pair()[1];
+
+        for (const Segment &seg : bod_clq.seg_list()) 
+            for (int k = seg.start; k <= seg.end; ++k)
+                node_marks[def_tour[k]] = true;
+
+        for (int i = 0; i < edges.size(); ++i) {
+            int e0 = edges[i].end[0];
+            int e1 = edges[i].end[1];
+            
+            bool bod_e0 = node_marks[e0];
+            bool bod_e1 = node_marks[e1];
+
+            if (bod_e0 && bod_e1) {
+                if (coeff_map.count(i)) coeff_map[i] += 2.0;
+                else coeff_map[i] = 2.0;
+            } else if (bod_e0 != bod_e1) {
+                if (bod_e0) {
+                    if (root_clq.contains(tooth_perm[e1])) {
+                        if (coeff_map.count(i)) coeff_map[i] += 1.0;
+                        else coeff_map[i] = 1.0;
+                    }
+                } else { //bod_e1
+                    if (root_clq.contains(tooth_perm[e0])) {
+                        if (coeff_map.count(i)) coeff_map[i] += 1.0;
+                        else coeff_map[i] = 1.0;
+                    }
+                }
+            }
+        }
+
+        node_marks = vector<bool>(ncount, false);
+    }
+
+    rmatind.reserve(coeff_map.size());
+    rmatval.reserve(coeff_map.size());
+
+    for (std::pair<const int, double> &kv : coeff_map) {
+        rmatind.push_back(kv.first);
+        rmatval.push_back(kv.second);
+    }
+
+    for (double &coeff : rmatval)
+        if (fabs(coeff >= Epsilon::Zero)) {
+            coeff /= 2;
+            coeff = floor(coeff);
+        }
+
+    
+}
 
 /**
  * This method will use the LP::Relaxation to query the lp solver for dual 
