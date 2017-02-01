@@ -33,13 +33,15 @@ SCENARIO ("Computing exact lower bounds",
           "[Pricer][Price][exact_lb][Fixed64]") {
     using namespace CMR;
     vector<string> probs {
-        "dantzig42",
-        "pr76",
-        "lin105",
-        "a280",
-        "lin318",
-        "fl417",
-        "p654"
+        "ulysses16",
+        //"bayg29",
+        // "dantzig42",
+        // "pr76",
+        // "lin105",
+        // "a280",
+        // "lin318",
+        // "fl417",
+        // "p654"
         };
 
     for (string &prob : probs) {
@@ -51,7 +53,7 @@ SCENARIO ("Computing exact lower bounds",
                 OutPrefs outprefs;
                 Solver solver(probfile, seed, outprefs);
 
-                solver.cutting_loop(false);
+                solver.cutting_loop(true);
 
                 LP::CoreLP &core = const_cast<LP::CoreLP &>(solver.
                                                             get_core_lp());

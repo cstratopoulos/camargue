@@ -289,10 +289,9 @@ f64 Pricer::exact_lb()
     f64 node_sum = 0.0;
     f64 cut_sum = 0.0;
 
-    for (const f64 &pi : ex_duals->node_pi)
-        node_sum += pi;
-    //util::add_mult(node_sum, pi, 2);
-
+    for (const f64 &pi : ex_duals->node_pi) {
+        util::add_mult(node_sum, pi, 2);
+    }
     cout << "\tnode pi sum:\t" << node_sum << "\n";
     
     for (int i = 0; i < cuts.size(); ++i) {
@@ -300,6 +299,7 @@ f64 Pricer::exact_lb()
         if (H.cut_type() == CutType::Non)
             throw logic_error("Tried to get exact_lb with non cut present.");
 
+        cout << "\tAdding mult " << cut_pi[i] << ", " << H.get_rhs() << "\n";
         util::add_mult(cut_sum, cut_pi[i], H.get_rhs());
     }
 
