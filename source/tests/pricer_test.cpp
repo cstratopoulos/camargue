@@ -29,6 +29,41 @@ using std::string;
 using std::to_string;
 using std::cout;
 
+SCENARIO ("Computing exact lower bounds",
+          "[Pricer][Price][exact_lb][Fixed64]") {
+    using namespace CMR;
+    vector<string> probs {
+        "dantzig42",
+        "pr76",
+        "lin105",
+        };
+
+    for (string &prob : probs) {
+        GIVEN ("The TSP instance " + prob) {
+            WHEN ("The solution is optimal for its edge set") {
+                THEN ("We can compute a valid lower bound") {
+                    int seed = 99;
+                    string probfile = "problems/" + fname + ".tsp";
+
+                    OutPrefs outprefs;
+                    Solver solver(probfile, seed, outprefs);
+
+                    solver.cutting_loop(false);
+
+                    LP::CoreLP &core = const_cast<LP::CoreLP>(solver.
+                                                              get_core_lp());
+                    Data::GraphGroup &g_dat =
+                    const_cast<Data::GraphGroup>(solver.graph_info());
+
+                    Price::Pricer pricer(core, solver.inst_info(), g_dat);
+
+                    pricer.exact_lb();
+                }
+            }
+        }
+    }
+}
+
 SCENARIO ("Comparing Pricer reduced costs to CPLEX",
           "[Price][Pricer][price_edges]") {
     using namespace CMR;

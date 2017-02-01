@@ -39,6 +39,8 @@ public:
     
     ScanStat gen_edges(LP::PivType piv_stat); //!< Generate/add edges to core.
 
+    util::Fixed64 exact_lb();
+
     //void exact_lb();
     template <typename numtype>
     void price_edges(std::vector<PrEdge<numtype>> &target_edges,
@@ -50,13 +52,6 @@ private:
     // bool f64_gen_edges(const std::vector<util::Fixed64> &node_pi_est,
     //                    std::vector<PrEdge<double>64> &gen_edges,
     //                    int &loop1, int &loop2);
-
-    // void f64_price_edges(std::vector<PrEdge<double>64> &target_edges,
-    //                      std::vector<util::Fixed64> &node_pi,
-    //                      std::vector<util::Fixed64> &node_pi_est,
-    //                      std::vector<util::Fixed64> &cut_pi,
-    //                      std::unordered_map<Sep::Clique,
-    //                      util::Fixed64> &clique_pi);
     
     LP::CoreLP &core_lp; //!< The LP relaxation to query/modify.
     const Data::Instance &inst; //!< To get lengths for edges not in core_lp.

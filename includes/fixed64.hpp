@@ -75,7 +75,10 @@ inline void add_mult(double &d, const double &g, int m)
 }
 
 inline std::ostream &operator<<(std::ostream &os, const Fixed64 &f)
-{ os << (f.to_d()); return os; }
+{
+    os << (f.to_d());
+    return os;
+}
 
 }
 }

@@ -82,9 +82,8 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     edge_hash.clear();
 
     try {
-        reg_duals =
-        util::make_unique<LP::DualGroup<double>>(false, core_lp,
-                                                 core_lp.external_cuts());
+        reg_duals = util::make_unique<LP::DualGroup<double>>(false, core_lp,
+                                                             ext_cuts);
     } CMR_CATCH_PRINT_THROW("populating clique pi", err);
 
     CCtsp_edgegenerator *current_eg;
@@ -268,6 +267,42 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     return result;
 }
 
+f64 Pricer::exact_lb()
+{
+    runtime_error err("Problem in Pricer::exact_lb");
+
+    try {
+        ex_duals = util::make_unique<LP::DualGroup<f64>>(true, core_lp,
+                                                         ext_cuts);
+    } CMR_CATCH_PRINT_THROW("constructing exact DualGroup", err);
+
+    vector<f64> &node_pi = ex_duals->node_pi;
+    vector<f64> &cut_pi = ex_duals->cut_pi;
+
+    const vector<Sep::HyperGraph> &cuts = ext_cuts.get_cuts();
+
+    f64 bound = 0.0;
+    f64 rhs_sum = 0.0;
+
+    for (const f64 &pi : ex_duals->node_pi)
+        util::add_mult(rhs_sum, pi, 2);
+
+    cout << "\trhs_sum after node_pi: " << rhs_sum << "\n";
+    
+    for (int i = 0; i < cuts.size(); ++i) {
+        const Sep::HyperGraph &H = cuts[i];
+        if (H.cut_type() == CutType::Non)
+            throw logic_error("Tried to get exact_lb with non cut present.");
+
+        if (H.get_sense() == 'G')
+            util::add_mult(rhs_sum, cut_pi[i], H.get_rhs());
+        else if (H.get_sense() == 'L')
+            util::add_mult(rhs_sum, cut_pi[i], H.get_rhs());
+    }
+
+    cout << "\trhs_sum after cut_pi: " << rhs_sum << "\n";
+}
+
 // void Pricer::exact_lb()
 // {
 //     runtime_error err("Problem in Pricer::exact_lb.");
@@ -392,75 +427,6 @@ vector<Graph::Edge> Pricer::pool_chunk(vector<d_PrEdge> &edge_q)
 //     loop1 = ncount;
 //     loop2 = ncount;
 //     return true;
-// }
-
-// void Pricer::f64_price_edges(vector<PrEdge<double>64> &target_edges,
-//                              vector<f64> &node_pi,
-//                              vector<f64> &node_pi_est,
-//                              vector<f64> &cut_pi,
-//                              std::unordered_map<Sep::Clique, f64> &clique_pi)
-// {
-//     int ncount = inst.node_count();
-//     vector<Graph::Edge> temp_elist;
-//     vector<PrEdge<double>> tmp_predges;
-    
-//     for (PrEdge<double>64 &e : target_edges) {
-//         e.redcost = inst.edgelen(e.end[0], e.end[1]) - node_pi[e.end[0]]
-//         - node_pi[e.end[1]];
-//         temp_elist.emplace_back(e.end[0], e.end[1], 0.0);
-//         tmp_predges.emplace_back(e.end[0], e.end[1]);
-//     }
-
-//     Graph::AdjList price_adjlist(ncount, temp_elist);
-//     vector<Graph::Node> &price_nodelist = price_adjlist.nodelist;
-//     const vector<int> &def_tour = ext_cuts.get_cbank().ref_tour();
-//     int marker = 0;
-
-//     for (const auto &kv : clique_pi) {
-//         const Sep::Clique &clq = kv.first;
-//         f64 pival = kv.second;
-
-//         if (pival != 0.0) {
-//             f64 add_back = pival + pival;
-//             ++marker;
-
-//             for (int j : clq.node_list(def_tour)) {
-//                 for (Graph::AdjObj &nbr : price_nodelist[j].neighbors)
-//                     if (price_nodelist[nbr.other_end].mark == marker)
-//                         target_edges[nbr.edge_index].redcost += add_back;
-                    
-//                 price_nodelist[j].mark = marker;
-//             }
-//         }
-//     }
-
-//     const vector<Sep::HyperGraph> &cutlist = ext_cuts.get_cuts();
-//     vector<int> rmatind;
-//     vector<double> rmatval;
-
-//     for (int i = 0; i < cutlist.size(); ++i) {
-//         f64 pival = cut_pi[i];
-//         const Sep::HyperGraph &H = cutlist[i];
-        
-//         if (H.cut_type() == CutType::Non)
-//             throw logic_error("Called pricing with Non HyperGraph present.");
-        
-//         if (H.cut_type() != CutType::Domino)
-//             continue;
-
-//         if (pival == 0)
-//             continue;
-        
-//         try {
-//             H.get_coeffs(tmp_predges, rmatind, rmatval);
-//         } catch (const exception &e) {
-//             cerr << e.what() << "\n";
-//             throw runtime_error("Couldn't get price edge domino coeffs.");
-//         }
-
-//         for (int j = 0; j < rmatind.size(); ++j)
-//             target_edges[rmatind[j]].redcost.add_mult(pival, -rmatval[j]);
-//     }
 // }
 
 
