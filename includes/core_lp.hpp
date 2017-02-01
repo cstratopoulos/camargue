@@ -167,11 +167,17 @@ DualGroup<numtype>::DualGroup(bool remove_neg, const LP::Relaxation &relax,
     if (remove_neg) {
         for (int i = 0; i < cuts.size(); ++i) {
             if (cuts[i].get_sense() == 'G') {
-                if (cut_pi[i] < 0)
+                if (cut_pi[i] < 0) {
+                    cout << "\tCorrection: setting >= dual "
+                         << cut_pi[i] << " to zero.\n";
                     cut_pi[i] = 0;
+                }
             } else if (cuts[i].get_sense() == 'L') {
-                if (cut_pi[i] > 0)
+                if (cut_pi[i] > 0) {
+                    cout << "\tCorrection: setting <= dual "
+                         << cut_pi[i] << " to zero.\n";
                     cut_pi[i] = 0;
+                }
             }
         }
     }
