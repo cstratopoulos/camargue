@@ -202,6 +202,8 @@ public:
     
     std::vector<Edge> &get_edges() { return edges; }
     const std::vector<Edge> &get_edges() const { return edges; }
+
+    const AdjList &get_adj() const { return adj_list; }
     
     void add_edge(int end0, int end1, int len);
     void add_edge(const Edge &e);
