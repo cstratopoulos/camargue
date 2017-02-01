@@ -41,13 +41,15 @@ public:
 
     util::Fixed64 exact_lb();
 
-    //void exact_lb();
     template <typename numtype>
     void price_edges(std::vector<PrEdge<numtype>> &target_edges,
                      std::unique_ptr<LP::DualGroup<numtype>> &duals);
 
 private:
     std::vector<Graph::Edge> pool_chunk(std::vector<PrEdge<double>> &edge_q);
+
+    bool scan_edges(std::vector<PrEdge<util::Fixed64>> &gen_edges,
+                    int &loop1, int &loop2);
     
     // bool f64_gen_edges(const std::vector<util::Fixed64> &node_pi_est,
     //                    std::vector<PrEdge<double>64> &gen_edges,

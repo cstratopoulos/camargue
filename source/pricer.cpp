@@ -77,7 +77,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     runtime_error err("Problem in Pricer::gen_edges");
     ScanStat result =
     (piv_stat == LP::PivType::Tour) ? ScanStat::PartOpt : ScanStat::FullOpt;
-    bool silent = false;
+    bool silent = true;
     
     edge_hash.clear();
 
@@ -225,8 +225,6 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
             try {
                 reg_duals.reset();
-                cout << "boolean of reg duals after reset: "
-                     << ((bool) reg_duals) << "\n";
                 price_edges(edge_q, reg_duals);
             } CMR_CATCH_PRINT_THROW("getting new duals and re-pricing", err);
 
@@ -271,6 +269,9 @@ f64 Pricer::exact_lb()
 {
     runtime_error err("Problem in Pricer::exact_lb");
 
+    cout << "\tObj val: " << core_lp.get_objval() << ", dual feas: "
+         << core_lp.dual_feas() << ", getting duals....\n";
+
     try {
         ex_duals = util::make_unique<LP::DualGroup<f64>>(true, core_lp,
                                                          ext_cuts);
@@ -279,91 +280,75 @@ f64 Pricer::exact_lb()
     vector<f64> &node_pi = ex_duals->node_pi;
     vector<f64> &cut_pi = ex_duals->cut_pi;
 
+
+    cout << "\tnode_pi size: " << node_pi.size() << "\n";
+    cout << "\tcut_pi size: " << cut_pi.size() << "\n";
+
     const vector<Sep::HyperGraph> &cuts = ext_cuts.get_cuts();
 
-    f64 bound = 0.0;
-    f64 rhs_sum = 0.0;
+    f64 node_sum = 0.0;
+    f64 cut_sum = 0.0;
 
     for (const f64 &pi : ex_duals->node_pi)
-        util::add_mult(rhs_sum, pi, 2);
+        node_sum += pi;
+    //util::add_mult(node_sum, pi, 2);
 
-    cout << "\trhs_sum after node_pi: " << rhs_sum << "\n";
+    cout << "\tnode pi sum:\t" << node_sum << "\n";
     
     for (int i = 0; i < cuts.size(); ++i) {
         const Sep::HyperGraph &H = cuts[i];
         if (H.cut_type() == CutType::Non)
             throw logic_error("Tried to get exact_lb with non cut present.");
 
-        if (H.get_sense() == 'G')
-            util::add_mult(rhs_sum, cut_pi[i], H.get_rhs());
-        else if (H.get_sense() == 'L')
-            util::add_mult(rhs_sum, cut_pi[i], H.get_rhs());
+        util::add_mult(cut_sum, cut_pi[i], H.get_rhs());
     }
 
-    cout << "\trhs_sum after cut_pi: " << rhs_sum << "\n";
+    cout << "\tcut pi sum:\t" << cut_sum << "\n";
+
+    vector<PrEdge<f64>> graph_edges;
+
+    for (const Graph::Edge &e : graph_group.core_graph.get_edges())
+        graph_edges.emplace_back(e.end[0], e.end[1]);
+
+    price_edges(graph_edges, ex_duals);
+
+    f64 rc_sum = 0.0;
+    
+    for (const PrEdge<f64> &e : graph_edges)
+        if (e.redcost < 0.0)
+            rc_sum -= e.redcost;
+
+    cout << "\tred cost sum:\t" << rc_sum << "\n";
+
+    f64 bound = node_sum + cut_sum - rc_sum;
+
+    cout << "\tFinal bound:\t" << bound << "\n";    
+    return bound;
+
+    // vector<PrEdge<f64>> gen_edges;
+    // f64 penalty = 0.0;
+
+    // bool finished = false;
+    // int loop1 = 0;
+    // int loop2 = 1;
+
+    // while (!finished) {
+    //     try {
+    //         finished = scan_edges(gen_edges, loop1, loop2);
+    //         price_edges(gen_edges, ex_duals);
+    //     } CMR_CATCH_PRINT_THROW("generating/pricing edges", err);
+
+    //     for (const PrEdge<f64> &e : gen_edges)
+    //         if (e.redcost < 0.0)
+    //             penalty += e.redcost;
+    // }
+
+    // cout << "\tAccrued penalty of " << penalty << "\n";
+    // bound = rhs_sum + penalty;
+    // cout << "\tBound: " << bound << "\n";
+    // return bound;
 }
 
-// void Pricer::exact_lb()
-// {
-//     runtime_error err("Problem in Pricer::exact_lb.");
-    
-//     vector<f64> x_node_pi;
-//     vector<f64> x_node_pi_est;
-//     vector<f64> x_cut_pi;
-
-//     std::unordered_map<Sep::Clique, f64> x_clq_pi;
-
-//     try {
-//         core_lp.external_cuts().get_duals(true, core_lp, x_node_pi,
-//                                           x_node_pi_est, x_cut_pi, x_clq_pi);
-//     } CMR_CATCH_PRINT_THROW("getting exact duals", err);
-
-//     f64 lb = 0.0;
-
-//     for (f64 &pi : x_node_pi){
-//         lb += pi;
-// //        lb.add_mult(pi, 2);
-//     }
-
-//     cout << "\tNode pi rhs: " << lb << "\n";
-
-//     for (auto i = 0; i < x_cut_pi.size(); ++i) {
-//         const Sep::HyperGraph &H = core_lp.external_cuts().get_cuts()[i];
-//         if (H.cut_type() == CutType::Non)
-//             throw logic_error("Non hypergraph cut in Pricer::exact_lb.");
-
-//         if (H.get_sense() == 'G')
-//             lb.add_mult(x_cut_pi[i], H.get_rhs());
-//         else
-//             lb.add_mult(x_cut_pi[i], -H.get_rhs());
-//     }
-
-//     cout << "\tComputed f64 initial rhs: " << lb << "\n";
-
-//     vector<PrEdge<double>64> gen_edges;
-//     f64 penalty = 0.0;
-    
-//     int loop1 = 0;
-//     int loop2 = 1;
-
-//     bool finished = false;
-
-//     while (!finished) {
-//         try {
-//             finished = f64_gen_edges(x_node_pi_est, gen_edges, loop1, loop2);
-//             f64_price_edges(gen_edges, x_node_pi, x_node_pi_est, x_cut_pi,
-//                             x_clq_pi);
-//         } CMR_CATCH_PRINT_THROW("in generating/pricing f64 edges", err);
-
-//         for (auto &e : gen_edges)
-//             if (e.redcost < 0.0)
-//                 penalty += e.redcost;
-//     }
-    
-//     lb += penalty;
-//     cout << "\tPenalty: " << penalty << "\n";
-//     cout << "\tAfter subtracting penalty: " << lb << "\n";
-// }
 
 vector<Graph::Edge> Pricer::pool_chunk(vector<d_PrEdge> &edge_q)
 {
@@ -386,48 +371,64 @@ vector<Graph::Edge> Pricer::pool_chunk(vector<d_PrEdge> &edge_q)
     return result;
 }
 
-/**
- * A rewrite of the unexported Concorde function big_generate_edges from 
- * ex_price.c. Scans through the edges of the complete graph, building a list 
- * of edges that may have negative reduced cost.
- */
-// bool Pricer::f64_gen_edges(const vector<f64> &node_pi_est,
-//                            vector<PrEdge<double>64> &gen_edges,
-//                            int &loop1, int &loop2)
-// {
-//     int ncount = inst.node_count();
-//     int i = loop1;
-//     int j = loop2;
-//     int first = 1;
+bool Pricer::scan_edges(vector<PrEdge<f64>> &gen_edges, int &loop1,
+                        int &loop2)
+{
+    if (!ex_duals)
+        throw logic_error("Tried to scan edges without exact duals.");
 
-//     gen_edges.clear();
+    const vector<f64> &node_pi_est = ex_duals->node_pi_est;
+    const Graph::AdjList &alist = graph_group.core_graph.get_adj();
 
-//     if (i >= ncount)
-//         return true;
+    int ncount = inst.node_count();
+    int i = loop1;
+    int j = loop2;
+    int first = 1;
 
-//     for(; i < ncount; ++i) {        
-//         int stop = ncount;
-//         if (first == 0)
-//             j = i + 1;
-//         first = 0;
-//         for(; j < stop; ++j) {
-//             int end = j;
-//             f64 rc = inst.edgelen(i, j) - node_pi_est[i] - node_pi_est[j];
-//             if (rc < 0.0) {
-//                 gen_edges.emplace_back(i, end, rc);
-//                 if (gen_edges.size() == f64Batch) {
-//                     loop1 = i;
-//                     loop2 = j + 1;
-//                     return false;
-//                 }
-//             }
-//         }
-//     }
+    gen_edges.clear();
 
-//     loop1 = ncount;
-//     loop2 = ncount;
-//     return true;
-// }
+    if (i >= ncount)
+        return true;
+
+    for (; i < ncount; ++i) {
+        for (const Graph::AdjObj &a : alist.nodelist[i].neighbors) {
+            int j = a.other_end;
+            if (j > i) {
+                f64 len = a.val;
+                f64 rc = len - node_pi_est[i] - node_pi_est[j];
+                if (rc < 0.0)
+                    gen_edges.emplace_back(i, j, rc);
+                if (gen_edges.size() == f64Batch) {
+                    loop1 = i;
+                    return false;
+                }
+            }
+        }
+    }
+
+    // for(; i < ncount; ++i) {        
+    //     int stop = ncount;
+    //     if (first == 0)
+    //         j = i + 1;
+    //     first = 0;
+    //     for(; j < stop; ++j) {
+    //         int end = j;
+    //         f64 rc = inst.edgelen(i, j) - node_pi_est[i] - node_pi_est[j];
+    //         if (rc < 0.0) {
+    //             gen_edges.emplace_back(i, end, rc);
+    //             if (gen_edges.size() == f64Batch) {
+    //                 loop1 = i;
+    //                 loop2 = j + 1;
+    //                 return false;
+    //             }
+    //         }
+    //     }
+    // }
+
+    loop1 = ncount;
+    loop2 = ncount;
+    return true;    
+}
 
 
 }

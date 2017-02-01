@@ -36,27 +36,30 @@ SCENARIO ("Computing exact lower bounds",
         "dantzig42",
         "pr76",
         "lin105",
+        "a280",
+        "lin318",
+        "fl417",
+        "p654"
         };
 
     for (string &prob : probs) {
         GIVEN ("The TSP instance " + prob) {
             WHEN ("The solution is optimal for its edge set") {
+                int seed = 99;
+                string probfile = "problems/" + prob + ".tsp";
+
+                OutPrefs outprefs;
+                Solver solver(probfile, seed, outprefs);
+
+                solver.cutting_loop(false);
+
+                LP::CoreLP &core = const_cast<LP::CoreLP &>(solver.
+                                                            get_core_lp());
+                Data::GraphGroup &g_dat =
+                const_cast<Data::GraphGroup &>(solver.graph_info());
+
+                Price::Pricer pricer(core, solver.inst_info(), g_dat);
                 THEN ("We can compute a valid lower bound") {
-                    int seed = 99;
-                    string probfile = "problems/" + fname + ".tsp";
-
-                    OutPrefs outprefs;
-                    Solver solver(probfile, seed, outprefs);
-
-                    solver.cutting_loop(false);
-
-                    LP::CoreLP &core = const_cast<LP::CoreLP>(solver.
-                                                              get_core_lp());
-                    Data::GraphGroup &g_dat =
-                    const_cast<Data::GraphGroup>(solver.graph_info());
-
-                    Price::Pricer pricer(core, solver.inst_info(), g_dat);
-
                     pricer.exact_lb();
                 }
             }
@@ -108,13 +111,19 @@ vector<ProbPair> probs {
                 
                     Price::Pricer pricer(core_lp, solver.inst_info(), g_dat);
                     vector<Price::PrEdge<double>> pr_edges;
+                    vector<Price::PrEdge<util::Fixed64>> f64_edges;
 
-                    for (const Graph::Edge &e : g_dat.core_graph.get_edges())
+                    for (const Graph::Edge &e : g_dat.core_graph.get_edges()) {
                         pr_edges.emplace_back(e.end[0], e.end[1]);
+                        f64_edges.emplace_back(e.end[0], e.end[1]);
+                    }
+                        
 
                     std::unique_ptr<LP::DualGroup<double>> dgp;
+                    std::unique_ptr<LP::DualGroup<util::Fixed64>> f64_dgp;
 
                     REQUIRE_NOTHROW(pricer.price_edges(pr_edges, dgp));
+                    REQUIRE_NOTHROW(pricer.price_edges(f64_edges, f64_dgp));
 
                     cout << "Dual feasible before getting cpx_rc: "
                          << core_lp.dual_feas() << "\n";
@@ -143,6 +152,8 @@ vector<ProbPair> probs {
                              << node_pi[pr_edges[i].end[1]] << ", basic: "
                              << colstat[i]);
                         CHECK(pr_edges[i].redcost ==
+                              Approx(cpx_rc[i]).epsilon(Epsilon::Zero));
+                        CHECK(f64_edges[i].redcost.to_d() ==
                               Approx(cpx_rc[i]).epsilon(Epsilon::Zero));
                         if (abs(pr_edges[i].redcost - cpx_rc[i]) >=
                             Epsilon::Zero) {
