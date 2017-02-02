@@ -214,8 +214,11 @@ void CoreLP::handle_aug()
     if (objval > best_data.min_tour_value)
         throw runtime_error("Tried to update best tour with worse objval!");
 
-    if (fabs(objval - get_objval()) > Eps::Zero)
+    if (fabs(objval - get_objval()) > Eps::Zero) {
+        cerr << "\tManual objval " << objval << " disagrees with lp val "
+             << get_objval() << "\n";
         throw runtime_error("Disagreement in new best tour objval with lp.");
+    }
 
     best_data.min_tour_value = objval;
 
@@ -406,6 +409,7 @@ void CoreLP::purge_gmi()
     cout << "\tPruning " << delcount << " Gomory cuts from the LP.\n";
     del_set_rows(delrows);
     ext_cuts.del_cuts(delrows);
+    factor_basis();
 }
 
 }
