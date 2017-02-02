@@ -13,33 +13,21 @@
 
 /** @name Existence macros
  * These govern indicate certain features are downloaded or supported by the 
- * compiler.
+ * compiler. See @ref extdeps for info on all of them.
  */
 ///@{
 
 /// Define if you have downloaded the header file for Catch unit testing.
-/// Catch is the unit testing framework used in this project. If you would like
-/// to compile and run this project's unit tests yourself, Catch can be
-/// obtained at https://github.com/philsquared/Catch
 #undef CMR_HAVE_CATCH
 
 
 /// Define if you have downloaded the header for Timsort implementation.
-/// As a heuristic enhancement, this project uses the Timsort sorting algorithm
-/// to perform certain sorting operations in generating candidate teeth. If
-/// you would like to use Timsort in these cases, an implementation by
-/// Fuji Goro can be obtained at https://github.com/gfx/cpp-TimSort
 #undef CMR_HAVE_TIMSORT
 
 /// Define if your compiler supports OpenMP.
-/// Some sections of this project implement simple algorithms/subroutines in
-/// parallel by use of OpenMP (OMP). The OMP specification guarantees that if
-/// the compiler does not support OMP, the pragmas are simply ignored by the
-/// compiler and the result is still valid code. However, in some cases there
-/// is a bit of added overhead for error handling or memory allocation which
-/// is not necessary in the serial case.
 #undef CMR_HAVE_OPENMP
 
+/// Define if you have the Cook et al. code for generating safe GMI cuts.
 #undef CMR_HAVE_SAFEGMI
 
 ///@}
