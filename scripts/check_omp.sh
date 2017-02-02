@@ -34,10 +34,12 @@ echo '#include <iostream>
       #include <omp.h>
  int main(void) {
      std::cout << "Compiler supports OMP, max thread count "
-     	       << omp_get_max_threads() << "\\n";
+     	       << omp_get_max_threads();
 }' > tmp_prog.cpp
 
 "$CC" -fopenmp tmp_prog.cpp -o tmp_prog.o && ./tmp_prog.o
+
+echo
 
 worked="$?"
 
