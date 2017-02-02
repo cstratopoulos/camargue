@@ -170,7 +170,7 @@ bool SafeGomory::find_cuts()
 
     if (p_found > 0)
         cout << "\t" << p_found << " primal cuts found, avg density "
-             << (p_dense / p_found) << "\n";
+             << (p_dense / p_found) << "...";
     // cout << "\t" << std_found << " non-primal viol cuts found, avg density "
     //      << (std_dense / std_found) << "\n";
     // cout << "\tTightest non-tight cut: " << std::setprecision(10)
@@ -204,7 +204,7 @@ bool SafeGomory::find_cuts()
             gmi_q.push_back(std::move(a));
     } CMR_CATCH_PRINT_THROW("putting found cuts in cut q", err);
 
-    cout << "\tEnqueued " << gmi_q.size() << " primal Gomory cuts.\n\n";
+    cout << "\tEnqueued " << gmi_q.size() << ".\n\n";
 
     return true;    
 }
