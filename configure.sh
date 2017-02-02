@@ -15,12 +15,21 @@ then
 fi
 
 scripts/tsp_header.sh
-
 if [ "$?" -eq 1 ]
 then
     echo "Fatal error in configure.sh"
     exit 1
 fi
+
+if [ -f includes/config.hpp ]
+then
+    echo "config.hpp found"
+else
+    echo "No config.hpp found, creating one from blank"
+    cp includes/config.blank includes/config.hpp
+fi
+
+echo "Configuring external dependencies...."
 
 scripts/config_externals.sh
 
