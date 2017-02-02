@@ -33,7 +33,7 @@ using std::exception;
 static void initial_parse(int argc, char **argv,
                           string &tsp_fname, string &tour_fname,
                           int &seed, int &rnodes, int &rgrid,
-                          CMR::OutPrefs &outprefs);
+                          CMR::OutPrefs &outprefs, bool &sparseflag);
 
 static void usage(const std::string &fname);
 
@@ -46,13 +46,15 @@ int main(int argc, char** argv) try
 
     int rand_nodes = 0;
     int rand_grid = 0;
+
+    bool sparse = false;
     
     CMR::OutPrefs outprefs;
 
     unique_ptr<CMR::Solver> tsp_solver;
 
     initial_parse(argc, argv, tsp_fname, tour_fname,
-                  seed, rand_nodes, rand_grid, outprefs);
+                  seed, rand_nodes, rand_grid, outprefs, sparse);
 
     if (!tsp_fname.empty()) {
         if (tour_fname.empty())
@@ -66,10 +68,12 @@ int main(int argc, char** argv) try
         tsp_solver = CMR::util::make_unique<CMR::Solver>(seed, rand_nodes,
                                                          rand_grid, outprefs);
 
+    tsp_solver->cut_sel.safeGMI = sparse;
+
     CMR::Timer t;
     t.start();
 
-    tsp_solver->cutting_loop(true);
+    tsp_solver->cutting_loop(!sparse);
 
     t.stop();
     t.report(true);
@@ -84,7 +88,7 @@ int main(int argc, char** argv) try
 static void initial_parse(int ac, char **av,
                           string &tsp_fname, string &tour_fname,
                           int &seed, int &rnodes, int &rgrid,
-                          CMR::OutPrefs &outprefs)
+                          CMR::OutPrefs &outprefs, bool &sparseflag)
 {
     bool randflag = false;
     
@@ -97,10 +101,13 @@ static void initial_parse(int ac, char **av,
         throw logic_error("No arguments specified");
     }
 
-    while ((c = getopt(ac, av, "aRn:g:s:t:")) != EOF) {
+    while ((c = getopt(ac, av, "aRSn:g:s:t:")) != EOF) {
         switch (c) {
         case 'R':
             randflag = true;
+            break;
+        case 'S':
+            sparseflag = true;
             break;
         case 'n':
             rnodes = atoi(optarg);
@@ -151,8 +158,10 @@ static void usage(const std::string &fname)
     cerr << "Usage: " << fname << " [-see below-] [-prob_file-]\n";
     cerr << "\t\t FLAG OPTIONS\n"
          << "-R \t Generate random problem.\n"
-         << "   \t Notes:\t Incompatible with tour file/TSPLIB file\n"
-         << "   \t       \t Must be set to specify -n, -g below\n\n";
+         << "   \t Notes:\t Incompatible with -t flag and TSPLIB file\n"
+         << "   \t       \t Must be set to specify -n, -g below\n"
+         << "-S \t Sparse mode: solve over a sparse edge set, no pricing\n"
+         << "   \t Notes:\t Must be set for safe Gomory cuts to be used.\n\n";
     cerr << "\t\t PARAMETER OPTIONS (argument x)\n"
          << "-n \t random problem with x nodes\n"
          << "-g \t random problem gridsize x by x (1 million default)\n"
