@@ -1,5 +1,6 @@
-#no actual Makefile in main directory
+#git shouldn't track personal config stuff
 Makefile
+includes/config.hpp
 
 *.o
 objects
@@ -26,8 +27,6 @@ LKH
 
 #none of the doxygen output
 doc
-
-dp_old
 
 #ignore gv files, softlinks, and output
 *.png
