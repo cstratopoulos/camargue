@@ -5,11 +5,6 @@
 
 #if CMR_HAVE_SAFEGMI
 
-#include "util.hpp"
-
-#include <memory>
-#include <vector>
-
 #ifndef DO_SAFE_MIR_DBL
 #define DO_SAFE_MIR_DBL 1
 #endif
@@ -20,6 +15,11 @@
 
 #include <safemir/src/cutmaster_slvr.hpp>
 #include <safemir/src/ds_cuts.hpp>
+
+#include "util.hpp"
+
+#include <memory>
+#include <vector>
 
 namespace CMR {
 namespace Sep {
