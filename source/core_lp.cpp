@@ -383,8 +383,29 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch)
 
     try {
         tour_base.best_tour_edges.resize(new_ecount, 0.0);
+        lp_edges.resize(new_ecount, 0.0);
         rebuild_basis();
     } CMR_CATCH_PRINT_THROW("rebuilding tour basis", err)
+}
+
+void CoreLP::purge_gmi()
+{
+    vector<int> delrows(num_rows(), 0);
+    int ncount = graph_data.core_graph.node_count();
+
+    int delcount = 0;
+    int i = 0;
+    for (const Sep::HyperGraph &H : ext_cuts.get_cuts()) {
+        if (H.cut_type() == CutType::Non) {
+            delrows[ncount + i] = 1;
+            ++delcount;
+        }
+        ++i;
+    }
+
+    cout << "\tPruning " << delcount << " Gomory cuts from the LP.\n";
+    del_set_rows(delrows);
+    ext_cuts.del_cuts(delrows);
 }
 
 }

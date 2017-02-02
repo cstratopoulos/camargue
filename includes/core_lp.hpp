@@ -97,6 +97,8 @@ private:
     void handle_aug();
 
     void rebuild_basis();
+
+    void purge_gmi();
     
     Data::GraphGroup &graph_data;
     Data::BestGroup &best_data;
