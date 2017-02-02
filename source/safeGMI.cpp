@@ -168,10 +168,11 @@ bool SafeGomory::find_cuts()
         }
     }
 
-    cout << "\t" << p_found << " primal cuts found, avg density "
-         << (p_dense / p_found) << "\n"
-         << "\t" << std_found << " non-primal viol cuts found, avg density "
-         << (std_dense / std_found) << "\n";
+    if (p_found > 0)
+        cout << "\t" << p_found << " primal cuts found, avg density "
+             << (p_dense / p_found) << "\n";
+    // cout << "\t" << std_found << " non-primal viol cuts found, avg density "
+    //      << (std_dense / std_found) << "\n";
     // cout << "\tTightest non-tight cut: " << std::setprecision(10)
     //      << std_min_slack << "\n\tmax: "
     //      << std_max_slack << std::setprecision(6) << ", avg slack: "
