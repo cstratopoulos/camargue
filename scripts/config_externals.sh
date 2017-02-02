@@ -99,6 +99,12 @@ omp_exit="$?"
 cfg_exit=1
 make_exit=1
 
+if [ "$omp_exit" -eq 1 ]
+then
+    echo "Fatal error configuring compiler"
+    exit 1
+fi
+
 if [ "$omp_exit" -eq 0 ]
 then
     sed 's/#undef CMR_HAVE_OPENMP/#define CMR_HAVE_OPENMP 1/' "$target" \
@@ -133,8 +139,6 @@ else
     echo "Error modifying config.hpp for OpenMP"
     exit 1
 fi
-
-
 
 exit 0
 

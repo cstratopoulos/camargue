@@ -6,9 +6,20 @@
 #
 # The approach is to check the Makefile for the C++ compiler, and attempt to
 # use it to compile a dummy temporary program with the openmp flag added. An
-# exit[0] compilation will be used to indicate that the compiler supports OMP.
+# exit 0 compilation will be used to indicate that the compiler supports OMP.
+# exit 1 means that the compiler appears nonfunctional and may have been
+# grabbed incorrectly
+# exit 2 means the test script ran but there appears to be no OMP support
 
-CC=$(grep 'CC *:=' Makefile | sed 's/.*:= //')
+if [ -f Makefile ]
+then
+    echo "Found Makefile, attempting to configure for OMP...."
+else
+    echo "Error: no Makefile in main directory"
+    exit 1
+fi
+
+CC=$(grep '^CC *:=' Makefile | sed 's/.*:= //')
 echo Compiler is "$CC"
 
 "$CC" --version 2>&1 > /dev/null
@@ -32,4 +43,9 @@ worked="$?"
 
 rm tmp_prog*
 
-exit "$worked"
+if [ "$worked" -eq 0 ]
+then
+    exit 0
+else
+    exit 2
+fi
