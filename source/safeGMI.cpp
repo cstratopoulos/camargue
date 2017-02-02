@@ -169,7 +169,7 @@ bool SafeGomory::find_cuts()
     }
 
     if (p_found > 0)
-        cout << "\t" << p_found << " primal cuts found, avg density "
+        cout << "\t" << p_found << " primal Gomory cuts found, avg density "
              << (p_dense / p_found) << "...";
     // cout << "\t" << std_found << " non-primal viol cuts found, avg density "
     //      << (std_dense / std_found) << "\n";

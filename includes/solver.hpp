@@ -65,6 +65,8 @@ private:
     void report_piv(CMR::LP::PivType piv, int round, bool full_opt);
 
     LP::PivType cut_and_piv(int &round, bool do_price);
+
+    LP::PivType frac_recover();
     
     Data::Instance tsp_instance;
     Data::KarpPartition karp_part;

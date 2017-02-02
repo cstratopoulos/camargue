@@ -20,6 +20,7 @@
 #include <cmath>
 
 using std::abs;
+using std::ceil;
 
 using std::cout;
 using std::cerr;
@@ -201,6 +202,15 @@ PivType Solver::cutting_loop(bool do_price)
             
             continue;
         }
+
+        try {
+            if (frac_recover() == PivType::Tour) {
+                report_piv(piv, round, false);
+                TG = Graph::TourGraph(tour_edges, edges, perm);
+
+                continue;
+            }
+        } CMR_CATCH_PRINT_THROW("trying to recover from frac tour", err);
 
         report_piv(piv, round, false);
         cout << "\tNo cuts found.\n";
@@ -455,6 +465,97 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
     if (!silent)
         cout << "\tTried all routines, returning " << piv << "\n";
     return piv;    
+}
+
+PivType Solver::frac_recover()
+{
+    runtime_error err("Problem in Solver::frac_recover");
+
+    Data::SupportGroup &s_dat = core_lp.supp_data;
+    int ncount = tsp_instance.node_count();
+    vector<int> cyc;
+
+    try { cyc.resize(ncount); } CMR_CATCH_PRINT_THROW("allocating cyc", err);
+
+    double val = DoubleMax;
+    CCrandstate rstate;            
+    CCutil_sprand(tsp_instance.seed(), &rstate);
+
+    if (CCtsp_x_greedy_tour_lk(tsp_instance.ptr(), ncount,
+                               s_dat.support_ecap.size(),
+                               &s_dat.support_elist[0],
+                               &s_dat.support_ecap[0], &cyc[0], &val, true,
+                               &rstate)) {
+        cerr << "CCtsp_x_greedy_tour_lk failed.\n";
+        throw err;
+    }
+
+    if (val >= best_data.min_tour_value) {
+        //cout << "\tUnable to augment from frac vector.\n";
+        return PivType::Frac;
+    } else
+        cout << "\tFound improved tour from frac vector:\n"
+             << "\t\t" << best_data.min_tour_value << " --> " << val << "\n"
+             << "\tAugmenting.....\n";
+        
+    vector<Graph::Edge> new_edges;
+    Graph::CoreGraph &graph = graph_data.core_graph;
+
+    for (int i = 0; i < ncount; ++i) {
+        EndPts e(cyc[i], cyc[(i + 1) % ncount]);
+        if (graph.find_edge_ind(e.end[0], e.end[1]) == -1) {
+            try {
+                new_edges.emplace_back(e.end[0], e.end[1],
+                                       tsp_instance.edgelen(e.end[0],
+                                                            e.end[1]));
+            } CMR_CATCH_PRINT_THROW("emplacing new edge", err);
+        }
+    }
+
+    if (!new_edges.empty()) {
+        cout << "\tRecovery tour contains " << new_edges.size()
+             << " new edges.\n";
+        try {
+            if (cut_sel.safeGMI)
+                core_lp.purge_gmi();
+            core_lp.add_edges(new_edges);
+        } CMR_CATCH_PRINT_THROW("adding edges not in tour", err);
+    }
+
+    vector<double> &tbase_edges = core_lp.tour_base.best_tour_edges;
+    vector<double> &lp_edges = core_lp.lp_edges;
+
+    if (lp_edges.size() != tbase_edges.size())
+        throw logic_error("LP/tourbase size mismatch");
+
+    for (int i = 0; i < lp_edges.size(); ++i) {
+        lp_edges[i] = 0.0;
+        tbase_edges[i] = 0.0;
+    }
+
+
+    //prepping for basis rebuild/handle aug
+    for (int i = 0; i < ncount; ++i) {
+        EndPts e(cyc[i], cyc[(i + 1) % ncount]);
+        int ind = graph.find_edge_ind(e.end[0], e.end[1]);
+        if (ind == -1) {
+            cerr << "Tour edge " << e.end[0] << ", " << e.end[1]
+                 << " still not in graph\n";
+            throw err;
+        }
+        tbase_edges[ind] = 1.0;
+        lp_edges[ind] = 1.0;
+    }
+
+    //used as the tour nodes vector in handle_aug
+    graph_data.island = std::move(cyc);
+
+    try {
+        core_lp.rebuild_basis(); //rebuilds from the tour in tbase_edges
+        core_lp.handle_aug(); //instates the tour in lp_edges
+    } CMR_CATCH_PRINT_THROW("rebuilding/augmenting for x-tour", err);
+    
+    return LP::PivType::Tour;
 }
 
 }
