@@ -33,7 +33,7 @@ CPX_LIB     := /software/cplex-12.6/distribution/cplex/lib/x86-64_linux/static_p
 
 CC_LIB      := $(EXTINCDIR)/concorde/concorde.a
 FOMP        := -fopenmp
-CFLAGS      := -Wall -ggdb -Og -pedantic $(FOMP) \
+CFLAGS      := -Wall -O3 -pedantic $(FOMP) \
 -Wno-missing-braces -Wno-sign-compare  -Wno-long-long\
 -Wno-variadic-macros\
 -std=c++11
