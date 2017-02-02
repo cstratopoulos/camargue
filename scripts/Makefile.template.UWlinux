@@ -66,14 +66,16 @@ clean: undeftest
 	@$(RM) -f $(TARGET)
 
 deftest:
-	sed 's/#undef CMR_DO_TESTS/#define CMR_DO_TESTS/' \
+	if [ -f includes/config.hpp ]; then \
+sed 's/#undef CMR_DO_TESTS/#define CMR_DO_TESTS/' \
 includes/config.hpp > includes/tmp_config && \
-mv includes/tmp_config includes/config.hpp
+mv includes/tmp_config includes/config.hpp; fi
 
 undeftest:
-	sed 's/#define CMR_DO_TESTS/#undef CMR_DO_TESTS/' \
+	if [ -f includes/config.hpp ]; then \
+sed 's/#define CMR_DO_TESTS/#undef CMR_DO_TESTS/' \
 includes/config.hpp >includes/tmp_config && \
-mv includes/tmp_config includes/config.hpp
+mv includes/tmp_config includes/config.hpp; fi
 
 test: deftest all undeftest
 
