@@ -5,7 +5,7 @@
 # users, 
 # CC := g++.
 # should be fine.
-CC          := g++
+CC          := 
 
 #The Target Binary Program
 TARGET      := camargue
@@ -68,13 +68,13 @@ clean: undeftest
 	@$(RM) -f $(TARGET)
 
 deftest:
-	if [ -f includes/config.hpp ]; then \
+	@if [ -f includes/config.hpp ]; then \
 sed 's/#undef CMR_DO_TESTS/#define CMR_DO_TESTS/' \
 includes/config.hpp > includes/tmp_config && \
 mv includes/tmp_config includes/config.hpp; fi
 
 undeftest:
-	if [ -f includes/config.hpp ]; then \
+	@if [ -f includes/config.hpp ]; then \
 sed 's/#define CMR_DO_TESTS/#undef CMR_DO_TESTS/' \
 includes/config.hpp >includes/tmp_config && \
 mv includes/tmp_config includes/config.hpp; fi
