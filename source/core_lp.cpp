@@ -247,8 +247,6 @@ void CoreLP::handle_aug()
     del_set_rows(delrows);
     ext_cuts.del_cuts(delrows);
     factor_basis();
-    cout << "\n\tPruned "  << (orig_numrows - num_rows())
-         << " rows from LP.\n";
 }
 
 void CoreLP::rebuild_basis()
@@ -406,10 +404,10 @@ void CoreLP::purge_gmi()
         ++i;
     }
 
-    cout << "\tPruning " << delcount << " Gomory cuts from the LP.\n";
     del_set_rows(delrows);
     ext_cuts.del_cuts(delrows);
-    factor_basis();
+    rebuild_basis();
+    //factor_basis();
 }
 
 }
