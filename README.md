@@ -10,12 +10,22 @@ starting point would be the documentation for CMR::Solver.
 [Installation](#install)
 ------------
 
+For users building the code on one of the UW linux.math environments,
+from the camargue main directory just do
+
+    cp scripts/Makefile.template.UWlinux Makefile
+
+The compiler and CPLEX directories are already specified, so you just
+need to do the steps below concerning symlinks to Concorde.
+
 Camargue is a C++11 application, so most importantly you will need a
 compiler that is compliant with most of the C++11 standard. In fact the code
 has been tested with GCC 4.7, which technically does *not* support the
-C++11 standard in full. Anything after 4.7 or later should be fine. Your
-compiler should be specified by editing the `CC` definition in the
-`Makefile`. A bit more detail and example options are given there.
+C++11 standard in full. Anything after 4.7 or later should be fine,
+and `g++` on a Mac (which is actually an alias of Apple `clang`)
+should be fine too. Your compiler should be specified by editing the
+`CC` definition in the `Makefile`. A bit more detail and example
+options are given there. 
 
 Camargue relies heavily on two main external dependencies:
 - The TSP solver/combinatorial optimization library
@@ -27,7 +37,7 @@ Camargue relies heavily on two main external dependencies:
 Both must be installed before proceeding.
 
 After installing Concorde, go into the directory `camargue/externals`
-and create a softlink to the `concorde` directory. That is, `concorde`
+and create a symlink to the `concorde` directory. That is, `concorde`
 must be the name of the folder containing the files `TSP`, `INCLUDE`,
 `CUT`, etc. 
 
@@ -112,4 +122,14 @@ code. For a random problem, this will be used to pick the distribution
 of points on the grid. For both types of problems, it will also always
 be used in calls to edge generators, separation routines,
 etc. Negative arguments, or an argument of zero, will result in the
-current time being used. 
+current time being used.
+
+Finally, the flag option `-S` is available to specify sparse solution
+mode. In this mode, Camargue will run no edge pricing of any kind; it
+will just generate an initial edge set as above and try to prove that
+a given starting tour is optimal for this edge set. This option is
+required for the use of primal safe Gomory cut separation; see @ref
+extdeps for more info.
+
+@TODO Should be posisble to specify starting edge sets from file for
+TSPLIB instances. 

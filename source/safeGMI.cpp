@@ -204,7 +204,7 @@ bool SafeGomory::find_cuts()
             gmi_q.push_back(std::move(a));
     } CMR_CATCH_PRINT_THROW("putting found cuts in cut q", err);
 
-    cout << "\tEnqueued " << gmi_q.size() << ".\n\n";
+    cout << "Enqueued " << gmi_q.size() << ".\n\n";
 
     return true;    
 }

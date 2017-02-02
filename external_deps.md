@@ -27,16 +27,10 @@ Safe Gomory Mixed-Integer Cuts" in the Informs Journal of
 Computing. The code is available as a supplement from the publisher
 [here](https://www.informs.org/Pubs/IJOC/Online-Supplements/Volume-21-2009/Cook-Dash-Fukasawa-Goycoolea).
 
-To use it, follow the instructions in the `Makefile` to create softlinks
-to the CPLEX root directory and to the folder containing
-`libcplex.a`. After that, run `make` for good measure just to ensure
-everything is working. Camargue itself will compile only the
-headers/objects it needs, using a bit of a crude approach where the
-needed header files (and certain implementation files) are included
-directly. Thus no edits to the Camargue `Makefile` should be
-necessary.
+@TODO The raw download will not compile. Maybe provide a script which automates
+the necessary changes, or provide easy access to the modified version.
 
-If the installation looks OK, create a softlink to the directory
+Create a softlink to the directory
 `safemir` in the `camargue/externals` folder. So `safemir` must be the
 name of the file containing the folder `src`.
 
@@ -64,3 +58,46 @@ through `make test`. In this case, `make remake` should revert
 config.hpp and allow the normal Camargue main to be built. 
 
 
+OpenMP Parallelism
+-------------------
+
+There are a few separation routines in the code that can be
+implemented to run in parallel. I have chosen to implement this using
+the [OpenMP](http://www.openmp.org/) standard for an extremely simple
+approach. Unlike the other external dependencies, this one is not a
+download. Rather, the `configure.sh` script will try to test if your
+compiler supports OpenMP (OMP), and edit the `Makefile`
+accordingly. 
+
+In "Primal Separation Algorithms", Letchford and Lodi observe that the
+minimum cut computations in their blossom separation algorithm are
+"independent of each other", so I have implemented these to run
+concurrently. And in my approach to primal simple DP separation, it is
+possible to search the Karp partitioned witness cutgraphs in
+parallel. From a practical point of view in either case the speedup is
+pleasant but not earth shattering, as neither separation routine is
+called terribly often.
+
+The OMP standard dictates that if the compiler does not support
+OMP `#pragma`s, they are simply ignored and the result is still valid
+code. However in my implementations there is a bit of added overhead
+for memory management or error checking, so the result is not as clean
+as the implementation that could be used in the serial case.  
+
+Sorting with Timsort
+---------------------
+
+Timsort is an enhancement applied during candidate tooth
+generation. In my thesis I show that the subroutine I use finds lists
+of teeth that are often already sorted, or consist of a few sorted
+subsequences. Compared with quicksort, Timsort is an algorithm that
+performs much better on already-sorted or partially-sorted data. But
+again, the sorting accounts for an extremely small portion of the
+computation in finding candidate teeth.
+
+I have chosen to invoke Timsort using the implementation by Fuji Goro,
+available [here](https://github.com/gfx/cpp-TimSort). To use it, just
+put the
+[header](https://raw.githubusercontent.com/gfx/cpp-TimSort/master/timsort.hpp)
+in the `externals` folder. If `configure.sh` detects that it is not
+present, the code will just use the C++ STL `std::sort`.
