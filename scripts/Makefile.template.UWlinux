@@ -1,0 +1,98 @@
+# Adapted from http://stackoverflow.com/a/27794283/6516346
+
+#Compiler and Linker
+# The compiler must support most of the C++11 standard. For most Mac or Linux
+# users, 
+# CC := g++.
+# should be fine.
+# The default version of gcc on UW Linux machines is a bit old, use this
+# instead
+CC          := /opt/centos/devtoolset-1.1/root/usr/bin/c++
+
+#The Target Binary Program
+TARGET      := camargue
+
+#The Directories, Source, Includes, Objects, Binary
+SRCDIR      := source
+INCDIR      := includes
+EXTINCDIR   := externals
+
+# Define this equal to the folder that contains the file cplex.h
+CPXDIR      := /software/cplex-12.6/distribution/cplex/include/ilcplex/
+
+BUILDDIR    := objects
+TARGETDIR   := .
+SRCEXT      := cpp
+DEPEXT      := d
+OBJEXT      := o
+
+#Flags, Libraries and Includes
+
+# Define this equal to the absolute path to the CPLEX library file libcplex.a
+CPX_LIB     := /software/cplex-12.6/distribution/cplex/lib/x86-64_linux/static_pic/libcplex.a
+
+CC_LIB      := $(EXTINCDIR)/concorde/concorde.a
+FOMP        := -fopenmp
+CFLAGS      := -Wall -ggdb -Og -pedantic $(FOMP) \
+-Wno-missing-braces -Wno-sign-compare  -Wno-long-long\
+-Wno-variadic-macros\
+-std=c++11
+LIB         := $(CPX_LIB) $(CC_LIB) -lm -lpthread $(FOMP)
+INC         := -I$(INCDIR)  -I$(CPXDIR) -I$(EXTINCDIR)
+INCDEP      := -I$(INCDIR)  -I$(CPXDIR) -I$(EXTINCDIR)
+
+#-------------------------------------------------------------------------------
+#DO NOT EDIT BELOW THIS LINE
+#-------------------------------------------------------------------------------
+SOURCES     := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.$(OBJEXT)))
+
+#Defauilt Make
+all: $(TARGET)
+
+#Remake
+remake: clean all
+
+#Make the Directories
+directories:
+	@mkdir -p $(TARGETDIR)
+	@mkdir -p $(BUILDDIR)
+
+clean: undeftest
+	@$(RM) -f $(BUILDDIR)/*.o
+	@$(RM) -f $(BUILDDIR)/*.d
+	@$(RM) -f $(BUILDDIR)/tests/*.o
+	@$(RM) -f $(BUILDDIR)/tests/*.d
+	@$(RM) -f $(TARGET)
+
+deftest:
+	sed 's/#undef CMR_DO_TESTS/#define CMR_DO_TESTS/' \
+includes/config.hpp > includes/tmp_config && \
+mv includes/tmp_config includes/config.hpp
+
+undeftest:
+	sed 's/#define CMR_DO_TESTS/#undef CMR_DO_TESTS/' \
+includes/config.hpp >includes/tmp_config && \
+mv includes/tmp_config includes/config.hpp
+
+test: deftest all undeftest
+
+#Pull in dependency info for *existing* .o files
+-include $(OBJECTS:.$(OBJEXT)=.$(DEPEXT))
+
+#Link
+$(TARGET): $(OBJECTS)
+	$(CC) -o $(TARGETDIR)/$(TARGET) $^ $(LIB)
+
+#Compile
+$(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
+	@$(CC) $(CFLAGS) $(INCDEP) -MM $(SRCDIR)/$*.$(SRCEXT) > $(BUILDDIR)/$*.$(DEPEXT)
+	@cp -f $(BUILDDIR)/$*.$(DEPEXT) $(BUILDDIR)/$*.$(DEPEXT).tmp
+	@sed -e 's|.*:|$(BUILDDIR)/$*.$(OBJEXT):|' < $(BUILDDIR)/$*.$(DEPEXT).tmp > $(BUILDDIR)/$*.$(DEPEXT)
+	@sed -e 's/.*://' -e 's/\\$$//' < $(BUILDDIR)/$*.$(DEPEXT).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(BUILDDIR)/$*.$(DEPEXT)
+	@rm -f $(BUILDDIR)/$*.$(DEPEXT).tmp
+
+#Non-File Targets
+.PHONY: all remake clean #deftest undeftest test
