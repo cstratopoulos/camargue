@@ -39,6 +39,8 @@ SCENARIO ("Running a Solver with contra Fix Brancher",
     vector<string> probs{
         "dantzig42",
         "pr76",
+        "a280",
+        "lin318"
         };
 
     for (string &prob : probs) {
