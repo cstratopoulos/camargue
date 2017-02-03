@@ -31,21 +31,21 @@ constexpr int SB1Lim = 100; //!< 1st round strong branch iteration limit.
 constexpr int SB2Lim = 500; //!< 2nd round strong branch iteration limit.
 
 
-constexpr int one_factor = 5; //<! Magnitude factor for fixing var to one.
-constexpr int zero_factor = 10; //<! Magnitude factor for fixing var to zero.
+constexpr int one_factor = 5; //!< Magnitude factor for fixing var to one.
+constexpr int zero_factor = 10; //!< Magnitude factor for fixing var to zero.
 
 /// A simple structure for recording the status of branching subproblems.
 struct Problem {
     enum class Type {
-        Root, //<! The root lp.
-        Affirm, //<! Enforcing agreement with current tour.
-        Contra //<! Enforcing departure from current tour.
+        Root, //!< The root lp.
+        Affirm, //!< Enforcing agreement with current tour.
+        Contra //!< Enforcing departure from current tour.
     };
 
     enum Status {
-        Unseen, //<! Unexamined subproblem.
-        Seen, //<! Examinded subproblem.
-        Pruned //<! Examined and pruned. 
+        Unseen, //!< Unexamined subproblem.
+        Seen, //!< Examinded subproblem.
+        Pruned //!< Examined and pruned. 
     };
     
     Problem() = default;
@@ -87,11 +87,11 @@ struct ScoreTuple {
     /// Store the down/up estimates and score for a variable.
     ScoreTuple(int ind, double down, double up, double mult, double ub);
     
-    int index; //<! The index of the edge being scored.
+    int index; //!< The index of the edge being scored.
     
-    double down_est; //<! The estimate for clamping to zero.
-    double up_est; //<! The estimate for clamping to one.
-    double score; //<! The score composed from down_est and up_est.
+    double down_est; //!< The estimate for clamping to zero.
+    double up_est; //!< The estimate for clamping to one.
+    double score; //!< The score composed from down_est and up_est.
 };
 
 /// Rank a branching variable in terms of its down and up estimates.

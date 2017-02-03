@@ -207,13 +207,13 @@ public:
         { return saved_tour; } //!< Const ref to saved tour for dereferencing.
 
     const std::vector<int> &ref_perm() const
-        { return saved_perm; } //<! Const ref to saved perm for dereferncing.
+        { return saved_perm; } //!< Const ref to saved perm for dereferncing.
 
     
 private:
-    const std::vector<int> saved_tour; //<! Saved tour for dereferencing.
-    const std::vector<int> saved_perm; //<! Permutation vector for saved_tour.
-    CliqueHash bank; //<! Hash table of Clique and Clique::Ptr.
+    const std::vector<int> saved_tour; //!< Saved tour for dereferencing.
+    const std::vector<int> saved_perm; //!< Permutation vector for saved_tour.
+    CliqueHash bank; //!< Hash table of Clique and Clique::Ptr.
 };
 
 

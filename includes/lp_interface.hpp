@@ -95,7 +95,7 @@ public:
     void get_base(std::vector<int> &colstat,
                   std::vector<int> &rowstat) const;
 
-    std::vector<int> col_stat() const; //<! Get the column basis.
+    std::vector<int> col_stat() const; //!< Get the column basis.
 
     /** Get constraint slacks for the resident solution. */
     void get_row_slacks(std::vector<double> &slack, int begin,

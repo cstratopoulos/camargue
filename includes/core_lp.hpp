@@ -89,7 +89,7 @@ public:
     void add_edges(const std::vector<Graph::Edge> &add_batch);
 
     const Sep::ExternalCuts &external_cuts() const
-        { return ext_cuts; } //<! Const reference to the external cut reps.
+        { return ext_cuts; } //!< Const reference to the external cut reps.
 
     friend class CMR::Solver;
 

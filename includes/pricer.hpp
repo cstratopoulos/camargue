@@ -63,16 +63,16 @@ private:
 
     const int gen_max; //!< The max number of edges to generate at a time.
     
-    std::vector<int> gen_elist; //<! Raw node-node list of generated edges.
-    std::vector<int> gen_elen;  //<! Unused dummy parameter to pass.
+    std::vector<int> gen_elist; //!< Raw node-node list of generated edges.
+    std::vector<int> gen_elen;  //!< Unused dummy parameter to pass.
 
     std::unique_ptr<LP::DualGroup<double>> reg_duals;
     std::unique_ptr<LP::DualGroup<util::Fixed64>> ex_duals;
 
-    CCtsp_edgegenerator eg_inside; //<! Concorde 50-nearest edge generator.
-    CCtsp_edgegenerator eg_full; //<! Concorde complete graph edge generator.
+    CCtsp_edgegenerator eg_inside; //!< Concorde 50-nearest edge generator.
+    CCtsp_edgegenerator eg_full; //!< Concorde complete graph edge generator.
 
-    util::EdgeHash edge_hash; //<! Hash table for tracking generated edges.
+    util::EdgeHash edge_hash; //!< Hash table for tracking generated edges.
 };
 
 //////////////////// TEMPLATE METHOD IMPLEMENTATIONS //////////////////////////

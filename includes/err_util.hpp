@@ -50,7 +50,7 @@ public:
 
     ScopeGuard() = delete; //!< No default constructor.
     ScopeGuard(const ScopeGuard&) = delete; //!< No copy constructor.
-    ScopeGuard& operator=(const ScopeGuard&) = delete; //<! No copy assign.
+    ScopeGuard& operator=(const ScopeGuard&) = delete; //!< No copy assign.
 
     /// Move constructor. Moved from ScopeGuard \p rhs is dismissed.
     ScopeGuard(ScopeGuard&& rhs) :

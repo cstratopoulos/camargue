@@ -68,14 +68,14 @@ public:
     friend class ExternalCuts;
     
 private:
-    char sense; //<! The inequality sense of the cut.
-    double rhs; //<! The righthand-side of the cut.
+    char sense; //!< The inequality sense of the cut.
+    double rhs; //!< The righthand-side of the cut.
     
-    std::vector<Clique::Ptr> cliques; //<! The cliques comprising the cut.
-    std::vector<Tooth::Ptr> teeth; //<! The teeth comprising the cut.
+    std::vector<Clique::Ptr> cliques; //!< The cliques comprising the cut.
+    std::vector<Tooth::Ptr> teeth; //!< The teeth comprising the cut.
 
-    CliqueBank *source_bank; //<! The CliqueBank for dereferencing the cliques.
-    ToothBank *source_toothbank; //<! The ToothBank for the teeth.
+    CliqueBank *source_bank; //!< The CliqueBank for dereferencing the cliques.
+    ToothBank *source_toothbank; //!< The ToothBank for the teeth.
 };
 
 inline std::ostream &operator<<(std::ostream &os, HyperGraph::Type t)
@@ -147,7 +147,7 @@ private:
     CliqueBank clique_bank; //!< Bank for adding and dispensing cliques.
     ToothBank tooth_bank; //!< Bank for adding and dispensing teeth.
 
-    std::vector<HyperGraph> cuts; //<! List of the cuts in the LP::Relaxation.
+    std::vector<HyperGraph> cuts; //!< List of the cuts in the LP::Relaxation.
 };
 
 //////////////////// TEMPLATE METHOD IMPLEMENTATIONS //////////////////////////

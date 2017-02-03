@@ -34,8 +34,8 @@ public:
 
 private:
 
-    void split_prob(int edge); //<! Add two child subproblems to the queue.
-    void enact_top(); //<! Adjust the lp_relax based on the top node Status.
+    void split_prob(int edge); //!< Add two child subproblems to the queue.
+    void enact_top(); //!< Adjust the lp_relax based on the top node Status.
     
     LP::Relaxation &lp_relax;
     const std::vector<Graph::Edge> &core_edges;
@@ -46,8 +46,8 @@ private:
     const std::function<void(LP::Relaxation&, int, double)> contra_enforce;
     const std::function<void(LP::Relaxation&, int, double)> contra_undo;
     
-    std::stack<Problem> subprobs; //<! The problems to be considered.
-    static Problem solved_prob;
+    std::stack<Problem> subprobs; //!< The problems to be considered.
+    static Problem solved_prob; //!< A dummy value for a successful search.
 };
 
 /// Enforce a Contra branch on an edge by fixing bounds.

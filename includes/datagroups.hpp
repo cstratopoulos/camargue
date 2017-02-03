@@ -33,7 +33,7 @@ namespace Data {
  */
 class Instance {
 public:
-    Instance() noexcept; //<! Default construct an empty instance.
+    Instance() noexcept; //!< Default construct an empty instance.
 
     /// Construct an Instance from a TSPLIB file with a random seed.
     Instance(const std::string &fname, const int seed);
@@ -44,10 +44,10 @@ public:
     Instance(Instance &&I) noexcept; //!< Move constructor.
     Instance &operator=(Instance &&I) noexcept; //!< Move assign.
   
-    Instance(const Instance &I) = delete; //<! Deleted copy constructor.
-    Instance &operator=(const Instance &I) = delete; //<! Deleted copy assign.
+    Instance(const Instance &I) = delete; //!< Deleted copy constructor.
+    Instance &operator=(const Instance &I) = delete; //!< Deleted copy assign.
 
-    ~Instance(); //<! Destructor, freeing the Concorde handle. 
+    ~Instance(); //!< Destructor, freeing the Concorde handle. 
 
   
     /// Access the raw pointer to the data, for use by Concorde routines.
@@ -61,14 +61,14 @@ public:
     const std::function<double(int, int)> edgelen_func() const
         { return [this](int e0, int e1){ return edgelen(e0, e1); }; }
 
-    int node_count() const { return nodecount; } //<! Number of nodes.
-    int seed() const { return random_seed; } //<! Random seed used.
+    int node_count() const { return nodecount; } //!< Number of nodes.
+    int seed() const { return random_seed; } //!< Random seed used.
 
     /// The TSPLIB instance name or the random problem dimensions.
     const std::string &problem_name() const { return pname; }
   
 private:
-    CCdatagroup dat; //<! The Concorde data structure being managed.
+    CCdatagroup dat; //!< The Concorde data structure being managed.
 
     int nodecount;
     int random_seed;
@@ -87,7 +87,7 @@ struct GraphGroup {
     /// Generate edges from an Instance and create the associated Coregraph.
     GraphGroup(const Instance &inst);
 
-    Graph::CoreGraph core_graph; //<! The Edge list and AdjList.
+    Graph::CoreGraph core_graph; //!< The Edge list and AdjList.
     
     std::vector<int> island; //!< Stores components from a dfs of m_graph.
     std::vector<int> delta; //!< Stores edges in delta of some node set.
