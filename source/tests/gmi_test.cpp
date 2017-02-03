@@ -60,7 +60,7 @@ SCENARIO ("Generating safe Gomory cuts",
                 Solver solver("problems/" + prob + ".tsp",
                                    //"test_data/tours/" + prob + ".sol",
                                    999, prefs);
-                LP::PivType piv = solver.cutting_loop(false);
+                LP::PivType piv = solver.cutting_loop(false, true);
 
                 if (piv == LP::PivType::Frac) {
                     LP::CoreLP &core =

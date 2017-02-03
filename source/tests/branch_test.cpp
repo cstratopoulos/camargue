@@ -77,7 +77,7 @@ SCENARIO ("Instating a Brancher and getting problems",
                 Solver solver("problems/" + prob + ".tsp",
                               //prob + ".sol",
                               99, prefs);
-                LP::PivType piv = solver.cutting_loop(false);
+                LP::PivType piv = solver.cutting_loop(false, true);
 
                 if (piv == LP::PivType::Frac) {
                     LP::CoreLP &core =
@@ -151,7 +151,7 @@ SCENARIO ("Computing branching edges",
                 Solver solver("problems/" + prob + ".tsp",
                                    //prob + ".sol",
                                    99, prefs);
-                LP::PivType piv = solver.cutting_loop(false);
+                LP::PivType piv = solver.cutting_loop(false, true);
 
                 if (piv == LP::PivType::Frac) {
                     LP::CoreLP &core =

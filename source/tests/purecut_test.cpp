@@ -49,7 +49,7 @@ SCENARIO ("Running the Solver cutting_loop with no pricing.",
                                    //"test_data/tours/" + prob + ".sol",
                                    99, prefs);
 
-                REQUIRE_NOTHROW(solver.cutting_loop(false));
+                REQUIRE_NOTHROW(solver.cutting_loop(false, true));
             }
         }
     }
@@ -63,7 +63,7 @@ SCENARIO ("Running random 1k solver cutting_loop",
                 CMR::OutPrefs prefs;
                 CMR::Solver solver(0, 1000, 1000000, prefs);
 
-                REQUIRE_NOTHROW(solver.cutting_loop(false));
+                REQUIRE_NOTHROW(solver.cutting_loop(false, true));
             }
         }
     }
