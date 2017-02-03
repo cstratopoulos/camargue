@@ -385,7 +385,9 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch)
     try {
         tour_base.best_tour_edges.resize(new_ecount, 0.0);
         lp_edges.resize(new_ecount, 0.0);
-        rebuild_basis();
+        copy_start(tour_base.best_tour_edges);
+        factor_basis();
+        //rebuild_basis();
     } CMR_CATCH_PRINT_THROW("rebuilding tour basis", err)
 }
 
@@ -406,8 +408,7 @@ void CoreLP::purge_gmi()
 
     del_set_rows(delrows);
     ext_cuts.del_cuts(delrows);
-    rebuild_basis();
-    //factor_basis();
+    factor_basis();
 }
 
 }
