@@ -67,10 +67,20 @@ Relaxation::solver_impl::solver_impl() try
     if (rval) 
         throw cpx_err(rval, "CPXopenCPLEX");
 
+    // this scope guard should prevent memory leaks in the event of an error
+    // before the actual problem is initialized. 
     auto cleanup = util::make_guard([&rval, this] {
         if (rval)
             CPXcloseCPLEX(&env);
     });
+
+    rval = CPXsetintparam(env, CPX_PARAM_THREADS, 1);
+    if (rval)
+        throw cpx_err(rval, "CPXsetintparam thread count");
+
+    rval = CPXsetintparam(env, CPX_PARAM_PERIND, CPX_OFF);
+    if (rval)
+        throw cpx_err(rval, "CPXsetintparam perturbation");
 
     rval = CPXsetintparam(env, CPX_PARAM_AGGIND, CPX_OFF);
     if (rval)
@@ -294,6 +304,12 @@ double Relaxation::get_coeff(int row, int col) const
     if (rval)
         throw cpx_err(rval, "CPXgetcoef");
     return result;
+}
+
+void Relaxation::get_rhs(vector<double> &rhs, int begin, int end) const
+{
+    set_info_vec(CPXgetrhs, "CPXgetrhs", simpl_p->env, simpl_p->lp, rhs,
+                 begin, end);
 }
 
 void Relaxation::get_col(const int col, vector<int> &cmatind,
