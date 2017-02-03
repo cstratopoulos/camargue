@@ -143,7 +143,7 @@ void Solver::report_piv(PivType piv, int round, int num_pruned, bool full_opt)
 
 PivType Solver::cutting_loop(bool do_price)
 {
-    runtime_error err("Problem in Solver::cutting_loop.");
+    runtime_error err("Problem in Solver::cutting_loop");
 
     if (do_price)
         try {
@@ -259,7 +259,7 @@ PivType Solver::cutting_loop(bool do_price)
 
 PivType Solver::abc(bool do_price)
 {
-    runtime_error err("Problem in Solver::abc.");
+    runtime_error err("Problem in Solver::abc");
 
     PivType piv = cutting_loop(do_price);
     
@@ -287,8 +287,12 @@ PivType Solver::abc(bool do_price)
 
     while (!brancher->solved(prob)) {
         cout << "\tBRANCH TASK: " << prob << "\n";
-        piv = cutting_loop(do_price);
-
+        
+        try {
+            core_lp.factor_basis();
+            piv = cutting_loop(do_price);
+        } CMR_CATCH_PRINT_THROW("cutting on branch prob", err);
+        
         cout << "\tTASK STATUS: ";
         if (piv == PivType::FathomedTour) {
             brancher->pop_problem(ProbStat::Pruned);
@@ -299,11 +303,11 @@ PivType Solver::abc(bool do_price)
             throw runtime_error("Invalid piv stat for further branching.");
         }
         
-        cout << "Calling next prob...." << endl;
+        cout << "\tCalling next prob....\n";
         prob = brancher->next_prob();
     }
 
-    cout << "\tABC search complete.\n";
+    cout << "\n\t\tABC search complete.\n\n";
     
     return piv;    
 }

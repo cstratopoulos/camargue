@@ -68,7 +68,11 @@ void Brancher::pop_problem(const Problem::Status stat)
         throw logic_error("Tried to pop unseen problem.");
 
     subprobs.top().status = stat;
-    try { enact_top(); } CMR_CATCH_PRINT_THROW("enacting", err);
+    
+    try {
+        enact_top();
+    } CMR_CATCH_PRINT_THROW("enacting problem", err);
+    
     subprobs.pop();    
 
     if (stat == Pstat::Seen)
@@ -131,13 +135,13 @@ void Brancher::enact_top()
 
     if (top.type == Ptype::Affirm) {        
         if (top.status == Pstat::Unseen) { // Clamp the edge to affirm tour.
-            cout << "Clamping " << top << endl;
+            cout << "\tClamping " << top << endl;
             if (tour_entry == 1)
                 lp_relax.tighten_bound(ind, 'L', 1);
             else if (tour_entry == 0)
                 lp_relax.tighten_bound(ind, 'U', 0);
         } else { //Undo the clamp.
-            cout << "Unclamping " << top << endl;
+            cout << "\tUnclamping " << top << endl;
             if (tour_entry == 1)
                 lp_relax.tighten_bound(ind, 'L', 0);
             else if (tour_entry == 0)
@@ -145,10 +149,10 @@ void Brancher::enact_top()
         }
     } else {
         if (top.status == Pstat::Unseen) {
-            cout << "Enforcing " << top << endl;
+            cout << "\tEnforcing " << top << endl;
             contra_enforce(lp_relax, ind, tour_entry);
         } else {
-            cout << "Unenforcing " << top << endl;
+            cout << "\tUnenforcing " << top << endl;
             contra_undo(lp_relax, ind, tour_entry);
         }
     }
