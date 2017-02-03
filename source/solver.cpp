@@ -184,7 +184,6 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover)
                 try {
                     if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full) {
                         core_lp.rebuild_basis();
-                        core_lp.pivot_back();
                         continue;
                     } else
                         break;
@@ -200,7 +199,6 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover)
                 try {
                     edge_pricer->gen_edges(piv);
                     core_lp.rebuild_basis();
-                    core_lp.pivot_back();
                 } CMR_CATCH_PRINT_THROW("adding edges to core", err);
             }
             
@@ -570,7 +568,7 @@ PivType Solver::frac_recover()
     try {
         core_lp.copy_start(lp_edges);
         core_lp.factor_basis();
-        core_lp.handle_aug(); //instates the tour in lp_edges
+        core_lp.handle_aug(); //instates the tour stored in lp_edges
     } CMR_CATCH_PRINT_THROW("rebuilding/augmenting for x-tour", err);
     
     return LP::PivType::Tour;

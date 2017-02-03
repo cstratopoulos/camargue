@@ -34,20 +34,15 @@ public:
     /// Embed cutting_loop in an augment and branch and cut search.
     LP::PivType abc(bool do_price);
 
-    const Data::Instance &inst_info() const
-        { return tsp_instance; } /// Get the Instance being used.
+    const Data::Instance &inst_info() const { return tsp_instance; } 
     
-    const Data::GraphGroup &graph_info() const
-        { return graph_data; } /// Get the GraphGroup being used.
+    const Data::GraphGroup &graph_info() const { return graph_data; } 
 
-    const Data::BestGroup &best_info() const
-        { return best_data; } /// Get the BestGroup of the best tour found.
+    const Data::BestGroup &best_info() const{ return best_data; }
 
-    const LP::TourBasis &tour_basis() const
-        { return core_lp.tour_base; } /// Get the basis of the best tour found.
+    const LP::TourBasis &tour_basis() const { return core_lp.tour_base; }
 
-    const LP::CoreLP &get_core_lp() const
-        { return core_lp; } /// Get the active CoreLP relaxation.
+    const LP::CoreLP &get_core_lp() const { return core_lp; }
 
     /// Which separation routines should be called.
     struct CutSel {
@@ -57,9 +52,7 @@ public:
         bool simpleDP = true; //!< Primal simple DP separation.
         bool safeGMI = false; //!< Primal safe Gomory cuts.
         bool connect = true; //!< Standard connect cut SECs.
-    };
-
-    CutSel cut_sel;
+    } cut_sel;
 
 private:
     void report_piv(CMR::LP::PivType piv, int round, int num_pruned,
