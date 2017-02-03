@@ -414,7 +414,8 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
                                num_pruned)) {
                 if (piv == PivType::Tour || piv == PivType::FathomedTour)
                     return piv;
-                else
+
+                if (total_delta >= Eps::Zero)
                     return cut_and_piv(round, num_pruned,  do_price);
             }
         } CMR_CATCH_PRINT_THROW("calling simpleDP sep", err);
