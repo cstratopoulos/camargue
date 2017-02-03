@@ -37,10 +37,11 @@ public:
 
     /// Enumeration for the types of HyperGraph inequalities.
     enum Type {
-        Domino = 0, //<! A domino parity inequality.
-        Subtour = 1, //<! An SEC.
-        Comb = 2, //<! A comb-like constraint.
-        Non = 3, //<! Non HyperGraph cut: Gomory cut or branching constraint.
+        Domino = 0, //!< A domino parity inequality.
+        Subtour = 1, //!< An SEC.
+        Comb = 2, //!< A comb-like constraint.
+        Non = 3, //!< Non HyperGraph cut: Gomory cut or branching constraint.
+        Branch = 3, //!< A constraint to enforce branching. 
     };
 
     Type cut_type() const; //!< Find the Type of this cut.
