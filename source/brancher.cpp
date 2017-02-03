@@ -4,12 +4,13 @@
 
 #include <stdexcept>
 
+using std::function;
+
 using std::vector;
 
 using std::cout;
 using std::cerr;
 using std::endl;
-using std::ostream;
 
 using std::runtime_error;
 using std::logic_error;
@@ -23,6 +24,8 @@ using Edge = Graph::Edge;
 using Ptype = Problem::Type;
 using Pstat = Problem::Status;
 
+using Strat = ContraStrat;
+
 Problem Brancher::solved_prob(Ptype::Root, Pstat::Pruned, -1);
 
 Brancher::Brancher(LP::Relaxation &lp_rel,
@@ -30,7 +33,7 @@ Brancher::Brancher(LP::Relaxation &lp_rel,
                    const double &tourlen, const ContraStrat strat) try
     : lp_relax(lp_rel), core_edges(edges), tour_base(tbase), tour_len(tourlen),
       contra_strategy(strat),
-      contra_enforce(contra_fix_enforce), contra_undo(contra_fix_undo)
+      contra_enforce(enforcer(strat)), contra_undo(undoer(strat))
 {
     subprobs.emplace(Ptype::Root, Pstat::Seen, -1);
 } catch (const exception &e) {
@@ -197,44 +200,24 @@ void contra_fix_undo(LP::Relaxation &rel, const int branch_ind,
     return;
 }
 
-ostream &operator<<(ostream &os, Ptype type)
+function<void(LP::Relaxation&, int, double)> enforcer(Strat strat)
 {
-    switch (type) {
-    case Ptype::Root:
-        os << "Root";
-        break;
-    case Ptype::Affirm:
-        os << "Affirm";
-        break;
-    case Ptype::Contra:
-        os << "Contra";
-        break;
+    switch (strat) {
+    case Strat::Fix:
+        return contra_fix_enforce;
+    default:
+        throw logic_error("Tried to get unimplemented enforcer.");
     }
-
-    return os;
 }
 
-ostream &operator<<(ostream &os, Pstat stat)
+function<void(LP::Relaxation&, int, double)> undoer(Strat strat)
 {
-    switch (stat) {
-    case Pstat::Pruned:
-        os << "Pruned";
-        break;
-    case Pstat::Unseen:
-        os << "Unseen";
-        break;
-    case Pstat::Seen:
-        os << "Seen";
-        break;
+    switch (strat) {
+    case Strat::Fix:
+        return contra_fix_undo;
+    default:
+        throw logic_error("Tried to get unimplemented undoer.");
     }
-    return os;
-}
-
-ostream &operator<<(ostream &os, const Problem &prob)
-{
-    os << prob.status << " " << prob.type << " branch on edge "
-       << prob.edge_ind;
-    return os;
 }
 
 }
