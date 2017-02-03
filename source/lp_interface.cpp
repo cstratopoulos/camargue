@@ -652,26 +652,6 @@ vector<double> Relaxation::redcosts(int begin, int end) const
                     end);
 }
 
-void Relaxation::dual_strong_branch(const vector<int> &indices,
-                                    vector<double> &downobj,
-                                    vector<double> &upobj,
-                                    int itlim, double upperbound)
-{
-    int rval = 0;
-
-    CPXdblParamGuard obj_lim(CPX_PARAM_OBJULIM, upperbound, simpl_p->env,
-                             "dual_strong_branch obj ulim");
-
-    CPXintParamGuard per_ind(CPX_PARAM_PERIND, 0, simpl_p->env,
-                             "dual_strong_branch perturb");
-
-
-    rval = CPXstrongbranch(simpl_p->env, simpl_p->lp, &indices[0],
-                           indices.size(), &downobj[0], &upobj[0], itlim);
-    if (rval)
-        throw cpx_err(rval, "CPXstrongbranch");
-}
-
 void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                                       const vector<int> &colstat,
                                       const vector<int> &rowstat,
