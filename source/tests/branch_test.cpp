@@ -61,6 +61,7 @@ SCENARIO ("Running a Solver with contra Fix Brancher",
 SCENARIO ("Instating a Brancher and getting problems",
           "[ABC][Brancher]") {
     vector<string> probs{
+        "dantzig42",
         "pr152",
         "a280",
         "lin318",
@@ -77,7 +78,7 @@ SCENARIO ("Instating a Brancher and getting problems",
                 Solver solver("problems/" + prob + ".tsp",
                               //prob + ".sol",
                               99, prefs);
-                LP::PivType piv = solver.cutting_loop(false, true);
+                LP::PivType piv = solver.cutting_loop(solver.inst_info().node_count() < 100, true);
 
                 if (piv == LP::PivType::Frac) {
                     LP::CoreLP &core =
