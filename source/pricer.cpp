@@ -267,9 +267,6 @@ f64 Pricer::exact_lb()
 {
     runtime_error err("Problem in Pricer::exact_lb");
 
-    cout << "\tObj val: " << core_lp.get_objval() << ", dual feas: "
-         << core_lp.dual_feas() << ", getting duals....\n";
-
     try {
         ex_duals = util::make_unique<LP::DualGroup<f64>>(true, core_lp,
                                                          ext_cuts);
@@ -279,48 +276,47 @@ f64 Pricer::exact_lb()
     vector<f64> &cut_pi = ex_duals->cut_pi;
 
 
-    cout << "\tnode_pi size: " << node_pi.size() << "\n";
-    cout << "\tcut_pi size: " << cut_pi.size() << "\n";
-
     const vector<Sep::HyperGraph> &cuts = ext_cuts.get_cuts();
 
     f64 node_sum = 0.0;
     f64 cut_sum = 0.0;
 
-    for (const f64 &pi : ex_duals->node_pi) {
+    for (const f64 &pi : node_pi) {
         util::add_mult(node_sum, pi, 2);
     }
-    cout << "\tnode pi sum:\t" << node_sum << "\n";
-    
+
     for (int i = 0; i < cuts.size(); ++i) {
         const Sep::HyperGraph &H = cuts[i];
         if (H.cut_type() == CutType::Non)
             throw logic_error("Tried to get exact_lb with non cut present.");
 
-        cout << "\tAdding mult " << cut_pi[i] << ", " << H.get_rhs() << "\n";
         util::add_mult(cut_sum, cut_pi[i], H.get_rhs());
     }
 
-    cout << "\tcut pi sum:\t" << cut_sum << "\n";
+    vector<PrEdge<f64>> target_edges;
 
-    vector<PrEdge<f64>> graph_edges;
+    // for (int i = 0; i < inst.node_count(); ++i)
+    //     for (int j = i + 1; j < inst.node_count(); ++j)
+    //         target_edges.emplace_back(i, j);
 
     for (const Graph::Edge &e : graph_group.core_graph.get_edges())
-        graph_edges.emplace_back(e.end[0], e.end[1]);
+        target_edges.emplace_back(e.end[0], e.end[1]);
 
-    price_edges(graph_edges, ex_duals);
+    price_edges(target_edges, ex_duals);
 
     f64 rc_sum = 0.0;
     
-    for (const PrEdge<f64> &e : graph_edges)
+    for (const PrEdge<f64> &e : target_edges)
         if (e.redcost < 0.0)
             rc_sum -= e.redcost;
 
-    cout << "\tred cost sum:\t" << rc_sum << "\n";
-
     f64 bound = node_sum + cut_sum - rc_sum;
 
-    cout << "\tFinal bound:\t" << bound << "\n";    
+    cout << "\tnode sum: " << node_sum << "\n\tcut sum: "
+         << cut_sum << "\n\trc sum: " << rc_sum
+         << "\n\tfinal: " << bound << "\n";
+    
+
     return bound;
 
     // vector<PrEdge<f64>> gen_edges;

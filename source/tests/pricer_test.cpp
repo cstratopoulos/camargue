@@ -29,13 +29,58 @@ using std::string;
 using std::to_string;
 using std::cout;
 
-SCENARIO ("Computing exact lower bounds",
-          "[Pricer][Price][exact_lb][Fixed64]") {
+SCENARIO ("Optimizing and computing lower bounds",
+          "[Pricer][Price][exact_lb][Fixed64][primal_opt]") {
     using namespace CMR;
     vector<string> probs {
-        "ulysses16",
-        //"bayg29",
-        // "dantzig42",
+        "lin318",
+        "d493",
+        "pr1002",
+        };
+
+    for (string &prob : probs) {
+        GIVEN ("The TSP instance " + prob) {
+            WHEN ("The solver terminates") {
+                THEN ("We can optimize and compare with the exact lb") {
+                    int seed = 99;
+                    string probfile = "problems/" + prob + ".tsp";
+
+                    OutPrefs outprefs;
+                    Solver solver(probfile, seed, outprefs);
+
+                    solver.cutting_loop(true, true);
+
+                    LP::CoreLP &core = const_cast<LP::CoreLP &>(solver.
+                                                                get_core_lp());
+                    Data::GraphGroup &g_dat =
+                    const_cast<Data::GraphGroup &>(solver.graph_info());
+
+                    core.primal_opt();
+                    auto objval = core.get_objval();
+
+                    Price::Pricer pricer(core, solver.inst_info(), g_dat);
+
+                    auto lb = pricer.exact_lb();
+                    auto d_lb = lb.to_d();
+                    
+                    INFO("Primal vs dual lb\n\t"
+                         << objval << "\n\t" << d_lb << "\n\t Ratio\n"
+                         << (d_lb / objval));
+
+                    REQUIRE(d_lb <= objval);
+                    CHECK(d_lb == Approx(objval));
+                }
+            }
+        }
+    }    
+}
+
+SCENARIO ("Computing exact lower bounds",
+          "[Pricer][Price][exact_lb][Fixed64][DualGroup]") {
+    using namespace CMR;
+    vector<string> probs {
+        "bayg29",
+        "dantzig42",
         // "pr76",
         // "lin105",
         // "a280",
@@ -61,8 +106,12 @@ SCENARIO ("Computing exact lower bounds",
                 const_cast<Data::GraphGroup &>(solver.graph_info());
 
                 Price::Pricer pricer(core, solver.inst_info(), g_dat);
+                LP::DualGroup<double> dg(false, core, core.external_cuts());
+                for (double &d : dg.node_pi)
+                    cout << "\tNode pi " << d << "\n";
                 THEN ("We can compute a valid lower bound") {
                     pricer.exact_lb();
+                    
                 }
             }
         }
