@@ -1,7 +1,6 @@
 #ifndef CMR_GRAPH_H
 #define CMR_GRAPH_H
 
-#include "price_util.hpp"
 #include "util.hpp"
 
 #include <array>
