@@ -6,11 +6,15 @@
 
 using std::vector;
 
+using std::ostream;
 using std::cout;
 using std::cerr;
 
 namespace CMR {
 namespace ABC {
+
+using Pstat = Problem::Status;
+using Ptype = Problem::Type;
 
 /**
  * For some estimation metric, evaluate a priority score for branching on a 
@@ -172,6 +176,46 @@ void dive_coeffs(const double upper_bound,
         result *= 10;
 
     zero_coeff = result;
+}
+
+ostream &operator<<(ostream &os, Ptype type)
+{
+    switch (type) {
+    case Ptype::Root:
+        os << "Root";
+        break;
+    case Ptype::Affirm:
+        os << "Affirm";
+        break;
+    case Ptype::Contra:
+        os << "Contra";
+        break;
+    }
+
+    return os;
+}
+
+ostream &operator<<(ostream &os, Pstat stat)
+{
+    switch (stat) {
+    case Pstat::Pruned:
+        os << "Pruned";
+        break;
+    case Pstat::Unseen:
+        os << "Unseen";
+        break;
+    case Pstat::Seen:
+        os << "Seen";
+        break;
+    }
+    return os;
+}
+
+ostream &operator<<(ostream &os, const Problem &prob)
+{
+    os << prob.status << " " << prob.type << " branch on edge "
+       << prob.edge_ind;
+    return os;
 }
 
 /** 

@@ -17,31 +17,67 @@ namespace CMR {
 /// Augment-Branch-Cut solution.
 namespace ABC {
 
-/// Multiplicity for ranking Driebek penalties.
-constexpr double InitialMult = 10;
 
-/// Multiplicity for strong branch ranking.
-constexpr double StrongMult = 100;
+constexpr double InitialMult = 10; //!< Scale factor for Driebeek penalties.
 
-/// Number of candidates to which we apply 1st round strong branching.
-constexpr int SB1Cands = 5;
+constexpr double StrongMult = 100; //!< Scale factor for strong branch scores.
 
-/// Number of candidates to which we apply 2nd round strong branching.
-constexpr int SB2Cands = 2;
+constexpr int SB1Cands = 5; //!< Number of 1st round strong branch candidates.
 
+constexpr int SB2Cands = 2; //!< Number of 2nd round strong branch candidates.
 
-/// Iteration limit for first round of strong branching.
-constexpr int SB1Lim = 100;
+constexpr int SB1Lim = 100; //!< 1st round strong branch iteration limit.
 
-/// Iteration limit for second round of strong branching. 
-constexpr int SB2Lim = 500;
+constexpr int SB2Lim = 500; //!< 2nd round strong branch iteration limit.
 
 
 constexpr int one_factor = 5; //<! Magnitude factor for fixing var to one.
 constexpr int zero_factor = 10; //<! Magnitude factor for fixing var to zero.
 
-/// Rank a branching variable in terms of its down and up estimates.
-double var_score(double mult, double v0, double v1);
+/// A simple structure for recording the status of branching subproblems.
+struct Problem {
+    enum class Type {
+        Root, //<! The root lp.
+        Affirm, //<! Enforcing agreement with current tour.
+        Contra //<! Enforcing departure from current tour.
+    };
+
+    enum Status {
+        Unseen, //<! Unexamined subproblem.
+        Seen, //<! Examinded subproblem.
+        Pruned //<! Examined and pruned. 
+    };
+    
+    Problem() = default;
+    
+    Problem(Type ptype, int index)
+        : type(ptype), status(Status::Unseen), edge_ind(index) {}
+    
+    Problem(Type ptype, Status pstat, int index)
+        : type(ptype), status(pstat), edge_ind(index) {}
+
+    bool operator==(const Problem &rhs) const
+        {
+            return (type == rhs.type &&
+                    status == rhs.status &&
+                    edge_ind == rhs.edge_ind);
+        }
+
+    Type type;
+    Status status;
+    int edge_ind;
+};
+
+std::ostream &operator<<(std::ostream &os, Problem::Type type);
+std::ostream &operator<<(std::ostream &os, Problem::Status stat);
+std::ostream &operator<<(std::ostream &os, const Problem &prob);
+
+/// Strategies for enforcing Problem::Type::Contra branches.
+enum class ContraStrat {
+    Fix, /// Change the bounds on an edge in the Relaxation.
+    Dive, /// Perturb objective function coefficients.
+    Naive, /// Add a single branch constraint to the Relaxation.
+};
 
 
 /// A POD struct for ranking branching edges.
@@ -57,6 +93,9 @@ struct ScoreTuple {
     double up_est; //<! The estimate for clamping to one.
     double score; //<! The score composed from down_est and up_est.
 };
+
+/// Rank a branching variable in terms of its down and up estimates.
+double var_score(double mult, double v0, double v1);
 
 /// Get a list of candidate branch edges using the J\"unger et al. metric.
 std::vector<int> length_weighted_cands(const std::vector<Graph::Edge> &edges,
