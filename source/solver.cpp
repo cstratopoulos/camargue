@@ -141,7 +141,7 @@ void Solver::report_piv(PivType piv, int round, int num_pruned, bool full_opt)
     cout << endl;
 }
 
-PivType Solver::cutting_loop(bool do_price)
+PivType Solver::cutting_loop(bool do_price, bool try_recover)
 {
     runtime_error err("Problem in Solver::cutting_loop");
 
@@ -211,17 +211,18 @@ PivType Solver::cutting_loop(bool do_price)
             continue;
         }
 
-        try {
-            int prev_rows = core_lp.num_rows();
-            piv = frac_recover();
-            num_pruned = prev_rows - core_lp.num_rows();
-            if (piv == PivType::Tour) {
-                report_piv(piv, round, num_pruned, false);
-                TG = Graph::TourGraph(tour_edges, edges, perm);
+        if (try_recover)
+            try {
+                int prev_rows = core_lp.num_rows();
+                piv = frac_recover();
+                num_pruned = prev_rows - core_lp.num_rows();
+                if (piv == PivType::Tour) {
+                    report_piv(piv, round, num_pruned, false);
+                    TG = Graph::TourGraph(tour_edges, edges, perm);
 
-                continue;
-            }
-        } CMR_CATCH_PRINT_THROW("trying to recover from frac tour", err);
+                    continue;
+                }
+            } CMR_CATCH_PRINT_THROW("trying to recover from frac tour", err);
 
         report_piv(piv, round,  0, false);
         cout << "\tNo cuts found.\n";
@@ -261,7 +262,7 @@ PivType Solver::abc(bool do_price)
 {
     runtime_error err("Problem in Solver::abc");
 
-    PivType piv = cutting_loop(do_price);
+    PivType piv = cutting_loop(do_price, true);
     
     if (piv != PivType::Frac) {
         if (piv == PivType::FathomedTour)
@@ -290,7 +291,7 @@ PivType Solver::abc(bool do_price)
         
         try {
             core_lp.factor_basis();
-            piv = cutting_loop(do_price);
+            piv = cutting_loop(do_price, false);
         } CMR_CATCH_PRINT_THROW("cutting on branch prob", err);
         
         cout << "\tTASK STATUS: ";

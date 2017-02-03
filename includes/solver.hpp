@@ -29,7 +29,7 @@ public:
            const OutPrefs outprefs);
 
     /// Run a primal cutting plane loop of pivoting and cut generation.
-    LP::PivType cutting_loop(bool do_price);
+    LP::PivType cutting_loop(bool do_price, bool try_recover);
 
     /// Embed cutting_loop in an augment and branch and cut search.
     LP::PivType abc(bool do_price);
