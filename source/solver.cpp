@@ -544,20 +544,13 @@ PivType Solver::frac_recover()
         } CMR_CATCH_PRINT_THROW("adding edges not in tour", err);
         int new_rowcount = core_lp.num_rows();
         cout << "\tRecover tour contains " << new_edges.size() << " new edges, "
-             << (orig_rowcount - new_rowcount) << " gmi cuts pruned.\n";
+             << (orig_rowcount - new_rowcount) << " gmi cuts purged.\n";
     }
 
-    vector<double> &tbase_edges = core_lp.tour_base.best_tour_edges;
     vector<double> &lp_edges = core_lp.lp_edges;
 
-    if (lp_edges.size() != tbase_edges.size())
-        throw logic_error("LP/tourbase size mismatch");
-
-    for (int i = 0; i < lp_edges.size(); ++i) {
+    for (int i = 0; i < lp_edges.size(); ++i)
         lp_edges[i] = 0.0;
-        tbase_edges[i] = 0.0;
-    }
-
 
     //prepping for basis rebuild/handle aug
     for (int i = 0; i < ncount; ++i) {
@@ -568,7 +561,6 @@ PivType Solver::frac_recover()
                  << " still not in graph\n";
             throw err;
         }
-        tbase_edges[ind] = 1.0;
         lp_edges[ind] = 1.0;
     }
 
@@ -576,7 +568,8 @@ PivType Solver::frac_recover()
     graph_data.island = std::move(cyc);
 
     try {
-        core_lp.rebuild_basis(); //rebuilds from the tour in tbase_edges
+        core_lp.copy_start(lp_edges);
+        core_lp.factor_basis();
         core_lp.handle_aug(); //instates the tour in lp_edges
     } CMR_CATCH_PRINT_THROW("rebuilding/augmenting for x-tour", err);
     
