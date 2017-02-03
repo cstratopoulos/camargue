@@ -33,27 +33,28 @@ Sep::SimpleDP::SimpleDP(Data::GraphGroup &graph_dat,
 /////////////////////// SERIAL IMPLEMENTATION //////////////////////////////////
 bool Sep::SimpleDP::find_cuts()
 {
-  runtime_error err("Problem in SimpleDP::find_cuts.");
 
-  try {
-    candidates.get_light_teeth();
-    candidates.sort_by_root();
-  } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
+    runtime_error err("Problem in SimpleDP::find_cuts.");
 
-  for (int i = 0; i < kpart.num_parts(); ++i) {
-      CutQueue<dominoparity> mini_q(25);
+    try {
+        candidates.get_light_teeth();
+        candidates.sort_by_root();
+    } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
+
+    for (int i = 0; i < kpart.num_parts(); ++i) {
+        CutQueue<dominoparity> mini_q(25);
       
-      try {
-          DPwitness cutgraph(candidates, kpart[i]);      
-          cutgraph.simple_DP_sep(mini_q);
-      } CMR_CATCH_PRINT_THROW("making a mini cutgraph sep call", err);
+        try {
+            DPwitness cutgraph(candidates, kpart[i]);      
+            cutgraph.simple_DP_sep(mini_q);
+        } CMR_CATCH_PRINT_THROW("making a mini cutgraph sep call", err);
 
-      dp_q.splice(mini_q);
-      // if(dp_q.size() >= 8)
-      //     break;
-  }
+        dp_q.splice(mini_q);
+        // if(dp_q.size() >= 8)
+        //     break;
+    }
 
-  return(!dp_q.empty());
+    return(!dp_q.empty());
 }
 
 #else
@@ -97,6 +98,11 @@ bool Sep::SimpleDP::find_cuts()
             // if(dp_q.size() >= 25)
             //     at_capacity = true;
         }
+    }
+
+    if (caught_exception) {
+        cerr << "OMP simple DP sep reported exception.\n";
+        throw err;
     }
 
     return (!dp_q.empty());
