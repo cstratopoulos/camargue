@@ -92,7 +92,6 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         current_eg = &eg_full;
         if (!silent)
             cout << "\tRunning full eg\n";
-        cout << "\n\n";
     } else if (piv_stat == PivType::Tour){
         current_eg = &eg_inside;
         if (!silent)
@@ -175,7 +174,6 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                     vector<Graph::Edge> add_batch = pool_chunk(edge_q);
                     core_lp.add_edges(add_batch);
                 } CMR_CATCH_PRINT_THROW("adding edges for aug tour", err);
-                cout << "\tFound and added edges for aug tour.\n";
                 
                 return ScanStat::Partial;                
             } else if (finished) {

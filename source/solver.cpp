@@ -538,7 +538,7 @@ PivType Solver::frac_recover()
             core_lp.add_edges(new_edges);
         } CMR_CATCH_PRINT_THROW("adding edges not in tour", err);
         int new_rowcount = core_lp.num_rows();
-        cout << "\tRecover tour contains " << new_edges.size() << " edges, "
+        cout << "\tRecover tour contains " << new_edges.size() << " new edges, "
              << (orig_rowcount - new_rowcount) << " gmi cuts pruned.\n";
     }
 
