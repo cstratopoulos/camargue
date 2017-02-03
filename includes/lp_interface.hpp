@@ -69,10 +69,12 @@ public:
 
     double get_coeff(int row, int col) const;
 
-    void get_col(const int col, std::vector<int> &cmatind,
+    void get_rhs(std::vector<double> &rhs, int begin, int end) const;
+
+    void get_col(int col, std::vector<int> &cmatind,
                  std::vector<double> &cmatval) const;
 
-    void get_row(const int row, std::vector<int> &rmatind,
+    void get_row(int row, std::vector<int> &rmatind,
                  std::vector<double> &rmatval) const;
 
     /** Check the feasibility status of a given solution.
@@ -153,10 +155,10 @@ public:
                               int itlim, double upperbound);
 
     /// Tighten the bound on a variable. 
-    void tighten_bound(const int index, const char sense, const double val);
+    void tighten_bound(int index, char sense, double val);
 
     /// Change an objective function coefficient.
-    void change_obj(const int index, const double val);
+    void change_obj(int index, double val);
 
     ///@}
 
@@ -165,14 +167,14 @@ public:
     ///@{
 
     /** Create a new empty row. */
-    void new_row(const char sense, const double rhs);
+    void new_row(char sense, double rhs);
 
     /** Create multiple new empty rows. */
     void new_rows(const std::vector<char> &sense,
                   const std::vector<double> &rhs);
 
     /** Add a constraint row to the model. */
-    void add_cut(const double rhs, const char sense,
+    void add_cut(double rhs, char sense,
                  const std::vector<int> &rmatind,
                  const std::vector<double> &rmatval);
 
@@ -221,7 +223,7 @@ public:
     void dual_opt();
 
     /** Find a primal non-degenerate pivot. */
-    void nondegen_pivot(const double lowlimit);
+    void nondegen_pivot(double lowlimit);
 
     /** Perform exactly one primal simplex pivot. */
     void single_pivot();
@@ -229,7 +231,7 @@ public:
     ///@}
 
 
-    /**@name Safe GMI initializer.. */
+    /**@name Safe GMI initializer. */
     ///@{
     
 #if CMR_HAVE_SAFEGMI
