@@ -157,6 +157,9 @@ PivType CoreLP::primal_pivot()
         
     } CMR_CATCH_PRINT_THROW("pivoting and setting x", err);
 
+    ++num_nd_pivots;
+    sum_it_count += it_count();
+
     bool integral = supp_data.integral;
     bool connected = supp_data.connected;
     PivType result;

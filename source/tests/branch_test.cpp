@@ -143,6 +143,7 @@ SCENARIO ("Computing branching edges",
         "lin318",
         "d493",
         "pr1002",
+        "d2103",
     };
 
     using namespace CMR;
@@ -154,12 +155,16 @@ SCENARIO ("Computing branching edges",
                 Solver solver("problems/" + prob + ".tsp",
                                    //prob + ".sol",
                                    99, prefs);
-                LP::PivType piv = solver.cutting_loop(false, true);
+                int ncount = solver.inst_info().node_count();
+                LP::PivType piv = solver.cutting_loop(ncount < 100, true);
 
                 if (piv == LP::PivType::Frac) {
                     LP::CoreLP &core =
                     const_cast<LP::CoreLP &>(solver.get_core_lp());
                     LP::Relaxation &rel = core;
+
+                    cout << "\nAverage number of pivots per nd pivot: "
+                         << core.avg_itcount() << "\n\n";
 
                     vector<int> md_indices;
                     vector<ABC::ScorePair> downest;

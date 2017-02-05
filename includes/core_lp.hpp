@@ -91,6 +91,9 @@ public:
     const Sep::ExternalCuts &external_cuts() const
         { return ext_cuts; } //!< Const reference to the external cut reps.
 
+    /// Average number of iterations per primal_pivot. 
+    int avg_itcount() const { return sum_it_count / num_nd_pivots; }
+
     friend class CMR::Solver;
 
 private:
@@ -111,7 +114,8 @@ private:
     std::vector<double> lp_edges;
     std::vector<double> feas_stat;
 
-
+    int num_nd_pivots = 0;
+    int sum_it_count = 0;
 };
 
 //////////////////// TEMPLATE METHOD IMPLEMENTATIONS //////////////////////////
