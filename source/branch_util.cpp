@@ -43,8 +43,8 @@ double var_score(double mult, double v0, double v1)
 ScoreTuple::ScoreTuple(int ind, ScorePair down, ScorePair up, double mult,
                        double ub)
     : index(ind), score_priority(std::max(down.first, up.first)),
-      down_est(down.second), up_est(up.second),
-      score(var_score(mult, down_est, up_est))
+      down_est(down), up_est(up),
+      score(var_score(mult, down_est.second, up_est.second))
 {}
 
 bool operator>(ScoreTuple s, ScoreTuple t)

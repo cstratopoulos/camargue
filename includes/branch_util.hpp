@@ -96,9 +96,10 @@ struct ScoreTuple {
 
     /// How valuable is the estimate obtained. Higher is better. 
     int score_priority;
+
+    ScorePair down_est; //!< The estimate for clamping to zero.
+    ScorePair up_est; //!< The estimate for clamping to one.
     
-    double down_est; //!< The estimate for clamping to zero.
-    double up_est; //!< The estimate for clamping to one.
     double score; //!< The priority score formed from down_est and up_est.
 };
 

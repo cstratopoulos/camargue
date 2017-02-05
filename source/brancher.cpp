@@ -113,8 +113,10 @@ int Brancher::branch_edge_index()
 
     ScoreTuple winner = ranked_cands(sb2inds, downobj, upobj, StrongMult,
                                      tour_len, 1)[0];
-    cout << "\tWinner estimates: " << winner.down_est << ", "
-         << winner.up_est << "\n";
+    cout << "\tDown winner priority " << winner.down_est.first << ", estimate "
+         << winner.down_est.second << "\n"
+         << "\tUp winner priority " << winner.up_est.first << ", estimate "
+         << winner.up_est.second << "\n";
     return winner.index;
 }
 
