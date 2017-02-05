@@ -134,8 +134,10 @@ SCENARIO ("Instating a Brancher and getting problems",
 }
 
 SCENARIO ("Computing branching edges",
-          "[.ABC]") {
+          "[ABC][primal_strong_branch][ranked_cands]") {
     vector<string> probs{
+        "dantzig42",
+        "pr76",
         "pr152",
         "a280",
         "lin318",
@@ -211,8 +213,10 @@ SCENARIO ("Computing branching edges",
                         cout << "Edge " << ind << ", tour "
                              << tour_edges[ind] << ", lp " << x[ind] << ", "
                              << "Priority " << st.score_priority << "\n"
-                             << "\tDown " << st.down_est
-                             << "\tUp " << st.up_est
+                             << "\tDown " << st.down_est.first << " -- "
+                             << st.down_est.second << "\n"
+                             << "\tUp " << st.up_est.first << " -- "
+                             << st.up_est.second << "\n"
                              << "\tScore " << st.score << "\n\n";
                     }
 
@@ -234,8 +238,10 @@ SCENARIO ("Computing branching edges",
                     cout << "Edge " << ind << ", tour "
                          << tour_edges[ind] << ", lp " << x[ind] << ", "
                          << "Priority " << win.score_priority << "\n"
-                         << "\tDown " << win.down_est
-                         << "\tUp " << win.up_est 
+                         << "\tDown " << win.down_est.first << " -- "
+                         << win.down_est.second << "\n"
+                         << "\tUp " << win.up_est.first << " -- "
+                         << win.up_est.second << "\n"
                          << "\tScore " << win.score << "\n\n";
                         
                 }
