@@ -94,6 +94,8 @@ public:
     /// Average number of iterations per primal_pivot. 
     int avg_itcount() const { return sum_it_count / num_nd_pivots; }
 
+    double best_tourlen() const { return best_data.min_tour_value; }
+
     friend class CMR::Solver;
 
 private:

@@ -171,10 +171,10 @@ PivType CoreLP::primal_pivot()
             result =  PivType::Subtour;
         }
     } else {
-        if (dual_feas() &&
-            abs(get_objval() - best_data.min_tour_value) < Eps::Zero)
-            result = PivType::FathomedTour;
-        else
+        if (dual_feas()) {
+            if (get_objval() >= best_data.min_tour_value - 1.0 + Eps::Zero)
+                result = PivType::FathomedTour;
+        } else
             result = PivType::Frac;
     }
 

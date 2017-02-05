@@ -115,7 +115,9 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     int total_added = 0;
 
     double penalty = 0.0;
-    double tourlen = core_lp.get_objval();
+
+    double upper_bound = core_lp.best_tourlen();
+    //double lower_bound = core_lp.get_objval();
 
     vector<d_PrEdge> price_elist;
     vector<d_PrEdge> edge_q;
@@ -210,7 +212,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                 cout << "\t\tAdded " << num_added
                      << " edges in opt solution.\n";
 
-            if (std::abs(new_objval - tourlen) >= Eps::Zero) {
+            if (new_objval <= upper_bound - 1.0 + Eps::Zero) {
                 if (innercount == 1)
                     if (!silent)
                         cout << "\tTour no longer optimal after adding edges\n";
