@@ -1,4 +1,7 @@
 #include "config.hpp"
+
+#ifdef CMR_DO_TESTS
+
 #include "branch_util.hpp"
 
 
@@ -25,7 +28,6 @@ using std::to_string;
 using std::cout;
 
 
-#ifdef CMR_DO_TESTS
 
 using ObjDig = std::pair<double, int>;
 
