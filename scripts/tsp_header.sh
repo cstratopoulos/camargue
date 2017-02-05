@@ -16,15 +16,21 @@
 
 header=externals/concorde/INCLUDE/tsp.h
 
-sed 's/CCtsp\([_a-z]\) \*new)/CCtsp\1 *new\1)/g' "$header" > tmp_header \
-    && mv tmp_header "$header"
+sed 's/CCtsp\([_a-z]\) \*new)/CCtsp\1 *new\1)/g' "$header" > tmp_header
 
 if [ "$?" -ne 0 ]
 then
-    echo "Attempt to remove new from concorde/INCLUDES/tsp.h failed"
+    echo "Couldn't open tsp.h for editing"
     exit 1
-else
-    exit 0
 fi
 
+chglines=$(diff tmp_header "$header" | wc -l)
 
+if [ "$chglines" -eq 0 ]
+then
+    rm tmp_header
+else
+    mv tmp_header "$header"
+fi
+
+exit 0
