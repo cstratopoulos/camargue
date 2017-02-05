@@ -93,8 +93,8 @@ int Brancher::branch_edge_index()
 
     vector<int> sb1inds = length_weighted_cands(core_edges, lw_inds, x,
                                                 SB1Cands);
-    vector<double> downobj;
-    vector<double> upobj;
+    vector<ScorePair> downobj;
+    vector<ScorePair> upobj;
 
     lp_relax.primal_strong_branch(tour_base.best_tour_edges,
                                   tour_base.colstat, tour_base.rowstat,

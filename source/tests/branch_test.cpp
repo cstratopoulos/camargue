@@ -160,8 +160,8 @@ SCENARIO ("Computing branching edges",
                     LP::Relaxation &rel = core;
 
                     vector<int> md_indices;
-                    vector<double> downest;
-                    vector<double> upest;
+                    vector<ABC::ScorePair> downest;
+                    vector<ABC::ScorePair> upest;
 
                     vector<double> x = rel.lp_vec();
                     vector<int> colstat = rel.col_stat();
@@ -209,7 +209,8 @@ SCENARIO ("Computing branching edges",
                     for (auto &st : sb1cands) {
                         int ind = st.index;
                         cout << "Edge " << ind << ", tour "
-                             << tour_edges[ind] << ", lp " << x[ind] << "\n"
+                             << tour_edges[ind] << ", lp " << x[ind] << ", "
+                             << "Priority " << st.score_priority << "\n"
                              << "\tDown " << st.down_est
                              << "\tUp " << st.up_est
                              << "\tScore " << st.score << "\n\n";
@@ -231,7 +232,8 @@ SCENARIO ("Computing branching edges",
                     ABC::ScoreTuple win = sb2cands[0];
                     int ind = win.index;
                     cout << "Edge " << ind << ", tour "
-                         << tour_edges[ind] << ", lp " << x[ind] << "\n"
+                         << tour_edges[ind] << ", lp " << x[ind] << ", "
+                         << "Priority " << win.score_priority << "\n"
                          << "\tDown " << win.down_est
                          << "\tUp " << win.up_est 
                          << "\tScore " << win.score << "\n\n";
