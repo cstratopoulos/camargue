@@ -46,27 +46,27 @@ public:
     ///@{
 
     
-    Relaxation(); /**< Default constructor. */
+    Relaxation(); //!< Default construct with empty, valid resource handles.
     
-    Relaxation(Relaxation &&lp) noexcept; /**< Move constructor. */
-    Relaxation& operator=(Relaxation &&lp) noexcept; /**< Move assignment. */
+    Relaxation(Relaxation &&lp) noexcept; //!< Move construct.
+    Relaxation& operator=(Relaxation &&lp) noexcept;  //!< Move assign.
 
     Relaxation(const Relaxation &lp) = delete;
     Relaxation& operator=(const Relaxation &lp) = delete;
     
-    ~Relaxation(); /**< Destruct and free associated memory. */
+    ~Relaxation(); //!< Destruct and free resource handles.
     
     ///@}
 
     /**@name Methods for querying the relaxation. */
     ///@{
 
-    bool dual_feas() const; /**< Is the resident basis dual feasible. */
+    bool dual_feas() const; //!< Is the resident basis dual feasible.
 
-    int num_rows() const; /**< Number of rows in the model. */
-    int num_cols() const; /**< Number of columsn in the model. */
+    int num_rows() const; //!< Number of rows in the model.
+    int num_cols() const; //!< Number of columsn in the model.
 
-    int it_count() const;
+    int it_count() const; //!< Number of iterations from last optimization.
 
     double get_coeff(int row, int col) const;
 
@@ -78,37 +78,34 @@ public:
     void get_row(int row, std::vector<int> &rmatind,
                  std::vector<double> &rmatval) const;
 
-    /** Check the feasibility status of a given solution.
-     * If \p x is an lp solution, the `i`th entry of \p feas_stat will be
-     * nonzero if \p x violates the constraint in row `i`.
-     */
+    /// Feasibility status of a given solution.
     void get_row_infeas(const std::vector<double> &x,
                         std::vector<double> &feas_stat, int begin,
                         int end) const;
 
-    double get_objval() const; /**< Objective value for resident solution. */
+    double get_objval() const; //!< Objective value for resident solution.
     
-    void get_x(std::vector<double> &x) const; /**< Get current solution. */
+    void get_x(std::vector<double> &x) const; //!< Get current solution.
     
-    std::vector<double> lp_vec() const; /**< Return current solution. */
+    std::vector<double> lp_vec() const; //!< Return current solution.
 
-    /** Get the resident basis. */
+    /// Get the resident basis. 
     void get_base(std::vector<int> &colstat,
                   std::vector<int> &rowstat) const;
 
     std::vector<int> col_stat() const; //!< Get the column basis.
 
-    /** Get constraint slacks for the resident solution. */
+    /// Get constraint slacks for resident solution.
     void get_row_slacks(std::vector<double> &slack, int begin,
                         int end) const;
 
-    /** Return constraint slacks for the resident solution. */
+    /// Return constraint slacks for the resident solution.
     std::vector<double> row_slacks(int begin, int end) const;
 
-    /** Get a range of dual values. */
+    /// Get a range of dual values.
     void get_pi(std::vector<double> &pi, int begin, int end) const;
 
-    /** Return a range of dual values. */
+    /// Return a range of dual values. 
     std::vector<double> pi(int begin, int end) const;
 
     /// Get a range of reduced costs.
