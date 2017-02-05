@@ -1,4 +1,5 @@
 #include "branch_util.hpp"
+#include "graph.hpp"
 #include "util.hpp"
 
 #include <algorithm>
@@ -39,14 +40,17 @@ double var_score(double mult, double v0, double v1)
     return num / denom;
 }
 
-ScoreTuple::ScoreTuple(int ind, double down, double up, double mult,
+ScoreTuple::ScoreTuple(int ind, ScorePair down, ScorePair up, double mult,
                        double ub)
-    : index(ind), down_est(down), up_est(up)
+    : index(ind), score_priority(std::max(down.first, up.first)),
+      down_est(down.second), up_est(up.second),
+      score(var_score(mult, down_est, up_est))
+{}
+
+bool operator>(ScoreTuple s, ScoreTuple t)
 {
-    if (down_est > ub || up_est > ub) 
-        score = DoubleMax;
-    else
-        score = var_score(mult, down, up);
+    return
+    std::tie(s.score_priority, s.score) > std::tie(t.score_priority, t.score);
 }
 
 /**
@@ -111,8 +115,8 @@ vector<int> length_weighted_cands(const vector<Graph::Edge> &edges,
  * score. 
  */
 vector<ScoreTuple> ranked_cands(const vector<int> &cand_inds,
-                                const vector<double> &down_est,
-                                const vector<double> &up_est,
+                                const vector<ScorePair> &down_est,
+                                const vector<ScorePair> &up_est,
                                 const double mult, const double ub,
                                 const int num_return)
 {
@@ -121,9 +125,7 @@ vector<ScoreTuple> ranked_cands(const vector<int> &cand_inds,
     for (int i = 0; i < cand_inds.size(); ++i)
         result.emplace_back(cand_inds[i], down_est[i], up_est[i], mult, ub);
 
-    std::sort(result.begin(), result.end(),
-              [](const ScoreTuple &p, const ScoreTuple &q)
-              { return p.score > q.score; });
+    std::sort(result.begin(), result.end(), std::greater<ScoreTuple>());
 
     if (result.size() <= num_return)
         return result;
