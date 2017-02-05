@@ -656,10 +656,11 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                                       const vector<int> &colstat,
                                       const vector<int> &rowstat,
                                       const vector<int> &indices,
-                                      vector<double> &downobj,
-                                      vector<double> &upobj,
+                                      vector<std::pair<int, double>> &downobj,
+                                      vector<std::pair<int, double>> &upobj,
                                       int itlim, double upperbound)
 {
+    using ScorePair = std::pair<int, double>;
     int rval = 0;
     
     CPXdblParamGuard obj_ulim(CPX_PARAM_OBJULIM, upperbound, simpl_p->env,
@@ -698,16 +699,21 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
         primal_opt();
 
         solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
+        double objval = get_objval();
+        int rank = -1;
 
         if (solstat == CPX_STAT_ABORT_IT_LIM ||
-            solstat == CPX_STAT_ABORT_OBJ_LIM ||
-            solstat == CPX_STAT_OPTIMAL ||
+            solstat == CPX_STAT_ABORT_OBJ_LIM)
+            rank = 0;
+        else if (solstat == CPX_STAT_OPTIMAL ||
             solstat == CPX_STAT_OPTIMAL_INFEAS)
-            downobj.push_back(get_objval());
+            rank = 1;
         else if (solstat == CPX_STAT_INFEASIBLE)
-            downobj.push_back(CMR::DoubleMax);
+            rank = 2;
         else 
             throw cpx_err(solstat, "CPXgetstat in down clamp");
+
+        downobj.push_back(ScorePair(rank, objval));
 
         rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &ind, &upper, &one);
         if (rval)
@@ -723,17 +729,21 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
 
         primal_opt();
 
+        objval = get_objval();
         solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
 
         if (solstat == CPX_STAT_ABORT_IT_LIM ||
-            solstat == CPX_STAT_ABORT_OBJ_LIM ||
-            solstat == CPX_STAT_OPTIMAL ||
+            solstat == CPX_STAT_ABORT_OBJ_LIM)
+            rank = 0;
+        else if (solstat == CPX_STAT_OPTIMAL ||
             solstat == CPX_STAT_OPTIMAL_INFEAS)
-            upobj.push_back(get_objval());
+            rank = 1;
         else if (solstat == CPX_STAT_INFEASIBLE)
-            upobj.push_back(CMR::DoubleMax);
+            rank = 2;
         else 
-            throw cpx_err(solstat, "CPXgetstat in down clamp");
+            throw cpx_err(solstat, "CPXgetstat in up clamp");
+
+        upobj.push_back(ScorePair(rank, objval));
 
         rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &ind, &lower,
                              &zero);

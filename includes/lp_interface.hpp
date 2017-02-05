@@ -27,14 +27,6 @@ enum BStat {
     FreeSuper = 3
 };
 
-/// Solution status codes
-enum SolStat {
-    AbortItLim = 0,
-    Optimal = 1,
-    OptInfeas = 2,
-    Infeas = 3,
-};
-
 struct Basis {
     Basis() = default;
     
@@ -135,8 +127,8 @@ public:
                               const std::vector<int> &colstat,
                               const std::vector<int> &rowstat,
                               const std::vector<int> &indices,
-                              std::vector<double> &downobj,
-                              std::vector<double> &upobj,
+                              std::vector<std::pair<int, double>> &downobj,
+                              std::vector<std::pair<int, double>> &upobj,
                               int itlim, double upperbound);
 
     /// Tighten the bound on a variable. 
