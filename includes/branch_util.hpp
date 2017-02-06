@@ -35,6 +35,10 @@ constexpr int SB2Lim = 500; //!< 2nd round strong branch iteration limit.
 constexpr int one_factor = 5; //!< Magnitude factor for fixing var to one.
 constexpr int zero_factor = 10; //!< Magnitude factor for fixing var to zero.
 
+/// Alias declaration for integer ranking and objective value estimate.
+/// Higher is better for both entries, to be sorted lexicographically. 
+using ScorePair = std::pair<int, double>;
+
 /// A simple structure for recording the status of branching subproblems.
 struct Problem {
     enum class Type {
@@ -42,35 +46,18 @@ struct Problem {
         Affirm, //!< Enforcing agreement with current tour.
         Contra //!< Enforcing departure from current tour.
     };
-
-    enum Status {
-        Unseen, //!< Unexamined subproblem.
-        Seen, //!< Examinded subproblem.
-        Pruned //!< Examined and pruned. 
-    };
     
     Problem() = default;
-    
-    Problem(Type ptype, int index)
-        : type(ptype), status(Status::Unseen), edge_ind(index) {}
-    
-    Problem(Type ptype, Status pstat, int index)
-        : type(ptype), status(pstat), edge_ind(index) {}
 
-    bool operator==(const Problem &rhs) const
-        {
-            return (type == rhs.type &&
-                    status == rhs.status &&
-                    edge_ind == rhs.edge_ind);
-        }
+    Problem(int ind, Type t, ScorePair r)
+        : edge_ind(ind), type(t), rank(r) {}
 
-    Type type;
-    Status status;
     int edge_ind;
+    Type type;
+    ScorePair rank;
 };
 
 std::ostream &operator<<(std::ostream &os, Problem::Type type);
-std::ostream &operator<<(std::ostream &os, Problem::Status stat);
 std::ostream &operator<<(std::ostream &os, const Problem &prob);
 
 /// Strategies for enforcing Problem::Type::Contra branches.
@@ -79,8 +66,6 @@ enum class ContraStrat {
     Dive, /// Perturb objective function coefficients.
     Naive, /// Add a single branch constraint to the Relaxation.
 };
-
-using ScorePair = std::pair<int, double>;
 
 
 /// A POD struct for ranking branching edges.
