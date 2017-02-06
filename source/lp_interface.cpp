@@ -506,6 +506,10 @@ void Relaxation::copy_start(const vector<double> &x)
         throw cpx_err(rval, "CPXcopystart");
 }
 
+/**
+ * @param[in] col_stat the basic statuses for the columns.
+ * @param[in] row_stat the basic statuses for the rows.
+ */
 void Relaxation::copy_base(const std::vector<int> &col_stat,
                            const std::vector<int> &row_stat)
 {
@@ -513,6 +517,15 @@ void Relaxation::copy_base(const std::vector<int> &col_stat,
                            &row_stat[0]);
     if (rval)
         throw cpx_err(rval, "CPXcopybase");
+}
+
+/**
+ * @param[in] base the Basis structure containing the row and column statuses
+ * to be copied.
+ */
+void Relaxation::copy_base(const Basis &base)
+{
+    copy_base(base.colstat, base.rowstat);
 }
 
 void Relaxation::copy_start(const vector<double> &x,
@@ -626,6 +639,11 @@ void Relaxation::dual_pivot()
     
 }
 
+/**
+ * Using the resident basis as a starting point, this function will invoke
+ * the primal simplex optimizer, stopping just as soon as a pivot renders the
+ * basis primal feasible.
+ */
 void Relaxation::primal_recover()
 {
     int rval = CPXsetlpcallbackfunc(simpl_p->env, pfeas_cb, NULL);
@@ -722,6 +740,21 @@ vector<double> Relaxation::redcosts(int begin, int end) const
                     end);
 }
 
+/**
+ * @param[in] tour_vec the resident best tour
+ * @param[in] colstat the column basis for \p tour_vec
+ * @param[in] rowstat the row basis for \p tour_vec
+ * @param[in] indices the column indices of edges to examine
+ * @param[out] downobj estimates for clamping a variable to zero.
+ * @param[out] upobj estimates for clamping a variable to one. 
+ * @param[in/out] contra_bases primal feasible starting bases for enforcing 
+ * Contra branches. May be empty, in which case it will be populated for use
+ * in future calls. If nonempty, it will be assumed to have the same size as
+ * \p indices, with `contra_bases[i]` to be used as a starting basis for fixing
+ * `indices[i]` to disagree with `tour_entry[indices[i]]`.
+ * @param[in] itlim the maximum number of simplex iterations to do.
+ * @param[in] upperbound the length of \p tour_vec.
+ */
 void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                                       const vector<int> &colstat,
                                       const vector<int> &rowstat,
@@ -756,7 +789,7 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
 
     for (int i = 0; i < indices.size(); ++i) {
         int ind = indices[i];
-        cout << "----Index " << ind << "\n";
+        //cout << "----Index " << ind << "\n";
         for (ClampPair &cp : clamps) {
             char sense = cp.first;
             double clamp_bound = cp.second;
@@ -771,9 +804,9 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                 if (!have_bases) {
                     copy_base(colstat, rowstat);
                     primal_recover();
-                    cout << "P feas after prim recover: "
-                         << primal_feas() << ", "
-                         << it_count() << " iterations\n";
+                    // cout << "P feas after prim recover: "
+                    //      << primal_feas() << ", "
+                    //      << it_count() << " iterations\n";
                     if (!primal_feas())
                         cout << "Infeasible with stat "
                              << CPXgetstat(simpl_p->env, simpl_p->lp) << "\n";
@@ -782,16 +815,16 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                     copy_base(contra_bases[i].colstat,
                               contra_bases[i].rowstat);
                     factor_basis();
-                    cout << "Copied saved base, p feas "
-                         << primal_feas() << "\n";
+                    // cout << "Copied saved base, p feas "
+                    //      << primal_feas() << "\n";
                 }
             }
 
             CPXlongParamGuard it_lim(CPX_PARAM_ITLIM, itlim, simpl_p->env,
                                      "primal_strong_branch it lim");
 
-            cout << "objval after tighten " << ((int) clamp_bound) << ": "
-                 << get_objval() << "\n\n";
+            // cout << "objval after tighten " << ((int) clamp_bound) << ": "
+            //      << get_objval() << "\n\n";
 
             primal_opt();
 

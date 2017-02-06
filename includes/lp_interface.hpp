@@ -172,6 +172,9 @@ public:
     void copy_base(const std::vector<int> &col_stat,
                    const std::vector<int> &row_stat);
 
+    /// Overload of copy_base for basis struct.
+    void copy_base(const Basis &base);
+
     void factor_basis(); //!< Make the current basis resident in the problem.
     
     ///@}
