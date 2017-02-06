@@ -12,9 +12,9 @@
 #include "graph.hpp"
 #include "branch_util.hpp"
 
+#include <array>
 #include <iostream>
 #include <functional>
-#include <stack>
 #include <vector>
 
 namespace CMR {
@@ -27,23 +27,14 @@ public:
              const LP::TourBasis &tbase, const double &tourlen,
              const ContraStrat strat);
 
-    /// Pick an edge/branching problem to examine, modifying the Relaxation.
-    Problem next_prob();
+    std::array<Problem, 2> next_level();
 
-    /// Mark the top problem as \p stat, undoing and splitting if neccessary.
-    void pop_problem(const Problem::Status stat);
+    ScoreTuple next_branch_obj();
 
-    /// Just get the next edge to branch on, without modifying the Relaxation.
-    int branch_edge_index();
+    void do_branch(Problem prob);
+    void undo_branch(Problem prob);
 
-    bool solved(const Problem prob) const
-        { return prob == solved_prob; }
-
-private:
-
-    void split_prob(int edge); //!< Add two child subproblems to the queue.
-    void enact_top(); //!< Adjust the lp_relax based on the top node Status.
-    
+private:    
     LP::Relaxation &lp_relax;
     const std::vector<Graph::Edge> &core_edges;
     const LP::TourBasis &tour_base;
@@ -52,9 +43,6 @@ private:
     const ContraStrat contra_strategy;
     const std::function<void(LP::Relaxation&, int, double)> contra_enforce;
     const std::function<void(LP::Relaxation&, int, double)> contra_undo;
-    
-    std::stack<Problem> subprobs; //!< The problems to be considered.
-    static Problem solved_prob; //!< A dummy value for a successful search.
 };
 
 /// Enforce a Contra branch on an edge by fixing bounds.

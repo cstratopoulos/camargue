@@ -22,11 +22,8 @@ namespace ABC {
 using Edge = Graph::Edge;
 
 using Ptype = Problem::Type;
-using Pstat = Problem::Status;
 
 using Strat = ContraStrat;
-
-Problem Brancher::solved_prob(Ptype::Root, Pstat::Pruned, -1);
 
 Brancher::Brancher(LP::Relaxation &lp_rel,
                    const vector<Edge> &edges, const LP::TourBasis &tbase,
@@ -34,54 +31,35 @@ Brancher::Brancher(LP::Relaxation &lp_rel,
     : lp_relax(lp_rel), core_edges(edges), tour_base(tbase), tour_len(tourlen),
       contra_strategy(strat),
       contra_enforce(enforcer(strat)), contra_undo(undoer(strat))
-{
-    subprobs.emplace(Ptype::Root, Pstat::Seen, -1);
-} catch (const exception &e) {
+{} catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Brancher constructor failed.");
 }
 
-Problem Brancher::next_prob()
+std::array<Problem, 2> Brancher::next_level()
 {
-    runtime_error err("Problem in Brancher::next_prob.");
+    runtime_error err("Problem in Brancher::next_level");
 
-    while (!subprobs.empty()) {
-        Problem &top = subprobs.top();
-        
-        if (top.status != Pstat::Unseen)
-            pop_problem(top.status);
-        else {
-            enact_top();
-            return top;
-        }
+    ScoreTuple next_obj;
+
+    try { next_obj = next_branch_obj(); }
+    CMR_CATCH_PRINT_THROW("getting branching structure", err);
+
+    int index = next_obj.index;
+    double tour_entry = tour_base.best_tour_edges[index];
+
+    if (tour_entry == 0) {
+        return std::array<Problem, 2>{Problem(index, Ptype::Affirm,
+                                              next_obj.down_est),
+            Problem(index, Ptype::Contra, next_obj.up_est)};
+    } else {
+        return std::array<Problem, 2>{Problem(index, Ptype::Affirm,
+                                              next_obj.up_est),
+            Problem(index, Ptype::Contra, next_obj.down_est)};
     }
-
-    return solved_prob;
 }
 
-void Brancher::pop_problem(const Problem::Status stat)
-{
-    runtime_error err("Problem in Brancher::pop_problem.");
-    using Pstat = Problem::Status;
-
-    if (stat == Pstat::Unseen)
-        throw logic_error("Tried to pop unseen problem.");
-
-    subprobs.top().status = stat;
-    
-    try {
-        enact_top();
-    } CMR_CATCH_PRINT_THROW("enacting problem", err);
-    
-    subprobs.pop();    
-
-    if (stat == Pstat::Seen)
-        try {
-            split_prob(branch_edge_index());
-        } CMR_CATCH_PRINT_THROW("splitting seen problem", err);
-}
-
-int Brancher::branch_edge_index()
+ScoreTuple Brancher::next_branch_obj()
 {
     vector<double> x = lp_relax.lp_vec();
     vector<int> colstat = lp_relax.col_stat();
@@ -117,48 +95,69 @@ int Brancher::branch_edge_index()
          << winner.down_est.second << "\n"
          << "\tUp winner priority " << winner.up_est.first << ", estimate "
          << winner.up_est.second << "\n";
-    return winner.index;
+    
+    return winner;
 }
 
-void Brancher::split_prob(int edge)
+void Brancher::do_branch(Problem prob)
 {
-    subprobs.emplace(Ptype::Contra, edge);
-    subprobs.emplace(Ptype::Affirm, edge);
-}
+    runtime_error err("Problem in Brancher::do_branch");
+    
+    int ind = prob.edge_ind;
+    double tour_entry = tour_base.best_tour_edges[ind];
+    Ptype ptype = prob.type;
 
-void Brancher::enact_top()
-{
-    if (subprobs.empty() || subprobs.top().type == Ptype::Root)
-        return;
+    cout << "Doing branch on " << prob << ", ";
 
-    const Problem &top = subprobs.top();
-    const int ind = top.edge_ind;
-    const double tour_entry = tour_base.best_tour_edges[ind];
-
-    if (top.type == Ptype::Affirm) {        
-        if (top.status == Pstat::Unseen) { // Clamp the edge to affirm tour.
-            cout << "\tClamping " << top << endl;
-            if (tour_entry == 1)
+    if (ptype == Ptype::Affirm) {
+        try {
+            if (tour_entry == 1) {
+                cout << "clamping to 1";
                 lp_relax.tighten_bound(ind, 'L', 1);
-            else if (tour_entry == 0)
+            } else if (tour_entry == 0) {
+                cout << "clamping to 0";
                 lp_relax.tighten_bound(ind, 'U', 0);
-        } else { //Undo the clamp.
-            cout << "\tUnclamping " << top << endl;
-            if (tour_entry == 1)
-                lp_relax.tighten_bound(ind, 'L', 0);
-            else if (tour_entry == 0)
-                lp_relax.tighten_bound(ind, 'U', 1);
-        }
-    } else {
-        if (top.status == Pstat::Unseen) {
-            cout << "\tEnforcing " << top << endl;
+            }
+        } CMR_CATCH_PRINT_THROW("doing affirm branch", err);
+    } else if (ptype == Ptype::Contra) {
+        cout << "calling contra_enforce";
+        try {
             contra_enforce(lp_relax, ind, tour_entry);
-        } else {
-            cout << "\tUnenforcing " << top << endl;
-            contra_undo(lp_relax, ind, tour_entry);
-        }
+        } CMR_CATCH_PRINT_THROW("doing contra branch", err);
     }
+    cout << "\n";
 }
+
+void Brancher::undo_branch(Problem prob)
+{
+    runtime_error err("Problem in Brancher::undo_branch");
+
+    cout << "Undoing branch on " << prob << ", ";
+
+    int ind = prob.edge_ind;
+    double tour_entry = tour_base.best_tour_edges[ind];
+    Ptype ptype = prob.type;
+
+    if (ptype == Ptype::Affirm) {
+        try {
+            if (tour_entry == 1) {
+                cout << "resetting lb to zero";
+                lp_relax.tighten_bound(ind, 'L', 0);
+            } else if (tour_entry == 0) {
+                cout << "resetting ub to one";
+                lp_relax.tighten_bound(ind, 'U', 1);
+            }
+        } CMR_CATCH_PRINT_THROW("undoing affirm branch", err);
+    } else if (ptype == Ptype::Contra) {
+        cout << "calling contra_undo";
+        try {
+            contra_undo(lp_relax, ind, tour_entry);
+        } CMR_CATCH_PRINT_THROW("undoing contra branch", err);
+    }
+
+    cout << "\n";
+}
+
 
 /**
  * @param[in] rel the Relaxation to modify.
