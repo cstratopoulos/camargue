@@ -6,14 +6,17 @@
 #include "config.hpp"
 #include "solver.hpp"
 #include "separator.hpp"
+#include "brancher.hpp"
 
 #if CMR_HAVE_SAFEGMI
 #include "safeGMI.hpp"
 #endif
 
+#include "err_util.hpp"
+
+#include <array>
 #include <iostream>
 #include <stdexcept>
-
 #include <functional>
 #include <vector>
 
@@ -41,12 +44,32 @@ using CutType = Sep::HyperGraph::Type;
 using PivType = LP::PivType;
 namespace Eps = Epsilon;
 
-
+/** Function template to pivot, find cuts, pivot back, add them, pivot again.
+ * This function template is used to add one class of cuts at a time, attempt
+ * to measure progress obtained, and return information on whether a further
+ * separation routine should be called.
+ * @tparam Qtype the queue representation of the cuts found by \p sepcall.
+ * @param[in] sepcall a function which returns true if cuts are found, in which
+ * case they are stored in \p sep_q.
+ * @param[out] piv if cuts are found, this is the pivot type that occurred 
+ * after they were added.
+ * @param[in] core_lp the LP relaxation for performing pivots and adding cuts.
+ * @param[in] tourlen the length of the best known tour.
+ * @param[in/out] prev_val the value of the last pivot computed; will be set to
+ * a new value if cuts are found.
+ * @param[in/out] total_delta the sum of changes in objective values attained
+ * by separation routines called thus far.
+ * @param[out] delta_ratio if cuts are found, this is the ratio of the 
+ * difference between the new pivot value and \p prev_val divided by 
+ * \p tourlen.
+ * @param[out] num_pruned number of cuts pruned from the LP after a pivot call.
+ * @returns the value of \p sepcall, i.e., true iff cuts are found.
+ */
 template<class Qtype>
 bool call_separator(const function<bool()> &sepcall, const Qtype &sep_q,
                     PivType &piv, LP::CoreLP &core_lp,
                     const double tourlen, double &prev_val,
-                    double &total_delta,double &delta_ratio, int &num_pruned)
+                    double &total_delta, double &delta_ratio, int &num_pruned)
 {
     bool result = sepcall();
     int num_rows = core_lp.num_rows();
@@ -247,6 +270,80 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
     if (!silent)
         cout << "\tTried all routines, returning " << piv << "\n";
     return piv;    
+}
+
+PivType Solver::abc_dfs(int depth, bool do_price)
+{
+    using Problem = ABC::Problem;
+    using Ptype = Problem::Type;
+    using ProbArray = std::array<Problem, 2>;
+    
+    runtime_error err("Prolem in Solver::abc_dfs");
+
+    PivType piv = PivType::Frac;
+
+    if (depth > 0)
+        try {
+            piv = cutting_loop(do_price, false);
+        } CMR_CATCH_PRINT_THROW("solving branch prob", err);
+
+    if (piv != PivType::Frac) {
+        if (piv == PivType::FathomedTour)
+            return piv;
+        else {
+            cerr << "Pivot status " << piv << " in abc.\n";
+            throw logic_error("Invalid pivtype in abc_dfs.");
+        }
+    }
+
+    ProbArray branch_probs = brancher->next_level();
+    const double &tourlen = best_data.min_tour_value;
+    const vector<double> &tour_vec = tour_basis().best_tour_edges;
+
+
+    for (Problem &P : branch_probs) {
+        try {
+            cout << "\n\tSearch depth " << depth << "\n";
+            brancher->do_branch(P);
+            if (P.type == Ptype::Affirm)
+                core_lp.copy_start(tour_vec);
+            else
+                core_lp.copy_base(*P.contra_base);
+
+            core_lp.factor_basis();
+        }
+        CMR_CATCH_PRINT_THROW("doing branch", err);
+
+        double score = P.rank.first;
+        double estimate = P.rank.second;
+        bool call_again = true;
+
+        if (score == 2) {
+            cout << "\tProblem appears infeasible.\n";
+            cout << "\tVerification should go here!!!\n";
+            call_again = false;
+        } else if (score == 1) {
+            if (estimate >= tourlen - 0.9) {
+                cout << "\tProblem appears prunable.\n";
+                if (do_price) {
+                    cout << "\t Price and verify shold go here.\n";
+                } else {
+                    cout << "\tSparse problem/no price, prune search.\n";
+                    call_again = false;
+                }
+            }
+        }
+
+        if (call_again)
+            piv = abc_dfs(++depth, do_price);        
+
+        try {
+            cout << "\n\tSearch depth " << depth << "\n";
+            brancher->undo_branch(P);
+        } CMR_CATCH_PRINT_THROW("undoing branch", err);
+    }
+
+    return piv;
 }
 
 PivType Solver::frac_recover()
