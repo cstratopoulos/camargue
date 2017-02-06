@@ -162,7 +162,7 @@ PivType CoreLP::primal_pivot()
 
     bool integral = supp_data.integral;
     bool connected = supp_data.connected;
-    PivType result;
+    PivType result = PivType::Frac;
 
     if (integral) {
         if (connected) {
