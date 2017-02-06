@@ -205,6 +205,7 @@ SCENARIO ("Computing branching edges",
 
                     const vector<int> &tourcol = solver.tour_basis().colstat;
                     const vector<int> &tourrow = solver.tour_basis().rowstat;
+                    vector<LP::Basis> cbases;
 
                     int sb1ic = std::max(100, 2 * avgit);
                     cout << "Calling primal SB with ic " << sb1ic << "\n";
@@ -212,13 +213,15 @@ SCENARIO ("Computing branching edges",
                                                              tourcol, tourrow,
                                                              sb1inds, downest,
                                                              upest,
+                                                             cbases,
                                                              sb1ic,
                                                              tourval));
                     vector<ABC::ScoreTuple> sb1cands;
 
                     REQUIRE_NOTHROW(sb1cands =
                                     ABC::ranked_cands(sb1inds, downest,
-                                                      upest, 100, tourval, 2));
+                                                      upest, cbases, 100,
+                                                      tourval, 2));
 
                     cout << "\t" << sb1cands.size() << " sb1 cands\n";
                     for (auto &st : sb1cands) {
@@ -233,22 +236,29 @@ SCENARIO ("Computing branching edges",
                              << "\tScore " << st.score << "\n\n";
                     }
 
-                    vector<int> sb2inds{sb1cands[0].index, sb1cands[1].index};
+                    vector<LP::Basis> sb2bases;
+                    vector<int> sb2inds;
+
+                    for (auto &t : sb1cands) {
+                        sb2inds.push_back(t.index);
+                        sb2bases.emplace_back(std::move(t.contra_base));
+                    }
 
                     int sb2ic = std::min(5 * avgit, 500);
                     cout << "Calling primal SB2 with ic " << sb2ic << "\n";
                     REQUIRE_NOTHROW(rel.primal_strong_branch(tour_edges,
                                                              tourcol, tourrow,
                                                              sb2inds, downest,
-                                                             upest, sb2ic,
+                                                             upest, sb2bases,
+                                                             sb2ic,
                                                              tourval));
 
                     vector<ABC::ScoreTuple> sb2cands;
-                    sb2cands = ABC::ranked_cands(sb2inds, downest, upest, 100,
-                                                 tourval, 1);
+                    sb2cands = ABC::ranked_cands(sb2inds, downest, upest,
+                                                 sb2bases, 100, tourval, 1);
 
                     cout << "\tWinner of sb eval\n";
-                    ABC::ScoreTuple win = sb2cands[0];
+                    ABC::ScoreTuple &win = sb2cands[0];
                     int ind = win.index;
                     cout << "Edge " << ind << ", tour "
                          << tour_edges[ind] << ", lp " << x[ind] << ", "

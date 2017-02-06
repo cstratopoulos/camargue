@@ -49,13 +49,11 @@ std::array<Problem, 2> Brancher::next_level()
     double tour_entry = tour_base.best_tour_edges[index];
 
     if (tour_entry == 0) {
-        return std::array<Problem, 2>{Problem(index, Ptype::Affirm,
-                                              next_obj.down_est),
-            Problem(index, Ptype::Contra, next_obj.up_est)};
+        return std::array<Problem, 2>{Problem(index, next_obj.down_est),
+            Problem(index, next_obj.up_est, std::move(next_obj.contra_base))};
     } else {
-        return std::array<Problem, 2>{Problem(index, Ptype::Affirm,
-                                              next_obj.up_est),
-            Problem(index, Ptype::Contra, next_obj.down_est)};
+        return std::array<Problem, 2>{Problem(index, next_obj.up_est),
+            Problem(index, next_obj.down_est, std::move(next_obj.contra_base))};
     }
 }
 
@@ -73,24 +71,31 @@ ScoreTuple Brancher::next_branch_obj()
                                                 SB1Cands);
     vector<ScorePair> downobj;
     vector<ScorePair> upobj;
+    vector<LP::Basis> cbases;
 
     lp_relax.primal_strong_branch(tour_base.best_tour_edges,
                                   tour_base.colstat, tour_base.rowstat,
-                                  sb1inds, downobj, upobj, SB1Lim, tour_len);
+                                  sb1inds, downobj, upobj, cbases,
+                                  SB1Lim, tour_len);
 
-    vector<ScoreTuple> sb2cands = ranked_cands(sb1inds, downobj, upobj,
+    vector<ScoreTuple> sb2cands = ranked_cands(sb1inds, downobj, upobj, cbases,
                                                StrongMult, tour_len, SB2Cands);
     vector<int> sb2inds;
+    vector<LP::Basis> sb2bases;
 
-    for (ScoreTuple &t : sb2cands)
+    for (ScoreTuple &t : sb2cands) {
         sb2inds.push_back(t.index);
+        sb2bases.emplace_back(std::move(t.contra_base));
+    }
 
     lp_relax.primal_strong_branch(tour_base.best_tour_edges,
                                   tour_base.colstat, tour_base.rowstat,
-                                  sb2inds, downobj, upobj, SB2Lim, tour_len);
+                                  sb2inds, downobj, upobj, sb2bases,
+                                  SB2Lim, tour_len);
 
-    ScoreTuple winner = ranked_cands(sb2inds, downobj, upobj, StrongMult,
-                                     tour_len, 1)[0];
+    ScoreTuple winner = std::move(ranked_cands(sb2inds, downobj, upobj,
+                                               sb2bases,
+                                               StrongMult, tour_len, 1)[0]);
     cout << "\tDown winner priority " << winner.down_est.first << ", estimate "
          << winner.down_est.second << "\n"
          << "\tUp winner priority " << winner.up_est.first << ", estimate "
