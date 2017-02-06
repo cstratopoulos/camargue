@@ -96,15 +96,18 @@ ScoreTuple Brancher::next_branch_obj()
     ScoreTuple winner = std::move(ranked_cands(sb2inds, downobj, upobj,
                                                sb2bases,
                                                StrongMult, tour_len, 1)[0]);
-    cout << "\tDown winner priority " << winner.down_est.first << ", estimate "
+    
+    cout << "\tWinner edge " << winner.index << ", tour entry "
+         << tour_base.best_tour_edges[winner.index] << "\n";
+    cout << "\t\tDown priority " << winner.down_est.first << ", estimate "
          << winner.down_est.second << "\n"
-         << "\tUp winner priority " << winner.up_est.first << ", estimate "
+         << "\t\tUp winner priority " << winner.up_est.first << ", estimate "
          << winner.up_est.second << "\n";
     
     return winner;
 }
 
-void Brancher::do_branch(Problem prob)
+void Brancher::do_branch(Problem &prob)
 {
     runtime_error err("Problem in Brancher::do_branch");
     
@@ -112,7 +115,7 @@ void Brancher::do_branch(Problem prob)
     double tour_entry = tour_base.best_tour_edges[ind];
     Ptype ptype = prob.type;
 
-    cout << "Doing branch on " << prob << ", ";
+    cout << "\tDoing " << prob << ", ";
 
     if (ptype == Ptype::Affirm) {
         try {
@@ -133,11 +136,11 @@ void Brancher::do_branch(Problem prob)
     cout << "\n";
 }
 
-void Brancher::undo_branch(Problem prob)
+void Brancher::undo_branch(Problem &prob)
 {
     runtime_error err("Problem in Brancher::undo_branch");
 
-    cout << "Undoing branch on " << prob << ", ";
+    cout << "\tUndoing " << prob << ", ";
 
     int ind = prob.edge_ind;
     double tour_entry = tour_base.best_tour_edges[ind];

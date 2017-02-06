@@ -27,12 +27,12 @@ public:
              const LP::TourBasis &tbase, const double &tourlen,
              const ContraStrat strat);
 
-    std::array<Problem, 2> next_level();
+    std::array<Problem, 2> next_level(); //!< Go a level deeper in search tree.
 
-    ScoreTuple next_branch_obj();
+    ScoreTuple next_branch_obj(); //!< Describes the next edge to branch on.
 
-    void do_branch(Problem prob);
-    void undo_branch(Problem prob);
+    void do_branch(Problem &prob); //!< Enforce a branching problem.
+    void undo_branch(Problem &prob); //!< Unenforce a branching problem.
 
 private:    
     LP::Relaxation &lp_relax;

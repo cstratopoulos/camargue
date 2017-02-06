@@ -50,8 +50,8 @@ SCENARIO ("Running a Solver with contra Fix Brancher",
                 Solver solver("problems/" + prob + ".tsp", 99, prefs);
                 LP::PivType piv = LP::PivType::Frac;
 
-                //REQUIRE_NOTHROW(piv = solver.abc(true));
-                cout << piv << "\n";
+                REQUIRE_NOTHROW(piv = solver.abc(true));
+                cout << "\n\tTerminated abc search: " << piv << "\n";
             }
         }
     }
