@@ -73,7 +73,7 @@ SCENARIO ("Comparing pivot protocols",
                 int itcount = 0;
                 while (core.get_objval() == tourlen) {
                     ++itcount;
-                    core.single_pivot();
+                    core.primal_pivot();
                 }
                 itlim_time = CMR::util::zeit() - t;
                 itlim_objval = core.get_objval();

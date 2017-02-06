@@ -50,7 +50,7 @@ SCENARIO ("Running a Solver with contra Fix Brancher",
                 Solver solver("problems/" + prob + ".tsp", 99, prefs);
                 LP::PivType piv = LP::PivType::Frac;
 
-                REQUIRE_NOTHROW(piv = solver.abc(true));
+                //REQUIRE_NOTHROW(piv = solver.abc(true));
                 cout << piv << "\n";
             }
         }
@@ -78,7 +78,8 @@ SCENARIO ("Instating a Brancher and getting problems",
                 Solver solver("problems/" + prob + ".tsp",
                               //prob + ".sol",
                               99, prefs);
-                LP::PivType piv = solver.cutting_loop(solver.inst_info().node_count() < 100, true);
+                int ncount = solver.inst_info().node_count();
+                LP::PivType piv = solver.cutting_loop(ncount < 100, true);
 
                 if (piv == LP::PivType::Frac) {
                     LP::CoreLP &core =
@@ -102,7 +103,8 @@ SCENARIO ("Instating a Brancher and getting problems",
                                                                      tourlen,
                                                                      ABC::ContraStrat::Fix));
 
-                    int ind = branch->branch_edge_index();
+                    auto obj = branch->next_branch_obj();
+                    int ind = obj.index;
                     cout << "\tIndex " << ind << " should be next branch.\n";
                     
                     double tour_entry = tbase.best_tour_edges[ind];
@@ -144,6 +146,7 @@ SCENARIO ("Computing branching edges",
         "d493",
         "pr1002",
         "d2103",
+        "pcb3038",
     };
 
     using namespace CMR;
@@ -163,8 +166,10 @@ SCENARIO ("Computing branching edges",
                     const_cast<LP::CoreLP &>(solver.get_core_lp());
                     LP::Relaxation &rel = core;
 
+                    int avgit = core.avg_itcount();
+
                     cout << "\nAverage number of pivots per nd pivot: "
-                         << core.avg_itcount() << "\n\n";
+                         << avgit << "\n\n";
 
                     vector<int> md_indices;
                     vector<ABC::ScorePair> downest;
@@ -201,10 +206,13 @@ SCENARIO ("Computing branching edges",
                     const vector<int> &tourcol = solver.tour_basis().colstat;
                     const vector<int> &tourrow = solver.tour_basis().rowstat;
 
+                    int sb1ic = std::max(100, 2 * avgit);
+                    cout << "Calling primal SB with ic " << sb1ic << "\n";
                     REQUIRE_NOTHROW(rel.primal_strong_branch(tour_edges,
                                                              tourcol, tourrow,
                                                              sb1inds, downest,
-                                                             upest, 100,
+                                                             upest,
+                                                             sb1ic,
                                                              tourval));
                     vector<ABC::ScoreTuple> sb1cands;
 
@@ -227,10 +235,12 @@ SCENARIO ("Computing branching edges",
 
                     vector<int> sb2inds{sb1cands[0].index, sb1cands[1].index};
 
+                    int sb2ic = std::min(5 * avgit, 500);
+                    cout << "Calling primal SB2 with ic " << sb2ic << "\n";
                     REQUIRE_NOTHROW(rel.primal_strong_branch(tour_edges,
                                                              tourcol, tourrow,
                                                              sb2inds, downest,
-                                                             upest, 500,
+                                                             upest, sb2ic,
                                                              tourval));
 
                     vector<ABC::ScoreTuple> sb2cands;
