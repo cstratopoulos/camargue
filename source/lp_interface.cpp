@@ -485,6 +485,15 @@ void Relaxation::copy_start(const vector<double> &x)
         throw cpx_err(rval, "CPXcopystart");
 }
 
+void Relaxation::copy_base(const std::vector<int> &col_stat,
+                           const std::vector<int> &row_stat)
+{
+    int rval = CPXcopybase(simpl_p->env, simpl_p->lp, &col_stat[0],
+                           &row_stat[0]);
+    if (rval)
+        throw cpx_err(rval, "CPXcopybase");
+}
+
 void Relaxation::copy_start(const vector<double> &x,
                             const vector<int> &col_stat,
                             const vector<int> &row_stat)
@@ -688,8 +697,11 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
         int solstat;
         
         /////down clamp/////
-        copy_start(tour_vec, colstat, rowstat);
-        factor_basis();
+        
+        // copy_start(tour_vec, colstat, rowstat);
+        // factor_basis();
+
+        copy_base(colstat, rowstat);
         
         rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &ind, &upper,
                              &zero);
@@ -720,8 +732,11 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
             throw cpx_err(rval, "CPXtightenbds down unclamp");
         
         /////up clamp////
-        copy_start(tour_vec, colstat, rowstat);
-        factor_basis();
+        
+        // copy_start(tour_vec, colstat, rowstat);
+        // factor_basis();
+
+        copy_base(colstat, rowstat);
         
         rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &ind, &lower, &one);
         if (rval)

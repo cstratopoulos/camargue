@@ -140,67 +140,61 @@ public:
     /**@name Row and column operations. */
     ///@{
 
-    /** Create a new empty row. */
-    void new_row(char sense, double rhs);
 
-    /** Create multiple new empty rows. */
+    void new_row(char sense, double rhs); //!< Create a new empty row.
+
     void new_rows(const std::vector<char> &sense,
-                  const std::vector<double> &rhs);
+                  const std::vector<double> &rhs); //!< Create new empty rows.
 
-    /** Add a constraint row to the model. */
     void add_cut(double rhs, char sense,
                  const std::vector<int> &rmatind,
-                 const std::vector<double> &rmatval);
+                 const std::vector<double> &rmatval); //!< Add constraint row.
 
-    /** Add multiple constraint rows to the model at once. */
     void add_cuts(const std::vector<double> &rhs,
                   const std::vector<char> &sense,
                   const std::vector<int> &rmatbeg,
                   const std::vector<int> &rmatind,
-                  const std::vector<double> &rmatval);
+                  const std::vector<double> &rmatval); //!< Add constraint rows.
 
+    /// Delete a not-necessarily-continuous set of rows.
+    void del_set_rows(std::vector<int> &delstat); 
 
-    /** Delete a specified, not-necessarily-continuous set of rows. */
-    void del_set_rows(std::vector<int> &delstat);
-
-    /** Add a column to the model. */
     void add_col(const double objval,
                  const std::vector<int> &indices,
                  const std::vector<double> &coeffs,
-                 const double lb, const double ub);
+                 const double lb, const double ub); //!< Add a column.
     
     ///@}
 
     /**@name Basis operations. */
     ///@{
 
-    /** Instate a basis in the problem corresponding to a solution. */
+    /// Instate a basis in the problem corresponding to a solution.
     void copy_start(const std::vector<double> &x);
 
-    /** Instate a specified basis in the problem, with specified solution. */
+    /// Instate a specified basis in the problem, with specified solution.
     void copy_start(const std::vector<double> &x,
                     const std::vector<int> &col_stat,
                     const std::vector<int> &row_stat);
 
-    /** Make the current basis/solution resident in the problem. */
-    void factor_basis();
+    /// Instate a basis without explicitly specifying a solution.
+    void copy_base(const std::vector<int> &col_stat,
+                   const std::vector<int> &row_stat);
+
+    void factor_basis(); //!< Make the current basis resident in the problem.
     
     ///@}
 
     /**@name Pivoting and optimizing. */
     ///@{
 
-    /** Optimize the relaxation with primal simplex. */
-    void primal_opt();
+    void primal_opt(); //!< Optimize the Relaxation with primal simplex.
 
-    /** Optimize the relaxation with dual simplex. */
-    void dual_opt();
+    void dual_opt(); //!< Optimize the relaxation with dual simplex.
 
-    /** Find a primal non-degenerate pivot. */
-    void nondegen_pivot(double lowlimit);
+    void nondegen_pivot(double lowlimit); //!< Do a primal non-degenerate pivot.
 
-    /** Perform exactly one primal simplex pivot. */
-    void single_pivot();
+    void single_pivot(); //!< Perform exactly one primal simplex pivot.
     
     ///@}
 
