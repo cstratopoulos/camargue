@@ -45,23 +45,6 @@ struct OutPrefs {
   std::string probname; /**< The name of the problem. */
 };
 
-/// Namespace for classes, constants, and enums related to %LP relaxations.
-namespace LP {
-
-
-/// Enum class for categorizing lp solutions.
-enum class PivType {
-    Frac, //!< Fractional solution.
-    Subtour, //!< Integral subtour.
-    Tour, //!< A new or augmented tour.
-    FathomedTour //!< A tour with a dual feasible basis in the current lp.
-};
-
-/// Operator overload for writing LP::PivType to output stream. 
-std::ostream &operator<<(std::ostream &os, PivType piv);
-
-}
-
 
 /// Numerical tolerances used in this project.
 namespace Epsilon {
