@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
 
 using std::vector;
 
@@ -15,6 +16,19 @@ namespace CMR {
 namespace ABC {
 
 using Ptype = Problem::Type;
+
+Problem::Problem(int ind, ScorePair r)
+    : edge_ind(ind), type(Ptype::Affirm), rank(r), contra_base(nullptr)
+{}
+
+Problem::Problem(int ind, ScorePair r, LP::Basis &&cbase)
+try
+    : edge_ind(ind), type(Ptype::Contra), rank(r),
+      contra_base(util::make_unique<LP::Basis>(std::move(cbase)))
+{} catch (const std::exception &e) {
+    cerr << e.what() << "\n";
+    throw std::runtime_error("Problem constructor failed.");
+}
 
 /**
  * For some estimation metric, evaluate a priority score for branching on a 
@@ -39,14 +53,14 @@ double var_score(double mult, double v0, double v1)
     return num / denom;
 }
 
-ScoreTuple::ScoreTuple(int ind, ScorePair down, ScorePair up, double mult,
-                       double ub)
+ScoreTuple::ScoreTuple(int ind, ScorePair down, ScorePair up,
+                       LP::Basis &&cbase, double mult, double ub)
     : index(ind), score_priority(std::max(down.first, up.first)),
-      down_est(down), up_est(up),
+      down_est(down), up_est(up), contra_base(std::move(cbase)),
       score(var_score(mult, down_est.second, up_est.second))
 {}
 
-bool operator>(ScoreTuple s, ScoreTuple t)
+bool operator>(const ScoreTuple &s, const ScoreTuple &t)
 {
     return
     std::tie(s.score_priority, s.score) > std::tie(t.score_priority, t.score);
@@ -116,21 +130,24 @@ vector<int> length_weighted_cands(const vector<Graph::Edge> &edges,
 vector<ScoreTuple> ranked_cands(const vector<int> &cand_inds,
                                 const vector<ScorePair> &down_est,
                                 const vector<ScorePair> &up_est,
+                                vector<LP::Basis> &contra_bases,
                                 const double mult, const double ub,
                                 const int num_return)
 {
     vector<ScoreTuple> result;
 
     for (int i = 0; i < cand_inds.size(); ++i)
-        result.emplace_back(cand_inds[i], down_est[i], up_est[i], mult, ub);
+        result.emplace_back(cand_inds[i], down_est[i], up_est[i],
+                            std::move(contra_bases[i]), mult, ub);
 
     std::sort(result.begin(), result.end(), std::greater<ScoreTuple>());
 
     if (result.size() <= num_return)
         return result;
-    else
-        return vector<ScoreTuple>(result.begin(), result.begin() + num_return);
-
+    else {
+        result.resize(num_return);
+        return result;
+    }
 }
 
 int num_digits(const double val)

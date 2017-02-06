@@ -7,6 +7,8 @@
 #ifndef CMR_BRANCH_UTIL_H
 #define CMR_BRANCH_UTIL_H
 
+#include "lp_util.hpp"
+
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -49,12 +51,14 @@ struct Problem {
     
     Problem() = default;
 
-    Problem(int ind, Type t, ScorePair r)
-        : edge_ind(ind), type(t), rank(r) {}
+    Problem(int ind, ScorePair r);
+
+    Problem(int ind, ScorePair r, LP::Basis &&cbase);
 
     int edge_ind;
     Type type;
     ScorePair rank;
+    LP::Basis::Ptr contra_base;
 };
 
 std::ostream &operator<<(std::ostream &os, Problem::Type type);
@@ -72,10 +76,8 @@ enum class ContraStrat {
 struct ScoreTuple {
     ScoreTuple() = default;
 
-    ScoreTuple(int ind, ScorePair down, ScorePair up, double mult, double ub);
-
-    /// Store the down/up estimates and score for a variable.
-    ScoreTuple(int ind, double down, double up, double mult, double ub);
+    ScoreTuple(int ind, ScorePair down, ScorePair up, LP::Basis &&cbase,
+               double mult, double ub);
 
     int index; //!< The index of the edge being scored.
 
@@ -84,11 +86,13 @@ struct ScoreTuple {
 
     ScorePair down_est; //!< The estimate for clamping to zero.
     ScorePair up_est; //!< The estimate for clamping to one.
+
+    LP::Basis contra_base;
     
     double score; //!< The priority score formed from down_est and up_est.
 };
 
-bool operator>(ScoreTuple s, ScoreTuple t);
+bool operator>(const ScoreTuple &s, const ScoreTuple &t);
 
 /// Rank a branching variable in terms of its down and up estimates.
 double var_score(double mult, double v0, double v1); 
@@ -103,6 +107,7 @@ std::vector<int> length_weighted_cands(const std::vector<Graph::Edge> &edges,
 std::vector<ScoreTuple> ranked_cands(const std::vector<int> &cand_inds,
                                      const std::vector<ScorePair> &down_est,
                                      const std::vector<ScorePair> &up_est,
+                                     std::vector<LP::Basis> &contra_bases,
                                      const double mult,
                                      const double ub, const int num_return);
 
