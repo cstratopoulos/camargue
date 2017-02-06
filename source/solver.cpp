@@ -221,59 +221,36 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover)
     return piv;
 }
 
-// PivType Solver::abc(bool do_price)
-// {
-//     runtime_error err("Problem in Solver::abc");
+PivType Solver::abc(bool do_price)
+{
+    runtime_error err("Problem in Solver::abc");
 
-//     PivType piv = cutting_loop(do_price, true);
+    PivType piv = PivType::Frac;
+
+    try { piv = cutting_loop(do_price, true); }
+    CMR_CATCH_PRINT_THROW("running cutting_loop", err);
     
-//     if (piv != PivType::Frac) {
-//         if (piv == PivType::FathomedTour)
-//             return piv;
-//         else {
-//             cerr << "Pivot status " << piv << " in abc.\n";
-//             throw logic_error("Invalid pivot type for running Solver::abc.");
-//         }            
-//     }
+    if (piv != PivType::Frac) {
+        if (piv == PivType::FathomedTour)
+            return piv;
+        else {
+            cerr << "Pivot status " << piv << " in abc.\n";
+            throw logic_error("Invalid pivot type for running Solver::abc.");
+        }            
+    }
 
-//     try {
-//         brancher = util::make_unique<ABC::Brancher>(core_lp,
-//                                                     graph_data.core_graph
-//                                                     .get_edges(), tour_basis(),
-//                                                     best_data.min_tour_value,
-//                                                     ABC::ContraStrat::Fix);
-//     } CMR_CATCH_PRINT_THROW("allocating/instantiating Brancher", err);
+    try {
+        brancher = util::make_unique<ABC::Brancher>(core_lp,
+                                                    graph_data.core_graph
+                                                    .get_edges(), tour_basis(),
+                                                    best_data.min_tour_value,
+                                                    ABC::ContraStrat::Fix);
+    } CMR_CATCH_PRINT_THROW("allocating/instantiating Brancher", err);
 
-//     using ProbStat = ABC::Problem::Status;
-//     ABC::Problem prob = brancher->next_prob();
-
-//     cout << "\n\n\t\t///Beginning ABC search\n\n";
-
-//     while (!brancher->solved(prob)) {
-//         cout << "\tBRANCH TASK: " << prob << "\n";
-        
-//         try {
-//             core_lp.factor_basis();
-//             piv = cutting_loop(do_price, false);
-//         } CMR_CATCH_PRINT_THROW("cutting on branch prob", err);
-        
-//         cout << "\tTASK STATUS: ";
-//         if (piv == PivType::FathomedTour) {
-//             brancher->pop_problem(ProbStat::Pruned);
-//         } else if (piv == PivType::Frac) {
-//             brancher->pop_problem(ProbStat::Seen);
-//         } else {
-//             cerr << "Pivot status " << piv << " in abc loop.\n";
-//             throw runtime_error("Invalid piv stat for further branching.");
-//         }
-        
-//         cout << "\tCalling next prob....\n";
-//         prob = brancher->next_prob();
-//     }
-
-//     cout << "\n\t\tABC search complete.\n\n";
+    try { piv = abc_dfs(0, do_price); }
+    CMR_CATCH_PRINT_THROW("running abc_dfs", err);
     
-//     return piv;    
-// }
+    return piv;    
+}
 
 }

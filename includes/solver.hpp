@@ -67,6 +67,8 @@ private:
 
     LP::PivType cut_and_piv(int &round, int &num_pruned, bool do_price);
 
+    LP::PivType abc_dfs(int depth, bool do_price);
+
     LP::PivType frac_recover();
     
     Data::Instance tsp_instance;
