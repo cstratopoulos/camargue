@@ -61,6 +61,7 @@ public:
     /**@name Methods for querying the relaxation. */
     ///@{
 
+    bool primal_feas() const; //!< Is the resident basis primal feasible.
     bool dual_feas() const; //!< Is the resident basis dual feasible.
 
     int num_rows() const; //!< Number of rows in the model.
@@ -68,7 +69,7 @@ public:
 
     int it_count() const; //!< Number of iterations from last optimization.
 
-    double get_coeff(int row, int col) const;
+    double get_coeff(int row, int col) const; //!< Get constraint matrix entry.
 
     void get_rhs(std::vector<double> &rhs, int begin, int end) const;
 
@@ -194,7 +195,10 @@ public:
 
     void nondegen_pivot(double lowlimit); //!< Do a primal non-degenerate pivot.
 
-    void single_pivot(); //!< Perform exactly one primal simplex pivot.
+    void primal_pivot(); //!< Perform exactly one primal simplex pivot.
+    void dual_pivot(); //!< Perform exactly one dual simplex pivot.
+
+    void primal_recover(); //!< Pivot until the basis is primal feasible.
     
     ///@}
 

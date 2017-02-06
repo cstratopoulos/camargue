@@ -150,6 +150,20 @@ void set_info_vec(cplex_query F, const char *Fname,
         throw cpx_err(rval, Fname);
 }
 
+static int pfeas_cb (CPXCENVptr cpx_env, void *cbdata, int wherefrom,
+                     void *cbhandle)
+{
+    int pfeas = 0;
+    
+    int rval = CPXgetcallbackinfo(cpx_env, cbdata, wherefrom,
+                                  CPX_CALLBACK_INFO_PRIMAL_FEAS,
+                                  &pfeas);
+    if (rval)
+        throw cpx_err(rval, "CPXgetcallbackinfo pfeas.");
+    
+    return pfeas;
+}
+
 class CPXintParamGuard {
 public:
     CPXintParamGuard(int which, int new_value, CPXENVptr env,
@@ -563,7 +577,7 @@ void Relaxation::nondegen_pivot(const double lowlimit)
     }    
 }
 
-void Relaxation::single_pivot() try
+void Relaxation::primal_pivot()
 {
     int rval = 0;
     CPXlongParamGuard it_clamp(CPX_PARAM_ITLIM, 1, simpl_p->env,
@@ -582,9 +596,40 @@ void Relaxation::single_pivot() try
         solstat != CPX_STAT_OPTIMAL_INFEAS)
         throw cpx_err(solstat, "CPXprimopt solstat");
     
-} catch (const exception &e) {
-    cerr << e.what() << "\n";
-    throw runtime_error("Problem in Relaxation::single_pivot.");
+}
+
+void Relaxation::dual_pivot()
+{
+    int rval = 0;
+    CPXlongParamGuard it_clamp(CPX_PARAM_ITLIM, 1, simpl_p->env,
+                               "single pivot itlim clamp");
+
+    rval = CPXdualopt(simpl_p->env, simpl_p->lp);
+    if (rval)
+        throw cpx_err(rval, "CPXdualopt");
+
+    int solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
+    if (solstat == CPX_STAT_INFEASIBLE)
+        throw runtime_error("LP is infeasible.");
+
+    if (solstat != CPX_STAT_OPTIMAL &&
+        solstat != CPX_STAT_ABORT_IT_LIM &&
+        solstat != CPX_STAT_OPTIMAL_INFEAS)
+        throw cpx_err(solstat, "CPXdualopt solstat");
+    
+}
+
+void Relaxation::primal_recover()
+{
+    int rval = CPXsetlpcallbackfunc(simpl_p->env, pfeas_cb, NULL);
+    if (rval)
+        throw cpx_err(rval, "CPXsetlpcallbackfunc setting pfeas_cb");
+
+    primal_opt();
+
+    rval = CPXsetlpcallbackfunc(simpl_p->env, NULL, NULL);
+    if (rval)
+        throw cpx_err(rval, "CPXsetlpcallbackfunc undoing cb");
 }
 
 double Relaxation::get_objval() const
@@ -611,6 +656,15 @@ vector<double> Relaxation::lp_vec() const
                     num_cols() - 1);
 }
 
+bool Relaxation::primal_feas() const
+{
+    int result = 0;
+    int rval = CPXsolninfo(simpl_p->env, simpl_p->lp, NULL, NULL, &result,
+                           NULL);
+    if (rval)
+        throw cpx_err(rval, "CPXsolninfo");
+    return result;
+}
 
 bool Relaxation::dual_feas() const
 {
@@ -670,7 +724,6 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                                       int itlim, double upperbound)
 {
     using ScorePair = std::pair<int, double>;
-    int rval = 0;
     
     CPXdblParamGuard obj_ulim(CPX_PARAM_OBJULIM, upperbound, simpl_p->env,
                               "primal_strong_branch obj ulim");
@@ -680,93 +733,71 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
 
     CPXintParamGuard price_ind(CPX_PARAM_PPRIIND, CPX_PPRIIND_STEEP,
                                simpl_p->env, "primal_strong_branch pricing");
-
-    CPXlongParamGuard it_lim(CPX_PARAM_ITLIM, itlim, simpl_p->env,
-                             "primal_strong_branch it lim");
-
+    
     downobj.clear();
     upobj.clear();
     downobj.reserve(indices.size());
     upobj.reserve(indices.size());
 
+    using ClampPair = std::pair<char, double>;
+
+    std::array<ClampPair, 2> clamps{ClampPair('U', 0.0), ClampPair('L', 1.0)};
+
     for (const int &ind : indices) {
-        double zero = 0.0;
-        double one = 1.0;
-        char upper = 'U';
-        char lower = 'L';
-        int solstat;
-        
-        /////down clamp/////
-        
-        // copy_start(tour_vec, colstat, rowstat);
-        // factor_basis();
+        for (ClampPair &cp : clamps) {
+            char sense = cp.first;
+            double clamp_bound = cp.second;
+            double unclamp_bound = 1.0 - cp.second;
 
-        copy_base(colstat, rowstat);
-        
-        rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &ind, &upper,
-                             &zero);
-        if (rval)
-            throw cpx_err(rval, "CPXtightenbds down clamp");
+            tighten_bound(ind, sense, clamp_bound);
 
-        primal_opt();
+            if (tour_vec[ind] == clamp_bound) {
+                copy_start(tour_vec);
+                factor_basis();
+            } else {
+                copy_base(colstat, rowstat);
+                primal_recover();
+                cout << "P feas after prim recover: " << primal_feas() << ", "
+                     << it_count() << " iterations\n";
+                if (!primal_feas())
+                    cout << "Infeasible with stat "
+                         << CPXgetstat(simpl_p->env, simpl_p->lp) << "\n";
+            }
 
-        solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
-        double objval = get_objval();
-        int rank = -1;
+            CPXlongParamGuard it_lim(CPX_PARAM_ITLIM, itlim, simpl_p->env,
+                                     "primal_strong_branch it lim");
 
-        if (solstat == CPX_STAT_ABORT_IT_LIM ||
-            solstat == CPX_STAT_ABORT_OBJ_LIM)
-            rank = 0;
-        else if (solstat == CPX_STAT_OPTIMAL ||
-            solstat == CPX_STAT_OPTIMAL_INFEAS)
-            rank = 1;
-        else if (solstat == CPX_STAT_INFEASIBLE)
-            rank = 2;
-        else 
-            throw cpx_err(solstat, "CPXgetstat in down clamp");
+            cout << "objval after tighten " << clamp_bound << ": "
+                 << get_objval() << "\n";
 
-        downobj.push_back(ScorePair(rank, objval));
+            primal_opt();
 
-        rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &ind, &upper, &one);
-        if (rval)
-            throw cpx_err(rval, "CPXtightenbds down unclamp");
-        
-        /////up clamp////
-        
-        // copy_start(tour_vec, colstat, rowstat);
-        // factor_basis();
+            int solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
+            double objval = get_objval();
+            int rank = -1;
 
-        copy_base(colstat, rowstat);
-        
-        rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &ind, &lower, &one);
-        if (rval)
-            throw cpx_err(rval, "CPXtightenbds up clamp");
+            if (solstat == CPX_STAT_ABORT_IT_LIM ||
+                solstat == CPX_STAT_ABORT_OBJ_LIM)
+                rank = 0;
+            else if (solstat == CPX_STAT_OPTIMAL ||
+                     solstat == CPX_STAT_OPTIMAL_INFEAS)
+                rank = 1;
+            else if (solstat == CPX_STAT_INFEASIBLE)
+                rank = 2;
+            else 
+                throw cpx_err(solstat,
+                              clamp_bound == 0.0 ?
+                              "CPXgetstat in down clamp" :
+                              "CPXgetstat in up clamp");
 
-        primal_opt();
+            vector<ScorePair> &objvec = clamp_bound == 0.0 ? downobj : upobj;
+            objvec.push_back(ScorePair(rank, objval));
 
-        objval = get_objval();
-        solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
-
-        if (solstat == CPX_STAT_ABORT_IT_LIM ||
-            solstat == CPX_STAT_ABORT_OBJ_LIM)
-            rank = 0;
-        else if (solstat == CPX_STAT_OPTIMAL ||
-            solstat == CPX_STAT_OPTIMAL_INFEAS)
-            rank = 1;
-        else if (solstat == CPX_STAT_INFEASIBLE)
-            rank = 2;
-        else 
-            throw cpx_err(solstat, "CPXgetstat in up clamp");
-
-        upobj.push_back(ScorePair(rank, objval));
-
-        rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &ind, &lower,
-                             &zero);
-        if (rval)
-            throw cpx_err(rval, "CPXtightenbds up unclamp");
+            tighten_bound(ind, sense, unclamp_bound);
+        }
     }
 
-    copy_start(tour_vec, colstat, rowstat);
+    copy_start(tour_vec);
     factor_basis();
 }
 
