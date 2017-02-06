@@ -14,7 +14,6 @@ using std::cerr;
 namespace CMR {
 namespace ABC {
 
-using Pstat = Problem::Status;
 using Ptype = Problem::Type;
 
 /**
@@ -197,25 +196,9 @@ ostream &operator<<(ostream &os, Ptype type)
     return os;
 }
 
-ostream &operator<<(ostream &os, Pstat stat)
-{
-    switch (stat) {
-    case Pstat::Pruned:
-        os << "Pruned";
-        break;
-    case Pstat::Unseen:
-        os << "Unseen";
-        break;
-    case Pstat::Seen:
-        os << "Seen";
-        break;
-    }
-    return os;
-}
-
 ostream &operator<<(ostream &os, const Problem &prob)
 {
-    os << prob.status << " " << prob.type << " branch on edge "
+    os << prob.type << " branch on edge "
        << prob.edge_ind;
     return os;
 }
