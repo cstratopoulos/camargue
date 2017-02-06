@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** @file
- * @brief LP SOLVER INTERFACE STRUCT AND METHODS
+ * @brief Interface to the LP solver. 
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -8,6 +8,7 @@
 #define CMR_LP_INTERFACE_H
 
 #include "config.hpp"
+#include "lp_util.hpp"
 
 #if CMR_HAVE_SAFEGMI
 #include "mirgroup.hpp"
@@ -19,21 +20,6 @@
 
 namespace CMR {
 namespace LP {
-
-enum BStat {
-    AtLower = 0,
-    Basic = 1,
-    AtUpper = 2,
-    FreeSuper = 3
-};
-
-struct Basis {
-    Basis() = default;
-    
-    std::vector<int> colstat;
-    std::vector<int> rowstat;
-};
-
 
 /** Class for storing an lp relaxation via interface to an lp solver. 
  * This structure stores the environment and lp data structures of the lp 
@@ -90,9 +76,12 @@ public:
     
     std::vector<double> lp_vec() const; //!< Return current solution.
 
+
     /// Get the resident basis. 
     void get_base(std::vector<int> &colstat,
                   std::vector<int> &rowstat) const;
+
+    Basis base() const; //!< Return the resident basis.
 
     std::vector<int> col_stat() const; //!< Get the column basis.
 
@@ -127,6 +116,7 @@ public:
                               const std::vector<int> &indices,
                               std::vector<std::pair<int, double>> &downobj,
                               std::vector<std::pair<int, double>> &upobj,
+                              std::vector<Basis> &contra_bases,
                               int itlim, double upperbound);
 
     /// Tighten the bound on a variable. 

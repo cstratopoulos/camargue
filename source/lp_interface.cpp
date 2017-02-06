@@ -478,6 +478,13 @@ void Relaxation::get_base(vector<int> &colstat,
         throw cpx_err(rval, "CPXgetbase");
 }
 
+Basis Relaxation::base() const
+{
+    Basis result;
+    get_base(result.colstat, result.rowstat);
+    return result;
+}
+
 vector<int> Relaxation::col_stat() const
 {
     vector<int> result(num_cols());
@@ -721,12 +728,10 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                                       const vector<int> &indices,
                                       vector<std::pair<int, double>> &downobj,
                                       vector<std::pair<int, double>> &upobj,
+                                      vector<Basis> &contra_bases,
                                       int itlim, double upperbound)
 {
     using ScorePair = std::pair<int, double>;
-    
-    CPXdblParamGuard obj_ulim(CPX_PARAM_OBJULIM, upperbound, simpl_p->env,
-                              "primal_strong_branch obj ulim");
     
     CPXintParamGuard per_ind(CPX_PARAM_PERIND, 0, simpl_p->env,
                              "primal_strong_branch perturb");
@@ -739,11 +744,19 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
     downobj.reserve(indices.size());
     upobj.reserve(indices.size());
 
+    bool have_bases = false;
+    if (!contra_bases.empty())
+        have_bases = true;
+    else
+        contra_bases.reserve(indices.size());
+
     using ClampPair = std::pair<char, double>;
 
     std::array<ClampPair, 2> clamps{ClampPair('U', 0.0), ClampPair('L', 1.0)};
 
-    for (const int &ind : indices) {
+    for (int i = 0; i < indices.size(); ++i) {
+        int ind = indices[i];
+        cout << "----Index " << ind << "\n";
         for (ClampPair &cp : clamps) {
             char sense = cp.first;
             double clamp_bound = cp.second;
@@ -755,20 +768,30 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                 copy_start(tour_vec);
                 factor_basis();
             } else {
-                copy_base(colstat, rowstat);
-                primal_recover();
-                cout << "P feas after prim recover: " << primal_feas() << ", "
-                     << it_count() << " iterations\n";
-                if (!primal_feas())
-                    cout << "Infeasible with stat "
-                         << CPXgetstat(simpl_p->env, simpl_p->lp) << "\n";
+                if (!have_bases) {
+                    copy_base(colstat, rowstat);
+                    primal_recover();
+                    cout << "P feas after prim recover: "
+                         << primal_feas() << ", "
+                         << it_count() << " iterations\n";
+                    if (!primal_feas())
+                        cout << "Infeasible with stat "
+                             << CPXgetstat(simpl_p->env, simpl_p->lp) << "\n";
+                    contra_bases.emplace_back(base());
+                } else {
+                    copy_base(contra_bases[i].colstat,
+                              contra_bases[i].rowstat);
+                    factor_basis();
+                    cout << "Copied saved base, p feas "
+                         << primal_feas() << "\n";
+                }
             }
 
             CPXlongParamGuard it_lim(CPX_PARAM_ITLIM, itlim, simpl_p->env,
                                      "primal_strong_branch it lim");
 
-            cout << "objval after tighten " << clamp_bound << ": "
-                 << get_objval() << "\n";
+            cout << "objval after tighten " << ((int) clamp_bound) << ": "
+                 << get_objval() << "\n\n";
 
             primal_opt();
 
@@ -776,8 +799,7 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
             double objval = get_objval();
             int rank = -1;
 
-            if (solstat == CPX_STAT_ABORT_IT_LIM ||
-                solstat == CPX_STAT_ABORT_OBJ_LIM)
+            if (solstat == CPX_STAT_ABORT_IT_LIM)
                 rank = 0;
             else if (solstat == CPX_STAT_OPTIMAL ||
                      solstat == CPX_STAT_OPTIMAL_INFEAS)
