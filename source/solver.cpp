@@ -120,7 +120,8 @@ void Solver::report_cuts()
 
     cout << "\t" << subcount << " SECs, " << combcount
          << " combs/blossoms, " << dpcount << " dp cuts, "
-         << gmicount << " GMI cuts. \n\t(" << core_lp.num_rows()
+         << gmicount << " GMI cuts. \n\t("
+         << (core_lp.num_rows() - tsp_instance.node_count())
          << " cuts total, " << core_lp.num_cols() << " cols).\n";
     cout << "\n";
 }
