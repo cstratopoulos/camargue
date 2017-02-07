@@ -73,7 +73,7 @@ int main(int argc, char** argv) try
     CMR::Timer t;
     t.start();
 
-    tsp_solver->cutting_loop(!sparse, true);
+    tsp_solver->cutting_loop(!sparse, true, true);
 
     t.stop();
     t.report(true);

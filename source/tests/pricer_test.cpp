@@ -48,7 +48,7 @@ SCENARIO ("Optimizing and computing lower bounds",
                     OutPrefs outprefs;
                     Solver solver(probfile, seed, outprefs);
 
-                    solver.cutting_loop(true, true);
+                    solver.cutting_loop(true, true, true);
 
                     LP::CoreLP &core = const_cast<LP::CoreLP &>(solver.
                                                                 get_core_lp());
@@ -98,7 +98,7 @@ SCENARIO ("Computing exact lower bounds",
                 OutPrefs outprefs;
                 Solver solver(probfile, seed, outprefs);
 
-                solver.cutting_loop(true, true);
+                solver.cutting_loop(true, true, true);
 
                 LP::CoreLP &core = const_cast<LP::CoreLP &>(solver.
                                                             get_core_lp());
@@ -149,7 +149,7 @@ vector<ProbPair> probs {
                     OutPrefs outprefs;        
                     Solver solver(probfile, seed, outprefs);
                     
-                    solver.cutting_loop(false, true);
+                    solver.cutting_loop(false, true, true);
 
                     Data::GraphGroup &g_dat =
                     const_cast<Data::GraphGroup&>(solver.graph_info());

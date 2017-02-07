@@ -38,9 +38,10 @@ SCENARIO ("Running a Solver with contra Fix Brancher",
     using namespace CMR;
     vector<string> probs{
         "dantzig42",
-        "pr76",
+        //"pr76",
         "a280",
-        "lin318"
+        "lin318",
+        "p654",
         };
 
     for (string &prob : probs) {
@@ -79,7 +80,7 @@ SCENARIO ("Instating a Brancher and getting problems",
                               //prob + ".sol",
                               99, prefs);
                 int ncount = solver.inst_info().node_count();
-                LP::PivType piv = solver.cutting_loop(ncount < 100, true);
+                LP::PivType piv = solver.cutting_loop(ncount < 100, true, true);
 
                 if (piv == LP::PivType::Frac) {
                     LP::CoreLP &core =
@@ -159,7 +160,7 @@ SCENARIO ("Computing branching edges",
                                    //prob + ".sol",
                                    99, prefs);
                 int ncount = solver.inst_info().node_count();
-                LP::PivType piv = solver.cutting_loop(ncount < 100, true);
+                LP::PivType piv = solver.cutting_loop(ncount < 100, true, true);
 
                 if (piv == LP::PivType::Frac) {
                     LP::CoreLP &core =
