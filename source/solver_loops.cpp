@@ -284,7 +284,7 @@ PivType Solver::abc_dfs(int depth, bool do_price)
 
     if (depth > 0)
         try {
-            piv = cutting_loop(do_price, false);
+            piv = cutting_loop(do_price, false, false);
         } CMR_CATCH_PRINT_THROW("solving branch prob", err);
 
     if (piv != PivType::Frac) {
@@ -367,12 +367,8 @@ PivType Solver::frac_recover()
         throw err;
     }
 
-    if (val >= best_data.min_tour_value) {
-        //cout << "\tUnable to augment from frac vector.\n";
+    if (val >= best_data.min_tour_value)
         return PivType::Frac;
-    } else
-        cout << "\tFound improved tour from frac vector:\n"
-             << "\t\t" << best_data.min_tour_value << " --> " << val << "\n";
         
     vector<Graph::Edge> new_edges;
     Graph::CoreGraph &graph = graph_data.core_graph;
@@ -396,8 +392,8 @@ PivType Solver::frac_recover()
             core_lp.add_edges(new_edges);
         } CMR_CATCH_PRINT_THROW("adding edges not in tour", err);
         int new_rowcount = core_lp.num_rows();
-        cout << "\tRecover tour contains " << new_edges.size() << " new edges, "
-             << (orig_rowcount - new_rowcount) << " gmi cuts purged.\n";
+        // cout << "\tRecover tour contains " << new_edges.size() << " new edges, "
+        //      << (orig_rowcount - new_rowcount) << " gmi cuts purged.\n";
     }
 
     vector<double> &lp_edges = core_lp.lp_edges;
