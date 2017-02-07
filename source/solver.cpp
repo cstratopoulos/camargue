@@ -151,7 +151,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
     } CMR_CATCH_PRINT_THROW("allocating tour graph", err);
 
 
-    CMR::Timer timer(tsp_instance.problem_name());
+    CMR::Timer timer(tsp_instance.problem_name() + " pure cut");
     
     timer.start();    
 
@@ -247,6 +247,8 @@ PivType Solver::abc(bool do_price)
     }
 
     cout << "\tCommencing ABC search....\n";
+    Timer abct(tsp_instance.problem_name() + " ABC search");
+    abct.start();
 
     try {
         brancher = util::make_unique<ABC::Brancher>(core_lp,
@@ -259,9 +261,14 @@ PivType Solver::abc(bool do_price)
     try { piv = abc_dfs(0, do_price); }
     CMR_CATCH_PRINT_THROW("running abc_dfs", err);
 
+    abct.stop();
+
     cout << "\n\tABC search completed, optimal tour has length "
          << best_data.min_tour_value << "\n";
     report_cuts();
+
+    abct.report(true);
+    
     
     return piv;    
 }

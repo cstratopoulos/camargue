@@ -72,7 +72,7 @@ int main(int argc, char** argv) try
 
     tsp_solver->cut_sel.safeGMI = sparse;
 
-    CMR::Timer t;
+    CMR::Timer t(tsp_solver->inst_info().problem_name() + " overall");
     t.start();
 
     if (branch)
