@@ -77,33 +77,14 @@ try : tsp_instance(make_seed(seed), node_count, gridsize),
     throw runtime_error("Solver random constructor failed.");
 }
 
-void Solver::report_piv(PivType piv, int round, int num_pruned, bool full_opt)
+void Solver::report_lp(PivType piv)
 {
     int rowcount = core_lp.num_rows();
-    cout << "\n\t\tRound " << round << "\n"
+    cout << "\tPivot status:\t" << piv << "\n"
          << "\tLP objective value: " << core_lp.get_objval()
          << ", dual feasible: " << core_lp.dual_feas() << "\n";
     cout << "\t" << rowcount << " rows, "
-         << core_lp.num_cols() << " cols in LP.\n";
-    
-    switch (piv) {
-    case PivType::FathomedTour:
-        if (full_opt) {
-            cout << "\tCurrent tour is optimal\n"
-                 << "\t*************************\n";
-        } else {
-            cout << "\tTour optimal for edge set, pricing edges...\n";
-        }
-        break;
-    case PivType::Tour:
-        cout << "\tAugmented to new tour, pruned "
-             << num_pruned << " slack cuts from LP\n";
-        break;
-    default:
-        cout << "\t Pivot status: \t" << piv << "\n";
-    }
-    
-    cout << endl;
+         << core_lp.num_cols() << " cols in LP.\n\n";
 }
 
 /**
@@ -116,6 +97,32 @@ void Solver::report_aug(bool piv_aug)
     cout << "\tTour " << ++num_augs << ": "
          << core_lp.get_objval() << ", augmented from "
          << (piv_aug ? "primal pivot" : "x-heuristic") << "\n";
+}
+
+void Solver::report_cuts()
+{
+    int subcount = 0;
+    int combcount = 0;
+    int dpcount = 0;
+    int gmicount = 0;
+    
+    for (const Sep::HyperGraph &H : core_lp.ext_cuts.get_cuts()) {
+        CutType t = H.cut_type();
+        if (t == CutType::Subtour)
+            ++subcount;
+        else if (t == CutType::Comb)
+            ++combcount;
+        else if (t == CutType::Domino)
+            ++dpcount;
+        else if (t == CutType::Non)
+            ++gmicount;
+    }
+
+    cout << "\t" << subcount << " SECs, " << combcount
+         << " combs/blossoms, " << dpcount << " dp cuts, "
+         << gmicount << " GMI cuts. \n\t(" << core_lp.num_rows()
+         << " cuts total, " << core_lp.num_cols() << " cols).\n";
+    cout << "\n";
 }
 
 
@@ -202,7 +209,6 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
             } CMR_CATCH_PRINT_THROW("trying to recover from frac tour", err);
 
         if (pure_cut) {
-            report_piv(piv, round,  0, false);
             cout << "\tNo cuts found.\n";
         }
         break;
@@ -211,32 +217,11 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
     timer.stop();
 
     if (pure_cut) {
-        timer.report(true);
+        if (piv == PivType::FathomedTour)
+            report_lp(piv);
+        report_cuts();
 
-        if (piv == PivType::FathomedTour && do_price)
-            report_piv(piv, round, 0, true);
-
-        int subcount = 0;
-        int combcount = 0;
-        int dpcount = 0;
-        int gmicount = 0;
-    
-        for (const Sep::HyperGraph &H : core_lp.ext_cuts.get_cuts()) {
-            CutType t = H.cut_type();
-            if (t == CutType::Subtour)
-                ++subcount;
-            else if (t == CutType::Comb)
-                ++combcount;
-            else if (t == CutType::Domino)
-                ++dpcount;
-            else if (t == CutType::Non)
-                ++gmicount;
-        }
-
-        cout << "\t" << subcount << " SECs, " << combcount
-             << " combs/blossoms, " << dpcount << " dp cuts, "
-             << gmicount << " GMI cuts.\n";
-        cout << "\n";
+        timer.report(true);        
     }
     return piv;
 }
@@ -251,13 +236,16 @@ PivType Solver::abc(bool do_price)
     CMR_CATCH_PRINT_THROW("running cutting_loop", err);
     
     if (piv != PivType::Frac) {
-        if (piv == PivType::FathomedTour)
+        if (piv == PivType::FathomedTour) {            
             return piv;
+        }
         else {
             cerr << "Pivot status " << piv << " in abc.\n";
             throw logic_error("Invalid pivot type for running Solver::abc.");
         }            
     }
+
+    cout << "\tCommencing ABC search....\n";
 
     try {
         brancher = util::make_unique<ABC::Brancher>(core_lp,
@@ -269,6 +257,10 @@ PivType Solver::abc(bool do_price)
 
     try { piv = abc_dfs(0, do_price); }
     CMR_CATCH_PRINT_THROW("running abc_dfs", err);
+
+    cout << "\n\tABC search completed, optimal tour has length "
+         << best_data.min_tour_value << "\n";
+    report_cuts();
     
     return piv;    
 }

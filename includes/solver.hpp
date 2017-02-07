@@ -63,8 +63,9 @@ public:
     } cut_sel;
 
 private:
-    void report_piv(CMR::LP::PivType piv, int round, int num_pruned,
-                    bool full_opt);
+    void report_lp(LP::PivType piv);
+
+    void report_cuts();
     
     void report_aug(bool piv_aug); //!< Output info about a new tour found.
 
