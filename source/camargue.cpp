@@ -33,7 +33,8 @@ using std::exception;
 static void initial_parse(int argc, char **argv,
                           string &tsp_fname, string &tour_fname,
                           int &seed, int &rnodes, int &rgrid,
-                          CMR::OutPrefs &outprefs, bool &sparseflag);
+                          CMR::OutPrefs &outprefs, bool &sparseflag,
+                          bool &branchflag);
 
 static void usage(const std::string &fname);
 
@@ -48,13 +49,14 @@ int main(int argc, char** argv) try
     int rand_grid = 0;
 
     bool sparse = false;
+    bool branch = true;
     
     CMR::OutPrefs outprefs;
 
     unique_ptr<CMR::Solver> tsp_solver;
 
     initial_parse(argc, argv, tsp_fname, tour_fname,
-                  seed, rand_nodes, rand_grid, outprefs, sparse);
+                  seed, rand_nodes, rand_grid, outprefs, sparse, branch);
 
     if (!tsp_fname.empty()) {
         if (tour_fname.empty())
@@ -73,7 +75,10 @@ int main(int argc, char** argv) try
     CMR::Timer t;
     t.start();
 
-    tsp_solver->cutting_loop(!sparse, true, true);
+    if (branch)
+        tsp_solver->abc(!sparse);
+    else
+        tsp_solver->cutting_loop(!sparse, true, true);
 
     t.stop();
     t.report(true);
@@ -88,7 +93,8 @@ int main(int argc, char** argv) try
 static void initial_parse(int ac, char **av,
                           string &tsp_fname, string &tour_fname,
                           int &seed, int &rnodes, int &rgrid,
-                          CMR::OutPrefs &outprefs, bool &sparseflag)
+                          CMR::OutPrefs &outprefs, bool &sparseflag,
+                          bool &branchflag)
 {
     bool randflag = false;
     
@@ -101,8 +107,11 @@ static void initial_parse(int ac, char **av,
         throw logic_error("No arguments specified");
     }
 
-    while ((c = getopt(ac, av, "aRSn:g:s:t:")) != EOF) {
+    while ((c = getopt(ac, av, "aPRSn:g:s:t:")) != EOF) {
         switch (c) {
+        case 'P':
+            branchflag = false;
+            break;
         case 'R':
             randflag = true;
             break;
@@ -157,6 +166,7 @@ static void usage(const std::string &fname)
 {
     cerr << "Usage: " << fname << " [-see below-] [-prob_file-]\n";
     cerr << "\t\t FLAG OPTIONS\n"
+         << "-P \t Pure primal cutting plane solution: do not branch.\n"
          << "-R \t Generate random problem.\n"
          << "   \t Notes:\t Incompatible with -t flag and TSPLIB file\n"
          << "   \t       \t Must be set to specify -n, -g below\n"
