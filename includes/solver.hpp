@@ -36,7 +36,8 @@ public:
            const OutPrefs outprefs);
 
     /// Run a primal cutting plane loop of pivoting and cut generation.
-    LP::PivType cutting_loop(bool do_price, bool try_recover);
+    LP::PivType cutting_loop(bool do_price, bool try_recover,
+                             bool pure_cut);
 
     /// Embed cutting_loop in an augment and branch and cut search.
     LP::PivType abc(bool do_price);
@@ -64,6 +65,8 @@ public:
 private:
     void report_piv(CMR::LP::PivType piv, int round, int num_pruned,
                     bool full_opt);
+    
+    void report_aug(bool piv_aug); //!< Output info about a new tour found.
 
     LP::PivType cut_and_piv(int &round, int &num_pruned, bool do_price);
 
@@ -84,6 +87,8 @@ private:
     std::unique_ptr<ABC::Brancher> brancher;
 
     OutPrefs output_prefs;
+
+    int num_augs = 0;
 };
 
 }

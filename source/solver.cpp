@@ -106,7 +106,20 @@ void Solver::report_piv(PivType piv, int round, int num_pruned, bool full_opt)
     cout << endl;
 }
 
-PivType Solver::cutting_loop(bool do_price, bool try_recover)
+/**
+ * Prints the progress in tour improvement.
+ * @param piv_aug should be true if the tour was obtained from a non-degenerate
+ * primal pivot, false if it was obtained from frac_recover.
+ */
+void Solver::report_aug(bool piv_aug)
+{
+    cout << "\tTour " << ++num_augs << ": "
+         << core_lp.get_objval() << ", augmented from "
+         << (piv_aug ? "primal pivot" : "x-heuristic") << "\n";
+}
+
+
+PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
 {
     runtime_error err("Problem in Solver::cutting_loop");
 
@@ -143,9 +156,8 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover)
         } CMR_CATCH_PRINT_THROW("invoking cut and piv", err);
 
         if (piv == PivType::FathomedTour) {
-            report_piv(piv, round, num_pruned, !do_price);
-            
             if (do_price) {
+                cout << "\tTour optimal for edge set...";
                 try {
                     if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full) {
                         core_lp.factor_basis();
@@ -159,7 +171,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover)
         }
 
         if (piv == PivType::Tour) {
-            report_piv(piv, round, num_pruned, false);
+            report_aug(true);
 
             if (do_price) {
                 try {
@@ -182,44 +194,50 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover)
                 piv = frac_recover();
                 num_pruned = prev_rows - core_lp.num_rows();
                 if (piv == PivType::Tour) {
-                    report_piv(piv, round, num_pruned, false);
+                    report_aug(false);
                     TG = Graph::TourGraph(tour_edges, edges, perm);
 
                     continue;
                 }
             } CMR_CATCH_PRINT_THROW("trying to recover from frac tour", err);
 
-        report_piv(piv, round,  0, false);
-        cout << "\tNo cuts found.\n";
+        if (pure_cut) {
+            report_piv(piv, round,  0, false);
+            cout << "\tNo cuts found.\n";
+        }
         break;
     }
 
     timer.stop();
-    timer.report(true);
 
-    if (piv == PivType::FathomedTour && do_price)
-        report_piv(piv, round, 0, true);
+    if (pure_cut) {
+        timer.report(true);
 
-    int subcount = 0;
-    int combcount = 0;
-    int dpcount = 0;
-    int gmicount = 0;
+        if (piv == PivType::FathomedTour && do_price)
+            report_piv(piv, round, 0, true);
+
+        int subcount = 0;
+        int combcount = 0;
+        int dpcount = 0;
+        int gmicount = 0;
     
-    for (const Sep::HyperGraph &H : core_lp.ext_cuts.get_cuts()) {
-        CutType t = H.cut_type();
-        if (t == CutType::Subtour)
-            ++subcount;
-        else if (t == CutType::Comb)
-            ++combcount;
-        else if (t == CutType::Domino)
-            ++dpcount;
-        else if (t == CutType::Non)
-            ++gmicount;
-    }
+        for (const Sep::HyperGraph &H : core_lp.ext_cuts.get_cuts()) {
+            CutType t = H.cut_type();
+            if (t == CutType::Subtour)
+                ++subcount;
+            else if (t == CutType::Comb)
+                ++combcount;
+            else if (t == CutType::Domino)
+                ++dpcount;
+            else if (t == CutType::Non)
+                ++gmicount;
+        }
 
-    cout << "\t" << subcount << " SECs, " << combcount << " combs/blossoms, "
-         << dpcount << " dp cuts, " << gmicount << " GMI cuts.\n";
-    cout << "\n";
+        cout << "\t" << subcount << " SECs, " << combcount
+             << " combs/blossoms, " << dpcount << " dp cuts, "
+             << gmicount << " GMI cuts.\n";
+        cout << "\n";
+    }
     return piv;
 }
 
@@ -229,7 +247,7 @@ PivType Solver::abc(bool do_price)
 
     PivType piv = PivType::Frac;
 
-    try { piv = cutting_loop(do_price, true); }
+    try { piv = cutting_loop(do_price, true, true); }
     CMR_CATCH_PRINT_THROW("running cutting_loop", err);
     
     if (piv != PivType::Frac) {
