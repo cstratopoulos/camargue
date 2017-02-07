@@ -36,16 +36,16 @@ inline std::ostream &operator<<(std::ostream &os, ScanStat stat)
     std::string out;
     switch (stat) {
     case ScanStat::Partial:
-        out = "Found edges in Partial";
+        out = "searched Partial";
         break;
     case ScanStat::PartOpt:
-        out = "Optimal for Partial";
+        out = "optimal for Partial";
         break;
     case ScanStat::Full:
-        out = "Found edges in Full";
+        out = "searched Full";
         break;
     case ScanStat::FullOpt:
-        out = "Optimal for Full";
+        out = "optimal for Full";
         break;
     }
 
