@@ -261,7 +261,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         }
     }
     
-    cout << "\tAdded " << total_added << " edges, " << result << "\n";
+    cout << "added " << total_added << " edges, " << result << "\n";
     return result;
 }
 
