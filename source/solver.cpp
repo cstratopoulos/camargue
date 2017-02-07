@@ -148,7 +148,8 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover)
             if (do_price) {
                 try {
                     if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full) {
-                        core_lp.rebuild_basis();
+                        core_lp.factor_basis();
+                        //core_lp.rebuild_basis();
                         continue;
                     } else
                         break;
@@ -163,7 +164,8 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover)
             if (do_price) {
                 try {
                     edge_pricer->gen_edges(piv);
-                    core_lp.rebuild_basis();
+                    core_lp.factor_basis();
+                    //core_lp.rebuild_basis();
                 } CMR_CATCH_PRINT_THROW("adding edges to core", err);
             }
             
