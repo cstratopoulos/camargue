@@ -325,9 +325,7 @@ PivType Solver::abc_dfs(int depth, bool do_price)
         } else if (score == 1) {
             if (estimate >= tourlen - 0.9) {
                 cout << "\tProblem appears prunable.\n";
-                if (do_price) {
-                    cout << "\t Price and verify shold go here.\n";
-                } else {
+                if (!do_price) {
                     cout << "\tSparse problem/no price, prune search.\n";
                     call_again = false;
                 }
