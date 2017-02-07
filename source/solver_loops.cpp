@@ -303,7 +303,7 @@ PivType Solver::abc_dfs(int depth, bool do_price)
 
     for (Problem &P : branch_probs) {
         try {
-            cout << "\n\tSearch depth " << depth << "\n";
+            cout << "\tSearch depth " << depth << "\n";
             brancher->do_branch(P);
             if (P.type == Ptype::Affirm)
                 core_lp.copy_start(tour_vec);
@@ -324,7 +324,6 @@ PivType Solver::abc_dfs(int depth, bool do_price)
             call_again = false;
         } else if (score == 1) {
             if (estimate >= tourlen - 0.9) {
-                cout << "\tProblem appears prunable.\n";
                 if (!do_price) {
                     cout << "\tSparse problem/no price, prune search.\n";
                     call_again = false;

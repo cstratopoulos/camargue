@@ -97,7 +97,7 @@ ScoreTuple Brancher::next_branch_obj()
                                                sb2bases,
                                                StrongMult, tour_len, 1)[0]);
     
-    cout << "\tWinner edge " << winner.index << ", tour entry "
+    cout << "\n\tWinner edge " << winner.index << ", tour entry "
          << tour_base.best_tour_edges[winner.index] << "\n";
     cout << "\t\tDown priority " << winner.down_est.first << ", estimate "
          << winner.down_est.second << "\n"
@@ -133,7 +133,7 @@ void Brancher::do_branch(Problem &prob)
             contra_enforce(lp_relax, ind, tour_entry);
         } CMR_CATCH_PRINT_THROW("doing contra branch", err);
     }
-    cout << "\n";
+    cout << "\n\n";
 }
 
 void Brancher::undo_branch(Problem &prob)
@@ -163,7 +163,7 @@ void Brancher::undo_branch(Problem &prob)
         } CMR_CATCH_PRINT_THROW("undoing contra branch", err);
     }
 
-    cout << "\n";
+    cout << "\n\n";
 }
 
 

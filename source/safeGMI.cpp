@@ -179,7 +179,7 @@ bool SafeGomory::find_cuts()
     //      << (std_avg_slack / (double) std_found) << "\n";
 
     if (primal_found.empty()) {
-        cout << "\tFound safe Gomory cuts but none were tight.\n";
+        //cout << "\tFound safe Gomory cuts but none were tight.\n";
         return false;
     }
 
