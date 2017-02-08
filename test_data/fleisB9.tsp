@@ -1,0 +1,15 @@
+NAME : fleisB9
+COMMENT : 9 city Figure 5 from Fleischer et al. (2006)
+DIMENSION : 9
+EDGE_WEIGHT_TYPE : EUC_2D
+NODE_COORD_SECTION
+1 40 70
+2 60 70
+3 50 50
+4 20 30
+5 40 30
+6 60 30
+7 80 30
+8 30 0
+9 70 0
+EOF
