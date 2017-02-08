@@ -251,6 +251,13 @@ PivType Solver::abc(bool do_price)
     Timer abct(tsp_instance.problem_name() + " ABC search");
     abct.start();
 
+    ///should be a small change but branching currently not compatible w gmi
+    if (cut_sel.safeGMI) {
+        cut_sel.safeGMI = false;
+        try { core_lp.purge_gmi(); }
+        CMR_CATCH_PRINT_THROW("dumping gmi cuts before abc", err);
+    }
+
     try {
         brancher = util::make_unique<ABC::Brancher>(core_lp,
                                                     graph_data.core_graph

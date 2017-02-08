@@ -172,16 +172,17 @@ bool SafeGomory::find_cuts()
         }
     }
 
-    if (p_found > 0)
-        cout << "\t" << p_found << " primal Gomory cuts found, avg density "
-             << (p_dense / p_found) << "...";
+    if (p_found > 0) {
+        // cout << "\t" << p_found << " primal Gomory cuts found, avg density "
+        //      << (p_dense / p_found) << "...";
     // cout << "\t" << std_found << " non-primal viol cuts found, avg density "
     //      << (std_dense / std_found) << "\n";
     // cout << "\tTightest non-tight cut: " << std::setprecision(10)
     //      << std_min_slack << "\n\tmax: "
     //      << std_max_slack << std::setprecision(6) << ", avg slack: "
     //      << (std_avg_slack / (double) std_found) << "\n";
-
+    }
+    
     if (primal_found.empty()) {
         //cout << "\tFound safe Gomory cuts but none were tight.\n";
         return false;
@@ -208,7 +209,7 @@ bool SafeGomory::find_cuts()
             gmi_q.push_back(std::move(a));
     } CMR_CATCH_PRINT_THROW("putting found cuts in cut q", err);
 
-    cout << "Enqueued " << gmi_q.size() << ".\n\n";
+    // cout << "Enqueued " << gmi_q.size() << ".\n\n";
 
     return true;    
 }
