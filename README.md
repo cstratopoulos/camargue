@@ -1,13 +1,16 @@
 Camargue	{#mainpage}
 ========
 
-This is the documentation for Camargue, a TSP solver based on primal
-cutting plane methods. Camargue tries to move from one tour to a
-better one, or prove that a given starting tour is optimal. See below
-for installation and usage. To get a sense of the layout of the code, a good
-starting point would be the documentation for CMR::Solver. 
+This is the README for Camargue, a TSP solver based on primal
+cutting plane methods. Camargue tries to move from tour to tour, either
+proving that a tour is optimal or finding a better one. This page contains
+information on installing and using Camargue. 
 
-[Installation](#install)
+See below
+for installation and usage. To get a sense of the layout of the code, a good
+starting point would be the documentation for CMR::Solver.
+
+Installation
 ------------
 
 For users building the code on one of the UW linux.math environments,
@@ -70,7 +73,7 @@ requires that the Catch unit testing framework be
 installed. Information on this is given in @ref extdeps, and specific
 information on invoking the unit tests is in @ref unittests.
 
-[Usage](#usage)
+Usage
 ------
 
 This heading is about standard command line usage of Camargue. For

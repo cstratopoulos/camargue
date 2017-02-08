@@ -44,10 +44,8 @@ framework. For info on running the tests, and suggested usage, see
 The current version of Camargue has been developed in a test driven
 fashion with the help of the unit testing framework
 [Catch](https://github.com/philsquared/Catch). Catch is a header-only,
-C++-based application. To use it with Camargue, just put the [Catch
-header
-file](https://raw.githubusercontent.com/philsquared/Catch/master/include/catch.hpp)
-(or a symlink to it) in the 'camargue/externals' folder.
+C++-based application. To use it with Camargue, just put the
+[Catch header](https://raw.githubusercontent.com/philsquared/Catch/master/include/catch.hpp) (or a symlink to it) in the 'camargue/externals' folder.
 
 To compile Camargue in testing mode, use the recipe `make test`. This
 edits a line in config.hpp to enable testing, `make`s the project,
