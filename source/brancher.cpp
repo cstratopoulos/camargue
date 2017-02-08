@@ -67,6 +67,9 @@ ScoreTuple Brancher::next_branch_obj()
         if (colstat[i] == 1 && !util::var_integral(x[i]))
             lw_inds.push_back(i);
 
+    if (lw_inds.empty())
+        throw logic_error("Tried to branch with no fractional basic vars");
+
     vector<int> sb1inds = length_weighted_cands(core_edges, lw_inds, x,
                                                 SB1Cands);
     vector<ScorePair> downobj;
