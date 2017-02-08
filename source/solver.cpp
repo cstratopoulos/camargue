@@ -196,7 +196,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
             continue;
         }
 
-        if (try_recover)
+        if (try_recover) {
             try {
                 int prev_rows = core_lp.num_rows();
                 piv = frac_recover();
@@ -208,6 +208,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                     continue;
                 }
             } CMR_CATCH_PRINT_THROW("trying to recover from frac tour", err);
+        }
 
         if (pure_cut) {
             cout << "\tNo cuts found.\n";

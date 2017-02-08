@@ -106,7 +106,7 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
     PivType piv;
 
     Data::SupportGroup &supp_data = core_lp.supp_data;
-    unique_ptr<Sep::Separator> sep;
+    unique_ptr<Sep::Separator> &sep = separator;
 
     ++round;
     if (!silent)
@@ -242,17 +242,21 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
     }
 
 #if CMR_HAVE_SAFEGMI
+
+    unique_ptr<Sep::SafeGomory> &gmi_sep = gmi_separator;
     
     if (cut_sel.safeGMI)
         if (!do_price) {
             try {
                 vector<double> lp_x = core_lp.lp_vec();
-                Sep::SafeGomory gmi_sep(core_lp,
-                                        core_lp.tour_base.best_tour_edges,
-                                        lp_x);
+                gmi_sep = util::make_unique<Sep::SafeGomory>(core_lp,
+                                                             core_lp.tour_base
+                                                             .best_tour_edges,
+                                                             lp_x);
                 
-                if (call_separator([&gmi_sep]() { return gmi_sep.find_cuts(); },
-                                   gmi_sep.gomory_q(), piv, core_lp,
+                if (call_separator([&gmi_sep]()
+                                   { return gmi_sep->find_cuts(); },
+                                   gmi_sep->gomory_q(), piv, core_lp,
                                    tourlen, prev_val, total_delta,
                                    delta_ratio, num_pruned)) {
                     if (piv == PivType::Tour || piv == PivType::FathomedTour)
@@ -344,7 +348,7 @@ PivType Solver::abc_dfs(int depth, bool do_price)
 }
 
 PivType Solver::frac_recover()
-{
+{    
     runtime_error err("Problem in Solver::frac_recover");
 
     Data::SupportGroup &s_dat = core_lp.supp_data;
@@ -368,7 +372,7 @@ PivType Solver::frac_recover()
 
     if (val >= best_data.min_tour_value)
         return PivType::Frac;
-        
+    
     vector<Graph::Edge> new_edges;
     Graph::CoreGraph &graph = graph_data.core_graph;
 
@@ -394,32 +398,9 @@ PivType Solver::frac_recover()
         // cout << "\tRecover tour contains " << new_edges.size() << " new edges, "
         //      << (orig_rowcount - new_rowcount) << " gmi cuts purged.\n";
     }
-
-    vector<double> &lp_edges = core_lp.lp_edges;
-
-    for (int i = 0; i < lp_edges.size(); ++i)
-        lp_edges[i] = 0.0;
-
-    //prepping for basis rebuild/handle aug
-    for (int i = 0; i < ncount; ++i) {
-        EndPts e(cyc[i], cyc[(i + 1) % ncount]);
-        int ind = graph.find_edge_ind(e.end[0], e.end[1]);
-        if (ind == -1) {
-            cerr << "Tour edge " << e.end[0] << ", " << e.end[1]
-                 << " still not in graph\n";
-            throw err;
-        }
-        lp_edges[ind] = 1.0;
-    }
-
-    //used as the tour nodes vector in handle_aug
-    graph_data.island = std::move(cyc);
-
-    try {
-        core_lp.copy_start(lp_edges);
-        core_lp.factor_basis();
-        core_lp.handle_aug(); //instates the tour stored in lp_edges
-    } CMR_CATCH_PRINT_THROW("rebuilding/augmenting for x-tour", err);
+    
+    try { core_lp.set_best_tour(cyc); }
+    CMR_CATCH_PRINT_THROW("passing recover tour to core_lp", err);
     
     return LP::PivType::Tour;
 }
