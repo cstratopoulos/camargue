@@ -40,12 +40,12 @@ static int dump_segment(double cut_val, int cut_start, int cut_end,
 TEST_CASE("New tiny candidate teeth with no elim",
 	  "[.SimpleTooth][tiny]") {
     using namespace CMR; 
-    vector<string> tests{"fleisA9", "fleisB9", "comb9", "ulysses16"};
+    vector<string> tests{"fleisA9", "fleisB9", "comb9"};
 
     for (string &fname : tests) {
         SECTION(fname) {
             string
-            probfile = "problems/" + fname + ".tsp",
+            probfile = "test_data/" + fname + ".tsp",
             solfile = "test_data/tours/" + fname + ".sol",
             subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
             Data::GraphGroup g_dat;
@@ -166,12 +166,12 @@ TEST_CASE("New candidate teeth with elim",
 TEST_CASE("New tiny tooth constructor with brute force tests",
 	  "[adj_zones][.tiny][.SimpleTooth]") {
     using namespace CMR;
-    vector<string> tests{"fleisA9", "fleisB9", "comb9", "ulysses16"};
+    vector<string> tests{"fleisA9", "fleisB9", "comb9"};
   
     for (string &fname : tests) {
         SECTION(fname) {
             string
-            probfile = "problems/" + fname + ".tsp",
+            probfile = "test_data/" + fname + ".tsp",
             solfile = "test_data/tours/" + fname + ".sol",
             subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
             Data::GraphGroup g_dat;

@@ -47,7 +47,8 @@ SCENARIO("Karp partitions for too small instances",
   vector<string> probs{"blossom6", "fleisA9", "dantzig42"};
   for (string &fname : probs) {
     string
-    probfile = "problems/" + fname + ".tsp",
+    probfile =
+    ((fname == "dantzig42") ? "problems/" : "test_data/") + fname + ".tsp",
     solfile = "test_data/tours/" + fname + ".sol",
     subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
     CMR::Data::GraphGroup g_dat;

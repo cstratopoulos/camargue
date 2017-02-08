@@ -60,7 +60,7 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
   for (string &fname : probs) {
     GIVEN("TSP instance " + fname) {
       string
-	probfile = "problems/" + fname + ".tsp",
+	probfile = "test_data/" + fname + ".tsp",
 	solfile = "test_data/tours/" + fname + ".sol",
 	badsolfile = "test_data/tours/" + fname + ".bad.sol",
 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
