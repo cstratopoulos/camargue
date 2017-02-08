@@ -163,6 +163,9 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
             piv = cut_and_piv(round, num_pruned, do_price);
         } CMR_CATCH_PRINT_THROW("invoking cut and piv", err);
 
+        if (piv == PivType::Subtour && cut_sel.connect)
+            throw logic_error("Left cut and piv with integral subtour");
+
         if (piv == PivType::FathomedTour) {
             if (do_price) {
                 cout << "\tTour optimal for edge set...";
@@ -196,12 +199,11 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
             continue;
         }
 
+
         if (try_recover) {
             try {
-                int prev_rows = core_lp.num_rows();
-                piv = frac_recover();
-                num_pruned = prev_rows - core_lp.num_rows();
-                if (piv == PivType::Tour) {
+                if (frac_recover() == PivType::Tour) {
+                    piv = PivType::Tour;
                     report_aug(false);
                     TG = Graph::TourGraph(tour_edges, edges, perm);
 
@@ -219,8 +221,8 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
     timer.stop();
 
     if (pure_cut) {
-        if (piv == PivType::FathomedTour)
-            report_lp(piv);
+        cout << "\tPivot status " << piv << ", obj val "
+             << core_lp.get_objval() << "\n";
         report_cuts();
 
         timer.report(true);        
@@ -238,25 +240,18 @@ PivType Solver::abc(bool do_price)
     CMR_CATCH_PRINT_THROW("running cutting_loop", err);
     
     if (piv != PivType::Frac) {
-        if (piv == PivType::FathomedTour) {            
+        if (piv == PivType::FathomedTour) {
             return piv;
         }
         else {
             cerr << "Pivot status " << piv << " in abc.\n";
             throw logic_error("Invalid pivot type for running Solver::abc.");
-        }            
+        }
     }
-
+    
     cout << "\tCommencing ABC search....\n";
     Timer abct(tsp_instance.problem_name() + " ABC search");
     abct.start();
-
-    ///should be a small change but branching currently not compatible w gmi
-    if (cut_sel.safeGMI) {
-        cut_sel.safeGMI = false;
-        try { core_lp.purge_gmi(); }
-        CMR_CATCH_PRINT_THROW("dumping gmi cuts before abc", err);
-    }
 
     try {
         brancher = util::make_unique<ABC::Brancher>(core_lp,
@@ -265,6 +260,13 @@ PivType Solver::abc(bool do_price)
                                                     best_data.min_tour_value,
                                                     ABC::ContraStrat::Fix);
     } CMR_CATCH_PRINT_THROW("allocating/instantiating Brancher", err);
+
+    if (cut_sel.safeGMI) {
+        cout << "(Disabling GMI and purging cuts for branching.....)\n";
+        cut_sel.safeGMI = false;
+        try { core_lp.purge_gmi(); }
+        CMR_CATCH_PRINT_THROW("dumping gmi cuts before abc", err);
+    }
 
     try { piv = abc_dfs(0, do_price); }
     CMR_CATCH_PRINT_THROW("running abc_dfs", err);
