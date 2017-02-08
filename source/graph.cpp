@@ -268,9 +268,11 @@ CoreGraph::CoreGraph(int ncount, int ecount, const int *elist,
 {
     edges.reserve(ecount);
     
-    for (int i = 0; i < ecount; ++i) 
-        edges.emplace_back(elist[2 * i], elist[(2 * i) + 1],
-                           edgelen(elist[2 * i], elist[(2 * i) + 1]));
+    for (int i = 0; i < ecount; ++i) {
+        int e0 = elist[2 * i];
+        int e1 = elist[(2 * i) + 1];
+        edges.emplace_back(e0, e1, edgelen(e0, e1));
+    }
 
     adj_list = AdjList(ncount, edges);
 } catch (const exception &e) {
@@ -284,10 +286,12 @@ CoreGraph::CoreGraph(const vector<int> &tour_nodes,
 {
     edges.reserve(nodecount);
 
-    for (int i = 0; i < nodecount; ++i) 
-        edges.emplace_back(tour_nodes[i], tour_nodes[(i + 1) % nodecount],
-                           edgelen(tour_nodes[i],
-                                   tour_nodes[(i + 1) % nodecount]));
+    for (int i = 0; i < nodecount; ++i) {
+        int e0 = tour_nodes[i];
+        int e1 = tour_nodes[(i + 1) % nodecount];
+
+        edges.emplace_back(e0, e1, edgelen(e0, e1));
+    }
 
     adj_list = AdjList(nodecount, edges);    
 } catch (const exception &e) {
