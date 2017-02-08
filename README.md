@@ -56,7 +56,7 @@ Both must be installed before proceeding.
 
 After installing Concorde, go into the directory `camargue/externals`
 and create a symlink to the `concorde` directory. That is, `concorde`
-must be the name of the folder containing the files `TSP`, `INCLUDE`,
+must point to the folder containing the files `TSP`, `INCLUDE`,
 `CUT`, etc. 
 
 After installing CPLEX, open the `Makefile` and edit the definitions

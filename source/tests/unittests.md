@@ -112,7 +112,12 @@ during exception conditions.
 Similarly, tests with the tag `[!shouldfail]` are marked by Catch as
 hidden by default. As the name suggests, these are tests of the error
 handling control flow in Camargue. They ensure that the program
-terminates as expected if provided with bad inputs. 
+terminates as expected if provided with bad inputs.
+
+Another tag that may be of interest is `[benchmark]`. Tests with this
+tag are not unit tests at all: rather, with these I have used Catch to
+automate running certain benchmarks, either for reporting in my thesis
+or to guide implementation choices elsewhere in the code. 
 
 
 Reading the tests

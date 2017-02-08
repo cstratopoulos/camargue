@@ -57,6 +57,40 @@ happen if, for some reason, the compilation process is killed midway
 through `make test`. In this case, `make remake` should revert
 config.hpp and allow the normal Camargue main to be built.
 
+If you want to run the tests, there are some requirements on
+what your `camargue` directory has to look like. Most importantly, all
+the tests search for TSPLIB instances in a folder called `problems` in
+the Camargue directory. The 
+largest problem used in any of the tests is `usa13509`. Thus, if you
+have a folder containing the TSPLIB instances from
+[here](http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/),
+and you have extracted all problems of size at most as big as
+`usa13509`, just create a symlink to the containing folder in the
+`camargue/` directory. The other requirement is the `test_data`
+folder. This folder contains three subdirectories:
+
+- `tours` for (often suboptimal, sometimes deliberately terrible) TSP tours
+- `subtour_lp` for files with names like `att532.sub.x`
+- `blossom_lp` for files with names like `d493.2m.x`
+
+The latter two are cases where Concorde was used with the flag `-i` or
+`-I` to solve over the blossom or subtour polytope, respectively. If
+you don't have these files, the script TODO can be used to generate
+them, provided
+
+- you have linked to a working build of Concorde in `externals`, and
+- you have created the `problems` symlink in the camargue directory.
+
+The exception to these are a family of extremely tiny examples that I
+created, `blossom6.tsp`, `comb9.tsp`, `fleisA9.tsp` and
+`fleisB9.tsp`. The instances `blossom6` and `comb9` are familiar
+blackboard examples used to illustrate subtour and comb
+inequalities. The instances `fleisA9` and `fleisB9` are an attempt to
+recreate Figures 2 and 5 from Fleischer et al.'s 2006 paper on simple
+DP inequalities. These TSP instances have been placed in the
+`test_data` directory, with tours and LP solutions in subdirectories
+as appropriate. 
+
 If you want to develop or modify tests, repeatedly calling `make test`
 will cause slower compile times, so it would be better to manually
 change the `CMR_DO_TESTS` line in config.hpp and change it back when
