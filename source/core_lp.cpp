@@ -234,6 +234,20 @@ void CoreLP::set_best_tour(const std::vector<int> &tour_nodes)
         d_tour_edges[i] = 0.0;
     }
 
+    const Graph::CoreGraph &CG = graph_data.core_graph;
+
+    for (int i = 0; i < ncount; ++i) {
+        EndPts e(tour_nodes[i], tour_nodes[(i + 1) % ncount]);
+        int ind = CG.find_edge_ind(e.end[0], e.end[1]);
+        if (ind == -1) {
+            cerr << "Edge " << e.end[0] << ", " << e.end[1]
+                 << " still not in graph\n";
+            throw err;
+        }
+        tour_edges[ind] = 1;
+        d_tour_edges[ind] = 1.0;
+    }
+
     try {
         update_best_data();
         copy_start(d_tour_edges);
