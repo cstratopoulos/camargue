@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** @file
- * @brief CORE LP RELAXATIONS OF TSP INSTANCES
+ * @brief Managing Core LP relaxations of TSP instances.
  *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -99,7 +99,12 @@ public:
     friend class CMR::Solver;
 
 private:
-    void handle_aug();
+    void handle_aug_pivot();
+    void set_best_tour(const std::vector<int> &tour_nodes);
+
+    void update_best_data();
+
+    void prune_slacks();
 
     void rebuild_basis();
 

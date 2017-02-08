@@ -180,7 +180,7 @@ PivType CoreLP::primal_pivot()
 
     if (result == PivType::Tour) {
         try {
-            handle_aug();
+            handle_aug_pivot();
         } CMR_CATCH_PRINT_THROW("handling augmentation", err);
     }
 
@@ -199,31 +199,66 @@ void CoreLP::pivot_back()
     }
 }
 
-void CoreLP::handle_aug()
+void CoreLP::handle_aug_pivot()
 {
-    double objval = 0;
-
+    runtime_error err("Problem in CoreLP::handle_aug_pivot");
+    
     best_data.best_tour_nodes = graph_data.island;
     tour_base.best_tour_edges = lp_edges;
 
     for (int i = 0; i < lp_edges.size(); ++i)
         if (lp_edges[i] < Eps::Zero)
             best_data.best_tour_edges[i] = 0;
-        else {
+        else
             best_data.best_tour_edges[i] = 1;
-            objval += graph_data.core_graph.get_edge(i).len;
-        }
 
-    if (objval > best_data.min_tour_value)
-        throw runtime_error("Tried to update best tour with worse objval!");
+    try {
+        update_best_data();
+        get_base(tour_base.colstat, tour_base.rowstat);
+    } CMR_CATCH_PRINT_THROW("instating tour vec", err);
 
-    if (fabs(objval - get_objval()) > Eps::Zero) {
-        cerr << "\tManual objval " << objval << " disagrees with lp val "
-             << get_objval() << "\n";
-        throw runtime_error("Disagreement in new best tour objval with lp.");
+    try { prune_slacks(); } CMR_CATCH_PRINT_THROW("pruning slacks", err);
+}
+
+void CoreLP::set_best_tour(const std::vector<int> &tour_nodes)
+{
+    runtime_error err("Problem in set_best_tour");
+    best_data.best_tour_nodes = tour_nodes;
+    
+    int ncount = tour_nodes.size();
+    vector<int> &tour_edges = best_data.best_tour_edges;
+    vector<double> &d_tour_edges = tour_base.best_tour_edges;
+
+    for (int i = 0; i < tour_edges.size(); ++i) {
+        tour_edges[i] = 0;
+        d_tour_edges[i] = 0.0;
     }
 
-    best_data.min_tour_value = objval;
+    try {
+        update_best_data();
+        copy_start(d_tour_edges);
+        factor_basis();
+        get_base(tour_base.colstat, tour_base.rowstat);
+    } CMR_CATCH_PRINT_THROW("instating tour vec", err);
+
+    try { prune_slacks(); } CMR_CATCH_PRINT_THROW("pruning slacks", err);
+}
+
+void CoreLP::update_best_data()
+{
+    double edge_objval = 0.0;
+
+    const Graph::CoreGraph &G = graph_data.core_graph;
+    const vector<int> &tour_edges = best_data.best_tour_edges;
+
+    for (int i = 0; i < tour_edges.size(); ++i)
+        if (tour_edges[i] == 1)
+            edge_objval += G.get_edge(i).len;
+
+    if (edge_objval > best_data.min_tour_value)
+        throw runtime_error("Tried to update best tour with worse objval!");
+
+    best_data.min_tour_value = edge_objval;
 
     vector<int> &perm = best_data.perm;
     vector<int> &tour = best_data.best_tour_nodes;
@@ -231,9 +266,18 @@ void CoreLP::handle_aug()
 
     for (int i = 0; i < ncount; ++i)
         perm[tour[i]] = i;
-    
-    get_base(tour_base.colstat, tour_base.rowstat);
+}
 
+void CoreLP::prune_slacks()
+{
+    get_x(lp_edges);
+
+    for (int i = 0; i < lp_edges.size(); ++i)
+        if (fabs(lp_edges[i] - tour_base.best_tour_edges[i]) >= Eps::Zero)
+            throw runtime_error("Tried to prune slacks with non-tour vec");
+
+    int ncount = graph_data.core_graph.node_count();
+    
     vector<double> slacks = row_slacks(ncount, num_rows() - 1);
 
     int orig_numrows = num_rows();
@@ -406,9 +450,11 @@ void CoreLP::purge_gmi()
         ++i;
     }
 
-    del_set_rows(delrows);
-    ext_cuts.del_cuts(delrows);
-    factor_basis();
+    if (delcount > 0) {
+        del_set_rows(delrows);
+        ext_cuts.del_cuts(delrows);
+        factor_basis();
+    }
 }
 
 }
