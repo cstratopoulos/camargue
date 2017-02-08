@@ -11,6 +11,8 @@
 #include "util.hpp"
 #include "err_util.hpp"
 
+#include <cfenv>
+
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
@@ -53,6 +55,8 @@ SafeGomory::SafeGomory(LP::Relaxation &rel, const vector<double> &_tour_edges,
 bool SafeGomory::find_cuts()
 {
     runtime_error err("Problem in SafeGomory::find_cuts.");
+
+    auto round_guard = util::make_guard([]{ ::fesetround(FE_TONEAREST); });
 
     int num_added = 0;
     int total_num_added = 0;
