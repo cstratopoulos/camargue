@@ -8,9 +8,18 @@
 #ifndef CMR_SOLVER_H
 #define CMR_SOLVER_H
 
+#include "config.hpp"
 #include "core_lp.hpp"
 #include "karp.hpp"
 #include "datagroups.hpp"
+#include "separator.hpp"
+
+#if CMR_HAVE_SAFEGMI
+
+#include "safeGMI.hpp"
+
+#endif
+
 #include "pricer.hpp"
 #include "brancher.hpp"
 #include "util.hpp"
@@ -83,6 +92,12 @@ private:
     LP::CoreLP core_lp;
 
     Graph::TourGraph TG;
+
+    std::unique_ptr<Sep::Separator> separator;
+
+#if CMR_HAVE_SAFEGMI
+    std::unique_ptr<Sep::SafeGomory> gmi_separator;
+#endif
 
     std::unique_ptr<Price::Pricer> edge_pricer;
     std::unique_ptr<ABC::Brancher> brancher;
