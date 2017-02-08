@@ -42,7 +42,6 @@ notes
 #ignore test data and solutions
 *.x
 *.sol
-test_data
 .ycm_extra_conf.py
 
 #ignore external deps/softlinks
