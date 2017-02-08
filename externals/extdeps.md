@@ -43,9 +43,11 @@ framework. For info on running the tests, and suggested usage, see
 
 The current version of Camargue has been developed in a test driven
 fashion with the help of the unit testing framework
-[Catch](https://github.com/philsquared/Catch). Catch is a header-only,
-C++-based application. To use it with Camargue, just put the
-[Catch header](https://raw.githubusercontent.com/philsquared/Catch/master/include/catch.hpp) (or a symlink to it) in the 'camargue/externals' folder.
+[Catch](https://github.com/philsquared/Catch): C++ Automated Test
+Cases in Headers. To use it with Camargue, just put the
+[Catch
+header](https://raw.githubusercontent.com/philsquared/Catch/master/include/catch.hpp)
+(or a symlink to it) in the 'camargue/externals' folder. 
 
 To compile Camargue in testing mode, use the recipe `make test`. This
 edits a line in config.hpp to enable testing, `make`s the project,
@@ -53,7 +55,12 @@ then reverts config.hpp afterward. Thus, subsequent calls to `make`
 should just build the normal command line executable. This will *not*
 happen if, for some reason, the compilation process is killed midway
 through `make test`. In this case, `make remake` should revert
-config.hpp and allow the normal Camargue main to be built. 
+config.hpp and allow the normal Camargue main to be built.
+
+If you want to develop or modify tests, repeatedly calling `make test`
+will cause slower compile times, so it would be better to manually
+change the `CMR_DO_TESTS` line in config.hpp and change it back when
+you are done. 
 
 
 OpenMP Parallelism

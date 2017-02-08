@@ -4,11 +4,26 @@ Camargue	{#mainpage}
 This is the README for Camargue, a TSP solver based on primal
 cutting plane methods. Camargue tries to move from tour to tour, either
 proving that a tour is optimal or finding a better one. This page contains
-information on installing and using Camargue. 
+information on installing and using Camargue. To get a sense of the
+layout of the code, a good starting point would be the documentation
+for CMR::Solver.
 
-See below
-for installation and usage. To get a sense of the layout of the code, a good
-starting point would be the documentation for CMR::Solver.
+Inline references in this README are meant to be rendered by
+[Doxygen](http://www.stack.nl/~dimitri/doxygen/). If you are reading
+it in plain text or on GitHub, then
+
+- extdeps is the External Dependences documentation in
+  externals/extdeps.md
+- unittests is the Catch Unit Tests documentation in
+  source/tests/unittests.md
+
+If you wish to browse the source code manually, I have tried to
+document it in a way that keeps header files compact and
+readable. Except for class/structure definitions, the
+documentation in a `.hpp` is mostly terse one-liners, with detailed
+coumentation of function parameters and behaviors in the `.cpp`
+files. 
+
 
 Installation
 ------------
@@ -54,8 +69,9 @@ is to edit the file `concorde/INCLUDE/tsp.h` to remove instances of
 the keyword `new` appearing in function prototypes.
 
 The script also attempts to configure Camargue to use certain
-external dependencies. These are all discussed in detail in @ref
-extdeps. With none of these present, or if the configuration script
+external dependencies. These are all discussed in detail in @ref extdeps.
+
+With none of these present, or if the configuration script
 fails at this step somehow, the project should still compile. To see
 if everything went OK, you can check the file config.hpp. If you went
 with a barebones install and later added external enhancements, you
@@ -127,12 +143,14 @@ be used in calls to edge generators, separation routines,
 etc. Negative arguments, or an argument of zero, will result in the
 current time being used.
 
+By default, Camargue will do a loop of pivoting and cutting for as
+long as possible, and then begin a so-called Augment-Branch-Cut
+search. The flag option `-P` will disable branching, attempting a "pure"
+primal cutting plane solution method instead. 
+
 Finally, the flag option `-S` is available to specify sparse solution
 mode. In this mode, Camargue will run no edge pricing of any kind; it
 will just generate an initial edge set as above and try to prove that
 a given starting tour is optimal for this edge set. This option is
 required for the use of primal safe Gomory cut separation; see @ref
 extdeps for more info.
-
-@TODO Should be posisble to specify starting edge sets from file for
-TSPLIB instances. 
