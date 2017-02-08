@@ -262,8 +262,9 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
                     if (piv == PivType::Tour || piv == PivType::FathomedTour)
                         return piv;
 
-                    if (total_delta > Eps::Zero)
+                    if (total_delta > Eps::Zero || piv == PivType::Subtour)
                         return cut_and_piv(round, num_pruned, do_price);
+
                 }
             } CMR_CATCH_PRINT_THROW("doing safe GMI sep", err);
         }
@@ -272,7 +273,8 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
 
 
     if (!silent)
-        cout << "\tTried all routines, returning " << piv << "\n";
+        cout << "\tTried all routines, returning " << piv << ", "
+             << total_delta << " total delta\n";
     return piv;    
 }
 
@@ -329,7 +331,7 @@ PivType Solver::abc_dfs(int depth, bool do_price)
         } else if (score == 1) {
             if (estimate >= tourlen - 0.9) {
                 if (!do_price) {
-                    cout << "\tSparse problem/no price, prune search.\n";
+                    cout << "\tRunning sparse, prune search by bound.\n";
                     call_again = false;
                 }
             }
