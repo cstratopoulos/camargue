@@ -75,8 +75,8 @@ folder. This folder contains three subdirectories:
 
 The latter two are cases where Concorde was used with the flag `-i` or
 `-I` to solve over the blossom or subtour polytope, respectively. If
-you don't have these files, the script TODO can be used to generate
-them, provided
+you don't have these files, the script `make_external_data.sh` can be used
+to generate them, provided
 
 - you have linked to a working build of Concorde in `externals`, and
 - you have created the `problems` symlink in the camargue directory.
