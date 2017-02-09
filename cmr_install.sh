@@ -20,6 +20,7 @@ select externals individually.
 if [ "$#" -eq 0 ]; then
     (>&2 echo "Error: no arguments specified")
     (>&2 echo "$usage")
+    exit 1
 fi
 
 bare=0
@@ -109,6 +110,8 @@ if [ "$safegmi" -eq 1 ]; then
 	curl -# -o "externals/safemir.tar.gz" "$gmi_url"
 	if [ "$?" -eq 1 ]; then
 	    (>&2 echo "Error downloading safemir.tar.gz")
+	    test -e externals/safemir.tar.gz && rm externals/safemir.tar.gz
+	    exit 1
 	fi
 	printf 'Downloaded compressed Safe GMI code, extracting...'
 	tar -xzf externals/safemir.tar.gz  && \
