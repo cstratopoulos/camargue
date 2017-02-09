@@ -8,7 +8,11 @@
 #
 # The approach is to replace declarations such as
 #
-# CCtsp_lpcut_in *new with CCtsp_lpcut_in *new_lpcut_in.
+# CCtsp_lpcut_in *new
+
+# with
+#
+# CCtsp_lpcut_in *new_lpcut_in.
 #
 # And similarly with lpclique, lpdomino, and skeleton.
 # This script should only be run after a softlink to the concorde directory
@@ -20,7 +24,7 @@ sed 's/CCtsp\([_a-z]\) \*new)/CCtsp\1 *new\1)/g' "$header" > tmp_header
 
 if [ "$?" -ne 0 ]
 then
-    echo "Couldn't open tsp.h for editing"
+    (>&2 echo "Couldn't open tsp.h for editing")
     exit 1
 fi
 
