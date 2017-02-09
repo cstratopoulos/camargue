@@ -110,18 +110,22 @@ if [ "$safegmi" -eq 1 ]; then
 	if [ "$?" -eq 1 ]; then
 	    (>&2 echo "Error downloading safemir.tar.gz")
 	fi
-	echo "Downloaded compressed Safe GMI code, extracting..."
+	printf 'Downloaded compressed Safe GMI code, extracting...'
 	tar -xzf externals/safemir.tar.gz  && \
 	    rm externals/safemir.tar.gz && mv safemir externals/safemir
 	if [ "$?" -eq 1 ]; then
 	    (>&2 echo "Error extracting safemir.tar.gz")
-	fi
-	echo "Extracted, now modifying...."
-	scripts/edit_safemir.sh
-	if [ "$?" -eq 1 ]; then
-	    (>&2 echo "Error modifying safemir, project probably won't compile")
+	    test -e externals/safemir.tar.gz && rm externals/safemir.tar.gz
+	    test -e externals/safemir && rm -rf externals/safemir
 	    exit 1
 	fi
+	print 'done\n'
+    fi
+    echo "Now modifying safe GMI src files...."
+    scripts/edit_safemir.sh
+    if [ "$?" -eq 1 ]; then
+	(>&2 echo "Error modifying safemir, project probably won't compile")
+	exit 1
     fi
 fi
 
