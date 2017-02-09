@@ -231,7 +231,10 @@ SCENARIO ("Consructing a Core LP",
                 Data::GraphGroup g_dat(inst);
                 Data::BestGroup b_dat(inst, g_dat);
                 THEN ("Its constructor doesn't throw.") {
-                    REQUIRE_NOTHROW(LP::CoreLP core(g_dat, b_dat));
+                    std::unique_ptr<LP::CoreLP> core;
+                    REQUIRE_NOTHROW(core =
+                                    util::make_unique<LP::CoreLP>(g_dat,
+                                                                  b_dat));
                 }
 
                 AND_THEN ("The degree LP is feasible at the best tour") {
@@ -260,7 +263,8 @@ SCENARIO ("Constructing LP Relaxations",
     using namespace CMR;
     WHEN("A relaxation is constructed"){
         THEN("Its constructor doesn't throw"){
-            REQUIRE_NOTHROW(LP::Relaxation rel);            
+            std::unique_ptr<LP::Relaxation> rel;
+            REQUIRE_NOTHROW(rel = util::make_unique<LP::Relaxation>());
         }
     }
 

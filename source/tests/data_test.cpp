@@ -35,17 +35,18 @@ SCENARIO ("Consructing a GraphGroup and BestGroup",
 
             CMR::Data::Instance inst(probfile, 99);
             CMR::Data::GraphGroup g_dat(inst);
+            CMR::Data::BestGroup b_dat;
             
             WHEN ("An LK BestGroup is constructed") {
                 THEN ("Its constructor does not throw") {
-                    REQUIRE_NOTHROW(CMR::Data::BestGroup b_dat(inst, g_dat));
+                    REQUIRE_NOTHROW(b_dat = CMR::Data::BestGroup(inst, g_dat));
                 }
             }
 
             WHEN ("A tour file BestGroup is constructed") {
                 THEN ("Its constructor does not throw.") {
-                    REQUIRE_NOTHROW(CMR::Data::BestGroup b_dat(inst, g_dat,
-                                                               solfile));
+                    REQUIRE_NOTHROW(b_dat = CMR::Data::BestGroup(inst, g_dat,
+                                                                 solfile));
                 }
             }
         }
