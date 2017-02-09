@@ -15,7 +15,7 @@ if [ -f Makefile ]
 then
     echo "Found Makefile, attempting to configure for OMP...."
 else
-    echo "Error: no Makefile in main directory"
+    (>&2 echo "Error: no Makefile in main directory")
     exit 1
 fi
 
@@ -37,9 +37,7 @@ echo '#include <iostream>
      	       << omp_get_max_threads();
 }' > tmp_prog.cpp
 
-"$CC" -fopenmp tmp_prog.cpp -o tmp_prog.o && ./tmp_prog.o
-
-echo
+"$CC" -fopenmp tmp_prog.cpp -o tmp_prog.o 2>/dev/null && ./tmp_prog.o && echo
 
 worked="$?"
 
