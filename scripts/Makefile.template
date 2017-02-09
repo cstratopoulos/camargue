@@ -35,8 +35,9 @@ CPX_LIB     :=
 
 CC_LIB      := $(EXTINCDIR)/concorde/concorde.a
 FOMP        :=
-CFLAGS      := -Wall -ggdb -Og -pedantic $(FOMP) \
+CFLAGS      := -Wall -O3 -pedantic $(FOMP) \
 -Wno-missing-braces -Wno-sign-compare  -Wno-long-long\
+-Wno-gnu-zero-variadic-macro-arguments\
 -Wno-variadic-macros\
 -std=c++11
 LIB         := $(CPX_LIB) $(CC_LIB) -lm -lpthread $(FOMP)
