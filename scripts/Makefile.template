@@ -5,7 +5,7 @@
 # users, 
 # CC := g++.
 # should be fine.
-CC          := 
+CC          := g++
 
 #The Target Binary Program
 TARGET      := camargue
