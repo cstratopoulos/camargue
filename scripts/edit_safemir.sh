@@ -59,7 +59,7 @@ printf 'done\n'
 
 printf 'Removing braced groups from macro in slmem.h....'
 
-sed 's/(\{/{/g' "$SRCDIR"/slmem.h | sed 's/\})/}/g' > tmp_slmem && \
+sed 's/(\{/\{/g' "$SRCDIR"/slmem.h | sed 's/\})/\}/g' > tmp_slmem && \
     mv tmp_slmem "$SRCDIR"/slmem.h
 
 if [ "$?" -ne 0 ]; then
