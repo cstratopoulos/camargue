@@ -17,6 +17,8 @@
 #include <utility>
 #include <vector>
 
+#include <cmath>
+
 /// The namespace for this project.
 namespace CMR {
 
@@ -65,7 +67,7 @@ namespace util {
 
 /// Is a zero-one variable considered integral.
 inline bool var_integral(double d)
-{ return std::abs(d) < Epsilon::Zero || std::abs(d) > 1 - Epsilon::Zero; }
+{ return fabs(d) < Epsilon::Zero || fabs(d) > 1 - Epsilon::Zero; }
 
 double zeit (void); //!< CPU time function.
 double real_zeit (void); //!< Wall clock time function.
