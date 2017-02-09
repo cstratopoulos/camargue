@@ -276,7 +276,7 @@ void HyperGraph::get_coeffs(const std::vector<EndPt_type> &edges,
     }
 
     for (double &coeff : rmatval)
-        if (fabs(coeff >= Epsilon::Zero)) {
+        if (fabs(coeff) >= Epsilon::Zero) {
             coeff /= 2;
             coeff = floor(coeff);
         }

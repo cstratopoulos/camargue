@@ -37,7 +37,7 @@ public:
 
 private:
     /// A scaling factor used to set the capacity of the underlying array.
-    static constexpr int factor = 1.5;
+    static constexpr double factor = 1.5;
     CCutil_edgehash eh; //!< The underlying Concorde data structure.
 };
 
