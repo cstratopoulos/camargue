@@ -26,6 +26,10 @@ for f in $(cat test_data/main_examples.txt); do
     fi
 done
 
+if [ ! -d test_data/blossom_lp ]; then
+    mkdir test_data/blossom_lp
+fi
+
 for f in $(cat test_data/blossom_examples.txt); do
     have_f=$(ls test_data/blossom_lp | grep "$f" | wc -l)
     if [ "$have_f" -eq 0 ]; then
