@@ -20,6 +20,7 @@ using std::vector;
 using std::string;
 using std::to_string;
 using std::pair;
+using std::unique_ptr;
 
 
 
@@ -28,27 +29,38 @@ using randpair = pair<int, int>;
 
 SCENARIO("Instance constructors throw when they fail",
 	 "[!shouldfail][.Data][.Instance]") {
-  GIVEN("An input filename that doesn't exist") {
-    THEN("The Instance TSPLIB constructor should throw") {
-      REQUIRE_NOTHROW(CMR::Data::Instance inst("dksaljfkla", 0));
+    using namespace CMR;
+    GIVEN("An input filename that doesn't exist") {
+        THEN("The Instance TSPLIB constructor should throw") {
+            unique_ptr<Data::Instance> inst;
+            REQUIRE_NOTHROW(inst = util::make_unique<Data::Instance>("afds",
+                                                                     0));
+        }
     }
-  }
 
-  GIVEN("Bad random problem data") {
-    int ncount = 100, gridsize = 100, seed = 99;
-    WHEN("Node count is zero") {
-      ncount = 0;
-      THEN("The Instance constructor should throw") {
-	REQUIRE_NOTHROW(CMR::Data::Instance inst(seed, ncount, gridsize));
-      }
+    GIVEN("Bad random problem data") {
+        int ncount = 100, grid = 100, seed = 99;
+        WHEN("Node count is zero") {
+            ncount = 0;
+            unique_ptr<Data::Instance> inst;
+            THEN("The Instance constructor should throw") {
+                REQUIRE_NOTHROW(inst = util::make_unique<Data::Instance>(seed,
+                                                                         ncount,
+                                                                         grid));
+            }
+        }
+
+        
+        WHEN("Gridsize is zero") {
+            grid = 0;
+            THEN("The Instance constructor should throw") {
+                unique_ptr<Data::Instance> inst;
+                REQUIRE_NOTHROW(inst = util::make_unique<Data::Instance>(seed,
+                                                                         ncount,
+                                                                         grid));
+            }
+        }
     }
-    WHEN("Gridsize is zero") {
-      gridsize = 0;
-      THEN("The Instance constructor should throw") {
-	REQUIRE_NOTHROW(CMR::Data::Instance inst(seed, ncount, gridsize));
-      }
-    }
-  }
 }
 
 SCENARIO("Instance constructors initialize data as expected",
@@ -93,15 +105,8 @@ SCENARIO("Instance constructors initialize data as expected",
 SCENARIO("Instance constructors copy and move as expected with no leaking",
 	 "[.Data][.Instance][valgrind]") {
   //CMR::Data::Instance instcpy = inst; compiler error, copy construction!
-  
-  GIVEN("A normally constructed instance") {
-    CMR::Data::Instance inst(99, 100, 1000);
-    THEN("We can make a reference of it") {
-      REQUIRE_NOTHROW(CMR::Data::Instance &instref = inst);
-    }
-  }
 
-  GIVEN("Another normally constructed instance") {
+  GIVEN("A normally constructed instance") {
     CMR::Data::Instance inst(99, 1000, 1000000);
     THEN("We can move construct it, transferring ownership") {
         CMR::Data::Instance instmv;
