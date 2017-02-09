@@ -122,7 +122,7 @@ if [ "$safegmi" -eq 1 ]; then
 	    test -e externals/safemir && rm -rf externals/safemir
 	    exit 1
 	fi
-	print 'done\n'
+	printf 'done\n'
     fi
     echo "Now modifying safe GMI src files...."
     scripts/edit_safemir.sh
