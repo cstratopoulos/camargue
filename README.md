@@ -34,16 +34,17 @@ from the camargue main directory just do
     cp scripts/Makefile.template.UWlinux Makefile
 
 The compiler and CPLEX directories are already specified, so you just
-need to do the steps below concerning symlinks to Concorde.
+need to do the steps below concerning symlinks to Concorde, and
+installing externals. 
 
 Camargue is a C++11 application, so most importantly you will need a
 compiler that is compliant with most of the C++11 standard. In fact the code
-has been tested with GCC 4.7, which technically does *not* support the
-C++11 standard in full. Anything after 4.7 or later should be fine,
-and `g++` on a Mac (which is actually an alias of Apple `clang`)
-should be fine too. Your compiler should be specified by editing the
-`CC` definition in the `Makefile`. A bit more detail and example
-options are given there. 
+has been developed and tested with GCC 4.7, which technically does
+*not* support the C++11 standard in full. Anything after 4.7 or later
+should be fine, and `g++` on a Mac (which is actually an alias of
+Apple `clang`) should be fine too. Your compiler should be specified
+by editing the `CC` definition in the `Makefile`. A bit more detail
+and example options are given there. 
 
 Camargue relies heavily on two main external dependencies:
 - The TSP solver/combinatorial optimization library
@@ -52,7 +53,14 @@ Camargue relies heavily on two main external dependencies:
 - The linear programming solver [CPLEX
 12](http://www-03.ibm.com/software/products/en/ibmilogcpleoptistud)
 
-Both must be installed before proceeding.
+Both must be installed before proceeding. A Concorde installation with
+CPLEX is best, but it should work with QSOPT too. For help, see
+
+- [here](http://www.leandro-coelho.com/installing-concorde-tsp-with-cplex-linux/)
+for Leandro Coelho's guide to doing an install with CPLEX; and
+- [here](https://qmha.wordpress.com/2015/08/20/installing-concorde-on-mac-os-x/)
+for David S. Johnson's guide to installing on Mac OS X with QSOPT; and
+- the [Concorde README](http://www.math.uwaterloo.ca/tsp/concorde/DOC/README.html). 
 
 After installing Concorde, go into the directory `camargue/externals`
 and create a symlink to the `concorde` directory. That is, `concorde`
@@ -63,20 +71,37 @@ After installing CPLEX, open the `Makefile` and edit the definitions
 `CPXDIR` and `CPX_LIB`. Details and examples are given in the
 `Makefile`.
 
-No further edits to the Makefile should be necessary. After that, run
-`camargue/configure.sh`. The most important task done by this script
-is to edit the file `concorde/INCLUDE/tsp.h` to remove instances of
-the keyword `new` appearing in function prototypes.
+No further edits to the Makefile should be necessary. After that, you
+can run the script `cmr_install.sh` to configure and install
+Camargue. `cmr_install.h` accepts flag arguments to configure the
+installation to your preferences, and to edit certain other
+files. Information on individual external dependences is in @ref
+extdeps. The simplest options are `-F` and `-B`. So
 
-The script also attempts to configure Camargue to use certain
-external dependencies. These are all discussed in detail in @ref extdeps.
+    ./cmr_install.h -F
 
-With none of these present, or if the configuration script
-fails at this step somehow, the project should still compile. To see
-if everything went OK, you can check the file config.hpp. If you went
-with a barebones install and later added external enhancements, you
-should be able to use them with `make clean` and then by running
-`configure.sh` again. 
+will run a full install with all the external dependencies. Assuming
+you are connected to the internet, this will downloaded, extract, and
+edit all the necessary external dependencies for a full install. This is
+recommended for best performance, and to observe all the features
+described in my thesis. The complementary option is
+
+    ./cmr_install.h -B
+
+which runs a "bare" install with nothing other than Concorde and
+CPLEX.
+
+In either case, `cmr_install.sh` will then invoke
+`configure.sh` to generate a config.hpp file and make appropriate
+edits to the `Makefile`. You can double check both of these to see if
+everything looks right.
+
+If you went with a barebones install and later want to add some or all
+external enhancements, you should just be able to invoke
+`cmr_install.sh` again. For example to add just the safe Gomory code,
+you would do
+
+    ./cmr_install.sh -s
 
 After performing all these steps, you should be able to compile and
 run Camargue by running `make` from the main directory, creating the
@@ -86,8 +111,10 @@ Additionally, if you like, you can run the unit
 tests, benchmarks, and experiments that I used to develop
 Camargue (and write my thesis!) by using the recipe `make test`. This
 requires that the Catch unit testing framework be
-installed. Information on this is given in @ref extdeps, and specific
-information on invoking the unit tests is in @ref unittests.
+installed, which is done by running `cmr_install.sh` with the `-F`
+full install, or with the flag `-c`. Information on this is given in
+@ref extdeps, and specific information on invoking the unit tests is
+in @ref unittests. 
 
 Usage
 ------
@@ -97,7 +124,6 @@ information on running tests/benchmarks, see @ref unittests.
 
 This section will try to elaborate a bit on the terse documentation
 that you get from typing `./camargue` with no arguments.
-
 
 Camargue accepts problems in two formats: TSPLIB instances with a
 `.tsp` suffix, and randomly generated Euclidean instances. If you have

@@ -4,7 +4,9 @@ Catch Unit Tests	{#unittests}
 This file describes how to interactively use the Catch unit tests that were
 used to develop Camargue. For information on installing Catch and
 building in test mode, see @ref extdeps. Henceforth we'll assume Catch
-is installed.
+is installed, and that all the test data has been generated with a call to
+
+    ./make_test_data.sh
 
 Running the tests
 ------------------

@@ -7,8 +7,15 @@ to reuse code from these sources wherever reasonably (and sometimes
 unreasonably) possible. In light of this, remaining dependencies have
 been implemented on an as-you-like basis.
 
-In all cases, it should be sufficient to `make clean` and then run
-`configure.sh` again if a new dependency has been added. 
+As mentioned in the README,
+
+    ./cmr_install.sh -F
+
+does a full install with all the dependencies described below. To add
+individual ones, it should be sufficient to run `make clean` and then
+`cmr_install.sh` with a flag option. The flags are indicated below in
+corresponding sections, with a brief mention of what the install
+script does.
 
 Safe Gomory Cuts
 ----------------
@@ -27,12 +34,23 @@ Safe Gomory Mixed-Integer Cuts" in the Informs Journal of
 Computing. The code is available as a supplement from the publisher
 [here](https://www.informs.org/Pubs/IJOC/Online-Supplements/Volume-21-2009/Cook-Dash-Fukasawa-Goycoolea).
 
-@TODO The raw download will not compile. Maybe provide a script which automates
-the necessary changes, or provide easy access to the modified version.
+If you do not already have the code, running
 
-Create a softlink to the directory
-`safemir` in the `camargue/externals` folder. So `safemir` must be the
-name of the file containing the folder `src`.
+    `./cmr_install.sh -s`
+
+will download the gzipped tarball at the link above. It will then be
+extracted and placed in `camargue/externals`. The script will then
+make some minor edits to some files in `safemir/src`. Some of the
+edits just prevent compiler warnings, but others are required for the
+project to compile.
+
+If you have already downloaded the code with the link above, create a
+softlink to the directory `safemir` in the `camargue/externals`
+folder. So `safemir` must be the name of the file containing the
+folder `src`. If you already had the code downloaded, you will still
+need to make the automated changes just described. Running
+`./cmr_install.sh -s` should do these, but you can also call
+`scripts/edit_safemir.sh` from the camargue directory. 
 
 Catch Unit Tests
 ----------------
@@ -47,7 +65,11 @@ fashion with the help of the unit testing framework
 Cases in Headers. To use it with Camargue, just put the
 [Catch
 header](https://raw.githubusercontent.com/philsquared/Catch/master/include/catch.hpp)
-(or a symlink to it) in the 'camargue/externals' folder. 
+(or a symlink to it) in the 'camargue/externals' folder. Running
+
+    ./cmr_install.sh -c
+
+will place the actual header there directly with a simple `curl` script.
 
 To compile Camargue in testing mode, use the recipe `make test`. This
 edits a line in config.hpp to enable testing, `make`s the project,
@@ -60,7 +82,7 @@ config.hpp and allow the normal Camargue main to be built.
 If you want to run the tests, there are some requirements on
 what your `camargue` directory has to look like. Most importantly, all
 the tests search for TSPLIB instances in a folder called `problems` in
-the Camargue directory. The 
+the Camargue directory, so at `camargue/problems`. The
 largest problem used in any of the tests is `usa13509`. Thus, if you
 have a folder containing the TSPLIB instances from
 [here](http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/),
@@ -106,7 +128,9 @@ the [OpenMP](http://www.openmp.org/) standard for an extremely simple
 approach. Unlike the other external dependencies, this one is not a
 download. Rather, the `configure.sh` script will try to test if your
 compiler supports OpenMP (OMP), and edit the `Makefile`
-accordingly. 
+accordingly. Unlike the other examples, there is no script that will
+download anything: if your compiler doesn't support OMP it is probably
+not worth it to download and install a new one just for that. 
 
 In "Primal Separation Algorithms", Letchford and Lodi observe that the
 minimum cut computations in their blossom separation algorithm are
@@ -137,6 +161,12 @@ computation in finding candidate teeth.
 I have chosen to invoke Timsort using the implementation by Fuji Goro,
 available [here](https://github.com/gfx/cpp-TimSort). To use it, just
 put the
-[header](https://raw.githubusercontent.com/gfx/cpp-TimSort/master/timsort.hpp)
-in the `externals` folder. If `configure.sh` detects that it is not
-present, the code will just use the C++ STL `std::sort`.
+[header](https://raw.githubusercontent.com/gfx/cpp-TimSort/master/timsort.hpp), 
+or a symlink to it, in the `externals` folder. The command
+
+    ./cmr_install.sh -t
+
+will place the header there directly. If `configure.sh` detects that
+it is not present, the code will just use the C++ STL
+`std::sort`. This is a simple dependency to install, but realistically
+it is also the least important. 
