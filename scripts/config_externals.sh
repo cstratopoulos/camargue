@@ -9,7 +9,12 @@
 # remove the appropriate preprocessor compilation directives. See config.hpp
 # for info on what each of these are, and for how to download them if you don't
 # have them already! In the case of OpenMP, the Makefile will be modified
-# as well. 
+# as well.
+#
+# Finally, this script will attempt to detect whether Concorde has been
+# configured with the QSOPT LP Solver, in which case the QSOPT library qsopt.a
+# will be added to the Makefile.
+#
 #
 # This script is meant to be invoked by the main config.sh, it will produce
 # incorrect results if run on its own.
@@ -40,7 +45,7 @@ if [ "$?" -eq 0 ]
 then
     mv includes/cfg_catch "$target"
 else
-    rm includes/cfg_catch
+    test -e includes/cfg_catch && rm includes/cfg_catch
     (>&2 echo "Error modifying for Catch")
     exit 1
 fi
@@ -64,7 +69,7 @@ if [ "$?" -eq 0 ]
 then
     mv includes/cfg_tim "$target"
 else
-    rm includes/cfg_tim
+    test -e includes/cfg_tim && rm cfg_tim
     (>&2 echo "Error modifying for Timsort")
     exit 1
 fi
@@ -89,7 +94,7 @@ if [ "$?" -eq 0 ]
 then
     mv includes/cfg_gmi "$target"
 else
-    rm includes/cfg_gmi
+    test -e includes/cfg_gmi && rm includes/cfg_gmi
     (>&2 echo "Error modifying for Safe MIR")
     exit 1
 fi
@@ -127,8 +132,8 @@ if [ "$make_exit" -eq 0 ]
 then
     mv tmp_make Makefile
 else
-    rm tmp_make
-    rm includes/cfg_omp
+    test -e tmp_make && rm tmp_make
+    test -e includes/cfg_omp && rm includes/cfg_omp
     (>&2 echo "Error modifying Makefile for OpenMP")
     exit 1
 fi
@@ -137,10 +142,38 @@ if [ "$cfg_exit" -eq 0 ]
 then
     mv includes/cfg_omp "$target"
 else
-    rm includes/cfg_omp
+    test -e includes/cfg_omp && rm includes/cfg_omp
     (>&2 echo "Error modifying config.hpp for OpenMP")
     exit 1
 fi
+
+
+####################### Concorde LP Solver Detection ###########################
+
+echo 'Checking for Concorde QSOPT install....'
+
+CC_LP=$(grep 'LPSOLVER_LIB =' externals/concorde/TSP/Makefile | \
+	    sed 's/LPSOLVER_LIB = //')
+
+qsopt=$(cat "$CC_LP" | grep 'qsopt' | wc -l)
+
+if [ "$qsopt" -eq 0 ]; then
+    echo "Concorde doesn't seem to be using QSOPT, no changes needed"
+    exit 0;
+fi
+
+printf 'QSOPT install detected, editing Makefile....'
+
+sed "s@\(QSOPT *:= \)@\1$qsopt@" > tmp_make_qsopt && mv tmp_make_qsopt Makefile
+
+if [ "$?" -ne 0 ]; then
+    (>&2 echo "Error modifying Makefile for QSOPT Concorde")
+    test -e tmp_make_qsopt && rm tmp_make_qsopt
+    exit 1
+fi
+
+printf 'done\n'
+    
 
 exit 0
 
