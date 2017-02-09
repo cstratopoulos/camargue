@@ -6,18 +6,17 @@
 # please make sure you've looked at the README first!
 
 # First check to make sure at Concorde has been placed/softlinked in externals
-have_cc=$(ls externals | grep 'concorde' | wc -l)
 
-if [ "$have_cc" -eq 0 ]
+if [ ! -e externals/concorde ]
 then
-    echo "Error! Please put a softlink to Concorde in externals."
+    (>&2 echo "Error! Please put a symlink to Concorde in externals.")
     exit 1
 fi
 
 scripts/tsp_header.sh
 if [ "$?" -eq 1 ]
 then
-    echo "Fatal error in configure.sh"
+    (>&2 echo "Fatal error in configure.sh")
     exit 1
 fi
 

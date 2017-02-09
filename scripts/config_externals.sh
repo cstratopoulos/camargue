@@ -23,14 +23,15 @@ target=includes/config.hpp
 
 ######################### Catch Unit Testing ##################################
 
-have_catch=$(ls externals | grep 'catch.hpp' | wc -l)
-echo Checking for Catch: "$have_catch"
+printf 'Checking for Catch....'
 
-if [ "$have_catch" -eq 1 ]
+if [ -f externals/catch.hpp ]
 then
+    printf 'yes\n'
     sed 's/#undef CMR_HAVE_CATCH/#define CMR_HAVE_CATCH 1/' "$target" \
 	> includes/cfg_catch
 else
+    printf 'no\n'
     sed 's/#define CMR_HAVE_CATCH 1/#undef CMR_HAVE_CATCH/' "$target" \
 	> includes/cfg_catch
 fi
@@ -40,21 +41,21 @@ then
     mv includes/cfg_catch "$target"
 else
     rm includes/cfg_catch
-    echo "Error modifying for Catch"
+    (>&2 echo "Error modifying for Catch")
     exit 1
 fi
 
 
 ########################## Timsort Implementation #############################
 
-have_tim=$(ls externals | grep 'timsort.hpp' | wc -l)
-echo Checking for Timsort: "$have_tim"
-
-if [ "$have_tim" -eq 1 ]
+printf 'Checking for Timsort....'
+if [ -f externals/timsort.hpp ]
 then
+    printf 'yes\n'
     sed 's/#undef CMR_HAVE_TIMSORT/#define CMR_HAVE_TIMSORT 1/' "$target" \
 	> includes/cfg_tim
 else
+    printf 'no\n'
     sed 's/#define CMR_HAVE_TIMSORT 1/#undef CMR_HAVE_TIMSORT/' "$target" \
 	> includes/cfg_tim
 fi
@@ -64,21 +65,22 @@ then
     mv includes/cfg_tim "$target"
 else
     rm includes/cfg_tim
-    echo "Error modifying for Timsort"
+    (>&2 echo "Error modifying for Timsort")
     exit 1
 fi
 
 
 ############################## Safe MIR ########################################
 
-have_gmi=$(ls externals | grep 'safemir' | wc -l)
-echo Checking for Safe MIR: "$have_gmi"
+printf 'Checking for Safe GMI....'
 
-if [ "$have_gmi" -eq 1 ]
+if [ -e externals/safemir ]
 then
+    printf 'yes\n'
     sed 's/#undef CMR_HAVE_SAFEGMI/#define CMR_HAVE_SAFEGMI 1/' "$target" \
 	> includes/cfg_gmi
 else
+    printf 'no\n'
     sed 's/#define CMR_HAVE_SAFEGMI 1/#undef CMR_HAVE_SAFEGMI/' "$target" \
 	> includes/cfg_gmi
 fi
@@ -88,7 +90,7 @@ then
     mv includes/cfg_gmi "$target"
 else
     rm includes/cfg_gmi
-    echo "Error modifying for Safe MIR"
+    (>&2 echo "Error modifying for Safe MIR")
     exit 1
 fi
 
@@ -113,7 +115,7 @@ then
     sed 's/\(FOMP *:=\).*/\1 -fopenmp/' Makefile > tmp_make
     make_exit="$?"
 else
-    echo Compiler does not appear to support OMP
+    echo "Compiler does not appear to support OMP"
     sed 's/#define CMR_HAVE_OPENMP 1/#undef CMR_HAVE_OPENMP/' "$target" \
 	> includes/cfg_omp
     cfg_exit="$?"
@@ -127,7 +129,7 @@ then
 else
     rm tmp_make
     rm includes/cfg_omp
-    echo "Error modifying Makefile for OpenMP"
+    (>&2 echo "Error modifying Makefile for OpenMP")
     exit 1
 fi
 
@@ -136,7 +138,7 @@ then
     mv includes/cfg_omp "$target"
 else
     rm includes/cfg_omp
-    echo "Error modifying config.hpp for OpenMP"
+    (>&2 echo "Error modifying config.hpp for OpenMP")
     exit 1
 fi
 
