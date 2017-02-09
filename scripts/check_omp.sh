@@ -20,7 +20,15 @@ else
 fi
 
 CC=$(grep '^CC *:=' Makefile | sed 's/.*:= //')
-echo Compiler is "$CC"
+
+cwords=$(echo "$CC" | wc -w)
+
+if [ "$cwords" -eq 0 ]; then
+    (>&2 echo "Script grabbed no characters for compiler variable")
+    exit 1
+fi
+
+echo "Compiler is $CC"
 
 "$CC" --version 2>&1 > /dev/null
 
