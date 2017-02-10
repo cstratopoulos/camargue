@@ -42,9 +42,9 @@ compiler that is compliant with most of the C++11 standard. In fact the code
 has been developed and tested with GCC 4.7, which technically does
 *not* support the C++11 standard in full. Anything after 4.7 or later
 should be fine, and `g++` on a Mac (which is actually an alias of
-Apple `clang`) should be fine too. Your compiler should be specified
-by editing the `CC` definition in the `Makefile`. A bit more detail
-and example options are given there. 
+Apple `clang`) should be fine too; this is the preset option.
+Your compiler is specified by editing the `CC` definition in the `Makefile`.
+A bit more detail and example options are given there. 
 
 Camargue relies heavily on two main external dependencies:
 - The TSP solver/combinatorial optimization library

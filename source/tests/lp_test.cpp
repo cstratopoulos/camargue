@@ -4,6 +4,7 @@
 
 #include <cplex.h>
 
+#include "fixed64.hpp"
 #include "lp_interface.hpp"
 #include "core_lp.hpp"
 #include "separator.hpp"
