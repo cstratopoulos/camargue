@@ -265,8 +265,12 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     return result;
 }
 
-f64 Pricer::exact_lb()
+f64 Pricer::exact_lb(bool full)
 {
+    for (const Sep::HyperGraph &H : ext_cuts.get_cuts())
+        if (H.cut_type() == CutType::Non)
+            throw logic_error("Pricer::exact_lb was called w non cut present");
+    
     runtime_error err("Problem in Pricer::exact_lb");
 
     try {
@@ -274,50 +278,59 @@ f64 Pricer::exact_lb()
                                                          ext_cuts);
     } CMR_CATCH_PRINT_THROW("constructing exact DualGroup", err);
 
-    vector<f64> &node_pi = ex_duals->node_pi;
-    vector<f64> &cut_pi = ex_duals->cut_pi;
+    vector<double> d_pi;
+    vector<char> senses;
+    vector<double> rhs_vec;
 
+    int numrows = core_lp.num_rows();
+    int numcols = core_lp.num_cols();
+    int ncount = inst.node_count();
 
-    const vector<Sep::HyperGraph> &cuts = ext_cuts.get_cuts();
+    vector<f64> ex_pi;
 
-    f64 node_sum = 0.0;
-    f64 cut_sum = 0.0;
+    try {
+        core_lp.get_pi(d_pi, 0, numrows - 1);
+        senses = core_lp.senses(0, numrows - 1);
+        core_lp.get_rhs(rhs_vec, 0, numrows -1);
 
-    for (const f64 &pi : node_pi) {
-        util::add_mult(node_sum, pi, 2);
-    }
+        ex_pi = vector<f64>(d_pi.begin(), d_pi.end());
+    } CMR_CATCH_PRINT_THROW("grabbing cut info", err);
 
-    for (int i = 0; i < cuts.size(); ++i) {
-        const Sep::HyperGraph &H = cuts[i];
-        if (H.cut_type() == CutType::Non)
-            throw logic_error("Tried to get exact_lb with non cut present.");
+    for (int i = ncount; i < numrows; ++i)
+        if (senses[i] == 'G') {
+            if (ex_pi[i] < 0.0)
+                ex_pi[i] = 0.0;
+            else if (senses[i] == 'L')
+                if (ex_pi[i] < 0.0)
+                    ex_pi[i] = 0.0;
+        }
 
-        util::add_mult(cut_sum, cut_pi[i], H.get_rhs());
-    }
+    f64 pi_sum{0.0};
+
+    for (int i = 0; i < numrows; ++i)
+        util::add_mult(pi_sum, ex_pi[i], rhs_vec[i]);
+
 
     vector<PrEdge<f64>> target_edges;
 
-    // for (int i = 0; i < inst.node_count(); ++i)
-    //     for (int j = i + 1; j < inst.node_count(); ++j)
-    //         target_edges.emplace_back(i, j);
-
-    for (const Graph::Edge &e : graph_group.core_graph.get_edges())
-        target_edges.emplace_back(e.end[0], e.end[1]);
+    if (full) {
+        for (int i = 0; i < ncount; ++i)
+            for (int j = 0; j < ncount; ++j)
+                target_edges.emplace_back(i, j);
+    } else {
+        for (const Graph::Edge &e : graph_group.core_graph.get_edges())
+            target_edges.emplace_back(e.end[0], e.end[1]);
+    }
 
     price_edges(target_edges, ex_duals);
 
-    f64 rc_sum = 0.0;
+    f64 rc_sum{0.0};
     
     for (const PrEdge<f64> &e : target_edges)
         if (e.redcost < 0.0)
             rc_sum -= e.redcost;
 
-    f64 bound = node_sum + cut_sum - rc_sum;
-
-    cout << "\tnode sum: " << node_sum << "\n\tcut sum: "
-         << cut_sum << "\n\trc sum: " << rc_sum
-         << "\n\tfinal: " << bound << "\n";
-    
+    f64 bound = pi_sum - rc_sum;
 
     return bound;
 
@@ -339,9 +352,6 @@ f64 Pricer::exact_lb()
     //             penalty += e.redcost;
     // }
 
-    // cout << "\tAccrued penalty of " << penalty << "\n";
-    // bound = rhs_sum + penalty;
-    // cout << "\tBound: " << bound << "\n";
     // return bound;
 }
 

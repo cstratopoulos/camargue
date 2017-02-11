@@ -39,7 +39,7 @@ public:
     
     ScanStat gen_edges(LP::PivType piv_stat); //!< Generate/add edges to core.
 
-    util::Fixed64 exact_lb();
+    util::Fixed64 exact_lb(bool full);
 
     template <typename numtype>
     void price_edges(std::vector<PrEdge<numtype>> &target_edges,
@@ -47,6 +47,9 @@ public:
 
 private:
     std::vector<Graph::Edge> pool_chunk(std::vector<PrEdge<double>> &edge_q);
+
+    bool scan_adjlist(std::vector<PrEdge<util::Fixed64>> &gen_edges,
+                      int &node_index);    
 
     bool scan_edges(std::vector<PrEdge<util::Fixed64>> &gen_edges,
                     int &loop1, int &loop2);

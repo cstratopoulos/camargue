@@ -31,7 +31,7 @@ using std::to_string;
 using std::cout;
 
 SCENARIO ("Computing dual bounds after run of cutting loop",
-          "[LP][Price][Solver][dual]") {
+          "[LP][Price][Solver][dual][exact_lb]") {
     using namespace CMR;
     using f64 = util::Fixed64;
     vector<string> probs{
@@ -74,41 +74,14 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
                     core.get_rhs(rhs, 0, core.num_rows() - 1);
 
                     const auto &hcuts = core.external_cuts().get_cuts();
-
-                    int ncount = solver.inst_info().node_count();
-                    for (int i = 0; i < ncount; ++i)
-                        REQUIRE(rhs[i] == 2.0);
-                    
-                    for (int i = 0; i < hcuts.size(); ++i)
-                        REQUIRE(hcuts[i].get_rhs() == rhs[ncount + i]);
-
-                    auto redcosts = core.redcosts(0, core.num_cols() - 1);
-
-                    double d_pisum = 0.0;
-
-                    for (int i = 0; i < numrows; ++i)
-                        d_pisum += d_pi[i] * rhs[i];
-
-                    INFO("Double pi sum: " << d_pisum);
-
-                    double d_rcsum = 0.0;
-
-                    for (double d : redcosts)
-                        if (d < 0)
-                            d_rcsum -= d;
-
-                    INFO("Double rc sum: " << d_rcsum);
-
-                    double d_lb = d_pisum - d_rcsum;
-
-                    CHECK(d_lb == Approx(objval));                    
+                    auto sense = core.senses(0, numrows - 1);
                     
                     Data::GraphGroup &g_dat =
                     const_cast<Data::GraphGroup &>(solver.graph_info());
 
                     Price::Pricer pricer(core, solver.inst_info(), g_dat);
                     auto dg =
-                    util::make_unique<LP::DualGroup<f64>>(false, core,
+                    util::make_unique<LP::DualGroup<f64>>(true, core,
                                                           core.
                                                           external_cuts());
 
@@ -123,23 +96,13 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
 
                     for (auto &e : graph_edges)
                         if (e.redcost < 0)
-                            ex_rc_sum -= e.redcost;
-                        
-                    CHECK(ex_rc_sum.to_d() == Approx(d_rcsum));
+                            ex_rc_sum -= e.redcost;                        
 
                     vector<f64> ex_pi(d_pi.begin(), d_pi.end());
                     auto ex_pi_sum = f64{0.0};
-
-                    for (int i = 0; i < rhs.size(); ++i)
-                        util::add_mult(ex_pi_sum, ex_pi[i], rhs[i]);
-
                     auto ex_lb = f64{0.0};
-
-                    ex_lb = ex_pi_sum - ex_rc_sum;
-                    CHECK(ex_lb.to_d() == Approx(d_lb));
-
                     f64 fix_pi_sum{0.0};
-                    auto sense = core.senses(0, numrows - 1);
+
                     int corcount = 0;
                     
                     for (int i = 0; i < numrows; ++i)
@@ -156,13 +119,11 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
                         }
                     cout << "Corrected " << corcount << " duals\n";
 
-                    ex_pi_sum = 0.0;
-
                     for (int i = 0; i < rhs.size(); ++i)
                         util::add_mult(ex_pi_sum, ex_pi[i], rhs[i]);
 
                     ex_lb = ex_pi_sum - ex_rc_sum;
-                    CHECK(ex_lb.to_d() <= d_lb);
+                    CHECK(ex_lb.to_d() == Approx(objval));
                 }
             }
         }
@@ -183,7 +144,7 @@ SCENARIO ("Trying to compute dual bounds for the degree LP",
 
     for (string &prob : probs) {
         GIVEN ("The TSP instance " + prob) {
-            WHEN("We primal opt the LP") {
+            WHEN("We primal opt the degree LP") {
                 Data::Instance inst("problems/" + prob + ".tsp", 99);
                 Data::GraphGroup g_dat(inst);
                 Data::BestGroup b_dat(inst, g_dat);
@@ -303,12 +264,9 @@ SCENARIO ("Optimizing and computing lower bounds",
 
                     Price::Pricer pricer(core, solver.inst_info(), g_dat);
 
-                    auto lb = pricer.exact_lb();
+                    auto lb = pricer.exact_lb(false);
                     auto d_lb = lb.to_d();
                     
-                    INFO("Primal vs dual lb\n\t"
-                         << objval << "\n\t" << d_lb << "\n\t Ratio\n"
-                         << (d_lb / objval));
 
                     REQUIRE(d_lb <= objval);
                     CHECK(d_lb == Approx(objval));
@@ -324,9 +282,9 @@ SCENARIO ("Computing exact lower bounds",
     vector<string> probs {
         "bayg29",
         "dantzig42",
-        // "pr76",
-        // "lin105",
-        // "a280",
+        "pr76",
+        "lin105",
+        "a280",
         // "lin318",
         // "fl417",
         // "p654"
@@ -349,11 +307,9 @@ SCENARIO ("Computing exact lower bounds",
                 const_cast<Data::GraphGroup &>(solver.graph_info());
 
                 Price::Pricer pricer(core, solver.inst_info(), g_dat);
-                LP::DualGroup<double> dg(false, core, core.external_cuts());
-                for (double &d : dg.node_pi)
-                    cout << "\tNode pi " << d << "\n";
+                LP::DualGroup<double> dg(true, core, core.external_cuts());
                 THEN ("We can compute a valid lower bound") {
-                    pricer.exact_lb();
+                    pricer.exact_lb(false);
                     
                 }
             }
