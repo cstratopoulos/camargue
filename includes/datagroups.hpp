@@ -36,18 +36,22 @@ public:
     Instance() noexcept; //!< Default construct an empty instance.
 
     /// Construct an Instance from a TSPLIB file with a random seed.
-    Instance(const std::string &fname, const int seed);
+    Instance(const std::string &fname, int seed);
 
     /// Construct a geometric random Instance. 
-    Instance(const int seed, const int ncount, const int gridsize);
+    Instance(int seed, int ncount, int gridsize);
 
-    Instance(Instance &&I) noexcept; //!< Move constructor.
-    Instance &operator=(Instance &&I) noexcept; //!< Move assign.
+    /// Construct a sparse Instance with fixed edge set.
+    Instance(const std::string &probname, int seed, int ncount,
+             std::vector<int> &elist, std::vector<int> &elen);
+
+    Instance(Instance &&I) noexcept; 
+    Instance &operator=(Instance &&I) noexcept;
   
-    Instance(const Instance &I) = delete; //!< Deleted copy constructor.
-    Instance &operator=(const Instance &I) = delete; //!< Deleted copy assign.
+    Instance(const Instance &I) = delete;
+    Instance &operator=(const Instance &I) = delete;
 
-    ~Instance(); //!< Destructor, freeing the Concorde handle. 
+    ~Instance();
 
   
     /// Access the raw pointer to the data, for use by Concorde routines.

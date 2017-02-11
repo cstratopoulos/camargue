@@ -105,7 +105,22 @@ try : nodecount(ncount), random_seed(seed),
 } catch (const exception &e) {
   cerr << e.what() << "\n";
   throw runtime_error("Instance constructor failed.");
- }
+}
+
+Instance::Instance(const string &probname, int seed, int ncount,
+                   vector<int> &elist, vector<int> &elen)
+try
+    : nodecount(ncount), random_seed(seed), pname(probname)
+{
+    if (CCutil_graph2dat_sparse(ncount, elen.size(), &elist[0], &elen[0], 0,
+                                ptr()))
+        throw runtime_error("CCutil_getdata failed.");
+
+    cout << std::fixed;
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("Instance constructor failed.");
+}
 
 Instance::Instance(Instance &&I) noexcept :
     nodecount(I.nodecount), random_seed(I.random_seed), pname(I.pname)
