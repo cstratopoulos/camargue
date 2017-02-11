@@ -38,6 +38,9 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
         "dantzig42",
         "pr76",
         "lin105",
+        "d493",
+        "pr1002",
+        "pcb3038",
         };
 
     for (string &prob : probs) {
@@ -49,42 +52,65 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
                     OutPrefs prefs;
                     Solver solver(probfile, seed, prefs);
 
-                    solver.cut_sel.segment = false;
-                    solver.cut_sel.fast2m = true;
-                    solver.cut_sel.blkcomb = false;
-                    solver.cut_sel.simpleDP = false;
-                    solver.cut_sel.connect = false;
-
-                    solver.cutting_loop(false, false, true);
+                    auto piv = solver.cutting_loop(false, false, true);
                     
                     LP::CoreLP &core =
                     const_cast<LP::CoreLP &>(solver.get_core_lp());
+
+                    if (piv != LP::PivType::FathomedTour) {
+                        cout << "Suboptimal, optimizing\n";
+                        core.primal_opt();
+                    }
                     
-                    core.primal_opt();
                     auto objval = core.get_objval();
                     cout << "\tPrimal opt objval " << objval << "\n";
+
+                    int numrows = core.num_rows();
+                    int numcols = core.num_cols();
+
+                    auto d_pi = core.pi(0, core.num_rows() - 1);
+                    
+                    vector<double> rhs;
+                    core.get_rhs(rhs, 0, core.num_rows() - 1);
+
+                    const auto &hcuts = core.external_cuts().get_cuts();
+
+                    int ncount = solver.inst_info().node_count();
+                    for (int i = 0; i < ncount; ++i)
+                        REQUIRE(rhs[i] == 2.0);
+                    
+                    for (int i = 0; i < hcuts.size(); ++i)
+                        REQUIRE(hcuts[i].get_rhs() == rhs[ncount + i]);
+
+                    auto redcosts = core.redcosts(0, core.num_cols() - 1);
+
+                    double d_pisum = 0.0;
+
+                    for (int i = 0; i < numrows; ++i)
+                        d_pisum += d_pi[i] * rhs[i];
+
+                    INFO("Double pi sum: " << d_pisum);
+
+                    double d_rcsum = 0.0;
+
+                    for (double d : redcosts)
+                        if (d < 0)
+                            d_rcsum -= d;
+
+                    INFO("Double rc sum: " << d_rcsum);
+
+                    double d_lb = d_pisum - d_rcsum;
+
+                    CHECK(d_lb == Approx(objval));                    
                     
                     Data::GraphGroup &g_dat =
                     const_cast<Data::GraphGroup &>(solver.graph_info());
 
                     Price::Pricer pricer(core, solver.inst_info(), g_dat);
                     auto dg =
-                    util::make_unique<LP::DualGroup<f64>>(true,core,
+                    util::make_unique<LP::DualGroup<f64>>(false, core,
                                                           core.
                                                           external_cuts());
-                    vector<double> rhs;
-                    core.get_rhs(rhs, 0, core.num_rows() - 1);
-
-                    auto pi_sum = f64{0.0};
-                        
-                    auto i = 0;
-                    for (auto &pi : dg->node_pi)
-                        util::add_mult(pi_sum, pi, rhs[i++]);
-
-                    for (auto &pi : dg->cut_pi)
-                        util::add_mult(pi_sum, pi, rhs[i++]);
-
-                    INFO("Exact node/cut pi sum: " << pi_sum);
 
                     vector<Price::PrEdge<f64>> graph_edges;
 
@@ -99,12 +125,44 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
                         if (e.redcost < 0)
                             ex_rc_sum -= e.redcost;
                         
-                    INFO("Exact rc sum: " << ex_rc_sum);
+                    CHECK(ex_rc_sum.to_d() == Approx(d_rcsum));
 
-                    auto exact_lb = f64{0.0};
+                    vector<f64> ex_pi(d_pi.begin(), d_pi.end());
+                    auto ex_pi_sum = f64{0.0};
 
-                    exact_lb = pi_sum - ex_rc_sum;
-                    REQUIRE(exact_lb.to_d() <= objval);
+                    for (int i = 0; i < rhs.size(); ++i)
+                        util::add_mult(ex_pi_sum, ex_pi[i], rhs[i]);
+
+                    auto ex_lb = f64{0.0};
+
+                    ex_lb = ex_pi_sum - ex_rc_sum;
+                    CHECK(ex_lb.to_d() == Approx(d_lb));
+
+                    f64 fix_pi_sum{0.0};
+                    auto sense = core.senses(0, numrows - 1);
+                    int corcount = 0;
+                    
+                    for (int i = 0; i < numrows; ++i)
+                        if (sense[i] == 'G') {
+                            if (ex_pi[i] < 0.0){
+                                ++corcount;
+                                ex_pi[i] = 0.0;
+                            }
+                        } else if (sense[i] == 'L') {
+                            if (ex_pi[i] > 0.0) {
+                                ++corcount;
+                                ex_pi[i] = 0.0;
+                            }
+                        }
+                    cout << "Corrected " << corcount << " duals\n";
+
+                    ex_pi_sum = 0.0;
+
+                    for (int i = 0; i < rhs.size(); ++i)
+                        util::add_mult(ex_pi_sum, ex_pi[i], rhs[i]);
+
+                    ex_lb = ex_pi_sum - ex_rc_sum;
+                    CHECK(ex_lb.to_d() <= d_lb);
                 }
             }
         }
