@@ -17,6 +17,8 @@
 #include <typeinfo>
 #include <utility>
 
+#include <cfenv>
+
 
 #include <cplex.h>
 
@@ -885,6 +887,11 @@ void Relaxation::change_obj(const int index, const double val)
 void Relaxation::init_mir_data(Sep::MIRgroup &mir_data)
 {
     runtime_error err("Problem in Relaxation::init_mir_data.");
+
+    // This resets the rounding modes modified by the safemir code. If it is
+    // not here, subtle rounding/off-by-one errors will pop up elsewhere in
+    // the code
+    auto round_guard = util::make_guard([]{ ::fesetround(FE_TONEAREST); });
 
     using mir_lp = SLVRcplex_t;
     using mir_system = CUTSsystem_t<double>;

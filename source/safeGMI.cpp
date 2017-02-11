@@ -56,6 +56,9 @@ bool SafeGomory::find_cuts()
 {
     runtime_error err("Problem in SafeGomory::find_cuts.");
 
+    // This resets the rounding modes modified by the safemir code. If it is
+    // not here, subtle rounding/off-by-one errors will pop up elsewhere in
+    // the code
     auto round_guard = util::make_guard([]{ ::fesetround(FE_TONEAREST); });
 
     int num_added = 0;
