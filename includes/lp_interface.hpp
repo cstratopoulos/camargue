@@ -59,6 +59,9 @@ public:
 
     void get_rhs(std::vector<double> &rhs, int begin, int end) const;
 
+    /// Get the senses of a range of constraints.
+    std::vector<char> senses(int begin, int end) const; 
+
     void get_col(int col, std::vector<int> &cmatind,
                  std::vector<double> &cmatval) const;
 

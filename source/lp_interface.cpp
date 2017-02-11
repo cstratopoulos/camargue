@@ -138,10 +138,10 @@ std::vector<double> info_vec(cplex_query F, const char* Fname,
     return result;
 }
 
-template <typename cplex_query>
+template <typename cplex_query, typename vectype>
 void set_info_vec(cplex_query F, const char *Fname,
                   const CPXENVptr cplex_env, const CPXLPptr cplex_lp,
-                  vector<double> &info_vec, int begin, int end)
+                  vector<vectype> &info_vec, int begin, int end)
 {
     info_vec.resize(end - begin + 1);
 
@@ -324,6 +324,14 @@ void Relaxation::get_rhs(vector<double> &rhs, int begin, int end) const
 {
     set_info_vec(CPXgetrhs, "CPXgetrhs", simpl_p->env, simpl_p->lp, rhs,
                  begin, end);
+}
+
+vector<char> Relaxation::senses(int begin, int end) const
+{
+    vector<char> result;
+    set_info_vec(CPXgetsense, "CPXgetsense", simpl_p->env, simpl_p->lp,
+                 result, begin, end);
+    return result;
 }
 
 void Relaxation::get_col(const int col, vector<int> &cmatind,
