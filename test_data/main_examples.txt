@@ -11,6 +11,7 @@ hk48
 lin105
 lin318
 p654
+pcb442
 pcb3038
 pla7397
 pr1002

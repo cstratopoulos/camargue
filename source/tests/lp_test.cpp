@@ -4,11 +4,13 @@
 
 #include <cplex.h>
 
+#include "solver.hpp"
 #include "fixed64.hpp"
 #include "lp_interface.hpp"
 #include "core_lp.hpp"
 #include "separator.hpp"
 
+#include "io_util.hpp"
 #include "err_util.hpp"
 
 #include <algorithm>
@@ -25,6 +27,108 @@ using std::vector;
 using std::unique_ptr;
 using std::string;
 using std::pair;
+
+SCENARIO ("Generating figures to compare primal pivots",
+          "[.LP][.CoreLP][.primal_pivot][.Solver][figure]") {
+    using namespace CMR;
+    namespace Eps = CMR::Epsilon;
+
+    GIVEN ("The degree LP and opt tour for pcb442") {
+        OutPrefs prefs;
+        Solver solver("problems/pcb442.tsp",
+                      "test_data/tours/pcb442.sol", 99, prefs);
+        int ncount = 442;
+        const auto dat = solver.inst_info().ptr();
+        REQUIRE_NOTHROW(util::write_xy_coords(dat->x, dat->y, ncount,
+                                              "pcb442.xy"));
+        cout << "\tWrote xy coords to pcb442.xy.\n";
+        
+        const auto &edges = solver.graph_info().core_graph.get_edges();
+        const auto &b_dat = solver.best_info();
+        
+        REQUIRE_NOTHROW(util::write_tour_edges(b_dat.best_tour_edges,
+                                               edges,
+                                               ncount,
+                                               "pcb442-tour.x"));
+
+        cout << "\tWrote tour edges to pcb442-tour.x\n";
+        auto &core = const_cast<LP::CoreLP &>(solver.get_core_lp());
+
+        THEN ("We can compare a degree LP nd pivot and opt solution") {
+            auto piv = core.primal_pivot();
+            cout << "\tDid single primal pivot to " << piv << "\n";
+            auto lp_vec = core.lp_vec();
+
+            vector<int> lp_elist;
+            vector<double> lp_ecap;
+            
+
+            for (int i = 0; i < lp_vec.size(); ++i)
+                if (lp_vec[i] >= Eps::Zero) {
+                    lp_elist.push_back(edges[i].end[0]);
+                    lp_elist.push_back(edges[i].end[1]);
+                    lp_ecap.push_back(lp_vec[i]);
+                }
+
+            REQUIRE_NOTHROW(util::write_lp_edges(lp_elist, lp_ecap, ncount,
+                                                 "pcb442-deg-piv.x"));
+            cout << "\tWrote degree LP pivot edges to pcb442-deg-piv.x\n";
+
+            core.primal_opt();
+            lp_elist.clear();
+            lp_ecap.clear();
+            lp_vec = core.lp_vec();
+
+            for (int i = 0; i < lp_vec.size(); ++i)
+                if (lp_vec[i] >= Eps::Zero) {
+                    lp_elist.push_back(edges[i].end[0]);
+                    lp_elist.push_back(edges[i].end[1]);
+                    lp_ecap.push_back(lp_vec[i]);
+                }
+
+            REQUIRE_NOTHROW(util::write_lp_edges(lp_elist, lp_ecap, ncount,
+                                                 "pcb442-deg-opt.x"));
+            cout << "\tWrote degree LP opt edges to pcb442-deg-opt.x\n";
+        }
+
+        THEN ("We can compare pivot and opt after a sparse cutting loop run") {
+            auto piv = solver.cutting_loop(false, false, true);
+            cout << "\tCutting loop ended with pivot " << piv << "\n";
+            auto lp_vec = core.lp_vec();
+
+            vector<int> lp_elist;
+            vector<double> lp_ecap;
+            
+
+            for (int i = 0; i < lp_vec.size(); ++i)
+                if (lp_vec[i] >= Eps::Zero) {
+                    lp_elist.push_back(edges[i].end[0]);
+                    lp_elist.push_back(edges[i].end[1]);
+                    lp_ecap.push_back(lp_vec[i]);
+                }
+
+            REQUIRE_NOTHROW(util::write_lp_edges(lp_elist, lp_ecap, ncount,
+                                                 "pcb442-end-piv.x"));
+            cout << "\tWrote end pivot edges to pcb442-end-piv.x\n";
+
+            core.primal_opt();
+            lp_elist.clear();
+            lp_ecap.clear();
+            lp_vec = core.lp_vec();
+
+            for (int i = 0; i < lp_vec.size(); ++i)
+                if (lp_vec[i] >= Eps::Zero) {
+                    lp_elist.push_back(edges[i].end[0]);
+                    lp_elist.push_back(edges[i].end[1]);
+                    lp_ecap.push_back(lp_vec[i]);
+                }
+
+            REQUIRE_NOTHROW(util::write_lp_edges(lp_elist, lp_ecap, ncount,
+                                                 "pcb442-end-opt.x"));
+            cout << "\tWrote end opt edges to pcb442-end-opt.x\n";
+        }
+    }
+}
 
 SCENARIO ("Benchmarking rounds of cuts",
           "[LP][CoreLP][primal_pivot][Sep][Separator][benchmark]") {
