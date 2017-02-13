@@ -307,13 +307,13 @@ int CoreGraph::find_edge_ind(int end0, int end1) const
     return adj_ptr->edge_index;
 }
 
-void CoreGraph::get_elist(vector<int> &elist, vector<int> &elen)
+void CoreGraph::get_elist(vector<int> &elist, vector<int> &elen) const
 {
     elen.resize(edges.size());
     elist.resize(2 * edges.size());
 
     for (int i = 0; i < edges.size(); ++i) {
-        Edge &e = edges[i];
+        const Edge &e = edges[i];
         elen[i] = e.len;
         elist[2 * i] = e.end[0];
         elist [(2 * i) + 1] = e.end[1];

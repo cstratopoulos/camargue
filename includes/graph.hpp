@@ -202,7 +202,7 @@ public:
     std::vector<Edge> &get_edges() { return edges; }
     const std::vector<Edge> &get_edges() const { return edges; }
 
-    void get_elist(std::vector<int> &elist, std::vector<int> &elen);
+    void get_elist(std::vector<int> &elist, std::vector<int> &elen) const;
 
     const AdjList &get_adj() const { return adj_list; }
     
