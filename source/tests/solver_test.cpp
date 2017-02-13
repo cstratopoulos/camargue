@@ -8,10 +8,12 @@
 
 
 #include <algorithm>
+#include <array>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <utility>
 
 #include <cstdlib>
 
@@ -25,29 +27,6 @@ using std::vector;
 using std::string;
 using std::to_string;
 using std::cout;
-
-// SCENARIO ("Trying Solver cheat mode",
-//           "[Solver][Cheat][cc_elim_mode]") {
-//     using namespace CMR;
-//     vector<string> probs{
-//         "d493",
-//         "pr1002",
-//         "d2103",
-//         };
-
-//     for (string &prob : probs) {
-//         GIVEN ("A Solver for " + prob) {
-//             OutPrefs prefs;
-//             int seed = 99;
-//             Solver solver("problems/" + prob + ".tsp", seed, prefs);
-//             THEN ("We can set up cheat mode") {
-//                 REQUIRE_NOTHROW(solver.cc_elim_mode());
-//             }
-//         }
-//     }
-// }
-
-
 
 SCENARIO ("Running the Solver cutting_loop with no pricing.",
           "[Solver][cutting_loop]") {
