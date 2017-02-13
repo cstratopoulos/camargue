@@ -22,6 +22,7 @@ using std::exception;
 
 using lpcut_in = CCtsp_lpcut_in;
 
+
 namespace CMR {
 
 using CutType = Sep::HyperGraph::Type;
@@ -146,7 +147,6 @@ PivType CoreLP::primal_pivot()
         get_base(tour_base.colstat, tour_base.rowstat);
     } CMR_CATCH_PRINT_THROW("getting base before pivoting", err);
 
-
     try {
         nondegen_pivot(low_limit);
         
@@ -269,8 +269,10 @@ void CoreLP::update_best_data()
         if (tour_edges[i] == 1)
             edge_objval += G.get_edge(i).len;
 
-    if (edge_objval > best_data.min_tour_value)
+    if (edge_objval > best_data.min_tour_value) {
+        cerr << "Edge objval is " << edge_objval << "\n";
         throw runtime_error("Tried to update best tour with worse objval!");
+    }
 
     best_data.min_tour_value = edge_objval;
 
