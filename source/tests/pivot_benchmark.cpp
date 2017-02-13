@@ -110,14 +110,19 @@ SCENARIO ("Comparing pivot protocols as optimizers",
             string prob = std::get<0>(te);
             Triple<int> &piv_counts = std::get<1>(te);
             Triple<double> &piv_times = std::get<2>(te);
-            cout << prob << "\n";
-            cout << "Primal opt\t" << piv_times[0] << "s\t" << piv_counts[0]
-                 << " iterations\n";
-            cout << "nondeg opt\t" << piv_times[1] << "s\t" << piv_counts[1]
-                 << " iterations\n";
-            cout << "itlim opt\t" << piv_times[2] << "s\t" << piv_counts[2]
-                 << " iterations\n";
-            cout << "\n";
+            using DescPair = std::pair<string, int>;
+            std::vector<DescPair>
+            reports{DescPair("Primal opt", 0),
+                DescPair("Nondeg opt", 1),
+                DescPair("Itlim opt", 2)};
+            
+            for (auto dp : reports) {
+                string protocol = dp.first;
+                int index = dp.second;
+                cout << protocol << "\t" << piv_times[index] << "s\tOpt ratio "
+                     << (piv_times[index] / piv_times[0]) << "\t"
+                     << piv_counts[index] << " iterations\n";
+            }
         }
     }
     
