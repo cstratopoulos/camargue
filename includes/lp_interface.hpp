@@ -191,8 +191,8 @@ public:
 
     void nondegen_pivot(double lowlimit); //!< Do a primal non-degenerate pivot.
 
-    void primal_pivot(); //!< Perform exactly one primal simplex pivot.
-    void dual_pivot(); //!< Perform exactly one dual simplex pivot.
+    void one_primal_pivot(); //!< Perform exactly one primal simplex pivot.
+    void one_dual_pivot(); //!< Perform exactly one dual simplex pivot.
 
     void primal_recover(); //!< Pivot until the basis is primal feasible.
     

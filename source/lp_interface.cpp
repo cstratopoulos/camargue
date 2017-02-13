@@ -607,7 +607,7 @@ void Relaxation::nondegen_pivot(const double lowlimit)
     }    
 }
 
-void Relaxation::primal_pivot()
+void Relaxation::one_primal_pivot()
 {
     int rval = 0;
     CPXlongParamGuard it_clamp(CPX_PARAM_ITLIM, 1, simpl_p->env,
@@ -628,7 +628,7 @@ void Relaxation::primal_pivot()
     
 }
 
-void Relaxation::dual_pivot()
+void Relaxation::one_dual_pivot()
 {
     int rval = 0;
     CPXlongParamGuard it_clamp(CPX_PARAM_ITLIM, 1, simpl_p->env,
