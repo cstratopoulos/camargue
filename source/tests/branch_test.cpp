@@ -22,6 +22,10 @@
 
 #include <catch.hpp>
 
+extern "C" {
+#include <concorde/INCLUDE/linkern.h>
+}
+
 using std::min;
 using std::max;
 using std::abs;
@@ -137,7 +141,7 @@ SCENARIO ("Instating a Brancher and getting problems",
 }
 
 SCENARIO ("Computing branching edges",
-          "[ABC][primal_strong_branch][ranked_cands]") {
+          "[ABC][primal_strong_branch][ranked_cands][best_estimate]") {
     vector<string> probs{
         "dantzig42",
         "pr76",
@@ -145,8 +149,11 @@ SCENARIO ("Computing branching edges",
         "a280",
         "lin318",
         "d493",
+        "att532",
         "pr1002",
+        "rl1304",
         "d2103",
+        "pr2392",
         "pcb3038",
     };
 
@@ -160,7 +167,8 @@ SCENARIO ("Computing branching edges",
                                    //prob + ".sol",
                                    99, prefs);
                 int ncount = solver.inst_info().node_count();
-                LP::PivType piv = solver.cutting_loop(ncount < 100, true, true);
+                LP::PivType piv = solver.cutting_loop(ncount < 100, false,
+                                                      true);
 
                 if (piv == LP::PivType::Frac) {
                     LP::CoreLP &core =
@@ -178,8 +186,9 @@ SCENARIO ("Computing branching edges",
 
                     vector<double> x = rel.lp_vec();
                     vector<int> colstat = rel.col_stat();
-                    const vector<double> &tour_edges =
-                    solver.tour_basis().best_tour_edges;                    
+                    
+                    vector<double> tour_edges = solver.tour_basis()
+                    .best_tour_edges;
                     double tourval = solver.best_info().min_tour_value;
 
                     vector<int> lw_inds;
@@ -193,16 +202,16 @@ SCENARIO ("Computing branching edges",
                                                    core_graph.get_edges(),
                                                    lw_inds, x, 5);
 
-                    cout << "\t" << sb1inds.size()
-                         << " best length weighted cands.\n";
-                    for (int ind : sb1inds) {
-                        cout << "Edge " << ind << ", tour "
-                             << tour_edges[ind] << ", lp " << x[ind] << "\n"
-                             << "\tLen "
-                             << solver.graph_info().core_graph.get_edge(ind).len
-                             << "\n";
-                    }
-                    cout << "\n";
+                    // cout << "\t" << sb1inds.size()
+                    //      << " best length weighted cands.\n";
+                    // for (int ind : sb1inds) {
+                    //     cout << "Edge " << ind << ", tour "
+                    //          << tour_edges[ind] << ", lp " << x[ind] << "\n"
+                    //          << "\tLen "
+                    //          << solver.graph_info().core_graph.get_edge(ind).len
+                    //          << "\n";
+                    // }
+                    // cout << "\n";
 
                     const vector<int> &tourcol = solver.tour_basis().colstat;
                     const vector<int> &tourrow = solver.tour_basis().rowstat;
@@ -224,18 +233,18 @@ SCENARIO ("Computing branching edges",
                                                       upest, cbases, 100,
                                                       tourval, 2));
 
-                    cout << "\t" << sb1cands.size() << " sb1 cands\n";
-                    for (auto &st : sb1cands) {
-                        int ind = st.index;
-                        cout << "Edge " << ind << ", tour "
-                             << tour_edges[ind] << ", lp " << x[ind] << ", "
-                             << "Priority " << st.score_priority << "\n"
-                             << "\tDown " << st.down_est.first << " -- "
-                             << st.down_est.second << "\n"
-                             << "\tUp " << st.up_est.first << " -- "
-                             << st.up_est.second << "\n"
-                             << "\tScore " << st.score << "\n\n";
-                    }
+                    // cout << "\t" << sb1cands.size() << " sb1 cands\n";
+                    // for (auto &st : sb1cands) {
+                    //     int ind = st.index;
+                    //     cout << "Edge " << ind << ", tour "
+                    //          << tour_edges[ind] << ", lp " << x[ind] << ", "
+                    //          << "Priority " << st.score_priority << "\n"
+                    //          << "\tDown " << st.down_est.first << " -- "
+                    //          << st.down_est.second << "\n"
+                    //          << "\tUp " << st.up_est.first << " -- "
+                    //          << st.up_est.second << "\n"
+                    //          << "\tScore " << st.score << "\n\n";
+                    // }
 
                     vector<LP::Basis> sb2bases;
                     vector<int> sb2inds;
@@ -269,6 +278,77 @@ SCENARIO ("Computing branching edges",
                          << "\tUp " << win.up_est.first << " -- "
                          << win.up_est.second << "\n"
                          << "\tScore " << win.score << "\n\n";
+
+                    vector<int> elist;
+                    vector<int> elen;
+
+                    solver.graph_info().core_graph.get_elist(elist, elen);
+
+                    Data::Instance sp_inst(prob, 99, ncount, elist, elen);
+
+                    int default_len = sp_inst.ptr()->default_len;
+
+                    if (tour_edges[ind] == 1)
+                        elen[ind] = default_len;
+                    else
+                        elen[ind] = - default_len;
+
+                    sp_inst = Data::Instance(prob, 99, ncount, elist, elen);
+                    
+                    vector<int> tour_nodes = solver.best_info()
+                    .best_tour_nodes;
+                    vector<int> out_cyc(ncount);
+
+                    CCrandstate rstate;
+                    CCutil_sprand(99, &rstate);
+                    double val;
+
+                    cout << "\n\tRunning branch linkern....\n";
+
+                    REQUIRE_FALSE(CClinkern_tour(ncount, sp_inst.ptr(),
+                                                 elen.size(), &elist[0],
+                                                 ncount, 500,
+                                                 // &tour_nodes[0],
+                                                 NULL,
+                                                 &out_cyc[0],
+                                                 &val,
+                                                 1, 0, 0,
+                                                 (char *) NULL,
+                                                 CC_LK_GEOMETRIC_KICK,
+                                                 &rstate));
+
+                    const auto &graph = solver.graph_info().core_graph;
+                    const auto &edges = graph.get_edges();
+
+                    
+                    bool found_branch_edge = false;
+                    double newval = 0.0;
+
+                    vector<int> new_tour_edges(tour_edges.size(), 0);
+
+                    for (int i = 0; i < ncount; ++i) {
+                        EndPts e(out_cyc[i], out_cyc[(i + 1) % ncount]);
+                        newval += solver.inst_info().edgelen(e.end[0],
+                                                             e.end[1]);
+                        int ii = graph.find_edge_ind(e.end[0], e.end[1]);
+                        if (ii == -1) {
+                            tour_edges.push_back(0);
+                            new_tour_edges.push_back(1);
+                            cout << "Sparse lk added an edge??\n";
+                        } else
+                            new_tour_edges[ii] = 1;
+                    }
+
+                    REQUIRE(tour_edges[ind] != new_tour_edges[ind]);
+
+                    cout << "\tRaw lk val: " << val << "\n";
+
+                    double orig_val = solver.best_info().min_tour_value;
+                    cout << "\tOrig val: " << orig_val
+                         << "\n\tbranch tour: " << newval << "\n\n";
+
+                    if (newval < orig_val)
+                        cout << "\t||||| BETTER TOUR!!! |||||\n\n";
                         
                 }
             }
