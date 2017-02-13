@@ -29,28 +29,27 @@ using std::setprecision;
 
 template <typename T>
 using Triple = std::array<T, 3>;
+using RepTuple = std::tuple<string, Triple<int>, Triple<double>, int>;
+
+static vector<RepTuple> table_entries{
+    RepTuple("d2103", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2103),
+    RepTuple("fl3795", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 3795),
+    RepTuple("fnl4461", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 4461),
+    RepTuple("pcb3038", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 3038),
+    RepTuple("pla7397", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 7397),
+    RepTuple("pr2392", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2392),
+    RepTuple("rl5915", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 5915),
+    RepTuple("rl5934", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 5934),
+    RepTuple("u2152", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2152),
+    RepTuple("u2319", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2319),
+    RepTuple("brd14051", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 14051),
+    RepTuple("rl11849", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 11849),
+    };
 
 SCENARIO ("Comparing pivot protocols as optimizers",
           "[LP][Relaxation][single_pivot][nondegen_pivot][benchmark]") {
     using namespace CMR;
     namespace Eps = Epsilon;
-    
-    
-    
-    using RepTuple = std::tuple<string, Triple<int>, Triple<double>, int>;
-
-    vector<RepTuple> table_entries{
-        RepTuple("d2103", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2103),
-        RepTuple("fl3795", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 3795),
-        RepTuple("fnl4461", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 4461),
-        RepTuple("pcb3038", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 3038),
-        RepTuple("pla7397", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 7397),
-        RepTuple("pr2392", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2392),
-        RepTuple("rl5915", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 5915),
-        RepTuple("rl5934", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 5934),
-        RepTuple("u2152", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2152),
-        RepTuple("u2319", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2319),
-        };
 
     for (RepTuple &te : table_entries) {
         string prob = std::get<0>(te);
@@ -68,6 +67,7 @@ SCENARIO ("Comparing pivot protocols as optimizers",
             REQUIRE(core.get_objval() == tourlen);
 
             THEN ("We can primal opt the degree LP") {
+                cout << "Testing primal opt..." << endl;
                 double t = util::zeit();
                 core.primal_opt();
                 piv_times[0] = util::zeit() - t;
@@ -75,6 +75,7 @@ SCENARIO ("Comparing pivot protocols as optimizers",
             }
 
             THEN ("We can primal opt one nd pivot at a time") {
+                cout << "Testing nd opt..." << endl;
                 double t = util::zeit();
                 int nd_itcount = 0;
                 while (!core.dual_feas()) {
@@ -87,11 +88,12 @@ SCENARIO ("Comparing pivot protocols as optimizers",
             }
 
             THEN ("We can primal opt a single pivot at a time") {
+                cout << "Testing itlim opt..." << endl;
                 double t = util::zeit();
                 int it_itcount = 0;
                 while (!core.dual_feas()) {
                     ++it_itcount;
-                    core.primal_pivot();
+                    core.one_primal_pivot();
                 }
                 piv_times[2] = util::zeit() - t;
                 piv_counts[2] = it_itcount;
@@ -110,11 +112,11 @@ SCENARIO ("Comparing pivot protocols as optimizers",
             Triple<double> &piv_times = std::get<2>(te);
             cout << prob << "\n";
             cout << "Primal opt\t" << piv_times[0] << "s\t" << piv_counts[0]
-                 << "iterations\n";
+                 << " iterations\n";
             cout << "nondeg opt\t" << piv_times[1] << "s\t" << piv_counts[1]
-                 << "iterations\n";
+                 << " iterations\n";
             cout << "itlim opt\t" << piv_times[2] << "s\t" << piv_counts[2]
-                 << "iterations\n";
+                 << " iterations\n";
             cout << "\n";
         }
     }
