@@ -212,6 +212,11 @@ struct EndPts {
 
     std::array<int, 2> end;
 };
+
+inline bool operator==(EndPts e1, EndPts e2)
+{
+    return e1.end == e2.end;
+}
     
 }
 
