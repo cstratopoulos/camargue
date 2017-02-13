@@ -34,16 +34,16 @@ using RepTuple = std::tuple<string, Triple<int>, Triple<double>, int>;
 static vector<RepTuple> table_entries{
     RepTuple("d2103", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2103),
     RepTuple("fl3795", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 3795),
-    RepTuple("fnl4461", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 4461),
-    RepTuple("pcb3038", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 3038),
-    RepTuple("pla7397", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 7397),
-    RepTuple("pr2392", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2392),
-    RepTuple("rl5915", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 5915),
-    RepTuple("rl5934", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 5934),
-    RepTuple("u2152", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2152),
-    RepTuple("u2319", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2319),
-    RepTuple("brd14051", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 14051),
-    RepTuple("rl11849", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 11849),
+    // RepTuple("fnl4461", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 4461),
+    // RepTuple("pcb3038", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 3038),
+    // RepTuple("pla7397", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 7397),
+    // RepTuple("pr2392", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2392),
+    // RepTuple("rl5915", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 5915),
+    // RepTuple("rl5934", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 5934),
+    // RepTuple("u2152", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2152),
+    // RepTuple("u2319", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2319),
+    // RepTuple("brd14051", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 14051),
+    // RepTuple("rl11849", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 11849),
     };
 
 SCENARIO ("Comparing pivot protocols as optimizers",
@@ -100,12 +100,14 @@ SCENARIO ("Comparing pivot protocols as optimizers",
             }
         }
     }
+    cout << "\n";
 
     THEN ("Report the results") {
         std::sort(table_entries.begin(), table_entries.end(),
                   [](RepTuple r, RepTuple t)
                   { return std::get<3>(r) < std::get<3>(t); });
 
+        cout << "Instance\tCPU Time (scaled)\tIteration count\n";
         for (RepTuple &te : table_entries) {
             string prob = std::get<0>(te);
             Triple<int> &piv_counts = std::get<1>(te);
@@ -115,13 +117,14 @@ SCENARIO ("Comparing pivot protocols as optimizers",
             reports{DescPair("Primal opt", 0),
                 DescPair("Nondeg opt", 1),
                 DescPair("Itlim opt", 2)};
-            
+            cout << prob << "\n";
             for (auto dp : reports) {
                 string protocol = dp.first;
                 int index = dp.second;
-                cout << protocol << "\t" << piv_times[index] << "s\tOpt ratio "
-                     << (piv_times[index] / piv_times[0]) << "\t"
-                     << piv_counts[index] << " iterations\n";
+                printf("%s\t%.2f\t%d\n",
+                       protocol.c_str(),
+                       (piv_times[index] / piv_times[0]),
+                       piv_counts[index]);
             }
         }
     }
