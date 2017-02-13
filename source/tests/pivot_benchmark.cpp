@@ -9,11 +9,14 @@
 
 #include <catch.hpp>
 
+#include <algorithm>
+#include <array>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <iostream>
 
+using std::array;
 using std::min;
 using std::max;
 using std::abs;
@@ -21,76 +24,101 @@ using std::vector;
 
 using std::string;
 using std::cout;
+using std::endl;
 using std::setprecision;
 
-static double nd_time;
-static double itlim_time;
+template <typename T>
+using Triple = std::array<T, 3>;
 
-static double nd_objval;
-static double itlim_objval;
+SCENARIO ("Comparing pivot protocols as optimizers",
+          "[LP][Relaxation][single_pivot][nondegen_pivot][benchmark]") {
+    using namespace CMR;
+    namespace Eps = Epsilon;
+    
+    
+    
+    using RepTuple = std::tuple<string, Triple<int>, Triple<double>, int>;
 
-static int nd_itcount;
-static int itlim_itcount;
+    vector<RepTuple> table_entries{
+        RepTuple("d2103", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2103),
+        RepTuple("fl3795", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 3795),
+        RepTuple("fnl4461", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 4461),
+        RepTuple("pcb3038", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 3038),
+        RepTuple("pla7397", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 7397),
+        RepTuple("pr2392", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2392),
+        RepTuple("rl5915", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 5915),
+        RepTuple("rl5934", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 5934),
+        RepTuple("u2152", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2152),
+        RepTuple("u2319", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 2319),
+        };
 
-SCENARIO ("Comparing pivot protocols",
-          "[LP][Relaxation][single_pivot][nondegen_pivot][.benchmark]") {
-    vector<string> probs{
-      "dsj1000",
-	"pr1002",
-	"rl1304",
-	"fl1577",
-	"d2103",
-	"u2319",
-	"pr2392",
-	"pcb3038",
-        "rl5915",
-        "pla7397",
-        "usa13509"
-    };
-
-
-    for (string &prob : probs) {
+    for (RepTuple &te : table_entries) {
+        string prob = std::get<0>(te);
+        Triple<int> &piv_counts = std::get<1>(te);
+        Triple<double> &piv_times = std::get<2>(te);
+        int ncount = std::get<3>(te);
         GIVEN ("The degree LP for " + prob) {
-            CMR::Data::Instance inst("problems/" + prob + ".tsp", 99);
-            CMR::Data::GraphGroup g_dat(inst);
-            CMR::Data::BestGroup b_dat(inst, g_dat,
-                "test_data/tours/" + prob + ".sol");
-            CMR::LP::CoreLP core(g_dat, b_dat);
+            Data::Instance inst("problems/" + prob + ".tsp", 99);
+            Data::GraphGroup g_dat(inst);
+            Data::BestGroup b_dat(inst, g_dat,
+                                  "test_data/tours/" + prob + ".sol");
+            LP::CoreLP core(g_dat, b_dat);
 
             double tourlen = b_dat.min_tour_value;
+            REQUIRE(core.get_objval() == tourlen);
 
-
-            THEN ("We can nd pivot to a new vector") {
-                double t = CMR::util::zeit();
-                core.nondegen_pivot(tourlen - CMR::Epsilon::Zero);
-                nd_time = CMR::util::zeit() - t;
-                nd_objval = core.get_objval();
-                nd_itcount = core.it_count();
+            THEN ("We can primal opt the degree LP") {
+                double t = util::zeit();
+                core.primal_opt();
+                piv_times[0] = util::zeit() - t;
+                piv_counts[0] = core.it_count();                
             }
 
-            THEN ("We can single pivot to a new vector") {
-                double t = CMR::util::zeit();
-                int itcount = 0;
-                while (core.get_objval() == tourlen) {
-                    ++itcount;
+            THEN ("We can primal opt one nd pivot at a time") {
+                double t = util::zeit();
+                int nd_itcount = 0;
+                while (!core.dual_feas()) {
+                    double objval = core.get_objval();
+                    core.nondegen_pivot(objval - Eps::Zero);
+                    nd_itcount += core.it_count();
+                }
+                piv_times[1] = util::zeit() - t;
+                piv_counts[1] = nd_itcount;
+            }
+
+            THEN ("We can primal opt a single pivot at a time") {
+                double t = util::zeit();
+                int it_itcount = 0;
+                while (!core.dual_feas()) {
+                    ++it_itcount;
                     core.primal_pivot();
                 }
-                itlim_time = CMR::util::zeit() - t;
-                itlim_objval = core.get_objval();
-                itlim_itcount = itcount;
-
-                cout << "\n\nInstance " << prob << "\tND\titlim\n";
-                cout << "piv times\t" << nd_time << "\t" << itlim_time << "\t"
-		     << "ratio: " << (itlim_time / nd_time) << "\n"
-                     << "piv vals\t" << nd_objval << "\t"
-                     << itlim_objval << "\n"
-		     << "piv deltas\t" << (nd_objval / tourlen) << "\t"
-		     << (itlim_objval / tourlen) << "\n"
-                     << "piv counts\t" << nd_itcount << "\t" << itlim_itcount
-                     << "\n";
+                piv_times[2] = util::zeit() - t;
+                piv_counts[2] = it_itcount;
             }
         }
     }
+
+    THEN ("Report the results") {
+        std::sort(table_entries.begin(), table_entries.end(),
+                  [](RepTuple r, RepTuple t)
+                  { return std::get<3>(r) < std::get<3>(t); });
+
+        for (RepTuple &te : table_entries) {
+            string prob = std::get<0>(te);
+            Triple<int> &piv_counts = std::get<1>(te);
+            Triple<double> &piv_times = std::get<2>(te);
+            cout << prob << "\n";
+            cout << "Primal opt\t" << piv_times[0] << "s\t" << piv_counts[0]
+                 << "iterations\n";
+            cout << "nondeg opt\t" << piv_times[1] << "s\t" << piv_counts[1]
+                 << "iterations\n";
+            cout << "itlim opt\t" << piv_times[2] << "s\t" << piv_counts[2]
+                 << "iterations\n";
+            cout << "\n";
+        }
+    }
+    
 }
 
 #endif
