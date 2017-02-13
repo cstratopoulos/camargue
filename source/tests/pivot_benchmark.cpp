@@ -2,6 +2,7 @@
 
 #ifdef CMR_DO_TESTS
 
+#include "separator.hpp"
 #include "lp_interface.hpp"
 #include "core_lp.hpp"
 #include "datagroups.hpp"
@@ -11,12 +12,14 @@
 
 #include <algorithm>
 #include <array>
+#include <functional>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <iostream>
 
 using std::array;
+using std::function;
 using std::min;
 using std::max;
 using std::abs;
@@ -29,6 +32,37 @@ using std::setprecision;
 
 template <typename T>
 using Triple = std::array<T, 3>;
+
+static void core_nd(CMR::LP::CoreLP &core) { core.primal_pivot(); }
+static void core_itlim(CMR::LP::CoreLP &core)
+{
+    double objval = core.best_tourlen();
+    while (objval >= core.best_tourlen()) {
+        core.one_primal_pivot();
+        objval = core.get_objval();
+    }
+}
+
+using ImplPair = std::pair<string, function<void(CMR::LP::CoreLP &)>>;
+array<ImplPair, 2> piv_impls{ImplPair("low lim", core_nd),
+    ImplPair("it lim", core_itlim)};
+
+
+using ProbPair = std::pair<string, vector<double>>;
+
+static vector<ProbPair> impl_benchmarks {
+    ProbPair("pcb3038", vector<double>(8)),
+    ProbPair("fl3795", vector<double>(8)),
+    ProbPair("fnl4461", vector<double>(8)),
+    ProbPair("rl5915", vector<double>(8)),
+    ProbPair("rl5934", vector<double>(8)),
+    ProbPair("pla7397", vector<double>(8)),
+    ProbPair("rl11849", vector<double>(8)),
+    ProbPair("usa13509", vector<double>(8)),
+    ProbPair("brd14051", vector<double>(8)),
+};
+
+
 using RepTuple = std::tuple<string, Triple<int>, Triple<double>, int>;
 
 static vector<RepTuple> table_entries{
@@ -46,6 +80,106 @@ static vector<RepTuple> table_entries{
     RepTuple("rl11849", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 11849),
     RepTuple("usa13509", {{0,0,0}}, {{0.0, 0.0, 0.0}}, 13509),
     };
+
+//this test uses some pretty heinous array indexing tricks
+SCENARIO ("Comparing pivot protocols with round of cuts",
+          "[LP][Sep][one_primal_pivot][nondegen_pivot][benchmark]") {
+    using namespace CMR;
+
+    for (ProbPair &pp : impl_benchmarks) {
+        string &prob = pp.first;
+        vector<double> &data = pp.second;
+        GIVEN ("A core LP for " + prob) {
+            Data::Instance inst("problems/" + prob + ".tsp", 99);
+            Data::GraphGroup g_dat(inst);
+            Data::BestGroup b_dat(inst, g_dat,
+                                  "test_data/tours/" + prob + ".sol");
+            LP::CoreLP core(g_dat, b_dat);
+            for (int i = 0; i < 2; ++i) {
+                string &impl_name = piv_impls[i].first;
+                auto impl_func = piv_impls[i].second;
+                int start_ind = 4 * i;
+                THEN ("We can pivot and add cuts with impl " + impl_name) {
+                    double deg_piv_t = util::zeit();
+                    impl_func(core);
+                    deg_piv_t = util::zeit() - deg_piv_t;
+                    double deg_piv_val = core.get_objval();
+                    
+                    cout << "Degree pivot with " << impl_name << "\n\t"
+                         << deg_piv_t << "s\tobjval "
+                         << deg_piv_val << "\n";
+                    data[start_ind++] = deg_piv_t;
+                    data[start_ind++] = deg_piv_val;
+
+                    Data::SupportGroup s_dat;
+                    int ncount = inst.node_count();
+                    auto piv_x = core.lp_vec();
+
+                    s_dat.reset(ncount, g_dat.core_graph.get_edges(), piv_x,
+                                g_dat.island);
+
+                    Graph::TourGraph TG(b_dat.best_tour_edges,
+                                        g_dat.core_graph.get_edges(),
+                                        b_dat.perm);
+                    Data::KarpPartition kpart;
+
+                    Sep::Separator sep(g_dat, b_dat, s_dat, kpart, TG);
+
+                    core.pivot_back();
+
+                    int numrows = core.num_rows();
+
+                    if (sep.connect_sep())
+                        core.add_cuts(sep.connect_cuts_q());
+                    if (sep.segment_sep())
+                        core.add_cuts(sep.segment_q());
+                    if (sep.fast2m_sep())
+                        core.add_cuts(sep.fastblossom_q());
+                    if (sep.blkcomb_sep())
+                        core.add_cuts(sep.blockcomb_q());
+
+                    cout << "Found " << (core.num_rows() - numrows)
+                         << " cuts\n";
+
+                    double cut_piv_t = util::zeit();
+                    impl_func(core);
+                    cut_piv_t = util::zeit() - cut_piv_t;
+                    double cut_piv_val = core.get_objval();
+
+                    data[start_ind++] = cut_piv_t;
+                    data[start_ind++] = cut_piv_val;
+
+                    cout << "Cut pivot with " << impl_name << "\n\t"
+                         << cut_piv_t << "s\tobjval "
+                         << cut_piv_val << "\n";
+                    
+                }
+            }
+            cout << "\n====\n";
+        }
+    }
+
+    THEN ("Report the data") {
+        cout << "Instance\tDegree pivot\t\tCuts Pivot\n";
+        for (ProbPair &pp : impl_benchmarks) {
+            cout << pp.first << "\n";
+            for (int i = 0; i < 2; ++i) {
+                string impl_name = piv_impls[i].first;
+                vector<double> dat_range(pp.second.begin() + (4 * i),
+                                         pp.second.begin() + 4 + (4 * i));
+                cout << impl_name << "\t";
+                for (int i = 0; i < 4; ++i)
+                    if (i % 2)
+                        printf("%.2f\t", dat_range[i]);
+                    else
+                        printf("%.2f\t",
+                               dat_range[i] / pp.second[i]);
+                cout << "\n";
+            }
+        }
+    }
+    
+}
 
 SCENARIO ("Comparing pivot protocols as optimizers",
           "[LP][Relaxation][single_pivot][nondegen_pivot][benchmark]") {
