@@ -12,6 +12,7 @@ gr48
 hk48
 lin105
 lin318
+pa561
 p654
 pcb3038
 pcb442
@@ -22,6 +23,8 @@ pr76
 rl1304
 rl5915
 rl5934
+si535
+si1032
 st70
 swiss42
 u2152

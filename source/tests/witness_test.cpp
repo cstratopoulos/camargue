@@ -26,17 +26,22 @@ using std::pair;
 
 
 SCENARIO("Finding simple DP inequalities via karp partition witnesses",
-         "[karp][.simpleDP][DPwitness]") {
+         "[karp][simpleDP][DPwitness]") {
 
     using namespace CMR;
     
     vector<string> probs {
-        // "lin318", "d493", "att532", "u724",
-        // "dsj1000", "pr1002",
-        // "d2103", "pr2392"// ,
-        "pcb3038",
-        "rl5915", "pla7397",
-        "usa13509"
+        "si535",
+        // "att532",
+        // "dsj1000",
+        // "pr1002",
+        "si1032",
+        // "d2103",
+        // "pr2392",
+        // "pcb3038",
+        // "rl5915",
+        // "pla7397",
+        // "usa13509"
         };
 
     for (string &fname : probs) {
@@ -58,8 +63,7 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
                                                  lp_edges, s_dat, inst));
         int ncount = g_dat.core_graph.node_count();
 
-        REQUIRE_NOTHROW(kpart = Data::KarpPartition(ncount,
-                                                         inst.ptr(), 99));
+        REQUIRE_NOTHROW(kpart = Data::KarpPartition(inst));
         Sep::CutTranslate translator(g_dat);
         
         double tt = util::zeit();
