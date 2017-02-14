@@ -217,6 +217,12 @@ inline bool operator==(EndPts e1, EndPts e2)
 {
     return e1.end == e2.end;
 }
+
+inline std::ostream &operator<<(std::ostream &os, const EndPts &e)
+{
+    os << "(" << e.end[0] << ", " << e.end[1] << ")";
+    return os;
+}
     
 }
 
