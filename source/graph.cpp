@@ -237,7 +237,7 @@ TourGraph::~TourGraph() {  CCtsp_free_lpgraph(&L); }
 
 AdjList::AdjList(int ncount, const vector<Edge> &ref_elist) try
     : node_count(ncount), edge_count(ref_elist.size()),
-      nodelist(vector<Node>(node_count, Node((2 * edge_count) / node_count)))
+      nodelist(vector<Node>(node_count))
 {
     for (int i = 0; i < edge_count; ++i) {
         const Edge &e = ref_elist[i];
@@ -256,7 +256,7 @@ AdjList::AdjList(int  ncount,
                  const vector<double> &edge_caps,
                  const std::vector<int> &keep_indices) try
     : node_count(ncount), edge_count(keep_indices.size()),
-      nodelist(vector<Node>(node_count, Node((2 * edge_count) / node_count)))
+      nodelist(vector<Node>(node_count))
 {
     for (int index : keep_indices) {
         const Edge &e = ref_elist[index];

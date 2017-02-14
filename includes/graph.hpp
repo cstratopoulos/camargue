@@ -149,7 +149,6 @@ struct AdjObj {
 
 struct Node {
     Node() : mark(0) {}
-    Node(int degree_estimate) : mark(0) { neighbors.reserve(degree_estimate); }
     
     int degree() const { return neighbors.size(); }
     std::vector<AdjObj> neighbors;
