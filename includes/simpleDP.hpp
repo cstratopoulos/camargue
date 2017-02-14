@@ -23,7 +23,7 @@ public:
              Data::KarpPartition &_kpart,
              Data::BestGroup &best_dat,
              Data::SupportGroup &supp_dat,
-             Sep::CutQueue<dominoparity> &dp_q);
+             Sep::CutQueue<dominoparity> &_dp_q);
 
     bool find_cuts(); //!< Separator invocation, returns true iff cuts found.
 
