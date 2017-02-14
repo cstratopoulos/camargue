@@ -21,7 +21,7 @@ Problem::Problem(int ind, ScorePair r)
     : edge_ind(ind), type(Ptype::Affirm), rank(r), contra_base(nullptr)
 {}
 
-Problem::Problem(int ind, ScorePair r, LP::Basis &&cbase)
+Problem::Problem(int ind, ScorePair r, LP::Basis cbase)
 try
     : edge_ind(ind), type(Ptype::Contra), rank(r),
       contra_base(util::make_unique<LP::Basis>(std::move(cbase)))

@@ -53,7 +53,7 @@ struct Problem {
 
     Problem(int ind, ScorePair r);
 
-    Problem(int ind, ScorePair r, LP::Basis &&cbase);
+    Problem(int ind, ScorePair r, LP::Basis cbase);
 
     int edge_ind;
     Type type;
