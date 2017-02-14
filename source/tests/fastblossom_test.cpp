@@ -1,4 +1,7 @@
 #include "config.hpp"
+
+#ifdef CMR_DO_TESTS
+
 #include "cc_lpcuts.hpp"
 #include "datagroups.hpp"
 #include "process_cuts.hpp"
@@ -13,8 +16,6 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
-
-#ifdef CMR_DO_TESTS
 
 SCENARIO("Primal blossom separation by fast standard heuristics",
 	 "[fast2m][Sep][CutTranslate]") {
