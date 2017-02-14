@@ -95,7 +95,7 @@ public:
                       const std::vector<double> &rmatval)
         {
             activity = 0;
-            for(int i = 0; i < rmatind.size(); i++){
+            for(auto i = 0; i < rmatind.size(); i++){
                 int index = rmatind[i];
                 activity += x[index] * rmatval[i];
             }
@@ -106,6 +106,28 @@ private:
     std::vector<int> &delta;
     std::vector<int> &node_marks;
 };
+
+/// Gets the indices of the teeth for an ex_blossom \p B relative to \p edges. 
+std::vector<int> teeth_inds(const ex_blossom &B,
+                            const std::vector<int> &tour_edges,
+                            const std::vector<double> &lp_vec,
+                            const std::vector<Graph::Edge> &edges,
+                            int ncount);
+
+/// Like the other version, but if we already have handle_delta.
+std::vector<int> teeth_inds(const ex_blossom &B,
+                            const std::vector<int> &tour_edges,
+                            const std::vector<double> &lp_vec,
+                            const std::vector<Graph::Edge> &edges,
+                            int ncount, const std::vector<int> &handle_delta);
+
+
+/// Returns true if the blossom is invalid for some reason. 
+bool bad_blossom(const ex_blossom &B,
+                 const std::vector<int> &tour_edges,
+                 const std::vector<double> &lp_vec,
+                 const std::vector<Graph::Edge> &edges, int ncount);
+
 }  
 }
 

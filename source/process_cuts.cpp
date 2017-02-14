@@ -1,11 +1,11 @@
 #include "process_cuts.hpp"
 #include "err_util.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <utility>
 #include <stdexcept>
-
 
 #include <cmath>
 
@@ -18,8 +18,12 @@ using std::cerr;
 
 using std::exception;
 using std::runtime_error;
+using std::logic_error;
 
 namespace CMR {
+
+namespace Eps = Epsilon;
+
 namespace Sep {
 
 void CutTranslate::get_sparse_row(const CCtsp_lpcut_in &cc_cut,
@@ -163,6 +167,101 @@ void CutTranslate::get_sparse_row(const dominoparity &dp_cut,
             coeff = floor(coeff);
         }
     }
+}
+
+/**
+ * @param[in] B the blossom to expand.
+ * @param[in] tour_edges the active tour vector.
+ * @param[in] lp_vec the lp solution used to find \p B.
+ * @param[in] edges the CoreGraph edges.
+ * @param[in] ncount the number of nodes.
+ * @param[in] handle_delta the delta_inds for `B.handle`.
+ * Let \f$ \bar x \f$ be the edge vector of \p tour_edges, \f$ E^* \f$ the 
+ * edges for which \p lp_vec is nonzero, and \f$ E^0, E^1 \f$ be the edges in
+ * \f$ E^* \f$ for which \f$ \bar x \f$ is respectively zero or one. Let 
+ * \f$ e \f$ be `B.cut_ind` and \f$ H \f$ be `B.handle`.
+ * As per Letchford and Lodi (Primal Separation Algorithms), this function 
+ * returns \f[ e \cup \delta(H)\cap E^1 \f] if \f$ e \in E^0 \f$, and 
+ * \f[ \delta(H)\cap E^1 \setminus e \f] if \f$ e \in E^1 \f$.
+ */
+vector<int> teeth_inds(const ex_blossom &B, const vector<int> &tour_edges,
+                       const vector<double> &lp_vec,
+                       const vector<Graph::Edge> &edges, int ncount,
+                       const vector<int> &handle_delta)
+{
+    vector<int> result = handle_delta;
+
+    int cut_ind = B.cut_edge;
+
+    // base teeth are delta(handle) intersect edges equal to one in tour.
+    result.erase(std::remove_if(result.begin(), result.end(),
+                                [&lp_vec, &tour_edges](int ind)
+                                {
+                                    return (lp_vec[ind] < Eps::Zero ||
+                                            tour_edges[ind] != 1);
+                                }),
+                 result.end());
+
+    auto it = std::find(result.begin(), result.end(), cut_ind);
+    int tour_entry = tour_edges[cut_ind];
+
+    if (tour_entry == 0) { // then we add the cut edge
+        if (it == result.end())
+            result.push_back(tour_entry);
+    } else if (tour_entry == 1) { // then we remove it
+        if (it != result.end())
+            result.erase(it);
+    } else
+        throw logic_error("Non-binary tour entry");
+
+    return result;
+}
+
+
+/// As above, but without precomputed handle_
+vector<int> teeth_inds(const ex_blossom &B, const vector<int> &tour_edges,
+                       const vector<double> &lp_vec,
+                       const vector<Graph::Edge> &edges, int ncount)
+{
+    const vector<int> &handle = B.handle;
+    
+    vector<int> handle_delta = Graph::delta_inds(handle, edges, ncount);
+
+    return teeth_inds(B, tour_edges, lp_vec, edges, ncount, handle_delta);
+}
+
+/**
+ * Same arguments as teeth_inds. Returns true if `B.handle` is too small
+ * or too big, if there are an even number of teeth returned by teeth_inds,
+ * or if the teeth intersect.
+ */
+bool bad_blossom(const ex_blossom &B, const vector<int> &tour_edges,
+                 const vector<double> &lp_vec,
+                 const vector<Graph::Edge> &edges, int ncount)
+{
+    const vector<int> &handle = B.handle;
+    
+    if (handle.size() < 3 || handle.size() > ncount - 3)
+        return true;
+
+    vector<int> teeth = teeth_inds(B, tour_edges, lp_vec, edges, ncount);
+    
+    if ((teeth.size() % 2) == 0)
+        return true;
+
+    vector<int> node_marks(ncount, 0);
+
+    //now check for intersecting teeth.
+    for (int ind : teeth) {
+        const Graph::Edge &e = edges[ind];
+        for (int n : e.end) {
+            ++node_marks[n];
+            if (node_marks[n] > 1)
+                return true;
+        }
+    }
+
+    return false;    
 }
 
 }
