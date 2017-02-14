@@ -227,8 +227,7 @@ private:
 template <typename EndPt_type>
 AdjList::AdjList(int ncount, const std::vector<EndPt_type> &elist) try
     : node_count(ncount), edge_count(elist.size()),
-      nodelist(std::vector<Node>(node_count,
-                                 Node((2 * edge_count) / node_count)))
+      nodelist(std::vector<Node>(node_count))
 {
     for (int i = 0; i < edge_count; ++i) {
         const auto &e = elist[i];
