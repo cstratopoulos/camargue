@@ -12,10 +12,9 @@ namespace Sep {
  * separation algorithm of Letchford-Lodi in Primal Separation Algorithms
  * Revisited. 
  */
-struct blossom {
-    blossom(std::vector<int> &_handle, int _cut_edge, double _val) :
+struct ex_blossom {
+    ex_blossom(std::vector<int> &_handle, int _cut_edge, double _val) :
         handle(_handle), cut_edge(_cut_edge), cut_val(_val){}
-
   
     std::vector<int> handle;
   
