@@ -94,6 +94,8 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
   for (int root_ind = 0; root_ind < ncount; ++root_ind) {
     int actual_vx = tour[root_ind];
     SNode x = G_s.nodelist[actual_vx];
+
+    // this needs to be done for iterator validity
     light_teeth[root_ind].reserve(2 * (x.s_degree - 1));
     
     for (int k = 0; k < x.s_degree; ++k) {
