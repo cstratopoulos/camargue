@@ -37,9 +37,6 @@ public:
     /// Construct a partition from an Instance \p inst.
     KarpPartition(const Data::Instance &inst);
 
-    /// Construct a partition from a TSP instance. (Deprecated)
-    KarpPartition(const int ncount, CCdatagroup *dat, const int seed);
-
     /// The number of sub-regions into which the data has been partitioned.
     int num_parts() const { return part_list.size(); }
 

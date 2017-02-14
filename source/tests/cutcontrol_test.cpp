@@ -97,8 +97,7 @@ SCENARIO ("Pivoting and adding cuts",
                     Data::GraphGroup g_dat(inst);
                     Data::BestGroup b_dat(inst, g_dat);
                     LP::CoreLP core(g_dat, b_dat);
-                    Data::KarpPartition kpart(b_dat.perm.size(),
-                                                   inst.ptr(), 99);
+                    Data::KarpPartition kpart(inst);
 
                     vector<double> tour1 = core.lp_vec();
 

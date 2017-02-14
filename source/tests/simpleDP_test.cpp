@@ -51,9 +51,7 @@ SCENARIO("Separating simple DP inequalities in small instances",
                                                          s_dat, inst));
                 int ncount = g_dat.core_graph.node_count();
 
-                REQUIRE_NOTHROW(kpart = Data::KarpPartition(ncount,
-                                                                 inst.ptr(),
-                                                                 99));
+                REQUIRE_NOTHROW(kpart = Data::KarpPartition(inst));
                 Sep::CutTranslate translator(g_dat);
                 Sep::CutQueue<Sep::dominoparity> dp_q(100);
 
@@ -129,9 +127,7 @@ SCENARIO("Separating simple DP inequalities in medium instances",
                                                          s_dat, inst));
                 int ncount = g_dat.core_graph.node_count();
 
-                REQUIRE_NOTHROW(kpart = Data::KarpPartition(ncount,
-                                                                 inst.ptr(),
-                                                                 99));
+                REQUIRE_NOTHROW(kpart = Data::KarpPartition(inst));
                 Sep::CutTranslate translator(g_dat);
                 Sep::CutQueue<Sep::dominoparity> dp_q(1000);
 
@@ -217,9 +213,7 @@ SCENARIO("Separating simple DP inequalities in large instances",
                                                          s_dat, inst));
                 int ncount = g_dat.core_graph.node_count();
 
-                REQUIRE_NOTHROW(kpart = Data::KarpPartition(ncount,
-                                                                 inst.ptr(),
-                                                                 99));
+                REQUIRE_NOTHROW(kpart = Data::KarpPartition(inst));
                 Sep::CutTranslate translator(g_dat);
                 Sep::CutQueue<Sep::dominoparity> dp_q(1000);
 

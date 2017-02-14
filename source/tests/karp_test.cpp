@@ -65,8 +65,7 @@ SCENARIO("Karp partitions for too small instances",
                                                  lp_edges, s_dat, inst));
         int ncount = g_dat.core_graph.node_count();
 	  
-        REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(ncount,
-                                                         inst.ptr(), 99));
+        REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(inst));
         REQUIRE(kpart.num_parts() == 1);
       }
     }
