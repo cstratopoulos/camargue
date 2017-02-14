@@ -161,6 +161,24 @@ int Graph::build_s_graph (int node_count,
 
 namespace Graph {
 
+vector<int> delta_inds(const vector<int> &node_list, const vector<Edge> &edges,
+                       int ncount)
+{
+    vector<int> result;
+    vector<bool> node_marks(ncount, false);
+
+    for (int n : node_list)
+        node_marks[n] = true;
+
+    for (int i = 0; i < edges.size(); ++i) {
+        Edge e = edges[i];
+        if (node_marks[e.end[0]] != node_marks[e.end[1]])
+            result.push_back(i);
+    }
+
+    return result;
+}
+
 TourGraph::TourGraph() noexcept { CCtsp_init_lpgraph_struct(&L); }
 
 TourGraph::TourGraph(const vector<int> &tour_edges,

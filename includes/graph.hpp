@@ -100,10 +100,17 @@ private:
 int connected (SupportGraph *G, int *icount,
 	       std::vector<int> &island, int starting_node);
 void dfs (int n, SupportGraph *G, int *icount,
-	  std::vector<int> &island);  
+	  std::vector<int> &island);
+
+//TODO get rid of all the versions that need island/deltacount, etc. 
+std::vector<int> delta_inds(const std::vector<int> &node_list,
+                            const std::vector<Edge> &edges,
+                            int ncount);
+
 void get_delta (const std::vector<int> &nodelist, std::vector<Edge> &elist,
 		int *deltacount_p, std::vector<int> &delta,
 		std::vector<int> &marks);
+
 void get_delta (int nsize, int *nlist, int ecount, int *elist,
 		int *deltacount, int *delta, int *node_marks);
 
