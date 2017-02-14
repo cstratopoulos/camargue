@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** @file
- * @brief EXACT PRIMAL LIGHT SIMPLE DP SEPARATION
+ * @brief Primal light simple DP separation.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -15,21 +15,22 @@
 namespace CMR {
 namespace Sep {
 
-/** Class for separation of simple domino parity inequalities. */
+/// Separating primal simple domino parity inequalities.
 class SimpleDP {
 public:
-  SimpleDP(Data::GraphGroup &graph_dat,
-           Data::KarpPartition &_kpart,
-           Data::BestGroup &best_dat,
-           Data::SupportGroup &supp_dat,
-           Sep::CutQueue<dominoparity> &dp_q);
+    /// Construct a separator to separate over partitioned DPwitness graphs.
+    SimpleDP(Data::GraphGroup &graph_dat,
+             Data::KarpPartition &_kpart,
+             Data::BestGroup &best_dat,
+             Data::SupportGroup &supp_dat,
+             Sep::CutQueue<dominoparity> &dp_q);
 
-  bool find_cuts();
+    bool find_cuts(); //!< Separator invocation, returns true iff cuts found.
 
 private:
-  CandidateTeeth candidates;
-  Data::KarpPartition &kpart;
-  CutQueue<dominoparity> &dp_q;
+    CandidateTeeth candidates;
+    Data::KarpPartition &kpart;
+    CutQueue<dominoparity> &dp_q;
 };
 
 }
