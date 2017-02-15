@@ -46,7 +46,7 @@ try : tsp_instance(fname, make_seed(seed)),
       karp_part(tsp_instance),
       graph_data(tsp_instance), best_data(tsp_instance, graph_data),
       core_lp(graph_data, best_data),
-      output_prefs(outprefs)  
+      output_prefs(outprefs)
 {} catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Solver TSPLIB constructor failed.");
@@ -105,7 +105,7 @@ void Solver::report_cuts()
     int combcount = 0;
     int dpcount = 0;
     int gmicount = 0;
-    
+
     for (const Sep::HyperGraph &H : core_lp.ext_cuts.get_cuts()) {
         CutType t = H.cut_type();
         if (t == CutType::Subtour)
@@ -137,7 +137,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                                                            tsp_instance,
                                                            graph_data);
         } CMR_CATCH_PRINT_THROW("instantiating/allocating Pricer", err);
-    
+
     PivType piv = PivType::Frac;
     int round = 0;
     int auground = 0;
@@ -147,20 +147,19 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
     vector<int> &perm = best_data.perm;
 
     try {
-        TG = Graph::TourGraph(tour_edges, edges, perm);        
+        TG = Graph::TourGraph(tour_edges, edges, perm);
     } CMR_CATCH_PRINT_THROW("allocating tour graph", err);
 
 
     CMR::Timer timer(tsp_instance.problem_name() + " pure cut");
-    
-    timer.start();    
+
+    timer.start();
 
     while (true) {
         ++auground;
-        int num_pruned = 0;
 
         try {
-            piv = cut_and_piv(round, num_pruned, do_price);
+            piv = cut_and_piv(round, do_price);
         } CMR_CATCH_PRINT_THROW("invoking cut and piv", err);
 
         if (piv == PivType::Subtour && cut_sel.connect)
@@ -172,12 +171,11 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                 try {
                     if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full) {
                         core_lp.factor_basis();
-                        //core_lp.rebuild_basis();
                         continue;
                     } else
                         break;
                 } CMR_CATCH_PRINT_THROW("adding edges to core", err);
-            }            
+            }
             break;
         }
 
@@ -188,14 +186,13 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                 try {
                     edge_pricer->gen_edges(piv);
                     core_lp.factor_basis();
-                    //core_lp.rebuild_basis();
                 } CMR_CATCH_PRINT_THROW("adding edges to core", err);
             }
-            
+
             try {
                 TG = Graph::TourGraph(tour_edges, edges, perm);
             } CMR_CATCH_PRINT_THROW("updating tour graph", err);
-            
+
             continue;
         }
 
@@ -205,7 +202,9 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                 if (frac_recover() == PivType::Tour) {
                     piv = PivType::Tour;
                     report_aug(false);
+                    cout << "Round " << round << endl;
                     TG = Graph::TourGraph(tour_edges, edges, perm);
+                    cout << "Reset TG " << endl;
 
                     continue;
                 }
@@ -225,7 +224,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
              << core_lp.get_objval() << "\n";
         report_cuts();
 
-        timer.report(true);        
+        timer.report(true);
     }
     return piv;
 }
@@ -238,7 +237,7 @@ PivType Solver::abc(bool do_price)
 
     try { piv = cutting_loop(do_price, true, true); }
     CMR_CATCH_PRINT_THROW("running cutting_loop", err);
-    
+
     if (piv != PivType::Frac) {
         if (piv == PivType::FathomedTour) {
             return piv;
@@ -248,7 +247,7 @@ PivType Solver::abc(bool do_price)
             throw logic_error("Invalid pivot type for running Solver::abc.");
         }
     }
-    
+
     cout << "\tCommencing ABC search....\n";
     Timer abct(tsp_instance.problem_name() + " ABC search");
     abct.start();
@@ -278,9 +277,9 @@ PivType Solver::abc(bool do_price)
     report_cuts();
 
     abct.report(true);
-    
-    
-    return piv;    
+
+
+    return piv;
 }
 
 }

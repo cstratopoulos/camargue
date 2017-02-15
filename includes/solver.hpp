@@ -31,7 +31,7 @@ namespace CMR {
 
 /// Solution of TSP instances.
 class Solver {
-public:    
+public:
     /// Construct a Solver from a TSPLIB instance.
     Solver(const std::string &tsp_fname, const int seed,
            const OutPrefs outprefs);
@@ -51,9 +51,9 @@ public:
     /// Embed cutting_loop in an augment and branch and cut search.
     LP::PivType abc(bool do_price);
 
-    const Data::Instance &inst_info() const { return tsp_instance; } 
-    
-    const Data::GraphGroup &graph_info() const { return graph_data; } 
+    const Data::Instance &inst_info() const { return tsp_instance; }
+
+    const Data::GraphGroup &graph_info() const { return graph_data; }
 
     const Data::BestGroup &best_info() const{ return best_data; }
 
@@ -76,15 +76,18 @@ private:
     void report_lp(LP::PivType piv);
 
     void report_cuts();
-    
+
     void report_aug(bool piv_aug); //!< Output info about a new tour found.
 
-    LP::PivType cut_and_piv(int &round, int &num_pruned, bool do_price);
+    bool restart_loop(LP::PivType piv, double delta_ratio);
+    bool return_pivot(LP::PivType piv);
+
+    LP::PivType cut_and_piv(int &round, bool do_price);
 
     LP::PivType abc_dfs(int depth, bool do_price);
 
     LP::PivType frac_recover();
-    
+
     Data::Instance tsp_instance;
     Data::KarpPartition karp_part;
     Data::GraphGroup graph_data;
@@ -93,8 +96,6 @@ private:
     LP::CoreLP core_lp;
 
     Graph::TourGraph TG;
-
-    std::unique_ptr<Sep::Separator> separator;
 
 #if CMR_HAVE_SAFEGMI
     std::unique_ptr<Sep::SafeGomory> gmi_separator;
