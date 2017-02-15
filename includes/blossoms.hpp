@@ -19,7 +19,6 @@ namespace Sep {
 class ExBlossoms {
 public:
     ExBlossoms(const std::vector<Graph::Edge> &_edges,
-               const std::vector<double> &x,
                Data::BestGroup &b_dat, Data::SupportGroup &s_dat,
                CutQueue<ex_blossom> &_blossom_q);
     
@@ -27,7 +26,6 @@ public:
     
 private:
     const std::vector<Graph::Edge> &edges;
-    const std::vector<double> &lp_vec;
     const Data::BestGroup &best_data;
     Data::SupportGroup &supp_data;
     CutQueue<ex_blossom> &blossom_q;
