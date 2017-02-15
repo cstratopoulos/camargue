@@ -1,6 +1,7 @@
 #include "separator.hpp"
 #include "cc_lpcuts.hpp"
 #include "simpleDP.hpp"
+#include "blossoms.hpp"
 #include "err_util.hpp"
 
 #include <vector>
@@ -85,6 +86,20 @@ bool Separator::blkcomb_sep() try
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Separator::blkcomb_sep failed.");
+}
+
+bool Separator::exact2m_sep() try
+{
+    ExBlossoms ex2m(graph_data.core_graph.get_edges(),
+                    best_data, supp_data,
+                    ex2m_q);
+    bool result = ex2m.find_cuts();
+
+    running_total += ex2m_q.size();
+    return result;
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("Separator::exact2m_sep failed.");
 }
 
 bool Separator::simpleDP_sep() try {

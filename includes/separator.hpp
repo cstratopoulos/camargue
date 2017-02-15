@@ -36,6 +36,7 @@ public:
     bool segment_sep();
     bool fast2m_sep();
     bool blkcomb_sep();
+    bool exact2m_sep();
 
     bool simpleDP_sep();
 
@@ -45,6 +46,7 @@ public:
     const LPcutList &fastblossom_q() const { return fast2m_q; }
     const LPcutList &blockcomb_q() const { return blkcomb_q; }
 
+    const CutQueue<ex_blossom> &exblossom_q() const { return ex2m_q; }
     const CutQueue<dominoparity> &simpleDP_q() const { return dp_q; }
 
     const LPcutList &connect_cuts_q() const { return connect_q; }
@@ -66,6 +68,7 @@ private:
     LPcutList fast2m_q;
     LPcutList blkcomb_q;
 
+    CutQueue<ex_blossom> ex2m_q;
     CutQueue<dominoparity> dp_q;
 
     LPcutList connect_q;
