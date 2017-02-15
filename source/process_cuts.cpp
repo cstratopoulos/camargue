@@ -70,7 +70,6 @@ void CutTranslate::get_sparse_row(const CCtsp_lpcut_in &cc_cut,
             rmatind.push_back(kv.first);
             rmatval.push_back(kv.second);
         }
-    
 }
 
 
@@ -169,6 +168,48 @@ void CutTranslate::get_sparse_row(const dominoparity &dp_cut,
     }
 }
 
+void CutTranslate::get_sparse_row(const vector<int> &handle_delta,
+                                  const vector<vector<int>> &tooth_edges,
+                                  vector<int> &rmatind,
+                                  vector<double> &rmatval, char &sense,
+                                  double &rhs)
+{
+    rmatind.clear();
+    rmatval.clear();
+    sense = 'G';
+    rhs = 3 * tooth_edges.size() + 1;
+
+    int ncount = core_graph.node_count();
+    map<int, double> coeff_map;
+
+    // get the handle delta
+    for (int ind : handle_delta)
+        if (coeff_map.count(ind))
+            coeff_map[ind] += 1.0;
+        else
+            coeff_map[ind] = 1.0;
+
+    //get each tooth delta
+    const vector<Graph::Edge> &edges = core_graph.get_edges();
+    for (const vector<int> &edge_ends : tooth_edges) {
+        vector<int> tooth_delta_inds = Graph::delta_inds(edge_ends, edges,
+                                                         ncount);
+        for (int t_ind : tooth_delta_inds)
+            if (coeff_map.count(t_ind))
+                coeff_map[t_ind] += 1.0;
+            else
+                coeff_map[t_ind] = 1.0;
+    }
+
+    rmatind.reserve(coeff_map.size());
+    rmatval.reserve(coeff_map.size());
+
+        for(pair<const int, double> &kv : coeff_map) {
+            rmatind.push_back(kv.first);
+            rmatval.push_back(kv.second);
+        }
+}
+
 /**
  * @param[in] B the blossom to expand.
  * @param[in] tour_edges the active tour vector.
@@ -191,23 +232,29 @@ vector<int> teeth_inds(const ex_blossom &B, const vector<int> &tour_edges,
 {
     vector<int> result = handle_delta;
 
-    int cut_ind = B.cut_edge;
+    // cout << "Handle delta\n";
+    // for (int ind : result)
+    //     cout << ((EndPts) edges[ind]) << ", tour " << tour_edges[ind] << ", "
+    //          << "lp " << lp_vec[ind] << "\n";
 
     // base teeth are delta(handle) intersect edges equal to one in tour.
     result.erase(std::remove_if(result.begin(), result.end(),
                                 [&lp_vec, &tour_edges](int ind)
                                 {
                                     return (lp_vec[ind] < Eps::Zero ||
-                                            tour_edges[ind] != 1);
+                                            tour_edges[ind] == 0);
                                 }),
                  result.end());
 
+    //cout << "Result size after erase remove: " << result.size() << "\n";
+    
+    int cut_ind = B.cut_edge;
     auto it = std::find(result.begin(), result.end(), cut_ind);
     int tour_entry = tour_edges[cut_ind];
 
     if (tour_entry == 0) { // then we add the cut edge
         if (it == result.end())
-            result.push_back(tour_entry);
+            result.push_back(cut_ind);
     } else if (tour_entry == 1) { // then we remove it
         if (it != result.end())
             result.erase(it);
@@ -239,12 +286,26 @@ bool bad_blossom(const ex_blossom &B, const vector<int> &tour_edges,
                  const vector<double> &lp_vec,
                  const vector<Graph::Edge> &edges, int ncount)
 {
-    const vector<int> &handle = B.handle;
+    // int ce = B.cut_edge;
+    // cout << "\nCut edge " << ((EndPts) edges[ce]) << ", entry "
+    //      << tour_edges[ce] << "\n"; 
     
+    const vector<int> &handle = B.handle;
+
+    // cout << "Handle nodes\n";
+    // for (int i : handle)
+    //     cout << i << ", ";
+    // cout << "\n";
+
     if (handle.size() < 3 || handle.size() > ncount - 3)
         return true;
 
     vector<int> teeth = teeth_inds(B, tour_edges, lp_vec, edges, ncount);
+
+    // cout << "Teeth\n";
+    // for (int ind : teeth)
+    //     cout << ((EndPts) edges[ind]) << ", ";
+    // cout << "\n";
     
     if ((teeth.size() % 2) == 0)
         return true;

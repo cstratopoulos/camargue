@@ -88,6 +88,12 @@ public:
                         const std::vector<int> &tour_nodes,
                         std::vector<int> &rmatind, std::vector<double> &rmatval,
                         char &sense, double &rhs);
+
+    void get_sparse_row(const std::vector<int> &handle_delta,
+                        const std::vector<std::vector<int>> &tooth_edges,
+                        std::vector<int> &rmatind,
+                        std::vector<double> &rmatval,
+                        char &sense, double &rhs);
   
     template<typename number_type>
     void get_activity(double &activity, const std::vector<number_type> &x,
