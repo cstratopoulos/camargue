@@ -30,6 +30,95 @@ using std::string;
 using std::to_string;
 using std::cout;
 
+SCENARIO ("Elminating edges after a run of cutting_loop",
+          "[Price][exact_lb][elim]") {
+    using namespace CMR;
+    using f64 = util::Fixed64;
+    vector<string> probs{
+        "dantzig42",
+        "pr76",
+        "a280",
+        "lin318",
+        "d493",
+        "pr1002",
+        "pr2392",
+        };
+
+    for (string &prob : probs) {
+        GIVEN ("A pure cutting loop run on " + prob + " with pricing") {
+            int seed = 99;
+            string probfile = "problems/" + prob + ".tsp";
+            OutPrefs prefs;
+            Solver solver(probfile, seed, prefs);
+
+            auto piv = solver.cutting_loop(true, true, true);
+
+            LP::CoreLP &core =
+            const_cast<LP::CoreLP &>(solver.get_core_lp());
+
+            THEN ("We can eliminate edges if non-optimal") {
+                if (piv == LP::PivType::FathomedTour)
+                    continue;
+
+                core.primal_opt();
+                auto objval = core.get_objval();
+                cout << "\tPrimal opt objval " << objval << "\n";
+
+                Data::GraphGroup &g_dat =
+                const_cast<Data::GraphGroup &>(solver.graph_info());
+
+                Price::Pricer pricer(core, solver.inst_info(), g_dat);
+
+                f64 tourlen{solver.best_info().min_tour_value};
+                f64 lb = pricer.exact_lb(false);
+                cout << "\tExact dual lower bound " << lb << "\n";
+                f64 gap{tourlen - lb};
+                f64 cutoff{gap - 1};
+                f64 negcutoff{0};
+                util::add_mult(negcutoff, cutoff, -1);
+
+                if (cutoff < 0) {
+                    cout << "negative cutoff, do not elim\n";
+                }
+
+                cout << "\tZero cutoff " << cutoff << ", fixup cutoff "
+                     << negcutoff << "\n";
+
+                auto dg =
+                util::make_unique<LP::DualGroup<f64>>(true, core,
+                                                      core.
+                                                      external_cuts());
+
+                vector<Price::PrEdge<f64>> graph_edges;
+
+                for (auto &e : g_dat.core_graph.get_edges())
+                    graph_edges.emplace_back(e.end[0], e.end[1]);
+
+                pricer.price_edges(graph_edges, dg);
+
+                int elimct = 0;
+                int fixct = 0;
+
+                for (int i = 0; i < graph_edges.size(); ++i) {
+                    auto &e = graph_edges[i];
+                    if (e.redcost > cutoff) {
+                        ++elimct;
+                        core.tighten_bound(i, 'E', 0.0);
+                    } else if (e.redcost < negcutoff) {
+                        ++fixct;
+                        core.tighten_bound(i, 'E', 1.0);
+                    }
+                }
+                cout << "\t" << elimct << " eliminated, " << fixct
+                     << " fixed\n";
+                core.primal_opt();
+                cout << "New primal opt objval " << core.get_objval() << "\n\n";
+            }
+
+        }
+    }
+}
+
 SCENARIO ("Computing dual bounds after run of cutting loop",
           "[LP][Price][Solver][dual][exact_lb]") {
     using namespace CMR;
@@ -53,7 +142,7 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
                     Solver solver(probfile, seed, prefs);
 
                     auto piv = solver.cutting_loop(false, false, true);
-                    
+
                     LP::CoreLP &core =
                     const_cast<LP::CoreLP &>(solver.get_core_lp());
 
@@ -61,7 +150,7 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
                         cout << "Suboptimal, optimizing\n";
                         core.primal_opt();
                     }
-                    
+
                     auto objval = core.get_objval();
                     cout << "\tPrimal opt objval " << objval << "\n";
 
@@ -69,13 +158,13 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
                     int numcols = core.num_cols();
 
                     auto d_pi = core.pi(0, core.num_rows() - 1);
-                    
+
                     vector<double> rhs;
                     core.get_rhs(rhs, 0, core.num_rows() - 1);
 
                     const auto &hcuts = core.external_cuts().get_cuts();
                     auto sense = core.senses(0, numrows - 1);
-                    
+
                     Data::GraphGroup &g_dat =
                     const_cast<Data::GraphGroup &>(solver.graph_info());
 
@@ -96,7 +185,7 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
 
                     for (auto &e : graph_edges)
                         if (e.redcost < 0)
-                            ex_rc_sum -= e.redcost;                        
+                            ex_rc_sum -= e.redcost;
 
                     vector<f64> ex_pi(d_pi.begin(), d_pi.end());
                     auto ex_pi_sum = f64{0.0};
@@ -104,7 +193,7 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
                     f64 fix_pi_sum{0.0};
 
                     int corcount = 0;
-                    
+
                     for (int i = 0; i < numrows; ++i)
                         if (sense[i] == 'G') {
                             if (ex_pi[i] < 0.0){
@@ -132,7 +221,7 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
 
 
 SCENARIO ("Trying to compute dual bounds for the degree LP",
-          "[LP][Price][price_edges][dual]") {
+          "[.LP][.Price][.price_edges][.dual]") {
     using namespace CMR;
     vector<string> probs{
         "dantzig42",
@@ -154,7 +243,7 @@ SCENARIO ("Trying to compute dual bounds for the degree LP",
                 THEN ("We can compute the same objval manually") {
                     auto pi = core.pi(0, core.num_rows() - 1);
                     auto rc = core.redcosts(0, core.num_cols() - 1);
-                    
+
                     vector<double> rhs;
                     core.get_rhs(rhs, 0, core.num_rows() - 1);
 
@@ -180,7 +269,7 @@ SCENARIO ("Trying to compute dual bounds for the degree LP",
                         std::unique_ptr<LP::DualGroup<f64>> dg;
 
                         dg = util::make_unique<LP::DualGroup<f64>>(true, core,
-                                                                   core.external_cuts());               
+                                                                   core.external_cuts());
                         auto pi_sum = f64{0.0};
                         auto i = 0;
                         for (auto &pi : dg->node_pi)
@@ -266,51 +355,10 @@ SCENARIO ("Optimizing and computing lower bounds",
 
                     auto lb = pricer.exact_lb(false);
                     auto d_lb = lb.to_d();
-                    
+
 
                     REQUIRE(d_lb <= objval);
                     CHECK(d_lb == Approx(objval));
-                }
-            }
-        }
-    }    
-}
-
-SCENARIO ("Computing exact lower bounds",
-          "[Pricer][Price][exact_lb][Fixed64][DualGroup]") {
-    using namespace CMR;
-    vector<string> probs {
-        "bayg29",
-        "dantzig42",
-        "pr76",
-        "lin105",
-        "a280",
-        // "lin318",
-        // "fl417",
-        // "p654"
-        };
-
-    for (string &prob : probs) {
-        GIVEN ("The TSP instance " + prob) {
-            WHEN ("The solution is optimal for its edge set") {
-                int seed = 99;
-                string probfile = "problems/" + prob + ".tsp";
-
-                OutPrefs outprefs;
-                Solver solver(probfile, seed, outprefs);
-
-                solver.cutting_loop(true, true, true);
-
-                LP::CoreLP &core = const_cast<LP::CoreLP &>(solver.
-                                                            get_core_lp());
-                Data::GraphGroup &g_dat =
-                const_cast<Data::GraphGroup &>(solver.graph_info());
-
-                Price::Pricer pricer(core, solver.inst_info(), g_dat);
-                LP::DualGroup<double> dg(true, core, core.external_cuts());
-                THEN ("We can compute a valid lower bound") {
-                    pricer.exact_lb(false);
-                    
                 }
             }
         }
@@ -345,9 +393,9 @@ vector<ProbPair> probs {
                     int seed = prob.second;
                     string probfile = "problems/" + fname + ".tsp";
 
-                    OutPrefs outprefs;        
+                    OutPrefs outprefs;
                     Solver solver(probfile, seed, outprefs);
-                    
+
                     solver.cutting_loop(false, true, true);
 
                     Data::GraphGroup &g_dat =
@@ -358,7 +406,7 @@ vector<ProbPair> probs {
 
                     int ncount = g_dat.core_graph.node_count();
                     int rowcount = core_lp.num_rows();
-                
+
                     Price::Pricer pricer(core_lp, solver.inst_info(), g_dat);
                     vector<Price::PrEdge<double>> pr_edges;
                     vector<Price::PrEdge<util::Fixed64>> f64_edges;
@@ -367,7 +415,7 @@ vector<ProbPair> probs {
                         pr_edges.emplace_back(e.end[0], e.end[1]);
                         f64_edges.emplace_back(e.end[0], e.end[1]);
                     }
-                        
+
 
                     std::unique_ptr<LP::DualGroup<double>> dgp;
                     std::unique_ptr<LP::DualGroup<util::Fixed64>> f64_dgp;
@@ -377,12 +425,12 @@ vector<ProbPair> probs {
 
                     cout << "Dual feasible before getting cpx_rc: "
                          << core_lp.dual_feas() << "\n";
-                    
+
                     vector<double> cpx_rc =
                     core_lp.redcosts(0, core_lp.num_cols() - 1);
 
                     vector<double> node_pi = core_lp.pi(0, ncount - 1);
-                    
+
                     vector<double> cut_pi = (rowcount > ncount) ?
                     core_lp.pi(solver.inst_info().node_count(),
                                core_lp.num_rows() - 1) : vector<double>();
