@@ -37,6 +37,7 @@ SCENARIO ("Generating figures to compare primal pivots",
         OutPrefs prefs;
         Solver solver("problems/pcb442.tsp",
                       "test_data/tours/pcb442.sol", 99, prefs);
+        solver.cut_sel.ex2m = false;
         int ncount = 442;
         const auto dat = solver.inst_info().ptr();
         REQUIRE_NOTHROW(util::write_xy_coords(dat->x, dat->y, ncount,
