@@ -235,6 +235,10 @@ TourGraph &TourGraph::operator=(TourGraph &&T) noexcept
 
 TourGraph::~TourGraph() {  CCtsp_free_lpgraph(&L); }
 
+/**
+ * This constructor is meant to be used to create an AdjList representation of
+ * a CoreGraph.
+ */
 AdjList::AdjList(int ncount, const vector<Edge> &ref_elist) try
     : node_count(ncount), edge_count(ref_elist.size()),
       nodelist(vector<Node>(node_count))
@@ -250,7 +254,16 @@ AdjList::AdjList(int ncount, const vector<Edge> &ref_elist) try
     throw runtime_error("AdjList elist constructor failed.");
 }
 
-
+/**
+ * Creates an AdjList representation of a support graph for an LP solution 
+ * relative to some CoreGraph.
+ * @param[in] ncount the number of nodes.
+ * @param[in] ref_elist the Edge set of the reference CoreGraph.
+ * @param[in] edge_caps capacities to be assigned to all the edges in 
+ * \p ref_elist.
+ * @param[in] keep_indices indices of all the edges from \p ref_elist which
+ * should make it in to the AdjList.
+ */
 AdjList::AdjList(int  ncount,
                  const vector<Edge> &ref_elist,
                  const vector<double> &edge_caps,
@@ -258,6 +271,9 @@ AdjList::AdjList(int  ncount,
     : node_count(ncount), edge_count(keep_indices.size()),
       nodelist(vector<Node>(node_count))
 {
+    if (edge_caps.size() != ref_elist.size())
+        throw logic_error("Size mismatch in support graph AdjList constructor");
+    
     for (int index : keep_indices) {
         const Edge &e = ref_elist[index];
         double cap = edge_caps[index];
@@ -270,6 +286,49 @@ AdjList::AdjList(int  ncount,
     throw runtime_error("AdjList indices/ecap constructor failed.");
 }
 
+AdjList::AdjList(AdjList &&AL) noexcept
+    : node_count(AL.node_count), edge_count(AL.edge_count),
+      nodelist(std::move(AL.nodelist))
+{}
+
+AdjList &AdjList::operator=(Graph::AdjList &&AL) noexcept
+{
+    node_count = AL.node_count;
+    edge_count = AL.edge_count;
+    nodelist = std::move(AL.nodelist);
+
+    return *this;
+}
+
+bool AdjList::connected(vector<int> &island, int start_node)
+{
+    island.clear();
+    for (Node &n : nodelist)
+        n.mark = 0;
+
+    dfs(0, island);
+
+    return island.size() == node_count;
+}
+
+void AdjList::dfs(int start_node, std::vector<int> &island)
+{
+    Node &n = nodelist[start_node];
+    n.mark = 1;
+    island.push_back(start_node);
+
+    for (AdjObj &a : n.neighbors)
+        if (nodelist[a.other_end].mark == 0)
+            dfs(a.other_end, island);    
+}
+
+/**
+ * The edge is added iff it is not already present.
+ * @param[in] index the index, relative to some CoreGraph reference Edge set,
+ * of the edge to be added.
+ * @param[in] val the value which shall become the `val` field of the added
+ * AdjObj.
+ */
 void AdjList::add_edge(int end0, int end1, int index, double val)
 {
     if (find_edge(end0, end1) != nullptr)

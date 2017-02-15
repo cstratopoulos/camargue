@@ -155,19 +155,33 @@ struct Node {
     int mark;
 };
 
+/// Representation of a graph as an adjacency list. 
 struct AdjList {
     AdjList() = default;
-    
+
+    /// An AdjList with \p ncount nodes for all the edges in \p ref_elist.
     AdjList(int ncount, const std::vector<Edge> &ref_elist);
 
+    /// An AdjList for a vector of structs derived from EndPt.
     template <typename EndPt_type>
     AdjList(int ncount, const std::vector<EndPt_type> &elist);
-    
+
+    /// A support graph type AdjList.
     AdjList(int ncount,
             const std::vector<Edge> &ref_elist,
             const std::vector<double> &ref_elist_caps,
             const std::vector<int> &keep_indices);
 
+    AdjList(AdjList &&AL) noexcept;
+
+    AdjList &operator=(AdjList &&AL) noexcept;
+
+    bool connected(std::vector<int> &island, int start_node);
+
+    void dfs(int start_node, std::vector<int> &island);
+
+    /// Get a pointer to the AdjObj with end points \p end0 and \p end1.
+    /// @returns `nullptr` if not found, else a pointer to the AdjObj.
     const AdjObj *find_edge(int end0, int end1) const
     {
         for (const AdjObj &a : nodelist[end0].neighbors)
@@ -176,6 +190,7 @@ struct AdjList {
         return nullptr;
     }
 
+    /// Add the edge with end points \p end0 \p end1 to the AdjList.
     void add_edge(int end0, int end1, int index, double val);
 
     int node_count;
