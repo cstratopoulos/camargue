@@ -1,7 +1,7 @@
 #include "graph.hpp"
 
 #include <algorithm>
-#include <fstream>		   
+#include <fstream>
 
 using std::vector;
 using std::cout;
@@ -26,7 +26,7 @@ void Graph::get_delta (const std::vector<int> &nodelist,
       delta[k++] = i;
 
   *deltacount_p = k;
-  
+
   for (int i = 0; i < nodelist.size(); i++)
     marks[nodelist[i]] = 0;
 }
@@ -65,7 +65,7 @@ void Graph::get_delta(const int interval_start, const int interval_end,
   }
 
   for (int i = interval_start; i <= interval_end; i++)
-    node_marks[tour_nodes[i]] = 0;  
+    node_marks[tour_nodes[i]] = 0;
 }
 
 namespace Graph {
@@ -102,18 +102,18 @@ try
         elist.push_back(perm[e.end[0]]);
         elist.push_back(perm[e.end[1]]);
     }
-    
+
   for (int i : tour_edges)
       d_tour.push_back(i);
 
   CCtsp_init_lpgraph_struct(&L);
-  
+
   if (CCtsp_build_lpgraph(&L, ncount, ecount, &elist[0], (int *) NULL))
       throw runtime_error("CCtsp_build_lpgraph failed.");
-  
+
   if (CCtsp_build_lpadj(&L, 0, ecount))
       throw runtime_error("CCtsp_build_lpadj failed.");
-  
+
 } catch (const std::exception &e) {
     cerr << e.what() << "\n";
     throw std::runtime_error("TourGraph constructor failed.");
@@ -131,7 +131,7 @@ TourGraph::TourGraph(TourGraph &&T) noexcept : d_tour(std::move(T.d_tour))
 TourGraph &TourGraph::operator=(TourGraph &&T) noexcept
 {
     d_tour = std::move(T.d_tour);
-    
+
     CCtsp_free_lpgraph(&L);
     L = T.L;
 
@@ -164,11 +164,11 @@ AdjList::AdjList(int ncount, const vector<Edge> &ref_elist) try
 }
 
 /**
- * Creates an AdjList representation of a support graph for an LP solution 
+ * Creates an AdjList representation of a support graph for an LP solution
  * relative to some CoreGraph.
  * @param[in] ncount the number of nodes.
  * @param[in] ref_elist the Edge set of the reference CoreGraph.
- * @param[in] edge_caps capacities to be assigned to all the edges in 
+ * @param[in] edge_caps capacities to be assigned to all the edges in
  * \p ref_elist.
  * @param[in] keep_indices indices of all the edges from \p ref_elist which
  * should make it in to the AdjList.
@@ -182,7 +182,7 @@ AdjList::AdjList(int  ncount,
 {
     if (edge_caps.size() != ref_elist.size())
         throw logic_error("Size mismatch in support graph AdjList constructor");
-    
+
     for (int index : keep_indices) {
         const Edge &e = ref_elist[index];
         double cap = edge_caps[index];
@@ -228,7 +228,7 @@ void AdjList::dfs(int start_node, std::vector<int> &island)
 
     for (AdjObj &a : n.neighbors)
         if (nodelist[a.other_end].mark == 0)
-            dfs(a.other_end, island);    
+            dfs(a.other_end, island);
 }
 
 /**
@@ -253,7 +253,7 @@ CoreGraph::CoreGraph(int ncount, int ecount, const int *elist,
     : nodecount(ncount)
 {
     edges.reserve(ecount);
-    
+
     for (int i = 0; i < ecount; ++i) {
         int e0 = elist[2 * i];
         int e1 = elist[(2 * i) + 1];
@@ -279,7 +279,7 @@ CoreGraph::CoreGraph(const vector<int> &tour_nodes,
         edges.emplace_back(e0, e1, edgelen(e0, e1));
     }
 
-    adj_list = AdjList(nodecount, edges);    
+    adj_list = AdjList(nodecount, edges);
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("CoreGraph constructor failed.");

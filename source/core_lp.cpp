@@ -47,14 +47,14 @@ CoreLP::CoreLP(Data::GraphGroup &graph_data_,
     vector<double> col_coeffs{1.0, 1.0};
     double lb = 0.0;
     double ub = 1.0;
-    
+
     for (const Graph::Edge &e : core_graph.get_edges()) {
         double objval = e.len;
         vector<int> ends{e.end[0], e.end[1]};
 
         add_col(objval, ends, col_coeffs, lb, ub);
     }
-    
+
     tour_base = TourBasis(core_graph, best_data);
 
     get_row_infeas(tour_base.best_tour_edges,
@@ -87,7 +87,7 @@ TourBasis::TourBasis(const Graph::CoreGraph &core_graph,
     rowstat(vector<int>(core_graph.node_count(), BStat::AtLower))
 {
     const vector<int> &int_tour_edges = best_data.best_tour_edges;
-    
+
     for(int i = 0; i < int_tour_edges.size(); ++i)
         best_tour_edges[i] = int_tour_edges[i];
 
@@ -104,7 +104,7 @@ TourBasis::TourBasis(const Graph::CoreGraph &core_graph,
             cerr << e0 << ", " << e1 << " not in core graph.\n";
             throw logic_error("Graph does not contain all edges in tour.");
         }
-        
+
         colstat[find_ind] = BStat::Basic;
     }
 
@@ -138,7 +138,7 @@ TourBasis::TourBasis(const Graph::CoreGraph &core_graph,
 
 PivType CoreLP::primal_pivot()
 {
-    runtime_error err("Problem in CoreLP::primal_pivot.");
+    runtime_error err("Problem in CoreLP::primal_pivot");
 
     double low_limit = best_data.min_tour_value - Eps::Zero;
     Graph::CoreGraph &core_graph = graph_data.core_graph;
@@ -150,11 +150,11 @@ PivType CoreLP::primal_pivot()
     vector<int> dfs_island;
 
     try {
-        nondegen_pivot(low_limit);        
+        nondegen_pivot(low_limit);
         get_x(lp_edges);
         supp_data = Data::SupportGroup(core_graph.get_edges(),
                                        lp_edges, dfs_island,
-                                       core_graph.node_count());        
+                                       core_graph.node_count());
     } CMR_CATCH_PRINT_THROW("pivoting and setting x", err);
 
     ++num_nd_pivots;
@@ -202,7 +202,7 @@ void CoreLP::pivot_back()
 void CoreLP::handle_aug_pivot(const std::vector<int> &tour_nodes)
 {
     runtime_error err("Problem in CoreLP::handle_aug_pivot");
-    
+
     best_data.best_tour_nodes = tour_nodes;
     tour_base.best_tour_edges = lp_edges;
 
@@ -224,7 +224,7 @@ void CoreLP::set_best_tour(const std::vector<int> &tour_nodes)
 {
     runtime_error err("Problem in set_best_tour");
     best_data.best_tour_nodes = tour_nodes;
-    
+
     int ncount = tour_nodes.size();
     vector<int> &tour_edges = best_data.best_tour_edges;
     vector<double> &d_tour_edges = tour_base.best_tour_edges;
@@ -293,7 +293,7 @@ void CoreLP::prune_slacks()
             throw runtime_error("Tried to prune slacks with non-tour vec");
 
     int ncount = graph_data.core_graph.node_count();
-    
+
     vector<double> slacks = row_slacks(ncount, num_rows() - 1);
 
     int orig_numrows = num_rows();
@@ -315,7 +315,7 @@ void CoreLP::prune_slacks()
 void CoreLP::rebuild_basis()
 {
     vector<double> &tour = tour_base.best_tour_edges;
-    
+
     copy_start(tour);
     factor_basis();
 
@@ -341,7 +341,7 @@ void CoreLP::rebuild_basis()
                 cout << "Found nonzero infeas on cut, type: "
                      << ext_cuts.get_cut(i).cut_type() << "\n";
             }
-            
+
             throw runtime_error("tour is now infeasible.");
         }
     }
@@ -368,7 +368,7 @@ void CoreLP::add_cuts(const Sep::LPcutList &cutq)
             translator.get_sparse_row(*cur, perm, rmatind, rmatval, sense,
                                       rhs);
             add_cut(rhs, sense, rmatind, rmatval);
-            ext_cuts.add_cut(*cur, tour);            
+            ext_cuts.add_cut(*cur, tour);
         } CMR_CATCH_PRINT_THROW("processing/adding cut", err);
     }
 }
@@ -377,7 +377,7 @@ void CoreLP::add_cuts(const Sep::CutQueue<Sep::dominoparity> &dpq)
 {
     if (dpq.empty())
         return;
-    
+
     runtime_error err("Problem in CoreLP::add_cuts(Sep::dominoparity)");
 
     Sep::CutTranslate translator(graph_data);
@@ -423,7 +423,7 @@ void CoreLP::add_cuts(const Sep::CutQueue<Sep::ex_blossom> &ex2m_q)
 
     runtime_error err("Problem in CoreLP::add_cuts(Sep::ex_blossom)");
 
-    Sep::CutTranslate translator(graph_data);    
+    Sep::CutTranslate translator(graph_data);
     int ncount = graph_data.core_graph.node_count();
 
     for (Sep::CutQueue<Sep::ex_blossom>::ConstItr it = ex2m_q.begin();
@@ -467,16 +467,16 @@ void CoreLP::add_cuts(const Sep::CutQueue<Sep::ex_blossom> &ex2m_q)
 void CoreLP::add_edges(const vector<Graph::Edge> &batch)
 {
     runtime_error err("Problem in CoreLP::add_edges");
-    
+
     Graph::CoreGraph &core_graph = graph_data.core_graph;
     int old_ecount = core_graph.edge_count();
     int new_ecount = old_ecount + batch.size();
-    
+
     try {
         graph_data.delta.resize(new_ecount, 0);
-        best_data.best_tour_edges.resize(new_ecount, 0);        
+        best_data.best_tour_edges.resize(new_ecount, 0);
         for (const Graph::Edge &e : batch)
-            core_graph.add_edge(e);        
+            core_graph.add_edge(e);
     } CMR_CATCH_PRINT_THROW("adding edges to core graph/best group", err);
 
     double lb = 0.0;
@@ -487,7 +487,7 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch)
     try {
         for (const Graph::Edge &e : batch) {
             double objval = e.len;
-            
+
             ext_cuts.get_col(e.end[0], e.end[1], cmatind, cmatval);
             add_col(objval, cmatind, cmatval, lb, ub);
         }
@@ -495,7 +495,7 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch)
 
     try {
         tour_base.best_tour_edges.resize(new_ecount, 0.0);
-        lp_edges.resize(new_ecount, 0.0);        
+        lp_edges.resize(new_ecount, 0.0);
     } CMR_CATCH_PRINT_THROW("resizing for edges", err)
 }
 
@@ -523,4 +523,3 @@ void CoreLP::purge_gmi()
 
 }
 }
-

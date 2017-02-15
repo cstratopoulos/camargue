@@ -54,7 +54,7 @@ void make_cut_test(const string &tsp_fname,
     Graph::CoreGraph &core_graph = graph_data.core_graph;
 
     best_data.min_tour_value = 0.0;
-  
+
     try {
         graph_data.island.resize(ncount);
         graph_data.node_marks.resize(ncount, 0);
@@ -81,16 +81,16 @@ void make_cut_test(const string &tsp_fname,
         best_tour_edges.resize(core_graph.edge_count(), 1);
         lp_edges.resize(core_graph.edge_count(), 0);
     } CMR_CATCH_PRINT_THROW("adding best tour edges", err);
-  
+
     for (int i = 0; i < ncount; ++i)
         best_data.perm[best_data.best_tour_nodes[i]] = i;
-    
+
     for (int i = 0; i < sup_ecap.size(); ++i) {
         int e0 = sup_elist[2 * i];
         int e1 = sup_elist[(2 * i) + 1];
 
         int find_ind = core_graph.find_edge_ind(e0, e1);
-        
+
         if (find_ind == -1) {
             try {
                 core_graph.add_edge(e0, e1, inst.edgelen(e0, e1));
@@ -101,7 +101,7 @@ void make_cut_test(const string &tsp_fname,
                 delta.push_back(0);
             } CMR_CATCH_PRINT_THROW("pushing back new lp edge", err);
         }
-        
+
         lp_edges[find_ind] = sup_ecap[i];
     }
 
