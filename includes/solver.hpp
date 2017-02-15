@@ -66,6 +66,7 @@ public:
         bool segment = true; //!< Primal SECs.
         bool fast2m = true; //!< Standard fast blossom heuristics.
         bool blkcomb = true; //!< Standard block comb heuristics.
+        bool ex2m = true; //!< Exact primal blossom separation.
         bool simpleDP = true; //!< Primal simple DP separation.
         bool safeGMI = false; //!< Primal safe Gomory cuts.
         bool connect = true; //!< Standard connect cut SECs.

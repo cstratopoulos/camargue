@@ -148,12 +148,15 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
             }
         } CMR_CATCH_PRINT_THROW("calling segment sep", err);
 
+    bool found_2m = false;
+
     if (cut_sel.fast2m)
         try {
             if (call_separator([&sep]() { return sep->fast2m_sep(); },
                                sep->fastblossom_q(), piv, core_lp,
                                tourlen, prev_val, total_delta, delta_ratio,
                                num_pruned)) {
+                found_2m = true;
                 found_primal = true;
                 if (piv == PivType::Tour || piv == PivType::FathomedTour)
                     return piv;
@@ -166,6 +169,21 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
                                                         TG);
             }
         } CMR_CATCH_PRINT_THROW("calling fast2m sep", err);
+
+    if (cut_sel.ex2m)
+        try {
+            if (!found_2m &&
+                call_separator([&sep]() { return sep->exact2m_sep(); },
+                               sep->exblossom_q(), piv, core_lp,
+                               tourlen, prev_val, total_delta, delta_ratio,
+                               num_pruned)) {
+                if (piv == PivType::Tour || piv == PivType::FathomedTour)
+                    return piv;
+
+                if (total_delta >= Eps::Zero)
+                    return cut_and_piv(round, num_pruned, do_price);
+            }
+        } CMR_CATCH_PRINT_THROW("calling exact 2m sep", err);
 
     if (cut_sel.blkcomb)
         try {
@@ -390,13 +408,13 @@ PivType Solver::frac_recover()
     }
 
     if (!new_edges.empty()) {
-        int orig_rowcount = core_lp.num_rows();
+        //int orig_rowcount = core_lp.num_rows();
         try {
             if (cut_sel.safeGMI)
                 core_lp.purge_gmi();
             core_lp.add_edges(new_edges);
         } CMR_CATCH_PRINT_THROW("adding edges not in tour", err);
-        int new_rowcount = core_lp.num_rows();
+        //int new_rowcount = core_lp.num_rows();
         // cout << "\tRecover tour contains " << new_edges.size() << " new edges, "
         //      << (orig_rowcount - new_rowcount) << " gmi cuts purged.\n";
     }
