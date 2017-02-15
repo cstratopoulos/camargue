@@ -114,8 +114,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
     try {
         piv = core_lp.primal_pivot();
-        sep = util::make_unique<Sep::Separator>(graph_data, best_data,
-                                                supp_data, karp_part, TG);
+        Sep::ptr_reset(sep, graph_data, best_data, supp_data, karp_part, TG);
     } CMR_CATCH_PRINT_THROW("initializing pivot and separator", err);
 
     if (return_pivot(piv)) {
@@ -137,10 +136,8 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
                 if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
                     return cut_and_piv(round, do_price);
-
-                sep = util::make_unique<Sep::Separator>(graph_data, best_data,
-                                                        supp_data, karp_part,
-                                                        TG);
+                Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                               karp_part, TG);
             }
         } CMR_CATCH_PRINT_THROW("calling segment sep", err);
 
@@ -159,9 +156,8 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                 if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
                     return cut_and_piv(round, do_price);
 
-                sep = util::make_unique<Sep::Separator>(graph_data, best_data,
-                                                        supp_data, karp_part,
-                                                        TG);
+                Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                               karp_part, TG);
             }
         } CMR_CATCH_PRINT_THROW("calling fast2m sep", err);
 
@@ -177,9 +173,8 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                 if (total_delta >= Eps::Zero)
                     return cut_and_piv(round, do_price);
 
-                sep = util::make_unique<Sep::Separator>(graph_data, best_data,
-                                                        supp_data, karp_part,
-                                                        TG);
+                Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                               karp_part, TG);
             }
         } CMR_CATCH_PRINT_THROW("calling exact 2m sep", err);
 
@@ -196,9 +191,8 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                     !supp_data.connected)
                     return cut_and_piv(round,  do_price);
 
-                sep = util::make_unique<Sep::Separator>(graph_data, best_data,
-                                                        supp_data, karp_part,
-                                                        TG);
+                Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                               karp_part, TG);
             }
         } CMR_CATCH_PRINT_THROW("calling blkcomb sep", err);
 
@@ -226,10 +220,8 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                                        tourlen, prev_val, total_delta,
                                        delta_ratio)) {
                         num_add += sep->connect_cuts_q().size();
-                        sep = util::make_unique<Sep::Separator>(graph_data,
-                                                                best_data,
-                                                                supp_data,
-                                                                karp_part, TG);
+                        Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                                       karp_part, TG);
 
                     } else {
                         throw logic_error("Disconnected w no connect cuts??");
