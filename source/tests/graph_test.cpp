@@ -38,9 +38,9 @@ SCENARIO ("Constructing core LP adjacency lists",
             Graph::AdjList full_alist;
 
             THEN ("We can construct an adj list from the edges") {
-                REQUIRE_NOTHROW(full_alist =
-                                Graph::AdjList(inst.node_count(),
-                                                         g_dat.core_graph.get_edges()));
+                REQUIRE_NOTHROW(full_alist = Graph::AdjList(inst.node_count(),
+                                                            g_dat.core_graph
+                                                            .get_edges()));
 
                 AND_THEN ("Edge finding in the alist agrees with the edges") {
                     const vector<Graph::Edge> &edges =
@@ -62,16 +62,21 @@ SCENARIO ("Constructing core LP adjacency lists",
                     }
                 }
             }
-
         }
     }
 }
 
 SCENARIO ("Constructing support adjacency lists",
-          "[Graph][AdjList][SupportGraph]") {
+          "[Graph][AdjList][SupportGroup]") {
     using namespace CMR;
-    vector<string> probs {"pr76", "d493", "fl1577"};
-    
+    vector<string> probs{
+        "dantzig42",
+        "pr76",
+        "d493",
+        "dsj1000",
+        "fl1577",
+        };
+
     for (string &fname : probs) {
         string
         probfile = "problems/" + fname + ".tsp",
@@ -89,14 +94,11 @@ SCENARIO ("Constructing support adjacency lists",
                                          b_dat, lp_edges, s_dat, inst);
                 int ncount = g_dat.core_graph.node_count();
 
-                Graph::AdjList sup_alist;
-                vector<int> &sup_inds = s_dat.support_indices;
+                REQUIRE(s_dat.connected);
+
+                Graph::AdjList &sup_alist = s_dat.supp_graph;
                 const vector<Graph::Edge> &edges = g_dat.core_graph.get_edges();
-                
-                REQUIRE_NOTHROW(sup_alist =
-                                Graph::AdjList(inst.node_count(),
-                                                         edges, lp_edges,
-                                                         sup_inds));
+
 
                 AND_THEN ("We find only the edges that should be there") {
                     for (int i = 0; i < edges.size(); ++i) {
