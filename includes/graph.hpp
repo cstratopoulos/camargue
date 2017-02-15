@@ -20,35 +20,6 @@ extern "C" {
 
 namespace CMR {
 
-struct s_adjobj {
-  int other_end;
-  int edge_index;
-  double lp_weight;
-};
-
-struct SNode {
-  int s_degree;
-  s_adjobj *adj_objs;
-  int mark;
-};
-
-struct SupportGraph {
-  SupportGraph() :
-    node_count(0), edge_count(0), nodelist((SNode *) NULL),
-    adjspace((s_adjobj *) NULL) {}
-
-  ~SupportGraph(){
-    if(nodelist) free(nodelist);
-    if(adjspace) free(adjspace); 
-  }
-
-  
-  int node_count;
-  int edge_count;
-  SNode *nodelist;
-  s_adjobj *adjspace;
-};
-
 /// Classes and functions for working with graphs.
 namespace Graph {
 
@@ -67,74 +38,41 @@ struct Edge : EndPts {
 
 /** Wrapper to the Concorde CCtsp_lpgraph structure.
  * This class constructs a CCtsp_lpgraph which corresponds to a tour specified
- * by the constructor arguments. It is used to check whether cuts found by 
- * Concorde standard heuristics are tight at the current tour. 
+ * by the constructor arguments. It is used to check whether cuts found by
+ * Concorde standard heuristics are tight at the current tour.
  */
 class TourGraph {
 public:
     TourGraph() noexcept;
-    
+
     TourGraph(const std::vector<int> &tour_edges,
               const std::vector<Edge> &edges,
               const std::vector<int> &perm);
 
     TourGraph(TourGraph &&T) noexcept;
     TourGraph &operator=(TourGraph &&T) noexcept;
-    
+
     ~TourGraph();
 
     TourGraph(const TourGraph &T) = delete;
     TourGraph &operator=(const TourGraph &T) = delete;
 
-    
+
 
     CCtsp_lpgraph* pass_ptr() { return &L; }
     double* tour_array() { return &d_tour[0]; }
     int node_count() const { return L.ncount; }
-  
+
 private:
   std::vector<double> d_tour;
   CCtsp_lpgraph L;
 };
 
-int connected (SupportGraph *G, int *icount,
-	       std::vector<int> &island, int starting_node);
-void dfs (int n, SupportGraph *G, int *icount,
-	  std::vector<int> &island);
-
-//TODO get rid of all the versions that need island/deltacount, etc. 
-std::vector<int> delta_inds(const std::vector<int> &node_list,
-                            const std::vector<Edge> &edges,
-                            int ncount);
-
-void get_delta (const std::vector<int> &nodelist, std::vector<Edge> &elist,
-		int *deltacount_p, std::vector<int> &delta,
-		std::vector<int> &marks);
-
-void get_delta (int nsize, int *nlist, int ecount, int *elist,
-		int *deltacount, int *delta, int *node_marks);
-
-void get_delta (const int interval_start, const int interval_end,
-		const std::vector<int> &tour_nodes,
-		const std::vector<int> &elist,
-		int &deltacount,  std::vector<int> &delta,
-		std::vector<int> &node_marks);
-
-//TODO: This should just be a member function of SupportGraph
-int build_s_graph (int node_count,
-		   const std::vector<Edge> &edges,
-		   const std::vector<int> &support_indices,
-		   const std::vector<double> &m_lp_edges,
-		   SupportGraph *G_s);
-}
-
-namespace Graph {
-
 struct AdjObj {
     AdjObj() = default;
     AdjObj(int otherend, int index, double _val) :
         other_end(otherend), edge_index(index), val(_val) {}
-    
+
     int other_end;
     int edge_index;
     double val;
@@ -149,25 +87,39 @@ struct AdjObj {
 
 struct Node {
     Node() : mark(0) {}
-    
+
     int degree() const { return neighbors.size(); }
     std::vector<AdjObj> neighbors;
     int mark;
 };
 
+/// Representation of a graph as an adjacency list.
 struct AdjList {
     AdjList() = default;
-    
+
+    /// An AdjList with \p ncount nodes for all the edges in \p ref_elist.
     AdjList(int ncount, const std::vector<Edge> &ref_elist);
 
+    /// An AdjList for a vector of structs derived from EndPt.
     template <typename EndPt_type>
     AdjList(int ncount, const std::vector<EndPt_type> &elist);
-    
+
+    /// A support graph type AdjList.
     AdjList(int ncount,
             const std::vector<Edge> &ref_elist,
             const std::vector<double> &ref_elist_caps,
             const std::vector<int> &keep_indices);
 
+    AdjList(AdjList &&AL) noexcept;
+
+    AdjList &operator=(AdjList &&AL) noexcept;
+
+    bool connected(std::vector<int> &island, int start_node);
+
+    void dfs(int start_node, std::vector<int> &island);
+
+    /// Get a pointer to the AdjObj with end points \p end0 and \p end1.
+    /// @returns `nullptr` if not found, else a pointer to the AdjObj.
     const AdjObj *find_edge(int end0, int end1) const
     {
         for (const AdjObj &a : nodelist[end0].neighbors)
@@ -176,11 +128,12 @@ struct AdjList {
         return nullptr;
     }
 
+    /// Add the edge with end points \p end0 \p end1 to the AdjList.
     void add_edge(int end0, int end1, int index, double val);
 
     int node_count;
     int edge_count;
-    
+
     std::vector<Node> nodelist;
 
 };
@@ -204,14 +157,14 @@ public:
     int find_edge_ind(int end0, int end1) const;
 
     Edge get_edge(int index) const { return edges[index]; }
-    
+
     std::vector<Edge> &get_edges() { return edges; }
     const std::vector<Edge> &get_edges() const { return edges; }
 
     void get_elist(std::vector<int> &elist, std::vector<int> &elen) const;
 
     const AdjList &get_adj() const { return adj_list; }
-    
+
     void add_edge(int end0, int end1, int len);
     void add_edge(const Edge &e);
 
@@ -220,6 +173,25 @@ private:
     AdjList adj_list;
     int nodecount;
 };
+
+//TODO get rid of all the versions that need island/deltacount, etc.
+std::vector<int> delta_inds(const std::vector<int> &node_list,
+                            const std::vector<Edge> &edges,
+                            int ncount);
+
+void get_delta (const std::vector<int> &nodelist, std::vector<Edge> &elist,
+		int *deltacount_p, std::vector<int> &delta,
+		std::vector<int> &marks);
+
+void get_delta (int nsize, int *nlist, int ecount, int *elist,
+		int *deltacount, int *delta, int *node_marks);
+
+void get_delta (const int interval_start, const int interval_end,
+		const std::vector<int> &tour_nodes,
+		const std::vector<int> &elist,
+		int &deltacount,  std::vector<int> &delta,
+		std::vector<int> &node_marks);
+
 
 
 ///////////////// TEMPLATE METHOD IMPLEMENTATIONS /////////////////////////////

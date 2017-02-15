@@ -37,26 +37,29 @@ using std::runtime_error;
 using std::logic_error;
 
 namespace CMR {
+
+namespace Eps = Epsilon;
+
 namespace Data {
 
 Instance::Instance() noexcept { CCutil_init_datagroup(&dat); }
 
 
 /**
- * @param[in] fname a path to a TSPLIB file specified from the executable 
+ * @param[in] fname a path to a TSPLIB file specified from the executable
  * directory.
  * @param[in] seed the random seed to be used throughout.
  */
 Instance::Instance(const string &fname, const int seed)
 try : random_seed(seed) {
     CCutil_init_datagroup(&dat);
-    
+
     if (CCutil_gettsplib(const_cast<char*>(fname.c_str()), &nodecount,
                          ptr()))
         throw runtime_error("CCutil_gettsplib failed.");
-    
-    cout << "Random seed " << seed << "\n";
-    
+
+    cout << "Random seed " << seed << endl;
+
     pname = fname.substr(fname.find_last_of("/") + 1);
     pname = pname.substr(0, pname.find_last_of("."));
 
@@ -68,7 +71,7 @@ try : random_seed(seed) {
 }
 
 /**
- * @param[in] seed the random seed used to generate the problem, and for all 
+ * @param[in] seed the random seed used to generate the problem, and for all
  * other later random computations.
  * @param[in] ncount the number of nodes in the problem
  * @param[in] gridsize the nodes will be generated from a square grid with this
@@ -79,10 +82,10 @@ try : nodecount(ncount), random_seed(seed),
       pname("r" + to_string(ncount) + "g" + to_string(gridsize)) {
   if (ncount <= 2)
       throw logic_error("Specified bad ncount.");
-  
+
   if (gridsize <= 0)
       throw logic_error("Specified bad gridsize.");
-    
+
   CCrandstate rstate;
   int allow_dups = 1;
   int binary_in = 0;
@@ -93,15 +96,15 @@ try : nodecount(ncount), random_seed(seed),
   CCutil_sprand(seed, &rstate);
 
   CCutil_init_datagroup(&dat);
-  
+
   if (CCutil_getdata((char *) NULL, binary_in, CC_EUCLIDEAN,
 		    &tmp_ncount, ptr(), tmp_gridsize, allow_dups, &rstate))
     throw runtime_error("CCutil_getdata failed.");
 
   cout << std::fixed;
 
-  
-  cout << "Random problem, random seed " << seed << "\n";
+
+  cout << "Random problem, random seed " << seed << endl;
 } catch (const exception &e) {
   cerr << e.what() << "\n";
   throw runtime_error("Instance constructor failed.");
@@ -127,7 +130,7 @@ Instance::Instance(Instance &&I) noexcept :
 {
     CCutil_freedatagroup(&dat);
     dat = I.dat;
-    
+
     CCutil_init_datagroup(&I.dat);
     I.nodecount = 0;
     I.random_seed = 0;
@@ -146,19 +149,19 @@ Instance& Instance::operator=(Instance &&I) noexcept
   CCutil_init_datagroup(&I.dat);
   I.nodecount = 0;
   I.random_seed = 0;
-  I.pname.clear();  
-  
+  I.pname.clear();
+
   return *this;
 }
 
 Instance::~Instance() { CCutil_freedatagroup(&dat); }
 
 GraphGroup::GraphGroup(const Instance &inst)
-try     
+try
 {
     int ncount = inst.node_count();
     int ecount = 0;
-    
+
     CCedgegengroup plan;
     CCrandstate rstate;
 
@@ -185,7 +188,7 @@ try
     delta.resize(ecount, 0);
     node_marks.resize(ncount, 0);
 
-    cout << "Initialized with " << ecount << " edges.\n";    
+    cout << "Initialized with " << ecount << " edges." << endl;
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("GraphGroup constructor failed.");
@@ -214,7 +217,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
 
     int kicks = 1000;
     int trials = 10;
-    
+
     if (CClinkern_tour(ncount, inst.ptr(), ecount, &elist[0], ncount, kicks,
                        (int *) NULL, &best_tour_nodes[0], &min_tour_value,
                        1, 0.0, 0.0, (char *) NULL, CC_LK_GEOMETRIC_KICK,
@@ -242,7 +245,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
         cout.flush();
     }
 
-    cout << ")\n";
+    cout << ")" << endl;
 
     if (CClinkern_tour(ncount, inst.ptr(), ecount, &elist[0], ncount,
                        2 * kicks, &best_tour_nodes[0], &cyc[0], &min_tour_value,
@@ -357,39 +360,53 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
     throw runtime_error("BestGroup file constructor failed.");
 }
 
-void SupportGroup::reset(const int ncount, const vector<Graph::Edge> &edges,
-                         const vector<double> &lp_x,
-                         vector<int> &island)
+SupportGroup::SupportGroup(const vector<Graph::Edge> &edges,
+                           const vector<double> &lp_x,
+                           std::vector<int> &island,
+                           int ncount)
+try : lp_vec(lp_x)
 {
-    runtime_error err("Problem in SupportGroup::reset.");
-    
-    support_indices.clear();
-    support_elist.clear();
-    support_ecap.clear();
-
-    lp_vec = lp_x;
-
     integral = true;
 
-    try {
-        for (int i = 0; i < lp_x.size(); ++i)
-            if (lp_x[i] >= CMR::Epsilon::Zero) {
-                support_indices.push_back(i);
-                support_ecap.push_back(lp_x[i]);
-                support_elist.push_back(edges[i].end[0]);
-                support_elist.push_back(edges[i].end[1]);
+    for (int i = 0; i < lp_vec.size(); ++i)
+        if (lp_vec[i] >= Eps::Zero) {
+            support_indices.push_back(i);
+            support_ecap.push_back(lp_vec[i]);
+            support_elist.push_back(edges[i].end[0]);
+            support_elist.push_back(edges[i].end[1]);
 
-                if (lp_x[i] <= 1 - CMR::Epsilon::Zero)
-                    integral = false;
-            }
-    } CMR_CATCH_PRINT_THROW("pushing back new support data", err);
+            if (lp_vec[i] <= 1 - Eps::Zero)
+                integral = false;
+        }
 
-    if (CMR::Graph::build_s_graph(ncount, edges, support_indices, lp_x,
-                                       &G_s))
-        throw err;
+    supp_graph = Graph::AdjList(ncount, edges, lp_x, support_indices);
+    connected = supp_graph.connected(island, 0);
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("SupportGroup constructor failed.\n");
+}
 
-    int icount = 0;
-    connected = CMR::Graph::connected(&G_s, &icount, island, 0);
+SupportGroup::SupportGroup(SupportGroup &&SG) noexcept
+    : lp_vec(std::move(SG.lp_vec)),
+      support_indices(std::move(SG.support_indices)),
+      support_elist(std::move(SG.support_elist)),
+      support_ecap(std::move(SG.support_ecap)),
+      supp_graph(std::move(SG.supp_graph)),
+      connected(SG.connected),
+      integral(SG.integral)
+{}
+
+SupportGroup &SupportGroup::operator=(SupportGroup &&SG) noexcept
+{
+    lp_vec = std::move(SG.lp_vec);
+    support_indices = std::move(SG.support_indices);
+    support_elist = std::move(SG.support_elist);
+    support_ecap = std::move(SG.support_ecap);
+    supp_graph = std::move(SG.supp_graph);
+    connected= SG.connected;
+    integral = SG.integral;
+
+    return *this;
 }
 
 bool SupportGroup::in_subtour_poly()
@@ -397,13 +414,12 @@ bool SupportGroup::in_subtour_poly()
     if (!connected)
         return false;
 
-    double cutval = 2;
-    double rhs = 2.0 - CMR::Epsilon::Cut;
+    double cutval = 2.0;
+    double rhs = 2.0 - Eps::Cut;
 
-    if (CCcut_mincut(G_s.node_count, support_ecap.size(),
-                     &support_elist[0], &support_ecap[0], &cutval,
-                     NULL, NULL))
-        throw runtime_error("CCcut_mincut failed in in_subtour_poly.");
+    if (CCcut_mincut(supp_graph.node_count, support_ecap.size(),
+                     &support_elist[0], &support_ecap[0], &cutval, NULL, NULL))
+        throw runtime_error("CCcut_mincut failed running in_subtour_poly");
 
     return cutval > rhs;
 }

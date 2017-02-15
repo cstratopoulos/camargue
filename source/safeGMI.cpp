@@ -68,7 +68,7 @@ bool SafeGomory::find_cuts()
     using sp_rowlist = CUTSsprowlist_t<double>;
     using rowlist_elem = CUTSrowListElem_t<double>;
     using sp_row = CUTSsprow_t<double>;
-    
+
     struct RowlistDeleter {
         void operator()(sp_rowlist *p) {
             CUTSfreeRowList(&p);
@@ -106,7 +106,7 @@ bool SafeGomory::find_cuts()
 
     using SparseRow = Sep::SparseRow;
     vector<SparseRow> primal_found;
-    
+
     int p_found = 0;
     double p_dense = 0.0;
 
@@ -140,7 +140,7 @@ bool SafeGomory::find_cuts()
         if (slack == 0.0 && lp_viol >= Epsilon::Cut && tour_act >= rhs
             // tour_act == rhs && lp_viol >= Epsilon::Cut
             ) {
-            SparseRow primal_row; 
+            SparseRow primal_row;
             // cout << "\tFound GMI cut with viol " << lp_viol << ", "
             //      << nz << " nonzeros, density "
             //      << ((int) (100 * ((double) nz / numcols))) << "%\n";
@@ -167,9 +167,9 @@ bool SafeGomory::find_cuts()
                 std_min_slack = slack;
             else if (slack > std_max_slack)
                 std_max_slack = slack;
-            
+
             std_avg_slack += slack;
-            
+
             ++std_found;
             std_dense += (double) nz / numcols;
         }
@@ -185,7 +185,7 @@ bool SafeGomory::find_cuts()
     //      << std_max_slack << std::setprecision(6) << ", avg slack: "
     //      << (std_avg_slack / (double) std_found) << "\n";
     }
-    
+
     if (primal_found.empty()) {
         //cout << "\tFound safe Gomory cuts but none were tight.\n";
         return false;
@@ -204,8 +204,8 @@ bool SafeGomory::find_cuts()
     // if the best cut is more than 5% dense we only add one.
     if (density(primal_found.front(), numcols) >= 0.05)
         primal_found.resize(1);
-    else if (primal_found.size() >= gmi_q.q_capacity)
-        primal_found.resize(gmi_q.q_capacity);
+    else if (primal_found.size() >= gmi_q.q_capacity())
+        primal_found.resize(gmi_q.q_capacity());
 
     try {
         for (SparseRow &a : primal_found)
@@ -214,7 +214,7 @@ bool SafeGomory::find_cuts()
 
     // cout << "Enqueued " << gmi_q.size() << ".\n\n";
 
-    return true;    
+    return true;
 }
 
 }

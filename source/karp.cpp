@@ -24,8 +24,9 @@ KarpPartition::KarpPartition(const Instance &inst) try
     int norm = inst.ptr()->norm;
     bool dummy_part = false;
 
-    if (ncount < 400) {
-        cout << "Problem less than 400 nodes, using trivial Karp partition.\n";
+
+    if (ncount < 300) {
+        cout << "Problem less than 300 nodes, using trivial Karp partition.\n";
         dummy_part = true;
     }
 

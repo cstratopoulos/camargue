@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/** @file                
- * @brief DATA GROUP STRUCTURE DEFINITIONS
- * 
+/** @file
+ * @brief Data group structures.
+ *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_DATAGROUP_H
@@ -28,8 +28,8 @@ namespace CMR {
 namespace Data {
 
 /** Class for storing raw TSP instance data.
- * This class is a handle to the Concorde CCdatagroup structure, modeling 
- * unique_ptr-style sole ownership over a datagroup. 
+ * This class is a handle to the Concorde CCdatagroup structure, modeling
+ * unique_ptr-style sole ownership over a datagroup.
  */
 class Instance {
 public:
@@ -38,22 +38,22 @@ public:
     /// Construct an Instance from a TSPLIB file with a random seed.
     Instance(const std::string &fname, int seed);
 
-    /// Construct a geometric random Instance. 
+    /// Construct a geometric random Instance.
     Instance(int seed, int ncount, int gridsize);
 
     /// Construct a sparse Instance with fixed edge set.
     Instance(const std::string &probname, int seed, int ncount,
              std::vector<int> &elist, std::vector<int> &elen);
 
-    Instance(Instance &&I) noexcept; 
+    Instance(Instance &&I) noexcept;
     Instance &operator=(Instance &&I) noexcept;
-  
+
     Instance(const Instance &I) = delete;
     Instance &operator=(const Instance &I) = delete;
 
     ~Instance();
 
-  
+
     /// Access the raw pointer to the data, for use by Concorde routines.
     CCdatagroup* ptr() const { return const_cast<CCdatagroup*>(&dat); }
 
@@ -70,18 +70,18 @@ public:
 
     /// The TSPLIB instance name or the random problem dimensions.
     const std::string &problem_name() const { return pname; }
-  
+
 private:
     CCdatagroup dat; //!< The Concorde data structure being managed.
 
     int nodecount;
     int random_seed;
-    
+
     std::string pname;
 };
 
 /** Pure combinatorial information about the problem.
- * This structure uses a CoreGraph to encode a weighted undirected graph 
+ * This structure uses a CoreGraph to encode a weighted undirected graph
  * containing the subset of complete graph edges under consideration in the
  * current CoreLP.
  */
@@ -92,7 +92,7 @@ struct GraphGroup {
     GraphGroup(const Instance &inst);
 
     Graph::CoreGraph core_graph; //!< The Edge list and AdjList.
-    
+
     std::vector<int> island; //!< Stores components from a dfs of m_graph.
     std::vector<int> delta; //!< Stores edges in delta of some node set.
     std::vector<int> node_marks; //!< Marks nodes for adjacency computations.
@@ -116,52 +116,50 @@ struct BestGroup {
   std::vector<int> best_tour_edges; /**< Binary vector indicating edges used
 				     * in tour */
   std::vector<int> best_tour_nodes; /**< The sequence of nodes of the tour */
-  std::vector<int> perm; /**< Defined by the relation 
+  std::vector<int> perm; /**< Defined by the relation
 			  * `perm[best_tour_nodes[i]] = i` */
 
   double min_tour_value;
 };
 
-/* 
- * SupportGroup is the structure responsible for managing a support graph
- * and the information about the associated LP solution
- */
-struct SupportGroup  {
-    void reset(const int node_count, const std::vector<Graph::Edge> &edges,
-               const std::vector<double> &lp_x,
-               std::vector<int> &island);
-    
-    /*
-     * G_s - a graph whose edges are the edges from GraphGroup::m_graph
-     *     for which the corresponding entry of m_lp_edges is nonnegative
-     * support_indices - a list of the nonnegative edge indices
-     * support_elist - the edges in support_indices, in node node format
-     * support_ecap - the value assigned to the edges in support_elist in the
-     *    current LP solution
-     */
-    SupportGraph G_s;
+struct SupportGroup {
+    SupportGroup() = default;
+
+    SupportGroup(const std::vector<Graph::Edge> &edges,
+                 const std::vector<double> &lp_x,
+                 std::vector<int> &island,
+                 int ncount);
+
+    SupportGroup(SupportGroup &&SG) noexcept;
+
+    SupportGroup &operator=(SupportGroup &&SG) noexcept;
+
+
+
+    bool in_subtour_poly();
+
+    std::vector<double> lp_vec;
     std::vector<int> support_indices;
     std::vector<int> support_elist;
     std::vector<double> support_ecap;
-    std::vector<double> lp_vec;
+
+    Graph::AdjList supp_graph;
 
     bool connected;
     bool integral;
-
-    bool in_subtour_poly();
 };
 
 /** Load just enough Data to test cut separation routines.
  * This pseudo-constructor function is designed for testing separation routines
  * using the tour in \p tour_nodes_fname and the lp solution in \p lp_sol_fname
- * as a tour/lp solution on the tsp instance in \p tsp_fname. It will 
+ * as a tour/lp solution on the tsp instance in \p tsp_fname. It will
  * populate \p graph_data with precisely the edges in \p lp_sol_fname, together
- * with the edges joining adjacent nodes in \p tour_nodes_fname. Then, 
- * \p best_data will be initialized with the tour in \p tour_nodes_fname. 
+ * with the edges joining adjacent nodes in \p tour_nodes_fname. Then,
+ * \p best_data will be initialized with the tour in \p tour_nodes_fname.
  * The vector \p lp_edges will then have size equal to
  * `graph_data.m_graph.edge_count`, with binary entries indicating the lp
  * solution from \p lp_sol_fname. Finally, \p lp_edges and \p graph_data
- * will be used to populate \p supp_data. 
+ * will be used to populate \p supp_data.
  * @pre \p tsp_fname is the name of a TSPLIB instance.
  * @pre \p tour_nodes_fname is as in CMR::get_tour_nodes.
  * @pre \p lp_sol_fname is as in CMR::get_lp_sol.

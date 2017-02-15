@@ -5,6 +5,8 @@
 #include "datagroups.hpp"
 #include "karp.hpp"
 
+#include <memory>
+
 namespace CMR {
 
 /// Matters related to cuts and separation of cutting planes.
@@ -13,7 +15,7 @@ namespace Sep {
 /** Class for separation of cutting planes.
  * This class is instantiated with data about active edges in a relaxation
  * and a current lp solution, then used to search for cuts violated by the
- * solution vector. 
+ * solution vector.
  */
 class Separator {
 public:
@@ -32,7 +34,7 @@ public:
               Data::KarpPartition &kpart,
               Graph::TourGraph &_TG,
               int round_limit);
-    
+
     bool segment_sep();
     bool fast2m_sep();
     bool blkcomb_sep();
@@ -52,9 +54,9 @@ public:
     const LPcutList &connect_cuts_q() const { return connect_q; }
 
 private:
-    const int max_total;
+    int max_total;
     int running_total;
-    
+
     Data::GraphGroup &graph_data;
     Data::BestGroup &best_data;
     Data::SupportGroup &supp_data;
@@ -73,6 +75,14 @@ private:
 
     LPcutList connect_q;
 };
+
+/// This is a shorthand for resetting a unique_ptr to a Separator, like
+/// a surrogate move assign since Separator has mostly reference members.
+void ptr_reset(std::unique_ptr<Separator> &sep, Data::GraphGroup &g_dat,
+               Data::BestGroup &b_dat, Data::SupportGroup &s_dat,
+               Data::KarpPartition &kpart,
+               Graph::TourGraph &TG);
+
 
 }
 }

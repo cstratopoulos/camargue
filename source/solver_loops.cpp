@@ -62,25 +62,18 @@ namespace Eps = Epsilon;
  * @param[out] delta_ratio if cuts are found, this is the ratio of the
  * difference between the new pivot value and \p prev_val divided by
  * \p tourlen.
- * @param[out] num_pruned number of cuts pruned from the LP after a pivot call.
- * @returns the value of \p sepcall, i.e., true iff cuts are found.
  */
 template<class Qtype>
 bool call_separator(const function<bool()> &sepcall, const Qtype &sep_q,
                     PivType &piv, LP::CoreLP &core_lp,
                     const double tourlen, double &prev_val,
-                    double &total_delta, double &delta_ratio, int &num_pruned)
+                    double &total_delta, double &delta_ratio)
 {
     bool result = sepcall();
-    int num_rows = core_lp.num_rows();
     if (result) {
         core_lp.pivot_back();
         core_lp.add_cuts(sep_q);
         piv = core_lp.primal_pivot();
-
-        if (piv == PivType::Tour) {
-            num_pruned = num_rows - core_lp.num_rows();
-        }
 
         double new_val = core_lp.get_objval();
         double delta = std::abs(new_val - prev_val);
@@ -93,7 +86,12 @@ bool call_separator(const function<bool()> &sepcall, const Qtype &sep_q,
     return result;
 }
 
-PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
+inline bool Solver::return_pivot(LP::PivType piv)
+{
+    return piv == PivType::Tour || piv == PivType::FathomedTour;
+}
+
+PivType Solver::cut_and_piv(int &round, bool do_price)
 {
     runtime_error err("Problem in Solver::cut_and_piv");
     bool silent = true;
@@ -106,7 +104,7 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
     PivType piv;
 
     Data::SupportGroup &supp_data = core_lp.supp_data;
-    unique_ptr<Sep::Separator> &sep = separator;
+    unique_ptr<Sep::Separator> sep;
 
     ++round;
     if (!silent)
@@ -116,12 +114,10 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
 
     try {
         piv = core_lp.primal_pivot();
-        sep = util::make_unique<Sep::Separator>(graph_data, best_data,
-                                                supp_data, karp_part, TG);
+        Sep::ptr_reset(sep, graph_data, best_data, supp_data, karp_part, TG);
     } CMR_CATCH_PRINT_THROW("initializing pivot and separator", err);
 
-    if (piv == PivType::Tour || piv == PivType::FathomedTour) {
-        num_pruned = num_rows - core_lp.num_rows();
+    if (return_pivot(piv)) {
         return piv;
     }
 
@@ -132,19 +128,16 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
         try {
             if (call_separator([&sep]() { return sep->segment_sep(); },
                                sep->segment_q(), piv, core_lp,
-                               tourlen, prev_val, total_delta, delta_ratio,
-                               num_pruned)) {
+                               tourlen, prev_val, total_delta, delta_ratio)) {
                 found_primal = true;
                 found_seg = true;
-                if (piv == PivType::Tour || piv == PivType::FathomedTour)
+                if (return_pivot(piv))
                     return piv;
 
                 if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
-                    return cut_and_piv(round, num_pruned, do_price);
-
-                sep = util::make_unique<Sep::Separator>(graph_data, best_data,
-                                                        supp_data, karp_part,
-                                                        TG);
+                    return cut_and_piv(round, do_price);
+                Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                               karp_part, TG);
             }
         } CMR_CATCH_PRINT_THROW("calling segment sep", err);
 
@@ -154,19 +147,17 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
         try {
             if (call_separator([&sep]() { return sep->fast2m_sep(); },
                                sep->fastblossom_q(), piv, core_lp,
-                               tourlen, prev_val, total_delta, delta_ratio,
-                               num_pruned)) {
+                               tourlen, prev_val, total_delta, delta_ratio)) {
                 found_2m = true;
                 found_primal = true;
-                if (piv == PivType::Tour || piv == PivType::FathomedTour)
+                if (return_pivot(piv))
                     return piv;
 
                 if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
-                    return cut_and_piv(round, num_pruned, do_price);
+                    return cut_and_piv(round, do_price);
 
-                sep = util::make_unique<Sep::Separator>(graph_data, best_data,
-                                                        supp_data, karp_part,
-                                                        TG);
+                Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                               karp_part, TG);
             }
         } CMR_CATCH_PRINT_THROW("calling fast2m sep", err);
 
@@ -175,17 +166,15 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
             if (!found_2m &&
                 call_separator([&sep]() { return sep->exact2m_sep(); },
                                sep->exblossom_q(), piv, core_lp,
-                               tourlen, prev_val, total_delta, delta_ratio,
-                               num_pruned)) {
-                if (piv == PivType::Tour || piv == PivType::FathomedTour)
+                               tourlen, prev_val, total_delta, delta_ratio)) {
+                if (return_pivot(piv))
                     return piv;
 
                 if (total_delta >= Eps::Zero)
-                    return cut_and_piv(round, num_pruned, do_price);
+                    return cut_and_piv(round, do_price);
 
-                sep = util::make_unique<Sep::Separator>(graph_data, best_data,
-                                                        supp_data, karp_part,
-                                                        TG);
+                Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                               karp_part, TG);
             }
         } CMR_CATCH_PRINT_THROW("calling exact 2m sep", err);
 
@@ -193,19 +182,17 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
         try {
             if (call_separator([&sep]() { return sep->blkcomb_sep(); },
                                sep->blockcomb_q(), piv, core_lp,
-                               tourlen, prev_val, total_delta, delta_ratio,
-                               num_pruned)) {
+                               tourlen, prev_val, total_delta, delta_ratio)) {
                 found_primal = true;
-                if (piv == PivType::Tour || piv == PivType::FathomedTour)
+                if (return_pivot(piv))
                     return piv;
 
                 if (piv == PivType::Subtour || found_seg ||
                     !supp_data.connected)
-                    return cut_and_piv(round, num_pruned,  do_price);
+                    return cut_and_piv(round,  do_price);
 
-                sep = util::make_unique<Sep::Separator>(graph_data, best_data,
-                                                        supp_data, karp_part,
-                                                        TG);
+                Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                               karp_part, TG);
             }
         } CMR_CATCH_PRINT_THROW("calling blkcomb sep", err);
 
@@ -214,13 +201,12 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
             if (!found_seg && supp_data.connected &&
                 call_separator([&sep]() { return sep->simpleDP_sep(); },
                                sep->simpleDP_q(), piv, core_lp,
-                               tourlen, prev_val, total_delta, delta_ratio,
-                               num_pruned)) {
-                if (piv == PivType::Tour || piv == PivType::FathomedTour)
+                               tourlen, prev_val, total_delta, delta_ratio)) {
+                if (return_pivot(piv))
                     return piv;
 
                 if (total_delta >= Eps::Zero)
-                    return cut_and_piv(round, num_pruned,  do_price);
+                    return cut_and_piv(round,  do_price);
             }
         } CMR_CATCH_PRINT_THROW("calling simpleDP sep", err);
 
@@ -232,12 +218,10 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
                     if (call_separator([&sep]() { return sep->connect_sep(); },
                                        sep->connect_cuts_q(), piv, core_lp,
                                        tourlen, prev_val, total_delta,
-                                       delta_ratio, num_pruned)) {
+                                       delta_ratio)) {
                         num_add += sep->connect_cuts_q().size();
-                        sep = util::make_unique<Sep::Separator>(graph_data,
-                                                                best_data,
-                                                                supp_data,
-                                                                karp_part, TG);
+                        Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                                       karp_part, TG);
 
                     } else {
                         throw logic_error("Disconnected w no connect cuts??");
@@ -245,10 +229,10 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
                 } CMR_CATCH_PRINT_THROW("doing connect cut loop", err);
             }
 
-            if (piv == PivType::Tour || piv == PivType::FathomedTour) {
+            if (return_pivot(piv)) {
                 return piv;
             } else {
-                return cut_and_piv(round, num_pruned,  do_price);
+                return cut_and_piv(round,  do_price);
             }
         } else if (!silent) {
             cout << "\tcuts: " << found_primal << ",connected "
@@ -260,7 +244,7 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
         found_primal = false;
 
     if (found_primal) {
-        return cut_and_piv(round, num_pruned, do_price);
+        return cut_and_piv(round, do_price);
     }
 
 #if CMR_HAVE_SAFEGMI
@@ -280,12 +264,12 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
                                    { return gmi_sep->find_cuts(); },
                                    gmi_sep->gomory_q(), piv, core_lp,
                                    tourlen, prev_val, total_delta,
-                                   delta_ratio, num_pruned)) {
-                    if (piv == PivType::Tour || piv == PivType::FathomedTour)
+                                   delta_ratio)) {
+                    if (return_pivot(piv))
                         return piv;
 
                     if (total_delta > Eps::Zero || piv == PivType::Subtour)
-                        return cut_and_piv(round, num_pruned, do_price);
+                        return cut_and_piv(round, do_price);
 
                 }
             } CMR_CATCH_PRINT_THROW("doing safe GMI sep", err);

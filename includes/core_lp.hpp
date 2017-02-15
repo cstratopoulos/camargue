@@ -37,38 +37,6 @@ struct TourBasis {
     std::vector<int> rowstat;
 };
 
-/** Class template for dual LP solutions.
- * @tparam numtype the number type used for the vectors.
- */
-template <typename numtype>
-struct DualGroup {
-    DualGroup() = default; //!< Construct an empty DualGroup.
-
-    /// Construct DualGroup from a Relaxation and HyperGraph collection.
-    DualGroup(bool remove_neg, const LP::Relaxation &relax,
-              const Sep::ExternalCuts &ext_cuts);
-
-    DualGroup(DualGroup &&D) noexcept :
-        node_pi(std::move(D.node_pi)), node_pi_est(std::move(D.node_pi_est)),
-        cut_pi(std::move(D.cut_pi)), clique_pi(std::move(D.clique_pi)) {}
-    
-    DualGroup &operator=(DualGroup &&D) noexcept
-        {
-            node_pi = std::move(D.node_pi);
-            node_pi_est = std::move(D.node_pi_est);
-            cut_pi = std::move(D.cut_pi);
-            clique_pi = std::move(D.clique_pi);
-            return *this;
-        }
-
-    std::vector<numtype> node_pi; //!< Dual values for degree constraints.
-    std::vector<numtype> node_pi_est; //!< Overestimates of node_pi.
-    std::vector<numtype> cut_pi; //!< Dual values for cuts.
-
-    /// Dual values/multiplicities for Cliques. 
-    std::unordered_map<Sep::Clique, numtype> clique_pi; 
-};
-
 
 /** Class for storing the core lp associated to a TSP instance and pivoting.
  * This class contains the edges and constraints currently under consideration
@@ -100,10 +68,12 @@ public:
     friend class CMR::Solver;
 
 private:
-    void handle_aug_pivot();
+    void handle_aug_pivot(const std::vector<int> &tour_nodes);
     void set_best_tour(const std::vector<int> &tour_nodes);
 
-    void update_best_data();
+    //// TODO make this a bestgroup method that takes tour nodes, edges,
+    /// and coregraph edges
+    void update_best_data(); 
 
     void prune_slacks();
 
@@ -124,6 +94,38 @@ private:
 
     int num_nd_pivots = 0;
     int sum_it_count = 0;
+};
+
+/** Class template for dual LP solutions.
+ * @tparam numtype the number type used for the vectors.
+ */
+template <typename numtype>
+struct DualGroup {
+    DualGroup() = default; //!< Construct an empty DualGroup.
+
+    /// Construct DualGroup from a Relaxation and HyperGraph collection.
+    DualGroup(bool remove_neg, const LP::Relaxation &relax,
+              const Sep::ExternalCuts &ext_cuts);
+
+    DualGroup(DualGroup &&D) noexcept :
+        node_pi(std::move(D.node_pi)), node_pi_est(std::move(D.node_pi_est)),
+        cut_pi(std::move(D.cut_pi)), clique_pi(std::move(D.clique_pi)) {}
+    
+    DualGroup &operator=(DualGroup &&D) noexcept
+        {
+            node_pi = std::move(D.node_pi);
+            node_pi_est = std::move(D.node_pi_est);
+            cut_pi = std::move(D.cut_pi);
+            clique_pi = std::move(D.clique_pi);
+            return *this;
+        }
+
+    std::vector<numtype> node_pi; //!< Dual values for degree constraints.
+    std::vector<numtype> node_pi_est; //!< Overestimates of node_pi.
+    std::vector<numtype> cut_pi; //!< Dual values for cuts.
+
+    /// Dual values/multiplicities for Cliques. 
+    std::unordered_map<Sep::Clique, numtype> clique_pi; 
 };
 
 //////////////////// TEMPLATE METHOD IMPLEMENTATIONS //////////////////////////

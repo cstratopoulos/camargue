@@ -52,11 +52,19 @@ Separator::Separator(Data::GraphGroup &graphdata,
     throw runtime_error("Separator constructor failed.");
 }
 
+void ptr_reset(std::unique_ptr<Separator> &sep, Data::GraphGroup &g_dat,
+               Data::BestGroup &b_dat, Data::SupportGroup &s_dat,
+               Data::KarpPartition &kpart,
+               Graph::TourGraph &TG)
+{
+    sep = util::make_unique<Separator>(g_dat, b_dat, s_dat, kpart, TG);
+}
+
 bool Separator::segment_sep() try
 {
     SegmentCuts segments(perm_elist, supp_data.support_ecap, TG, seg_q);
     bool result = segments.find_cuts();
-    
+
     running_total += seg_q.size();
     return result;
 } catch (const exception &e) {
@@ -128,7 +136,7 @@ bool Separator::connect_sep() try {
     cerr << e.what() << "\n";
     throw runtime_error("Separator::connect_sep failed.");
 }
-    
+
 
 }
 }

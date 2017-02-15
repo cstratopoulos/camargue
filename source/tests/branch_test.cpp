@@ -60,7 +60,7 @@ SCENARIO ("Running a Solver with contra Fix Brancher",
             }
         }
     }
-    
+
 }
 
 SCENARIO ("Instating a Brancher and getting problems",
@@ -92,7 +92,7 @@ SCENARIO ("Instating a Brancher and getting problems",
                     LP::Relaxation &rel = core;
 
                     std::unique_ptr<ABC::Brancher> branch;
-                    
+
                     const vector<Graph::Edge> &edges = solver.graph_info().
                     core_graph.get_edges();
 
@@ -111,14 +111,14 @@ SCENARIO ("Instating a Brancher and getting problems",
                     auto obj = branch->next_branch_obj();
                     int ind = obj.index;
                     cout << "\tIndex " << ind << " should be next branch.\n";
-                    
+
                     double tour_entry = tbase.best_tour_edges[ind];
                     double lp_entry = frac_vec[ind];
 
                     cout << "\tLP " << lp_entry << "\tTour " << tour_entry
                          << "\n";
 
-                    
+
                     double zero_coeff;
                     double one_coeff;
 
@@ -128,7 +128,7 @@ SCENARIO ("Instating a Brancher and getting problems",
 
                     core.pivot_back();
                     double changeto = tour_entry == 0 ? one_coeff : zero_coeff;
-                    
+
                     REQUIRE_NOTHROW(rel.change_obj(ind, changeto));
                     core.primal_pivot();
                     double new_lp_entry = rel.lp_vec()[ind];
@@ -186,7 +186,7 @@ SCENARIO ("Computing branching edges",
 
                     vector<double> x = rel.lp_vec();
                     vector<int> colstat = rel.col_stat();
-                    
+
                     vector<double> tour_edges = solver.tour_basis()
                     .best_tour_edges;
                     double tourval = solver.best_info().min_tour_value;
@@ -196,7 +196,7 @@ SCENARIO ("Computing branching edges",
                     for (int i = 0; i < colstat.size(); ++i)
                         if (colstat[i] == 1 && !util::var_integral(x[i]))
                             lw_inds.push_back(i);
-                    
+
                     vector<int> sb1inds =
                         ABC::length_weighted_cands(solver.graph_info().
                                                    core_graph.get_edges(),
@@ -294,7 +294,7 @@ SCENARIO ("Computing branching edges",
                         elen[ind] = - default_len;
 
                     sp_inst = Data::Instance(prob, 99, ncount, elist, elen);
-                    
+
                     vector<int> tour_nodes = solver.best_info()
                     .best_tour_nodes;
                     vector<int> out_cyc(ncount);
@@ -320,7 +320,7 @@ SCENARIO ("Computing branching edges",
                     const auto &graph = solver.graph_info().core_graph;
                     const auto &edges = graph.get_edges();
 
-                    
+
                     bool found_branch_edge = false;
                     double newval = 0.0;
 
@@ -349,7 +349,7 @@ SCENARIO ("Computing branching edges",
 
                     if (newval < orig_val)
                         cout << "\t||||| BETTER TOUR!!! |||||\n\n";
-                        
+
                 }
             }
         }

@@ -48,31 +48,27 @@ void make_cut_test(const string &tsp_fname,
 
     try {
         inst = Instance(tsp_fname, 99);
-    } catch (const exception &e) {
-        cerr << e.what() << "\n";
-        throw err;
-    }
+    } CMR_CATCH_PRINT_THROW("getting Instance", err);
 
     int ncount = inst.node_count();
     Graph::CoreGraph &core_graph = graph_data.core_graph;
 
     best_data.min_tour_value = 0.0;
-  
+
     try {
         graph_data.island.resize(ncount);
         graph_data.node_marks.resize(ncount, 0);
         best_data.perm.resize(ncount);
-    } catch (const exception &e) {
-        cerr << e.what() << " trying ncount resizes\n";
-        throw err;
-    }
+    }  CMR_CATCH_PRINT_THROW("doing ncount resizes", err);
+
+    vector<int> sup_elist;
+    vector<double> sup_ecap;
 
     try {
         util::get_tour_nodes(ncount, best_data.best_tour_nodes,
                              tour_nodes_fname);
-        util::get_lp_sol(ncount, supp_data.support_elist,
-                         supp_data.support_ecap, lp_sol_fname);
-    } catch (const exception &e) { cerr << e.what() << "\n"; throw err; }
+        util::get_lp_sol(ncount, sup_elist, sup_ecap, lp_sol_fname);
+    } CMR_CATCH_PRINT_THROW("getting data from file", err);
 
     vector<int> &delta = graph_data.delta;
     vector<int> &best_tour_edges = best_data.best_tour_edges;
@@ -85,19 +81,16 @@ void make_cut_test(const string &tsp_fname,
         best_tour_edges.resize(core_graph.edge_count(), 1);
         lp_edges.resize(core_graph.edge_count(), 0);
     } CMR_CATCH_PRINT_THROW("adding best tour edges", err);
-  
+
     for (int i = 0; i < ncount; ++i)
         best_data.perm[best_data.best_tour_nodes[i]] = i;
 
-    vector<int> &sup_elist = supp_data.support_elist;
-    vector<double> &sup_ecap = supp_data.support_ecap;
-    
     for (int i = 0; i < sup_ecap.size(); ++i) {
         int e0 = sup_elist[2 * i];
         int e1 = sup_elist[(2 * i) + 1];
 
         int find_ind = core_graph.find_edge_ind(e0, e1);
-        
+
         if (find_ind == -1) {
             try {
                 core_graph.add_edge(e0, e1, inst.edgelen(e0, e1));
@@ -108,13 +101,14 @@ void make_cut_test(const string &tsp_fname,
                 delta.push_back(0);
             } CMR_CATCH_PRINT_THROW("pushing back new lp edge", err);
         }
-        
+
         lp_edges[find_ind] = sup_ecap[i];
     }
 
     try {
-        supp_data.reset(core_graph.node_count(), core_graph.get_edges(),
-                        lp_edges, graph_data.island);
+        supp_data = Data::SupportGroup(core_graph.get_edges(),
+                                       lp_edges, graph_data.island,
+                                       core_graph.node_count());
     } CMR_CATCH_PRINT_THROW("resetting support data", err);
 }
 

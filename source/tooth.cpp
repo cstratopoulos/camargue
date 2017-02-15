@@ -61,10 +61,10 @@ vector<IteratorMat> CandidateTeeth::seen_ranges;
 CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
 			       Data::BestGroup &_best_dat,
 			       Data::SupportGroup &_supp_dat) :
-  light_teeth(std::vector<ToothList>(_supp_dat.G_s.node_count)),
-  list_sizes(_supp_dat.G_s.node_count, {{0, 0, 0}}),
-  stats(_supp_dat.G_s.node_count, ListStat::None),
-  endmark(_supp_dat.G_s.node_count, CC_LINSUB_BOTH_END),
+  light_teeth(std::vector<ToothList>(_supp_dat.supp_graph.node_count)),
+  list_sizes(_supp_dat.supp_graph.node_count, {{0, 0, 0}}),
+  stats(_supp_dat.supp_graph.node_count, ListStat::None),
+  endmark(_supp_dat.supp_graph.node_count, CC_LINSUB_BOTH_END),
   graph_dat(_graph_dat),
   best_dat(_best_dat),
   supp_dat(_supp_dat),
@@ -75,7 +75,7 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
 {
   t_all.start();
   t_zones.start();
-  SupportGraph &G_s = supp_dat.G_s;
+  Graph::AdjList &G_s = supp_dat.supp_graph;
   int ncount = G_s.node_count;
   vector<int> &perm = best_dat.perm;
   vector<int> &tour = best_dat.best_tour_nodes;
@@ -93,15 +93,14 @@ CandidateTeeth::CandidateTeeth(Data::GraphGroup &_graph_dat,
 #endif
   for (int root_ind = 0; root_ind < ncount; ++root_ind) {
     int actual_vx = tour[root_ind];
-    SNode x = G_s.nodelist[actual_vx];
+    const Graph::Node &x = G_s.nodelist[actual_vx];
 
     // this needs to be done for iterator validity
-    light_teeth[root_ind].reserve(2 * (x.s_degree - 1));
-    
-    for (int k = 0; k < x.s_degree; ++k) {
-      int end_ind = perm[x.adj_objs[k].other_end];
-      
-      adj_zones[root_ind][end_ind] = 1;
+    light_teeth[root_ind].reserve(2 * (x.degree() - 1));
+
+    for (const Graph::AdjObj &a : x.neighbors) {
+        int end_ind = perm[a.other_end];
+        adj_zones[root_ind][end_ind] = 1;
     }
 
     int label = 0;
@@ -125,6 +124,7 @@ void CandidateTeeth::get_light_teeth()
   t_find.start();
   runtime_error err("Problem in CandidateTeeth::get_light_teeth.");
   unique_ptr<LinsubCBData> cb_data;
+  Graph::AdjList &supp_graph = supp_dat.supp_graph;
 
   
   try {
@@ -134,10 +134,10 @@ void CandidateTeeth::get_light_teeth()
                                     list_sizes,
                                     graph_dat.node_marks,
                                     best_dat.best_tour_nodes,
-                                    best_dat.perm, supp_dat.G_s);
+                                    best_dat.perm, supp_graph);
   } CMR_CATCH_PRINT_THROW("allocating LinsubCBData.", err);
 
-  if (CCcut_linsub_allcuts(supp_dat.G_s.node_count, supp_dat.G_s.edge_count,
+  if (CCcut_linsub_allcuts(supp_graph.node_count, supp_graph.edge_count,
                            &best_dat.best_tour_nodes[0], &endmark[0],
                            &supp_dat.support_elist[0],
                            &supp_dat.support_ecap[0],
@@ -244,7 +244,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
   vector<int> &tour = arg->tour_nodes;
   vector<int> &perm = arg->perm;
   
-  SupportGraph &G = arg->G_s;
+  const Graph::AdjList &G = arg->G_s;
   int ncount = G.node_count;
   
   std::unordered_map<int, double> &rb_sums = arg->rb_sums;
@@ -262,13 +262,13 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
     }
 
     for (int i = old_seg.end + 1; i <= cut_end; ++i) {
-      SNode vx = G.nodelist[tour[i]];
-      for (int k = 0; k < vx.s_degree; ++k) {
-	int root_perm = perm[vx.adj_objs[k].other_end];
-
-	if (marks[root_perm] == 0)
-	  rb_sums[root_perm] += vx.adj_objs[k].lp_weight;
-      }
+        const Graph::Node &vx = G.nodelist[tour[i]];
+        for (const Graph::AdjObj &a : vx.neighbors) {
+            int root_perm = perm[a.other_end];
+            
+            if (marks[root_perm] == 0)
+                rb_sums[root_perm] += a.val;
+        }
     }
   } else {//on a new degree node
     //clean up after the old one
@@ -280,13 +280,13 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
     //set up for the new one
     marks[cut_start] = 1;
 
-    SNode vx = G.nodelist[tour[cut_start]];
-    for (int k = 0; k < vx.s_degree; ++k) {
-      int root_perm = perm[vx.adj_objs[k].other_end];
+    const Graph::Node &vx = G.nodelist[tour[cut_start]];
+    for (const Graph::AdjObj &a : vx.neighbors) {
+        int root_perm = perm[a.other_end];
 
-      if (marks[root_perm] == 0)
-	rb_sums[root_perm] += vx.adj_objs[k].lp_weight;
-    }    
+        if (marks[root_perm] == 0)
+            rb_sums[root_perm] += a.val;
+    }
   }
 
   for (auto &kv : rb_sums) {

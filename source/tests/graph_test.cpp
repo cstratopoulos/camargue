@@ -20,12 +20,11 @@ using std::vector;
 using std::unique_ptr;
 using std::string;
 using std::pair;
-using CMR::IntPair;
-
 
 
 SCENARIO ("Constructing core LP adjacency lists",
           "[Graph][AdjList]") {
+    using namespace CMR;
     vector<string> probs{"dantzig42", "lin318", "pr1002"};
 
     for (string& prob : probs) {
@@ -33,18 +32,18 @@ SCENARIO ("Constructing core LP adjacency lists",
             string probfile = "problems/" + prob + ".tsp";
             string solfile = "test_data/tours/" + prob + ".sol";
 
-            CMR::Data::Instance inst(probfile, 99);
-            CMR::Data::GraphGroup g_dat(inst);
+            Data::Instance inst(probfile, 99);
+            Data::GraphGroup g_dat(inst);
 
-            CMR::Graph::AdjList full_alist;
+            Graph::AdjList full_alist;
 
             THEN ("We can construct an adj list from the edges") {
-                REQUIRE_NOTHROW(full_alist =
-                                CMR::Graph::AdjList(inst.node_count(),
-                                                         g_dat.core_graph.get_edges()));
+                REQUIRE_NOTHROW(full_alist = Graph::AdjList(inst.node_count(),
+                                                            g_dat.core_graph
+                                                            .get_edges()));
 
                 AND_THEN ("Edge finding in the alist agrees with the edges") {
-                    const vector<CMR::Graph::Edge> &edges =
+                    const vector<Graph::Edge> &edges =
                     g_dat.core_graph.get_edges();
 
                     for (int i = 0; i < edges.size(); ++i) {
@@ -63,47 +62,50 @@ SCENARIO ("Constructing core LP adjacency lists",
                     }
                 }
             }
-
         }
     }
 }
 
 SCENARIO ("Constructing support adjacency lists",
-          "[Graph][AdjList][SupportGraph]") {
-    vector<string> probs {"pr76", "d493", "fl1577"};
-    
+          "[Graph][AdjList][SupportGroup]") {
+    using namespace CMR;
+    vector<string> probs{
+        "dantzig42",
+        "pr76",
+        "d493",
+        "dsj1000",
+        "fl1577",
+        };
+
     for (string &fname : probs) {
         string
         probfile = "problems/" + fname + ".tsp",
         solfile = "test_data/tours/" + fname + ".sol",
         subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-        CMR::Data::GraphGroup g_dat;
-        CMR::Data::BestGroup b_dat;
-        CMR::Data::SupportGroup s_dat;
+        Data::GraphGroup g_dat;
+        Data::BestGroup b_dat;
+        Data::SupportGroup s_dat;
         vector<double> lp_edges;
-        CMR::Data::Instance inst;
+        Data::Instance inst;
 
         GIVEN("A subtour polytope LP solution for " + fname) {
             THEN("We can construct an adj list for the support graph") {
-                CMR::Data::make_cut_test(probfile, solfile, subtourfile, g_dat,
+                Data::make_cut_test(probfile, solfile, subtourfile, g_dat,
                                          b_dat, lp_edges, s_dat, inst);
                 int ncount = g_dat.core_graph.node_count();
 
-                CMR::Graph::AdjList sup_alist;
-                vector<int> &sup_inds = s_dat.support_indices;
-                const vector<CMR::Graph::Edge> &edges = g_dat.core_graph.get_edges();
-                
-                REQUIRE_NOTHROW(sup_alist =
-                                CMR::Graph::AdjList(inst.node_count(),
-                                                         edges, lp_edges,
-                                                         sup_inds));
+                REQUIRE(s_dat.connected);
+
+                Graph::AdjList &sup_alist = s_dat.supp_graph;
+                const vector<Graph::Edge> &edges = g_dat.core_graph.get_edges();
+
 
                 AND_THEN ("We find only the edges that should be there") {
                     for (int i = 0; i < edges.size(); ++i) {
-                        CMR::Graph::Edge e = edges[i];
+                        Graph::Edge e = edges[i];
                         auto found_ptr = sup_alist.find_edge(e.end[0],
                                                              e.end[1]);
-                        if (lp_edges[i] < CMR::Epsilon::Zero)
+                        if (lp_edges[i] < Epsilon::Zero)
                             REQUIRE(found_ptr == nullptr);
                         else {
                             REQUIRE(found_ptr != nullptr);
