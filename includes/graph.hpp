@@ -110,9 +110,9 @@ struct AdjList {
             const std::vector<double> &ref_elist_caps,
             const std::vector<int> &keep_indices);
 
-    AdjList(AdjList &&AL) noexcept = default;
+    AdjList(AdjList &&AL) noexcept;
 
-    AdjList &operator=(AdjList &&AL) noexcept = default;
+    AdjList &operator=(AdjList &&AL) noexcept;
 
     bool connected(std::vector<int> &island, int start_node);
 

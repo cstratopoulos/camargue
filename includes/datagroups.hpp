@@ -130,9 +130,9 @@ struct SupportGroup {
                  std::vector<int> &island,
                  int ncount);
 
-    SupportGroup(SupportGroup &&SG) noexcept = default;
+    SupportGroup(SupportGroup &&SG) noexcept;
 
-    SupportGroup &operator=(SupportGroup &&SG) = default;
+    SupportGroup &operator=(SupportGroup &&SG) noexcept;
 
 
 
