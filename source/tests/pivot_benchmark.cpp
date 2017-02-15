@@ -83,7 +83,7 @@ static vector<RepTuple> table_entries{
 
 //this test uses some pretty heinous array indexing tricks
 SCENARIO ("Comparing pivot protocols with round of cuts",
-          "[LP][Sep][one_primal_pivot][nondegen_pivot][benchmark]") {
+          "[.LP][.Sep][.one_primal_pivot][.nondegen_pivot][benchmark]") {
     using namespace CMR;
 
     for (ProbPair &pp : impl_benchmarks) {
@@ -104,7 +104,7 @@ SCENARIO ("Comparing pivot protocols with round of cuts",
                     impl_func(core);
                     deg_piv_t = util::zeit() - deg_piv_t;
                     double deg_piv_val = core.get_objval();
-                    
+
                     cout << "Degree pivot with " << impl_name << "\n\t"
                          << deg_piv_t << "s\tobjval "
                          << deg_piv_val << "\n";
@@ -151,7 +151,7 @@ SCENARIO ("Comparing pivot protocols with round of cuts",
                     cout << "Cut pivot with " << impl_name << "\n\t"
                          << cut_piv_t << "s\tobjval "
                          << cut_piv_val << "\n";
-                    
+
                 }
             }
             cout << "\n====\n";
@@ -177,11 +177,11 @@ SCENARIO ("Comparing pivot protocols with round of cuts",
             }
         }
     }
-    
+
 }
 
 SCENARIO ("Comparing pivot protocols as optimizers",
-          "[LP][Relaxation][single_pivot][nondegen_pivot][benchmark]") {
+          "[.LP][.Relaxation][.single_pivot][.nondegen_pivot][benchmark]") {
     using namespace CMR;
     namespace Eps = Epsilon;
 
@@ -205,7 +205,7 @@ SCENARIO ("Comparing pivot protocols as optimizers",
                 double t = util::zeit();
                 core.primal_opt();
                 piv_times[0] = util::zeit() - t;
-                piv_counts[0] = core.it_count();                
+                piv_counts[0] = core.it_count();
             }
 
             THEN ("We can primal opt one nd pivot at a time") {
@@ -262,7 +262,7 @@ SCENARIO ("Comparing pivot protocols as optimizers",
             }
         }
     }
-    
+
 }
 
 #endif
