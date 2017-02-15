@@ -5,6 +5,8 @@
 #include "datagroups.hpp"
 #include "karp.hpp"
 
+#include <memory>
+
 namespace CMR {
 
 /// Matters related to cuts and separation of cutting planes.
@@ -32,10 +34,6 @@ public:
               Data::KarpPartition &kpart,
               Graph::TourGraph &_TG,
               int round_limit);
-
-    Separator(Separator &&S) noexcept = default;
-
-    Separator &operator=(Separator &&S) noexcept = default;
 
     bool segment_sep();
     bool fast2m_sep();
@@ -77,6 +75,14 @@ private:
 
     LPcutList connect_q;
 };
+
+/// This is a shorthand for resetting a unique_ptr to a Separator, like
+/// a surrogate move assign since Separator has mostly reference members.
+void ptr_reset(std::unique_ptr<Separator> &sep, Data::GraphGroup &g_dat,
+               Data::BestGroup &b_dat, Data::SupportGroup &s_dat,
+               Data::KarpPartition &kpart,
+               Graph::TourGraph &TG);
+
 
 }
 }
