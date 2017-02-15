@@ -54,7 +54,7 @@ constexpr double CPXint_tol = 0.0001;
 struct Relaxation::solver_impl {
     solver_impl();
     ~solver_impl();
-    
+
     CPXENVptr env;
     CPXLPptr lp;
 };
@@ -62,15 +62,15 @@ struct Relaxation::solver_impl {
 Relaxation::solver_impl::solver_impl() try
 {
     int rval = 0;
-    
+
     lp = (CPXLPptr) NULL;
     env = CPXopenCPLEX(&rval);
 
-    if (rval) 
+    if (rval)
         throw cpx_err(rval, "CPXopenCPLEX");
 
     // this scope guard should prevent memory leaks in the event of an error
-    // before the actual problem is initialized. 
+    // before the actual problem is initialized.
     auto cleanup = util::make_guard([&rval, this] {
         if (rval)
             CPXcloseCPLEX(&env);
@@ -87,19 +87,19 @@ Relaxation::solver_impl::solver_impl() try
     rval = CPXsetintparam(env, CPX_PARAM_AGGIND, CPX_OFF);
     if (rval)
         throw cpx_err(rval, "CPXsetintparam aggregator");
-    
+
     rval = CPXsetintparam(env, CPX_PARAM_PREIND, CPX_OFF);
     if (rval)
         throw cpx_err(rval, "CPXsetintparam presolve");
 
     rval = CPXsetintparam(env, CPX_PARAM_PPRIIND, CPX_PPRIIND_DEVEX);
-    if (rval) 
+    if (rval)
         throw cpx_err(rval, "CPXsetintparam primal pricing");
 
     rval = CPXsetintparam(env, CPX_PARAM_DPRIIND, CPX_DPRIIND_STEEP);
     if (rval)
         throw cpx_err(rval, "CPXsetintparam dual pricing");
-    
+
     char unused;
 
     lp = CPXcreateprob(env, &rval, &unused);
@@ -156,13 +156,13 @@ static int pfeas_cb (CPXCENVptr cpx_env, void *cbdata, int wherefrom,
                      void *cbhandle)
 {
     int pfeas = 0;
-    
+
     int rval = CPXgetcallbackinfo(cpx_env, cbdata, wherefrom,
                                   CPX_CALLBACK_INFO_PRIMAL_FEAS,
                                   &pfeas);
     if (rval)
         throw cpx_err(rval, "CPXgetcallbackinfo pfeas.");
-    
+
     return pfeas;
 }
 
@@ -173,7 +173,7 @@ public:
         : which_param(which), cplex_env(env), param_desc(p_desc)
     {
         int rval = CPXgetintparam(cplex_env, which_param, &old_value);
-        
+
         if (rval)
             throw cpx_err(rval, "CPXgetintparam " + param_desc);
 
@@ -209,7 +209,7 @@ public:
         : which_param(which), cplex_env(env), param_desc(p_desc)
     {
         int rval = CPXgetdblparam(cplex_env, which_param, &old_value);
-        
+
         if (rval)
             throw cpx_err(rval, "CPXgetdblparam " + param_desc);
 
@@ -245,7 +245,7 @@ public:
         : which_param(which), cplex_env(env), param_desc(p_desc)
     {
         int rval = CPXgetlongparam(cplex_env, which_param, &old_value);
-        
+
         if (rval)
             throw cpx_err(rval, "CPXgetlongparam " + param_desc);
 
@@ -292,7 +292,7 @@ Relaxation& Relaxation::operator=(Relaxation &&lp) noexcept
 {
     simpl_p = std::move(lp.simpl_p);
     lp.simpl_p.reset(nullptr);
-    
+
     return *this;
 }
 
@@ -429,6 +429,11 @@ void Relaxation::add_cut(const double rhs, const char sense,
         throw cpx_err(rval, "CPXaddrows");
 }
 
+void Relaxation::add_cut(const SparseRow &sp_row)
+{
+    add_cut(sp_row.rhs, sp_row.sense, sp_row.rmatind, sp_row.rmatval);
+}
+
 void Relaxation::add_cuts(const vector<double> &rhs,
                           const vector<char> &sense,
                           const vector<int> &rmatbeg,
@@ -482,7 +487,7 @@ void Relaxation::get_base(vector<int> &colstat,
 {
     colstat.resize(num_cols());
     rowstat.resize(num_rows());
-    
+
     int rval = CPXgetbase(simpl_p->env, simpl_p->lp, &colstat[0], &rowstat[0]);
     if (rval)
         throw cpx_err(rval, "CPXgetbase");
@@ -604,7 +609,7 @@ void Relaxation::nondegen_pivot(const double lowlimit)
         solstat != CPX_STAT_ABORT_OBJ_LIM ) {
         cerr << "Solstat: " << solstat << "\n";
         throw err;
-    }    
+    }
 }
 
 void Relaxation::one_primal_pivot()
@@ -625,7 +630,7 @@ void Relaxation::one_primal_pivot()
         solstat != CPX_STAT_ABORT_IT_LIM &&
         solstat != CPX_STAT_OPTIMAL_INFEAS)
         throw cpx_err(solstat, "CPXprimopt solstat");
-    
+
 }
 
 void Relaxation::one_dual_pivot()
@@ -646,7 +651,7 @@ void Relaxation::one_dual_pivot()
         solstat != CPX_STAT_ABORT_IT_LIM &&
         solstat != CPX_STAT_OPTIMAL_INFEAS)
         throw cpx_err(solstat, "CPXdualopt solstat");
-    
+
 }
 
 /**
@@ -670,12 +675,12 @@ void Relaxation::primal_recover()
 double Relaxation::get_objval() const
 {
     double result = std::numeric_limits<double>::max();
-    
+
     int rval = CPXgetobjval(simpl_p->env, simpl_p->lp, &result);
     if (rval)
         throw cpx_err(rval, "CPXgetobjval");
 
-    return result;    
+    return result;
 }
 
 void Relaxation::get_x(vector<double> &x) const
@@ -756,8 +761,8 @@ vector<double> Relaxation::redcosts(int begin, int end) const
  * @param[in] rowstat the row basis for \p tour_vec
  * @param[in] indices the column indices of edges to examine
  * @param[out] downobj estimates for clamping a variable to zero.
- * @param[out] upobj estimates for clamping a variable to one. 
- * @param[in/out] contra_bases primal feasible starting bases for enforcing 
+ * @param[out] upobj estimates for clamping a variable to one.
+ * @param[in/out] contra_bases primal feasible starting bases for enforcing
  * Contra branches. May be empty, in which case it will be populated for use
  * in future calls. If nonempty, it will be assumed to have the same size as
  * \p indices, with `contra_bases[i]` to be used as a starting basis for fixing
@@ -775,13 +780,13 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                                       int itlim, double upperbound)
 {
     using ScorePair = std::pair<int, double>;
-    
+
     CPXintParamGuard per_ind(CPX_PARAM_PERIND, 0, simpl_p->env,
                              "primal_strong_branch perturb");
 
     CPXintParamGuard price_ind(CPX_PARAM_PPRIIND, CPX_PPRIIND_STEEP,
                                simpl_p->env, "primal_strong_branch pricing");
-    
+
     downobj.clear();
     upobj.clear();
     downobj.reserve(indices.size());
@@ -849,7 +854,7 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                 rank = 1;
             else if (solstat == CPX_STAT_INFEASIBLE)
                 rank = 2;
-            else 
+            else
                 throw cpx_err(solstat,
                               clamp_bound == 0.0 ?
                               "CPXgetstat in down clamp" :
@@ -899,7 +904,7 @@ void Relaxation::init_mir_data(Sep::MIRgroup &mir_data)
     using mir_basinfo = SLVRbasisInfo_t;
 
     // Initialize the solver/constraint info //
-    
+
     int numcols = num_cols();
     vector<char> ctype;
 
@@ -951,7 +956,7 @@ void Relaxation::init_mir_data(Sep::MIRgroup &mir_data)
     util::c_array_ptr<double>(SLVRgetFullX(&lp_obj,
                                            mir_data.constraint_matrix.get(),
                                            &x[0]));
-    
+
     if (mir_data.full_x.get() == NULL) {
         cerr << "SLVRgetFullX failed.\n";
         throw err;

@@ -19,148 +19,137 @@ using std::vector;
 
 SCENARIO("Primal blossom separation by fast standard heuristics",
 	 "[fast2m][Sep][CutTranslate]") {
-  vector<string> probs{"pr76", "d493", "pr1002"};
-  for (string &fname : probs) {
-    GIVEN("TSP instance " + fname) {
-      string
-	probfile = "problems/" + fname + ".tsp",
-	solfile = "test_data/tours/" + fname + ".sol",
-	blossomfile = "test_data/blossom_lp/" + fname + ".2m.x",
-	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
+    using namespace CMR;
+    vector<string> probs{"pr76", "d493", "pr1002"};
+    for (string &fname : probs) {
+        GIVEN("TSP instance " + fname) {
+            string
+            probfile = "problems/" + fname + ".tsp",
+            solfile = "test_data/tours/" + fname + ".sol",
+            blossomfile = "test_data/blossom_lp/" + fname + ".2m.x",
+            subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-      CMR::Data::GraphGroup g_dat;
-      CMR::Data::BestGroup b_dat;
-      CMR::Data::SupportGroup s_dat;
-      std::vector<double> lp_edges;
-      CMR::Sep::LPcutList cutq;
+            Data::GraphGroup g_dat;
+            Data::BestGroup b_dat;
+            Data::SupportGroup s_dat;
+            std::vector<double> lp_edges;
+            Sep::LPcutList cutq;
 
-      WHEN("The tour is good and blossoms exit") {
-	THEN("Primal blossoms are found") {
-	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
-						  subtourfile, g_dat, b_dat,
-						  lp_edges, s_dat));
+            WHEN("The tour is good and blossoms exit") {
+                THEN("Primal blossoms are found") {
+                    REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile,
+                                                        subtourfile, g_dat,
+                                                        b_dat, lp_edges,
+                                                        s_dat));
 
-	
-	  CMR::Graph::TourGraph TG(b_dat.best_tour_edges,
-                            g_dat.core_graph.get_edges(),  b_dat.perm);
-	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
-	
-	  CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist,
-                                        s_dat.support_ecap, TG, cutq);
-	  REQUIRE(fb_sep.find_cuts());
 
-          vector<int> &perm = b_dat.perm;
+                    Graph::TourGraph TG(b_dat.best_tour_edges,
+                                        g_dat.core_graph.get_edges(),
+                                        b_dat.perm);
+                    for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
-          CMR::Sep::CutTranslate processor(g_dat);
+                    Sep::FastBlossoms fb_sep(s_dat.support_elist,
+                                                  s_dat.support_ecap, TG, cutq);
+                    REQUIRE(fb_sep.find_cuts());
 
-          for (auto cur = cutq.begin(); cur; cur = cur->next) {
-              vector<int> rmatind;
-              vector<double> rmatval;
-              char sense;
-              double rhs;
-              
-              processor.get_sparse_row(*cur, perm, rmatind, rmatval, sense,
-                                       rhs);
-              double tour_act = 0, lp_act = 0;
-              
-              processor.get_activity(tour_act, b_dat.best_tour_edges,
-                                     rmatind, rmatval);
-              processor.get_activity(lp_act, lp_edges, rmatind, rmatval);
-              REQUIRE(tour_act == rhs);
-              REQUIRE(lp_act < rhs);
-          }
-	}
-      }
-      AND_WHEN("The tour is good but the solution is in the blossom polytope") {
-      	THEN("No primal blossoms are found") {
-	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
-						  blossomfile, g_dat, b_dat,
-						  lp_edges, s_dat));
+                    vector<int> &perm = b_dat.perm;
 
-	  CMR::Graph::TourGraph TG(b_dat.best_tour_edges,
-                            g_dat.core_graph.get_edges(), b_dat.perm);
-	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
-	
-	  CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
+                    Sep::CutTranslate processor(g_dat);
 
-	  REQUIRE_FALSE(fb_sep.find_cuts());
-      	}	
-      }
+                    for (auto cur = cutq.begin(); cur; cur = cur->next) {
+                        LP::SparseRow R = processor.get_row(*cur, perm);
+                        double tour_act =
+                        processor.get_activity(b_dat.best_tour_edges, R);
+                        double lp_act = processor.get_activity(lp_edges, R);
+                        REQUIRE(tour_act == R.rhs);
+                        REQUIRE(lp_act < R.rhs);
+                    }
+                }
+            }
+            AND_WHEN("The tour is good but the solution is in the blossom polytope") {
+                THEN("No primal blossoms are found") {
+                    REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile,
+                                                             blossomfile, g_dat, b_dat,
+                                                             lp_edges, s_dat));
+
+                    Graph::TourGraph TG(b_dat.best_tour_edges,
+                                             g_dat.core_graph.get_edges(), b_dat.perm);
+                    for (int &i : s_dat.support_elist) i = b_dat.perm[i];
+
+                    Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
+
+                    REQUIRE_FALSE(fb_sep.find_cuts());
+                }
+            }
+        }
     }
-  }
 }
 
 SCENARIO("Primal heuristic fast blossom sep in tiny instances",
 	 "[fast2m][tiny][Sep][CutTranslate]") {
-  vector<string> probs{"blossom6", "comb9"};
-  for (string &fname : probs) {
-    GIVEN("TSP instance " + fname) {
-      string
-	probfile = "test_data/" + fname + ".tsp",
-	solfile = "test_data/tours/" + fname + ".sol",
-	badsolfile = "test_data/tours/" + fname + ".bad.sol",
-	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
+    using namespace CMR;
+    vector<string> probs{"blossom6", "comb9"};
+    for (string &fname : probs) {
+        GIVEN("TSP instance " + fname) {
+            string
+            probfile = "test_data/" + fname + ".tsp",
+            solfile = "test_data/tours/" + fname + ".sol",
+            badsolfile = "test_data/tours/" + fname + ".bad.sol",
+            subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-      CMR::Data::GraphGroup g_dat;
-      CMR::Data::BestGroup b_dat;
-      CMR::Data::SupportGroup s_dat;
-      std::vector<double> lp_edges;
-      CMR::Sep::LPcutList cutq;
+            Data::GraphGroup g_dat;
+            Data::BestGroup b_dat;
+            Data::SupportGroup s_dat;
+            std::vector<double> lp_edges;
+            Sep::LPcutList cutq;
 
-      WHEN("The tour is good") {
-	THEN("Violated primal blossoms are found") {
-	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
-						  subtourfile, g_dat, b_dat,
-						  lp_edges, s_dat));
+            WHEN("The tour is good") {
+                THEN("Violated primal blossoms are found") {
+                    REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile,
+                                                             subtourfile, g_dat, b_dat,
+                                                             lp_edges, s_dat));
 
-	  CMR::Graph::TourGraph TG(b_dat.best_tour_edges,g_dat.core_graph.get_edges(),
-			     b_dat.perm);
-	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
-	
-	  CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
-	  REQUIRE(fb_sep.find_cuts());
+                    Graph::TourGraph TG(b_dat.best_tour_edges,g_dat.core_graph.get_edges(),
+                                             b_dat.perm);
+                    for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
-          vector<int> &perm = b_dat.perm;
+                    Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
+                    REQUIRE(fb_sep.find_cuts());
 
-          CMR::Sep::CutTranslate processor(g_dat);
+                    vector<int> &perm = b_dat.perm;
 
-          for (auto cur = cutq.begin(); cur; cur = cur->next) {
-              vector<int> rmatind;
-              vector<double> rmatval;
-              char sense;
-              double rhs;
-              
-              processor.get_sparse_row(*cur, perm, rmatind, rmatval, sense,
-                                       rhs);
-              double tour_act = 0, lp_act = 0;
-              
-              processor.get_activity(tour_act, b_dat.best_tour_edges,
-                                     rmatind, rmatval);
-              processor.get_activity(lp_act, lp_edges, rmatind, rmatval);
-              REQUIRE(tour_act == rhs);
-              REQUIRE(lp_act < rhs);
-          }
-	}
-      }
+                    Sep::CutTranslate processor(g_dat);
 
-      AND_WHEN("The tour is bad") {
-	THEN("No primal blossoms are found") {
-	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, badsolfile,
-						  subtourfile,
-						  g_dat, b_dat, lp_edges,
-						  s_dat));
+                    for (auto cur = cutq.begin(); cur; cur = cur->next) {
+                        LP::SparseRow R = processor.get_row(*cur, perm);
+                        double tour_act =
+                        processor.get_activity(b_dat.best_tour_edges, R);
 
-	  CMR::Graph::TourGraph TG(b_dat.best_tour_edges, g_dat.core_graph.get_edges(),
-			     b_dat.perm);
-	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
-	
-	  CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
+                        double lp_act = processor.get_activity(lp_edges, R);
+                        REQUIRE(tour_act == R.rhs);
+                        REQUIRE(lp_act < R.rhs);
+                    }
+                }
+            }
 
-	  REQUIRE_FALSE(fb_sep.find_cuts());
-	}
-      }
+            AND_WHEN("The tour is bad") {
+                THEN("No primal blossoms are found") {
+                    REQUIRE_NOTHROW(Data::make_cut_test(probfile, badsolfile,
+                                                             subtourfile,
+                                                             g_dat, b_dat, lp_edges,
+                                                             s_dat));
+
+                    Graph::TourGraph TG(b_dat.best_tour_edges, g_dat.core_graph.get_edges(),
+                                             b_dat.perm);
+                    for (int &i : s_dat.support_elist) i = b_dat.perm[i];
+
+                    Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
+
+                    REQUIRE_FALSE(fb_sep.find_cuts());
+                }
+            }
+        }
     }
-  }
 }
 
 #endif

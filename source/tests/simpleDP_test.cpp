@@ -62,31 +62,24 @@ SCENARIO("Separating simple DP inequalities in small instances",
 
                 int primal_found = 0;
                 while (!dp_q.empty()) {
-                    vector<int> rmatind;
-                    vector<double> rmatval;
-                    char sense;
-                    double rhs;
-	  
+                    LP::SparseRow R;
+
                     const Sep::dominoparity &dp_cut = dp_q.peek_front();
                     vector<int> &bt = b_dat.best_tour_nodes;
-                    double tour_activity, lp_activity;
-                    REQUIRE_NOTHROW(translator.get_sparse_row(dp_cut, bt,
-                                                              rmatind,
-                                                              rmatval, sense,
-                                                              rhs));
+                    REQUIRE_NOTHROW(R = translator.get_row(dp_cut, bt));
 
-                    translator.get_activity(tour_activity,
-                                            b_dat.best_tour_edges,
-                                            rmatind, rmatval);
-                    translator.get_activity(lp_activity, lp_edges, rmatind,
-                                            rmatval);
+                    double tour_activity =
+                    translator.get_activity(b_dat.best_tour_edges, R);
 
-                    CHECK(lp_activity > rhs);
-                    REQUIRE(tour_activity <= rhs);
-	  
-                    if (tour_activity == rhs && lp_activity > rhs)
+                    double lp_activity =
+                    translator.get_activity(lp_edges, R);
+
+                    CHECK(lp_activity > R.rhs);
+                    REQUIRE(tour_activity <= R.rhs);
+
+                    if (tour_activity == R.rhs && lp_activity > R.rhs)
                         ++primal_found;
-	  
+
                     dp_q.pop_front();
                 }
                 cout << "\t" << primal_found
@@ -138,30 +131,23 @@ SCENARIO("Separating simple DP inequalities in medium instances",
 
                 int primal_found = 0;
                 while (!dp_q.empty()) {
-                    vector<int> rmatind;
-                    vector<double> rmatval;
-                    char sense;
-                    double rhs;
-	  
+                    LP::SparseRow R;
+
                     const Sep::dominoparity &dp_cut = dp_q.peek_front();
                     vector<int> &bt = b_dat.best_tour_nodes;
-                    double tour_activity, lp_activity;
-          
-                    REQUIRE_NOTHROW(translator.get_sparse_row(dp_cut, bt,
-                                                              rmatind,
-                                                              rmatval, sense,
-                                                              rhs));
 
-                    translator.get_activity(tour_activity,
-                                            b_dat.best_tour_edges,
-                                            rmatind, rmatval);
-                    translator.get_activity(lp_activity, lp_edges, rmatind,
-                                            rmatval);
+                    REQUIRE_NOTHROW(R = translator.get_row(dp_cut, bt));
 
-                    CHECK(lp_activity > rhs);
-                    REQUIRE(tour_activity <= rhs);
+                    double tour_activity =
+                    translator.get_activity(b_dat.best_tour_edges, R);
 
-                    if (lp_activity <= rhs) {
+                    double lp_activity =
+                    translator.get_activity(lp_edges, R);
+
+                    CHECK(lp_activity > R.rhs);
+                    REQUIRE(tour_activity <= R.rhs);
+
+                    if (lp_activity <= R.rhs) {
                         cout << "Found non-violated cut....\n";
                         cout << "\tHandle:" << dp_cut.degree_nodes.size()
                              << " nodes\n";
@@ -172,8 +158,8 @@ SCENARIO("Separating simple DP inequalities in medium instances",
                         for (const Sep::SimpleTooth &T : dp_cut.used_teeth)
                             Sep::CandidateTeeth::print_tooth(T, false, bt);
                     }
-	  
-                    if (tour_activity == rhs && lp_activity > rhs) {
+
+                    if (tour_activity == R.rhs && lp_activity > R.rhs) {
                         ++primal_found;
                     }
                     dp_q.pop_front();
@@ -224,31 +210,23 @@ SCENARIO("Separating simple DP inequalities in large instances",
 
                 int primal_found = 0;
                 while (!dp_q.empty()) {
-                    vector<int> rmatind;
-                    vector<double> rmatval;
-                    char sense;
-                    double rhs;
-	  
+                    LP::SparseRow R;
                     const Sep::dominoparity &dp_cut = dp_q.peek_front();
                     vector<int> &bt = b_dat.best_tour_nodes;
-                    double tour_activity, lp_activity;
-                    REQUIRE_NOTHROW(translator.get_sparse_row(dp_cut, bt,
-                                                              rmatind,
-                                                              rmatval, sense,
-                                                              rhs));
+                    REQUIRE_NOTHROW(R = translator.get_row(dp_cut, bt));
 
-                    translator.get_activity(tour_activity,
-                                            b_dat.best_tour_edges,
-                                            rmatind, rmatval);
-                    translator.get_activity(lp_activity, lp_edges, rmatind,
-                                            rmatval);
+                    double tour_activity =
+                    translator.get_activity(b_dat.best_tour_edges, R);
 
-                    CHECK(lp_activity > rhs);
-                    REQUIRE(tour_activity <= rhs);
-	  
-                    if (tour_activity == rhs && lp_activity > rhs)
+                    double lp_activity =
+                    translator.get_activity(lp_edges, R);
+
+                    CHECK(lp_activity > R.rhs);
+                    REQUIRE(tour_activity <= R.rhs);
+
+                    if (tour_activity == R.rhs && lp_activity > R.rhs)
                         ++primal_found;
-	  
+
                     dp_q.pop_front();
                 }
                 cout << "\t" << primal_found

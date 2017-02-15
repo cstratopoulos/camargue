@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** @file
- * @brief Interface to the LP solver. 
+ * @brief Interface to the LP solver.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -21,8 +21,8 @@
 namespace CMR {
 namespace LP {
 
-/** Class for storing an lp relaxation via interface to an lp solver. 
- * This structure stores the environment and lp data structures of the lp 
+/** Class for storing an lp relaxation via interface to an lp solver.
+ * This structure stores the environment and lp data structures of the lp
  * solver, and contains methods for modifying the relaxation in the sense of
  * adding/removing constraints and variables.
  */
@@ -31,17 +31,17 @@ public:
     /**@name Constructors, destructor, and assignment operators. */
     ///@{
 
-    
+
     Relaxation(); //!< Default construct with empty, valid resource handles.
-    
+
     Relaxation(Relaxation &&lp) noexcept; //!< Move construct.
     Relaxation& operator=(Relaxation &&lp) noexcept;  //!< Move assign.
 
     Relaxation(const Relaxation &lp) = delete;
     Relaxation& operator=(const Relaxation &lp) = delete;
-    
+
     ~Relaxation(); //!< Destruct and free resource handles.
-    
+
     ///@}
 
     /**@name Methods for querying the relaxation. */
@@ -60,7 +60,7 @@ public:
     void get_rhs(std::vector<double> &rhs, int begin, int end) const;
 
     /// Get the senses of a range of constraints.
-    std::vector<char> senses(int begin, int end) const; 
+    std::vector<char> senses(int begin, int end) const;
 
     void get_col(int col, std::vector<int> &cmatind,
                  std::vector<double> &cmatval) const;
@@ -74,13 +74,13 @@ public:
                         int end) const;
 
     double get_objval() const; //!< Objective value for resident solution.
-    
+
     void get_x(std::vector<double> &x) const; //!< Get current solution.
-    
+
     std::vector<double> lp_vec() const; //!< Return current solution.
 
 
-    /// Get the resident basis. 
+    /// Get the resident basis.
     void get_base(std::vector<int> &colstat,
                   std::vector<int> &rowstat) const;
 
@@ -98,7 +98,7 @@ public:
     /// Get a range of dual values.
     void get_pi(std::vector<double> &pi, int begin, int end) const;
 
-    /// Return a range of dual values. 
+    /// Return a range of dual values.
     std::vector<double> pi(int begin, int end) const;
 
     /// Get a range of reduced costs.
@@ -112,7 +112,7 @@ public:
     /**@name Branching methods. */
     ///@{
 
-    /// Get strong branching style estimates for variables. 
+    /// Get strong branching style estimates for variables.
     void primal_strong_branch(const std::vector<double> &tour_vec,
                               const std::vector<int> &colstat,
                               const std::vector<int> &rowstat,
@@ -122,7 +122,7 @@ public:
                               std::vector<Basis> &contra_bases,
                               int itlim, double upperbound);
 
-    /// Tighten the bound on a variable. 
+    /// Tighten the bound on a variable.
     void tighten_bound(int index, char sense, double val);
 
     /// Change an objective function coefficient.
@@ -144,6 +144,8 @@ public:
                  const std::vector<int> &rmatind,
                  const std::vector<double> &rmatval); //!< Add constraint row.
 
+    void add_cut(const SparseRow &sp_row); //!< Add constraint row struct.
+
     void add_cuts(const std::vector<double> &rhs,
                   const std::vector<char> &sense,
                   const std::vector<int> &rmatbeg,
@@ -151,13 +153,13 @@ public:
                   const std::vector<double> &rmatval); //!< Add constraint rows.
 
     /// Delete a not-necessarily-continuous set of rows.
-    void del_set_rows(std::vector<int> &delstat); 
+    void del_set_rows(std::vector<int> &delstat);
 
     void add_col(const double objval,
                  const std::vector<int> &indices,
                  const std::vector<double> &coeffs,
                  const double lb, const double ub); //!< Add a column.
-    
+
     ///@}
 
     /**@name Basis operations. */
@@ -179,7 +181,7 @@ public:
     void copy_base(const Basis &base);
 
     void factor_basis(); //!< Make the current basis resident in the problem.
-    
+
     ///@}
 
     /**@name Pivoting and optimizing. */
@@ -195,13 +197,13 @@ public:
     void one_dual_pivot(); //!< Perform exactly one dual simplex pivot.
 
     void primal_recover(); //!< Pivot until the basis is primal feasible.
-    
+
     ///@}
 
 
     /**@name Safe GMI initializer. */
     ///@{
-    
+
 #if CMR_HAVE_SAFEGMI
     void init_mir_data(Sep::MIRgroup &mir_data);
 #endif

@@ -23,19 +23,18 @@ using std::logic_error;
 namespace CMR {
 
 namespace Eps = Epsilon;
+using SparseRow = LP::SparseRow;
 
 namespace Sep {
 
-void CutTranslate::get_sparse_row(const CCtsp_lpcut_in &cc_cut,
-                                  const std::vector<int> &perm,
-                                  vector<int> &rmatind,
-                                  vector<double> &rmatval, char &sense,
-                                  double &rhs)
+SparseRow CutTranslate::get_row(const CCtsp_lpcut_in &cc_cut,
+                                const std::vector<int> &perm)
 {
-    rmatind.clear();
-    rmatval.clear();
-    sense = cc_cut.sense;
-    rhs = cc_cut.rhs;
+    SparseRow result;
+    result.sense = cc_cut.sense;
+    result.rhs = cc_cut.rhs;
+    vector<int> &rmatind = result.rmatind;
+    vector<double> &rmatval = result.rmatval;
 
     int ncount = perm.size();
     map<int, double> coeff_map;
@@ -66,27 +65,29 @@ void CutTranslate::get_sparse_row(const CCtsp_lpcut_in &cc_cut,
     rmatind.reserve(coeff_map.size());
     rmatval.reserve(coeff_map.size());
 
-        for(pair<const int, double> &kv : coeff_map) {
-            rmatind.push_back(kv.first);
-            rmatval.push_back(kv.second);
-        }
+    for(pair<const int, double> &kv : coeff_map) {
+        rmatind.push_back(kv.first);
+        rmatval.push_back(kv.second);
+    }
+
+    return result;
 }
 
 
-void CutTranslate::get_sparse_row(const dominoparity &dp_cut,
-                                      const vector<int> &tour_nodes,
-                                      vector<int> &rmatind,
-                                      vector<double> &rmatval,
-                                      char &sense, double &rhs)
+SparseRow CutTranslate::get_row(const dominoparity &dp_cut,
+                                const vector<int> &tour_nodes)
 {
-    runtime_error err("Problem in CutTranslate::get_sparse_row dp cut.");
+    runtime_error err("Problem in CutTranslate::get_row dp cut.");
+
+    SparseRow result;
     vector<double> coeff_buff;
 
     for (int &i : node_marks) i = 0;
-    rmatind.clear();
-    rmatval.clear();
-    rhs = 0.0;
-    sense = 'L';
+
+    result.sense = 'L';
+    vector<int> &rmatind = result.rmatind;
+    vector<double> &rmatval = result.rmatval;
+    double &rhs = result.rhs;
 
     const vector<Graph::Edge> &edges = core_graph.get_edges();
 
@@ -129,10 +130,10 @@ void CutTranslate::get_sparse_row(const dominoparity &dp_cut,
         }
 
         rhs += (2 * (T.body_end - T.body_start + 1)) - 1;
-    
+
         for (int i = T.body_start; i <= T.body_end; ++i)
             node_marks[tour_nodes[i]] = 0;
-        node_marks[tour_nodes[T.root]] = 0; 
+        node_marks[tour_nodes[T.root]] = 0;
     }
 
     for (const IntPair &ends : dp_cut.nonneg_edges) {
@@ -159,25 +160,26 @@ void CutTranslate::get_sparse_row(const dominoparity &dp_cut,
 
     rhs /= 2;
     rhs = floor(rhs);
-  
+
     for (double &coeff : rmatval) {
         if (fabs(coeff >= Epsilon::Zero)) {
             coeff /= 2;
             coeff = floor(coeff);
         }
     }
+
+    return result;
 }
 
-void CutTranslate::get_sparse_row(const vector<int> &handle_delta,
-                                  const vector<vector<int>> &tooth_edges,
-                                  vector<int> &rmatind,
-                                  vector<double> &rmatval, char &sense,
-                                  double &rhs)
+SparseRow CutTranslate::get_row(const vector<int> &handle_delta,
+                                const vector<vector<int>> &tooth_edges)
 {
-    rmatind.clear();
-    rmatval.clear();
-    sense = 'G';
-    rhs = 3 * tooth_edges.size() + 1;
+    SparseRow result;
+
+    vector<int> &rmatind = result.rmatind;
+    vector<double> &rmatval = result.rmatval;
+    result.sense = 'G';
+    result.rhs = (3 * tooth_edges.size()) + 1;
 
     int ncount = core_graph.node_count();
     map<int, double> coeff_map;
@@ -204,10 +206,12 @@ void CutTranslate::get_sparse_row(const vector<int> &handle_delta,
     rmatind.reserve(coeff_map.size());
     rmatval.reserve(coeff_map.size());
 
-        for(pair<const int, double> &kv : coeff_map) {
-            rmatind.push_back(kv.first);
-            rmatval.push_back(kv.second);
-        }
+    for(pair<const int, double> &kv : coeff_map) {
+        rmatind.push_back(kv.first);
+        rmatval.push_back(kv.second);
+    }
+
+    return result;
 }
 
 /**
@@ -217,12 +221,12 @@ void CutTranslate::get_sparse_row(const vector<int> &handle_delta,
  * @param[in] edges the CoreGraph edges.
  * @param[in] ncount the number of nodes.
  * @param[in] handle_delta the delta_inds for `B.handle`.
- * Let \f$ \bar x \f$ be the edge vector of \p tour_edges, \f$ E^* \f$ the 
+ * Let \f$ \bar x \f$ be the edge vector of \p tour_edges, \f$ E^* \f$ the
  * edges for which \p lp_vec is nonzero, and \f$ E^0, E^1 \f$ be the edges in
- * \f$ E^* \f$ for which \f$ \bar x \f$ is respectively zero or one. Let 
+ * \f$ E^* \f$ for which \f$ \bar x \f$ is respectively zero or one. Let
  * \f$ e \f$ be `B.cut_ind` and \f$ H \f$ be `B.handle`.
- * As per Letchford and Lodi (Primal Separation Algorithms), this function 
- * returns \f[ e \cup \delta(H)\cap E^1 \f] if \f$ e \in E^0 \f$, and 
+ * As per Letchford and Lodi (Primal Separation Algorithms), this function
+ * returns \f[ e \cup \delta(H)\cap E^1 \f] if \f$ e \in E^0 \f$, and
  * \f[ \delta(H)\cap E^1 \setminus e \f] if \f$ e \in E^1 \f$.
  */
 vector<int> teeth_inds(const ex_blossom &B, const vector<int> &tour_edges,
@@ -247,7 +251,7 @@ vector<int> teeth_inds(const ex_blossom &B, const vector<int> &tour_edges,
                  result.end());
 
     //cout << "Result size after erase remove: " << result.size() << "\n";
-    
+
     int cut_ind = B.cut_edge;
     auto it = std::find(result.begin(), result.end(), cut_ind);
     int tour_entry = tour_edges[cut_ind];
@@ -271,7 +275,7 @@ vector<int> teeth_inds(const ex_blossom &B, const vector<int> &tour_edges,
                        const vector<Graph::Edge> &edges, int ncount)
 {
     const vector<int> &handle = B.handle;
-    
+
     vector<int> handle_delta = Graph::delta_inds(handle, edges, ncount);
 
     return teeth_inds(B, tour_edges, lp_vec, edges, ncount, handle_delta);
@@ -288,8 +292,8 @@ bool bad_blossom(const ex_blossom &B, const vector<int> &tour_edges,
 {
     // int ce = B.cut_edge;
     // cout << "\nCut edge " << ((EndPts) edges[ce]) << ", entry "
-    //      << tour_edges[ce] << "\n"; 
-    
+    //      << tour_edges[ce] << "\n";
+
     const vector<int> &handle = B.handle;
 
     // cout << "Handle nodes\n";
@@ -306,7 +310,7 @@ bool bad_blossom(const ex_blossom &B, const vector<int> &tour_edges,
     // for (int ind : teeth)
     //     cout << ((EndPts) edges[ind]) << ", ";
     // cout << "\n";
-    
+
     if ((teeth.size() % 2) == 0)
         return true;
 
@@ -322,7 +326,7 @@ bool bad_blossom(const ex_blossom &B, const vector<int> &tour_edges,
         }
     }
 
-    return false;    
+    return false;
 }
 
 }

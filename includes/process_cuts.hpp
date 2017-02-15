@@ -6,6 +6,7 @@
 #include "graph.hpp"
 #include "tooth.hpp"
 #include "cut_structs.hpp"
+#include "lp_util.hpp"
 #include "util.hpp"
 
 #include <memory>
@@ -80,33 +81,25 @@ public:
         delta(graph_group.delta),
         node_marks(graph_group.node_marks) {}
 
-    void get_sparse_row(const CCtsp_lpcut_in &cc_cut,
-                        const std::vector<int> &perm,
-                        std::vector<int> &rmatind,
-                        std::vector<double> &rmatval, char &sense,
-                        double &rhs);
+    LP::SparseRow get_row(const CCtsp_lpcut_in &cc_cut,
+                                 const std::vector<int> &perm);
 
-    void get_sparse_row(const dominoparity &dp_cut,
-                        const std::vector<int> &tour_nodes,
-                        std::vector<int> &rmatind, std::vector<double> &rmatval,
-                        char &sense, double &rhs);
+    LP::SparseRow get_row(const dominoparity &dp_cut,
+                          const std::vector<int> &tour_nodes);
 
-    void get_sparse_row(const std::vector<int> &handle_delta,
-                        const std::vector<std::vector<int>> &tooth_edges,
-                        std::vector<int> &rmatind,
-                        std::vector<double> &rmatval,
-                        char &sense, double &rhs);
+    LP::SparseRow get_row(const std::vector<int> &handle_delta,
+                          const std::vector<std::vector<int>> &tooth_edges);
 
     template<typename number_type>
-    void get_activity(double &activity, const std::vector<number_type> &x,
-                      const std::vector<int> &rmatind,
-                      const std::vector<double> &rmatval)
+    double get_activity(const std::vector<number_type> &x,
+                        const LP::SparseRow &R)
         {
-            activity = 0;
-            for(auto i = 0; i < rmatind.size(); i++){
-                int index = rmatind[i];
-                activity += x[index] * rmatval[i];
+           double result = 0.0;
+            for(auto i = 0; i < R.rmatind.size(); i++){
+                int index = R.rmatind[i];
+                result += x[index] * R.rmatval[i];
             }
+            return result;
         }
 
 private:
