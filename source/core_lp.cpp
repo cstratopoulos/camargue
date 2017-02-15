@@ -400,14 +400,14 @@ void CoreLP::add_cuts(const Sep::CutQueue<Sep::dominoparity> &dpq)
     }
 }
 
-void CoreLP::add_cuts(const Sep::CutQueue<Sep::SparseRow> &gmi_q)
+void CoreLP::add_cuts(const Sep::CutQueue<SparseRow> &gmi_q)
 {
     if (gmi_q.empty())
         return;
 
     runtime_error err("Problem in CoreLP::add_cuts(Sep::SparseRow)");
 
-    for (Sep::CutQueue<Sep::SparseRow>::ConstItr it = gmi_q.begin();
+    for (Sep::CutQueue<SparseRow>::ConstItr it = gmi_q.begin();
          it != gmi_q.end(); ++it) {
         try {
             add_cut(it->rhs, it->sense, it->rmatind, it->rmatval);

@@ -15,7 +15,7 @@
 
 namespace CMR {
 
-/// Manners related to LP relaxations and solver interfaces. 
+/// Manners related to LP relaxations and solver interfaces.
 namespace LP {
 
 /// Enum class for categorizing lp solutions.
@@ -44,14 +44,23 @@ struct Basis {
             rowstat = std::move(B.rowstat);
             return *this;
         }
-    
+
     std::vector<int> colstat;
     std::vector<int> rowstat;
 
     using Ptr = std::unique_ptr<Basis>;
 };
 
-/// Operator overload for writing LP::PivType to output stream. 
+/// Simple struct representing sparse matrix row for passing to LP solver.
+struct SparseRow {
+    std::vector<int> rmatind; //!< Indices of nonzero entries.
+    std::vector<double> rmatval; //!< Coefficients for indices in rmatind.
+    char sense; //!< 'G' for >=, 'L' for <=, 'E' for ==.
+    double rhs; //!< The righthand side.
+    double lp_viol; //!< (Optional) violation wrt some vector.
+};
+
+/// Operator overload for writing LP::PivType to output stream.
 inline std::ostream &operator<<(std::ostream &os, PivType piv)
 {
     using Ptype = LP::PivType;

@@ -10,14 +10,14 @@ namespace Sep {
 /** Structure for storing blossom inequalities from exact primal separation.
  * This structure stores blossom inequalities found by the exact primal
  * separation algorithm of Letchford-Lodi in Primal Separation Algorithms
- * Revisited. 
+ * Revisited.
  */
 struct ex_blossom {
     ex_blossom(std::vector<int> &_handle, int _cut_edge, double _val) :
         handle(_handle), cut_edge(_cut_edge), cut_val(_val){}
-  
+
     std::vector<int> handle;
-  
+
     int cut_edge;
 
     double cut_val;
@@ -68,13 +68,13 @@ struct SimpleTooth {
         T.body_start <= body_start &&
         body_end <= T.body_end;
     }
-    
+
 };
 
 /** Structure for storing simple DP inequalities.
  * In all cases, all numbers and indices refer to position in some `tour_nodes`
  * vector. They must be translated by deferencing, e.g., if `(i, j)` is an
- * edge in \p nonneg_edges, it refers to the edge 
+ * edge in \p nonneg_edges, it refers to the edge
  * `tour_nodes[i], tour_nodes[j]`.
  */
 struct dominoparity {
@@ -95,16 +95,7 @@ struct dominoparity {
     std::vector<IntPair> nonneg_edges;
 };
 
-/// Simple struct representing sparse matrix row for passing to LP solver. 
-struct SparseRow {    
-    std::vector<int> rmatind;
-    std::vector<double> rmatval;
-    char sense;
-    double rhs;
-    double lp_viol;
-};
-
-}  
+}
 }
 
 

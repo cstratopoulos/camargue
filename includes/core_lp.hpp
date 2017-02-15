@@ -32,7 +32,7 @@ struct TourBasis {
               const Data::BestGroup &best_data);
 
     std::vector<double> best_tour_edges;
-     
+
     std::vector<int> colstat;
     std::vector<int> rowstat;
 };
@@ -40,7 +40,7 @@ struct TourBasis {
 
 /** Class for storing the core lp associated to a TSP instance and pivoting.
  * This class contains the edges and constraints currently under consideration
- * in an lp relaxation of a TSP instance. 
+ * in an lp relaxation of a TSP instance.
  */
 class CoreLP : public Relaxation {
 public:
@@ -52,7 +52,7 @@ public:
 
     void add_cuts(const Sep::LPcutList &cutq);
     void add_cuts(const Sep::CutQueue<Sep::dominoparity> &dp_q);
-    void add_cuts(const Sep::CutQueue<Sep::SparseRow> &gmi_q);
+    void add_cuts(const Sep::CutQueue<LP::SparseRow> &gmi_q);
     void add_cuts(const Sep::CutQueue<Sep::ex_blossom> &ex2m_q);
 
     void add_edges(const std::vector<Graph::Edge> &add_batch);
@@ -60,7 +60,7 @@ public:
     const Sep::ExternalCuts &external_cuts() const
         { return ext_cuts; } //!< Const reference to the external cut reps.
 
-    /// Average number of iterations per primal_pivot. 
+    /// Average number of iterations per primal_pivot.
     int avg_itcount() const { return sum_it_count / num_nd_pivots; }
 
     double best_tourlen() const { return best_data.min_tour_value; }
@@ -73,14 +73,14 @@ private:
 
     //// TODO make this a bestgroup method that takes tour nodes, edges,
     /// and coregraph edges
-    void update_best_data(); 
+    void update_best_data();
 
     void prune_slacks();
 
     void rebuild_basis();
 
     void purge_gmi();
-    
+
     Data::GraphGroup &graph_data;
     Data::BestGroup &best_data;
     Data::SupportGroup supp_data;
@@ -88,7 +88,7 @@ private:
     Sep::ExternalCuts ext_cuts;
 
     TourBasis tour_base;
-    
+
     std::vector<double> lp_edges;
     std::vector<double> feas_stat;
 
@@ -110,7 +110,7 @@ struct DualGroup {
     DualGroup(DualGroup &&D) noexcept :
         node_pi(std::move(D.node_pi)), node_pi_est(std::move(D.node_pi_est)),
         cut_pi(std::move(D.cut_pi)), clique_pi(std::move(D.clique_pi)) {}
-    
+
     DualGroup &operator=(DualGroup &&D) noexcept
         {
             node_pi = std::move(D.node_pi);
@@ -124,17 +124,17 @@ struct DualGroup {
     std::vector<numtype> node_pi_est; //!< Overestimates of node_pi.
     std::vector<numtype> cut_pi; //!< Dual values for cuts.
 
-    /// Dual values/multiplicities for Cliques. 
-    std::unordered_map<Sep::Clique, numtype> clique_pi; 
+    /// Dual values/multiplicities for Cliques.
+    std::unordered_map<Sep::Clique, numtype> clique_pi;
 };
 
 //////////////////// TEMPLATE METHOD IMPLEMENTATIONS //////////////////////////
 
 /**
- * Construct a DualGroup by querying the LP solver for dual values and using 
- * the collection of cuts, cliques, and teeth to generate clique 
+ * Construct a DualGroup by querying the LP solver for dual values and using
+ * the collection of cuts, cliques, and teeth to generate clique
  * multiplicities and node pi estimates.
- * @tparam numtype the numeric representation. Should be one of double or 
+ * @tparam numtype the numeric representation. Should be one of double or
  * util::Fixed64.
  * @param remove_neg if true, negative dual values will be replaced with zero.
  * @param relax the Relaxation which will be used to grab node and cut pi's.
@@ -174,7 +174,7 @@ DualGroup<numtype>::DualGroup(bool remove_neg, const LP::Relaxation &relax,
     node_pi = vector<numtype>(full_pi.begin(), full_pi.begin() + node_count);
     node_pi_est = node_pi;
 
-    if (!cuts.empty()) 
+    if (!cuts.empty())
         cut_pi = vector<numtype>(full_pi.begin() + node_count, full_pi.end());
 
     if (node_pi.size() != node_count || cut_pi.size() != cuts.size())
@@ -204,7 +204,7 @@ DualGroup<numtype>::DualGroup(bool remove_neg, const LP::Relaxation &relax,
 
         if (H.cut_type() == CutType::Non)
             throw std::logic_error("Tried to get_duals with Non cut present.");
-        
+
         if (H.cut_type() == CutType::Domino)
             continue;
 
@@ -213,7 +213,7 @@ DualGroup<numtype>::DualGroup(bool remove_neg, const LP::Relaxation &relax,
         for (const Sep::Clique::Ptr &clq_ref : H.get_cliques()) {
             if (clique_pi.count(*clq_ref) == 0)
                 clique_pi[*clq_ref] = 0.0;
-            
+
             clique_pi[*clq_ref] += pival;
         }
     }
@@ -226,23 +226,23 @@ DualGroup<numtype>::DualGroup(bool remove_neg, const LP::Relaxation &relax,
             for (const Segment &seg : clq.seg_list()) {
                 for (int k = seg.start; k <= seg.end; ++k) {
                     int node = def_tour[k];
-                    
+
                     node_pi[node] += pival;
                     node_pi_est[node] += pival;
                 }
-            }            
+            }
         } else if (pival < 0.0) {
             for (const Segment &seg : clq.seg_list()) {
                 for (int k = seg.start; k <= seg.end; ++k) {
                     int node = def_tour[k];
-                    
+
                     node_pi[node] += pival;
                 }
             }
         }
     }
 
-    
+
     //now get node_pi_est for domino cuts, skipping standard ones
     for (int i = 0; i < cuts.size(); ++i) {
         const HyperGraph &H = cuts[i];
@@ -252,7 +252,7 @@ DualGroup<numtype>::DualGroup(bool remove_neg, const LP::Relaxation &relax,
         numtype pival = cut_pi[i];
         if (pival <= 0.0)
             continue;
-        
+
         const Sep::Clique::Ptr &handle_ref = H.get_cliques()[0];
         for (const Segment &seg : handle_ref->seg_list()) {
             for (int k = seg.start; k <= seg.end; ++k) {

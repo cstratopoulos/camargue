@@ -23,12 +23,12 @@ public:
                const std::vector<double> &lp_x);
 
     bool find_cuts();
-    const CutQueue<SparseRow> &gomory_q() const { return gmi_q; }
+    const CutQueue<LP::SparseRow> &gomory_q() const { return gmi_q; }
 
 private:
     LP::Relaxation &lp_relax;
     MIRgroup mir_data;
-    CutQueue<SparseRow> gmi_q;
+    CutQueue<LP::SparseRow> gmi_q;
 
     const std::vector<double> &tour_edges;
     const std::vector<double> &frac_x;

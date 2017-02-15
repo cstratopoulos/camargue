@@ -110,8 +110,6 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
     if (!silent)
         cout << "\nRound " << round << "\n";
 
-    int num_rows = core_lp.num_rows();
-
     try {
         piv = core_lp.primal_pivot();
         Sep::ptr_reset(sep, graph_data, best_data, supp_data, karp_part, TG);

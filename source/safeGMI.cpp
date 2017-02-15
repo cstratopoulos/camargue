@@ -37,7 +37,7 @@ namespace Sep {
  * Get density of the cut \p r as a ratio of the number of nonzeros in \p r
  * to the number of columsn \p numcols in the LP.
  */
-inline static double density(const Sep::SparseRow &r, const int numcols)
+inline static double density(const LP::SparseRow &r, const int numcols)
 {
     return (double) r.rmatind.size() / numcols;
 }
@@ -104,7 +104,7 @@ bool SafeGomory::find_cuts()
         return false;
     }
 
-    using SparseRow = Sep::SparseRow;
+    using SparseRow = LP::SparseRow;
     vector<SparseRow> primal_found;
 
     int p_found = 0;
