@@ -202,9 +202,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                 if (frac_recover() == PivType::Tour) {
                     piv = PivType::Tour;
                     report_aug(false);
-                    cout << "Round " << round << endl;
                     TG = Graph::TourGraph(tour_edges, edges, perm);
-                    cout << "Reset TG " << endl;
 
                     continue;
                 }
