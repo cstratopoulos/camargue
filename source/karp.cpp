@@ -24,8 +24,9 @@ KarpPartition::KarpPartition(const Instance &inst) try
     int norm = inst.ptr()->norm;
     bool dummy_part = false;
 
-    if (ncount < 500) {
-        cout << "Problem less than 500 nodes, using trivial Karp partition.\n";
+    if (ncount < 400) {
+        cout << "Problem less than 400 nodes, using trivial Karp partition.\n";
+        dummy_part = true;
     }
 
     if (!dummy_part)
@@ -33,7 +34,7 @@ KarpPartition::KarpPartition(const Instance &inst) try
             dummy_part = true;
             cout << "Incompatible norm, using trivial Karp partition.\n";
         }
-    
+
     if (dummy_part) {
         part_list.resize(1);
         part_list[0].resize(ncount);
@@ -41,12 +42,12 @@ KarpPartition::KarpPartition(const Instance &inst) try
             part_list[0][i] = i;
         return;
     }
-  
+
     CCsubdiv *subdiv_list = nullptr;
     int **part_matrix = nullptr;
     CCrandstate rstate;
     int partcount = 0;
-   
+
     auto cleanup = util::make_guard([&subdiv_list, &part_matrix, &partcount] {
         CC_IFFREE(subdiv_list, CCsubdiv);
         if (part_matrix) {
