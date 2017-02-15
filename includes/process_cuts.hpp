@@ -29,10 +29,6 @@ public:
     /** Construct a CutQueue with capacity \p cap. */
     CutQueue(const int cap) : q_cap(cap) {}
 
-    CutQueue(CutQueue &&CQ) noexcept = default;
-
-    CutQueue &operator=(CutQueue &&CQ) noexcept = default;
-
     int q_capacity() const { return q_cap; }
 
     /** A reference to the most recently added cut. */
