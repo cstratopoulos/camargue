@@ -153,12 +153,11 @@ SCENARIO ("Benchmarking rounds of cuts",
                     double pval = core.get_objval();
                     cout << "\tFirst pivot val: " << pval << "\n";
 
-                    Data::SupportGroup s_dat;
                     int ncount = inst.node_count();
 
-                    s_dat.reset(ncount,
-                                g_dat.core_graph.get_edges(), pivx,
-                                g_dat.island);
+                    Data::SupportGroup s_dat(g_dat.core_graph.get_edges(),
+                                             pivx, g_dat.island,
+                                             ncount);
 
                     Graph::TourGraph TG(b_dat.best_tour_edges,
                                         g_dat.core_graph.
@@ -182,8 +181,9 @@ SCENARIO ("Benchmarking rounds of cuts",
                              << "\tStat " << piv << "\n";
                         pivx = newx;
                         pval = newpiv;
-                        s_dat.reset(ncount, g_dat.core_graph.get_edges(), pivx,
-                                    g_dat.island);
+                        s_dat = Data::SupportGroup(g_dat.core_graph.get_edges(),
+                                                   pivx, g_dat.island,
+                                                   ncount);
                         sep = (util::make_unique<Sep::Separator>(g_dat,
                                                                     b_dat,
                                                                     s_dat,
@@ -206,13 +206,12 @@ SCENARIO ("Benchmarking rounds of cuts",
                              << "\tStat " << piv << "\n";
                         pivx = newx;
                         pval = newpiv;
-                        s_dat.reset(ncount, g_dat.core_graph.get_edges(), pivx,
-                                    g_dat.island);
-                        sep = (util::make_unique<Sep::Separator>(g_dat,
-                                                                    b_dat,
-                                                                    s_dat,
-                                                                    kpart,
-                                                                    TG));
+                        s_dat = Data::SupportGroup(g_dat.core_graph.get_edges(),
+                                                   pivx, g_dat.island,
+                                                   ncount);
+                        sep = util::make_unique<Sep::Separator>(g_dat, b_dat,
+                                                                s_dat, kpart,
+                                                                TG);
                     }
 
                     if (sep->blkcomb_sep()) {
@@ -228,13 +227,12 @@ SCENARIO ("Benchmarking rounds of cuts",
                              << "\tStat " << piv << "\n";
                         pivx = newx;
                         pval = newpiv;
-                        s_dat.reset(ncount, g_dat.core_graph.get_edges(), pivx,
-                                    g_dat.island);
-                        sep = (util::make_unique<Sep::Separator>(g_dat,
-                                                                    b_dat,
-                                                                    s_dat,
-                                                                    kpart,
-                                                                    TG));
+                        s_dat = Data::SupportGroup(g_dat.core_graph.get_edges(),
+                                                   pivx, g_dat.island,
+                                                   ncount);
+                        sep = util::make_unique<Sep::Separator>(g_dat, b_dat,
+                                                                s_dat, kpart,
+                                                                TG);
                     }
             }
         }
@@ -273,11 +271,10 @@ SCENARIO ("Performing single pivots",
                             REQUIRE(core.get_objval() == tourlen);
                             REQUIRE(tourx == core.lp_vec());
 
-                            Data::SupportGroup s_dat;
-
-                            s_dat.reset(inst.node_count(),
-                                        g_dat.core_graph.get_edges(), pivx,
-                                        g_dat.island);
+                            Data::SupportGroup s_dat(g_dat.core_graph
+                                                     .get_edges(), pivx,
+                                                     g_dat.island,
+                                                     inst.node_count());
 
                             Graph::TourGraph TG(b_dat.best_tour_edges,
                                                      g_dat.core_graph.

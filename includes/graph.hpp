@@ -20,35 +20,6 @@ extern "C" {
 
 namespace CMR {
 
-struct s_adjobj {
-  int other_end;
-  int edge_index;
-  double lp_weight;
-};
-
-struct SNode {
-  int s_degree;
-  s_adjobj *adj_objs;
-  int mark;
-};
-
-struct SupportGraph {
-  SupportGraph() :
-    node_count(0), edge_count(0), nodelist((SNode *) NULL),
-    adjspace((s_adjobj *) NULL) {}
-
-  ~SupportGraph(){
-    if(nodelist) free(nodelist);
-    if(adjspace) free(adjspace); 
-  }
-
-  
-  int node_count;
-  int edge_count;
-  SNode *nodelist;
-  s_adjobj *adjspace;
-};
-
 /// Classes and functions for working with graphs.
 namespace Graph {
 
@@ -96,39 +67,6 @@ private:
   std::vector<double> d_tour;
   CCtsp_lpgraph L;
 };
-
-int connected (SupportGraph *G, int *icount,
-	       std::vector<int> &island, int starting_node);
-void dfs (int n, SupportGraph *G, int *icount,
-	  std::vector<int> &island);
-
-//TODO get rid of all the versions that need island/deltacount, etc. 
-std::vector<int> delta_inds(const std::vector<int> &node_list,
-                            const std::vector<Edge> &edges,
-                            int ncount);
-
-void get_delta (const std::vector<int> &nodelist, std::vector<Edge> &elist,
-		int *deltacount_p, std::vector<int> &delta,
-		std::vector<int> &marks);
-
-void get_delta (int nsize, int *nlist, int ecount, int *elist,
-		int *deltacount, int *delta, int *node_marks);
-
-void get_delta (const int interval_start, const int interval_end,
-		const std::vector<int> &tour_nodes,
-		const std::vector<int> &elist,
-		int &deltacount,  std::vector<int> &delta,
-		std::vector<int> &node_marks);
-
-//TODO: This should just be a member function of SupportGraph
-int build_s_graph (int node_count,
-		   const std::vector<Edge> &edges,
-		   const std::vector<int> &support_indices,
-		   const std::vector<double> &m_lp_edges,
-		   SupportGraph *G_s);
-}
-
-namespace Graph {
 
 struct AdjObj {
     AdjObj() = default;
@@ -235,6 +173,25 @@ private:
     AdjList adj_list;
     int nodecount;
 };
+
+//TODO get rid of all the versions that need island/deltacount, etc. 
+std::vector<int> delta_inds(const std::vector<int> &node_list,
+                            const std::vector<Edge> &edges,
+                            int ncount);
+
+void get_delta (const std::vector<int> &nodelist, std::vector<Edge> &elist,
+		int *deltacount_p, std::vector<int> &delta,
+		std::vector<int> &marks);
+
+void get_delta (int nsize, int *nlist, int ecount, int *elist,
+		int *deltacount, int *delta, int *node_marks);
+
+void get_delta (const int interval_start, const int interval_end,
+		const std::vector<int> &tour_nodes,
+		const std::vector<int> &elist,
+		int &deltacount,  std::vector<int> &delta,
+		std::vector<int> &node_marks);
+
 
 
 ///////////////// TEMPLATE METHOD IMPLEMENTATIONS /////////////////////////////

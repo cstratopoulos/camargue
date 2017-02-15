@@ -122,7 +122,6 @@ struct BestGroup {
   double min_tour_value;
 };
 
-namespace v2 {
 struct SupportGroup {
     SupportGroup() = default;
     
@@ -148,37 +147,6 @@ struct SupportGroup {
     
     bool connected;
     bool integral;
-};
-
-}
-
-/* 
- * SupportGroup is the structure responsible for managing a support graph
- * and the information about the associated LP solution
- */
-struct SupportGroup  {
-    void reset(const int node_count, const std::vector<Graph::Edge> &edges,
-               const std::vector<double> &lp_x,
-               std::vector<int> &island);
-    
-    /*
-     * G_s - a graph whose edges are the edges from GraphGroup::m_graph
-     *     for which the corresponding entry of m_lp_edges is nonnegative
-     * support_indices - a list of the nonnegative edge indices
-     * support_elist - the edges in support_indices, in node node format
-     * support_ecap - the value assigned to the edges in support_elist in the
-     *    current LP solution
-     */
-    SupportGraph G_s;
-    std::vector<int> support_indices;
-    std::vector<int> support_elist;
-    std::vector<double> support_ecap;
-    std::vector<double> lp_vec;
-
-    bool connected;
-    bool integral;
-
-    bool in_subtour_poly();
 };
 
 /** Load just enough Data to test cut separation routines.

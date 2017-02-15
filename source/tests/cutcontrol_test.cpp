@@ -107,10 +107,9 @@ SCENARIO ("Pivoting and adding cuts",
 
                     vector<double> piv1 = core.lp_vec();
 
-                    Data::SupportGroup s_dat;
-                    s_dat.reset(inst.node_count(),
-                                g_dat.core_graph.get_edges(), piv1,
-                                g_dat.island);
+                    Data::SupportGroup s_dat(g_dat.core_graph.get_edges(),
+                                             piv1, g_dat.island,
+                                             inst.node_count());
 
                     Graph::TourGraph TG(b_dat.best_tour_edges,
                                       g_dat.core_graph.get_edges(),

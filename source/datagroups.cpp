@@ -360,8 +360,6 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
     throw runtime_error("BestGroup file constructor failed.");
 }
 
-namespace v2 {
-
 SupportGroup::SupportGroup(const vector<Graph::Edge> &edges,
                            const vector<double> &lp_x,
                            std::vector<int> &island,
@@ -421,59 +419,6 @@ bool SupportGroup::in_subtour_poly()
     if (CCcut_mincut(supp_graph.node_count, support_ecap.size(),
                      &support_elist[0], &support_ecap[0], &cutval, NULL, NULL))
         throw runtime_error("CCcut_mincut failed running in_subtour_poly");
-
-    return cutval > rhs;
-}
-
-}
-
-void SupportGroup::reset(const int ncount, const vector<Graph::Edge> &edges,
-                         const vector<double> &lp_x,
-                         vector<int> &island)
-{
-    runtime_error err("Problem in SupportGroup::reset.");
-    
-    support_indices.clear();
-    support_elist.clear();
-    support_ecap.clear();
-
-    lp_vec = lp_x;
-
-    integral = true;
-
-    try {
-        for (int i = 0; i < lp_x.size(); ++i)
-            if (lp_x[i] >= CMR::Epsilon::Zero) {
-                support_indices.push_back(i);
-                support_ecap.push_back(lp_x[i]);
-                support_elist.push_back(edges[i].end[0]);
-                support_elist.push_back(edges[i].end[1]);
-
-                if (lp_x[i] <= 1 - CMR::Epsilon::Zero)
-                    integral = false;
-            }
-    } CMR_CATCH_PRINT_THROW("pushing back new support data", err);
-
-    if (CMR::Graph::build_s_graph(ncount, edges, support_indices, lp_x,
-                                       &G_s))
-        throw err;
-
-    int icount = 0;
-    connected = CMR::Graph::connected(&G_s, &icount, island, 0);
-}
-
-bool SupportGroup::in_subtour_poly()
-{
-    if (!connected)
-        return false;
-
-    double cutval = 2;
-    double rhs = 2.0 - CMR::Epsilon::Cut;
-
-    if (CCcut_mincut(G_s.node_count, support_ecap.size(),
-                     &support_elist[0], &support_ecap[0], &cutval,
-                     NULL, NULL))
-        throw runtime_error("CCcut_mincut failed in in_subtour_poly.");
 
     return cutval > rhs;
 }

@@ -13,40 +13,6 @@ using std::exception;
 
 namespace CMR {
 
-int Graph::connected(SupportGraph *G, int *icount,
-			  std::vector<int> &island,
-			  int starting_node) {
-  *icount = 0;
-  for (int i = 0; i < G->node_count; i++)
-    G->nodelist[i].mark = 0;
-
-  dfs(starting_node, G, icount, island);
-
-  if (*icount == G->node_count)
-    return 1;
-  else
-    return 0;
-}
-
-void Graph::dfs(int n, SupportGraph *G, int *icount,
-		     std::vector<int> &island)
-{
-  int neighbor;
-  SNode *pn;
-
-  island[*icount] = n;
-  (*icount)++;
-
-  pn = &G->nodelist[n];
-  pn->mark = 1;
-
-  for (int i = 0; i < pn->s_degree; i++) {
-    neighbor = pn->adj_objs[i].other_end;
-    if (G->nodelist[neighbor].mark == 0)
-      dfs(neighbor, G, icount, island);
-  }
-}
-
 void Graph::get_delta (const std::vector<int> &nodelist,
                        std::vector<Graph::Edge> &elist,
 			    int *deltacount_p, std::vector<int> &delta,
@@ -100,63 +66,6 @@ void Graph::get_delta(const int interval_start, const int interval_end,
 
   for (int i = interval_start; i <= interval_end; i++)
     node_marks[tour_nodes[i]] = 0;  
-}
-
-int Graph::build_s_graph (int node_count,
-                          const vector<Graph::Edge> &edges,
-			       const vector<int> &support_indices,
-			       const vector<double> &m_lp_edges,
-                               SupportGraph *G_s)
-{
-  int i, ind, a, b;
-  SNode *n;
-  s_adjobj *p;
-  int edge_count = support_indices.size();
-
-  if (G_s->nodelist) free(G_s->nodelist);
-  if (G_s->adjspace) free(G_s->adjspace);
-  G_s->nodelist = (SNode *) malloc(node_count * sizeof(SNode));
-  G_s->adjspace = (s_adjobj *) malloc(2 * edge_count * sizeof(SNode));
-  if (!G_s->nodelist || !G_s->adjspace) {
-    fprintf(stderr, "Out of memory for support nodelist or adjspace\n");
-    return 1;
-  }
-
-  for (i = 0; i < node_count; i++)
-    G_s->nodelist[i].s_degree = 0;
-
-  for (i = 0; i < edge_count; i++) {
-    ind = support_indices[i];
-    a = edges[ind].end[0]; b = edges[ind].end[1];
-    G_s->nodelist[a].s_degree++;
-    G_s->nodelist[b].s_degree++;
-  }
-
-  p = G_s->adjspace;
-  for (i = 0; i < node_count; i++) {
-    G_s->nodelist[i].adj_objs = p;
-    p += G_s->nodelist[i].s_degree;
-    G_s->nodelist[i].s_degree = 0;
-  }
-
-  for (i = 0; i < edge_count; i++) {
-    ind = support_indices[i];
-    a = edges[ind].end[0]; b = edges[ind].end[1];
-    n = &G_s->nodelist[a];
-    n->adj_objs[n->s_degree].other_end = b;
-    n->adj_objs[n->s_degree].edge_index = ind;
-    n->adj_objs[n->s_degree].lp_weight = m_lp_edges[ind];
-    n->s_degree++;
-    n = &G_s->nodelist[b];
-    n->adj_objs[n->s_degree].other_end = a;
-    n->adj_objs[n->s_degree].edge_index = ind;
-    n->adj_objs[n->s_degree].lp_weight = m_lp_edges[ind];
-    n->s_degree++;
-  }
-
-  G_s->node_count = node_count; G_s->edge_count = edge_count;
-
-  return 0;
 }
 
 namespace Graph {

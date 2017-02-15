@@ -80,7 +80,7 @@ private:
                    std::vector<int> &_node_marks,
                    std::vector<int> &_tour_nodes,
                    std::vector<int> &_perm,
-                   CMR::SupportGraph &_G_s) :
+                   const Graph::AdjList &_G_s) :
           light_teeth(_light_teeth),
           adj_zones(_adj_zones), ranges(_ranges), list_sizes(_list_sizes),
           node_marks(_node_marks),
@@ -95,9 +95,10 @@ private:
       std::vector<std::array<int, 3>> &list_sizes;
 
       std::vector<int> &node_marks;
-      std::vector<int> &tour_nodes, &perm;
+      std::vector<int> &tour_nodes;
+      std::vector<int> &perm;
 
-      CMR::SupportGraph &G_s;
+      const Graph::AdjList &G_s;
 
       ToothBody old_seg;
     

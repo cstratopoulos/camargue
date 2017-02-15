@@ -48,10 +48,7 @@ void make_cut_test(const string &tsp_fname,
 
     try {
         inst = Instance(tsp_fname, 99);
-    } catch (const exception &e) {
-        cerr << e.what() << "\n";
-        throw err;
-    }
+    } CMR_CATCH_PRINT_THROW("getting Instance", err);
 
     int ncount = inst.node_count();
     Graph::CoreGraph &core_graph = graph_data.core_graph;
@@ -62,17 +59,16 @@ void make_cut_test(const string &tsp_fname,
         graph_data.island.resize(ncount);
         graph_data.node_marks.resize(ncount, 0);
         best_data.perm.resize(ncount);
-    } catch (const exception &e) {
-        cerr << e.what() << " trying ncount resizes\n";
-        throw err;
-    }
+    }  CMR_CATCH_PRINT_THROW("doing ncount resizes", err);
+
+    vector<int> sup_elist;
+    vector<double> sup_ecap;
 
     try {
         util::get_tour_nodes(ncount, best_data.best_tour_nodes,
                              tour_nodes_fname);
-        util::get_lp_sol(ncount, supp_data.support_elist,
-                         supp_data.support_ecap, lp_sol_fname);
-    } catch (const exception &e) { cerr << e.what() << "\n"; throw err; }
+        util::get_lp_sol(ncount, sup_elist, sup_ecap, lp_sol_fname);
+    } CMR_CATCH_PRINT_THROW("getting data from file", err);
 
     vector<int> &delta = graph_data.delta;
     vector<int> &best_tour_edges = best_data.best_tour_edges;
@@ -88,9 +84,6 @@ void make_cut_test(const string &tsp_fname,
   
     for (int i = 0; i < ncount; ++i)
         best_data.perm[best_data.best_tour_nodes[i]] = i;
-
-    vector<int> &sup_elist = supp_data.support_elist;
-    vector<double> &sup_ecap = supp_data.support_ecap;
     
     for (int i = 0; i < sup_ecap.size(); ++i) {
         int e0 = sup_elist[2 * i];
@@ -113,8 +106,9 @@ void make_cut_test(const string &tsp_fname,
     }
 
     try {
-        supp_data.reset(core_graph.node_count(), core_graph.get_edges(),
-                        lp_edges, graph_data.island);
+        supp_data = Data::SupportGroup(core_graph.get_edges(),
+                                       lp_edges, graph_data.island,
+                                       core_graph.node_count());
     } CMR_CATCH_PRINT_THROW("resetting support data", err);
 }
 

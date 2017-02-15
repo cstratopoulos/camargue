@@ -56,7 +56,7 @@ TEST_CASE("New tiny candidate teeth with no elim",
             REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile, subtourfile,
                                                      g_dat, b_dat, lp_edges,
                                                      s_dat));
-            int ncount = s_dat.G_s.node_count;
+            int ncount = s_dat.supp_graph.node_count;
       
             cout << "Best tour:\n";
             for (int i : b_dat.best_tour_nodes) cout << " " << i << ", ";
@@ -101,7 +101,7 @@ TEST_CASE("New candidate teeth with elim",
             REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile, subtourfile,
                                                 g_dat, b_dat, lp_edges,
                                                 s_dat));
-            int ncount = s_dat.G_s.node_count;
+            int ncount = s_dat.supp_graph.node_count;
 
             Sep::CandidateTeeth cands(g_dat, b_dat, s_dat);
 
@@ -182,7 +182,7 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
             REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile, subtourfile,
                                                 g_dat, b_dat, lp_edges,
                                                 s_dat));
-            SupportGraph &G_s = s_dat.G_s;
+            Graph::AdjList &G_s = s_dat.supp_graph;
             int max_deg = 0;
             Sep::CandidateTeeth cands(g_dat, b_dat, s_dat);
             int ncount = g_dat.core_graph.node_count();
@@ -191,16 +191,16 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
                 cout << "Best tour:\n";
                 for (int i : b_dat.best_tour_nodes) {
                     cout << " " << i << ", "; 
-                    if (G_s.nodelist[i].s_degree > max_deg)
-                        max_deg = G_s.nodelist[i].s_degree;
+                    if (G_s.nodelist[i].degree() > max_deg)
+                        max_deg = G_s.nodelist[i].degree();
                 }
                 cout << "\n";
 
                 for (int acc = 0; acc < max_deg; ++acc) {
                     for (int i : b_dat.best_tour_nodes) {
-                        if (acc < G_s.nodelist[i].s_degree)
+                        if (acc < G_s.nodelist[i].degree())
                             cout <<  " "
-                                 << G_s.nodelist[i].adj_objs[acc].other_end
+                                 << G_s.nodelist[i].neighbors[acc].other_end
                                  << "  ";
                         else
                             cout << "    ";
@@ -245,11 +245,11 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
                                                                 seg2);
                         bool brute_equiv = true;
                         int actual_vx = tour[root];
-                        SNode vx = G_s.nodelist[actual_vx];
+                        Graph::Node vx = G_s.nodelist[actual_vx];
 
                         int d = 0, end1 = -1;
-                        for (d = 0; d < vx.s_degree; ++d) {
-                            end1 = perm[vx.adj_objs[d].other_end];
+                        for (d = 0; d < vx.degree(); ++d) {
+                            end1 = perm[vx.neighbors[d].other_end];
                             if (seg1.contains(end1) != seg2.contains(end1)) {
                                 brute_equiv = false;
                                 break;
@@ -275,7 +275,7 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
                             cout << "Found disagreement with end index "
                                  << end1
                                  << ", actual: "
-                                 << vx.adj_objs[d].other_end << "\n";
+                                 << vx.neighbors[d].other_end << "\n";
                             cout << "seg1 contains: "
                                  << seg1.contains(end1) << ", seg 2: "
                                  << seg2.contains(end1) << "\n";
