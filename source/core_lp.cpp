@@ -416,6 +416,54 @@ void CoreLP::add_cuts(const Sep::CutQueue<Sep::SparseRow> &gmi_q)
     }
 }
 
+void CoreLP::add_cuts(const Sep::CutQueue<Sep::ex_blossom> &ex2m_q)
+{
+    if (ex2m_q.empty())
+        return;
+
+    runtime_error err("Problem in CoreLP::add_cuts(Sep::ex_blossom)");
+
+    Sep::CutTranslate translator(graph_data);    
+    int ncount = graph_data.core_graph.node_count();
+
+    for (Sep::CutQueue<Sep::ex_blossom>::ConstItr it = ex2m_q.begin();
+         it != ex2m_q.end(); ++it) {
+        const Sep::ex_blossom &B = *it;
+        const vector<int> &handle_nodes = B.handle;
+        const vector<Graph::Edge> &edges = graph_data.core_graph.get_edges();
+
+        vector<int> handle_delta;
+        vector<int> tooth_inds;
+        vector<vector<int>> tooth_edges;
+
+        try {
+            handle_delta = Graph::delta_inds(handle_nodes, edges, ncount);
+            tooth_inds = Sep::teeth_inds(B, best_data.best_tour_edges,
+                                         lp_edges, edges, ncount,
+                                         handle_delta);
+            for (int ind : tooth_inds) {
+                const Graph::Edge &e = edges[ind];
+                tooth_edges.emplace_back(vector<int>{e.end[0], e.end[1]});
+            }
+        } CMR_CATCH_PRINT_THROW("getting deltas/teeth", err);
+
+        vector<int> rmatind;
+        vector<double> rmatval;
+        char sense;
+        double rhs;
+
+        try {
+            translator.get_sparse_row(handle_delta, tooth_edges, rmatind,
+                                      rmatval, sense, rhs);
+        } CMR_CATCH_PRINT_THROW("getting sparse row", err);
+
+        try {
+            add_cut(rhs, sense, rmatind, rmatval);
+            ext_cuts.add_cut(handle_nodes, tooth_edges);
+        } CMR_CATCH_PRINT_THROW("adding cuts", err);
+    }
+}
+
 void CoreLP::add_edges(const vector<Graph::Edge> &batch)
 {
     runtime_error err("Problem in CoreLP::add_edges");
