@@ -68,6 +68,8 @@ public:
     void get_row(int row, std::vector<int> &rmatind,
                  std::vector<double> &rmatval) const;
 
+    SparseRow get_row(int row) const;
+
     /// Feasibility status of a given solution.
     void get_row_infeas(const std::vector<double> &x,
                         std::vector<double> &feas_stat, int begin,

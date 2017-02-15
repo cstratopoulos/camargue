@@ -396,6 +396,13 @@ void Relaxation::get_row(const int row, vector<int> &rmatind,
         throw cpx_err(rval, "CPXgetrows actual");
 }
 
+SparseRow Relaxation::get_row(int row) const
+{
+    SparseRow R;
+    get_row(row, R.rmatind, R.rmatval);
+    return R;
+}
+
 void Relaxation::new_row(const char sense, const double rhs)
 {
     int rval = CPXnewrows(simpl_p->env, simpl_p->lp, 1, &rhs, &sense, NULL,
