@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** @file                
- * @brief DATA GROUP STRUCTURE DEFINITIONS
+ * @brief Data group structures. 
  * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -121,6 +121,36 @@ struct BestGroup {
 
   double min_tour_value;
 };
+
+namespace v2 {
+struct SupportGroup {
+    SupportGroup() = default;
+    
+    SupportGroup(const std::vector<Graph::Edge> &edges,
+                 const std::vector<double> &lp_x,
+                 std::vector<int> &island,
+                 int ncount);
+
+    SupportGroup(SupportGroup &&SG) noexcept;
+
+    SupportGroup &operator=(SupportGroup &&SG) noexcept;
+
+    
+
+    bool in_subtour_poly();
+
+    std::vector<double> lp_vec;
+    std::vector<int> support_indices;
+    std::vector<int> support_elist;
+    std::vector<double> support_ecap;
+    
+    Graph::AdjList supp_graph;
+    
+    bool connected;
+    bool integral;
+};
+
+}
 
 /* 
  * SupportGroup is the structure responsible for managing a support graph

@@ -37,6 +37,9 @@ using std::runtime_error;
 using std::logic_error;
 
 namespace CMR {
+
+namespace Eps = Epsilon;
+
 namespace Data {
 
 Instance::Instance() noexcept { CCutil_init_datagroup(&dat); }
@@ -355,6 +358,73 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("BestGroup file constructor failed.");
+}
+
+namespace v2 {
+
+SupportGroup::SupportGroup(const vector<Graph::Edge> &edges,
+                           const vector<double> &lp_x,
+                           std::vector<int> &island,
+                           int ncount)
+try : lp_vec(lp_x)
+{
+    integral = true;
+    
+    for (int i = 0; i < lp_vec.size(); ++i)
+        if (lp_vec[i] >= Eps::Zero) {
+            support_indices.push_back(i);
+            support_ecap.push_back(lp_vec[i]);
+            support_elist.push_back(edges[i].end[0]);
+            support_elist.push_back(edges[i].end[1]);
+
+            if (lp_vec[i] <= 1 - Eps::Zero)
+                integral = false;
+        }
+
+    supp_graph = Graph::AdjList(ncount, edges, lp_x, support_indices);
+    connected = supp_graph.connected(island, 0);
+
+    
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("SupportGroup constructor failed.\n");
+}
+
+SupportGroup::SupportGroup(SupportGroup &&SG) noexcept
+    : lp_vec(std::move(SG.lp_vec)),
+      support_indices(std::move(SG.support_indices)),
+      support_elist(std::move(SG.support_elist)),
+      support_ecap(std::move(SG.support_ecap)),
+      supp_graph(std::move(SG.supp_graph)),
+      connected(SG.connected), integral(SG.integral)
+{}
+
+SupportGroup &SupportGroup::operator=(SupportGroup &&SG) noexcept
+{
+    lp_vec = std::move(SG.lp_vec);
+    support_indices = std::move(SG.support_indices);
+    support_elist = std::move(SG.support_elist);
+    support_ecap = std::move(SG.support_ecap);
+    supp_graph = std::move(SG.supp_graph);
+
+    return *this;
+}
+
+bool SupportGroup::in_subtour_poly()
+{
+    if (!connected)
+        return false;
+
+    double cutval = 2.0;
+    double rhs = 2.0 - Eps::Cut;
+
+    if (CCcut_mincut(supp_graph.node_count, support_ecap.size(),
+                     &support_elist[0], &support_ecap[0], &cutval, NULL, NULL))
+        throw runtime_error("CCcut_mincut failed running in_subtour_poly");
+
+    return cutval > rhs;
+}
+
 }
 
 void SupportGroup::reset(const int ncount, const vector<Graph::Edge> &edges,
