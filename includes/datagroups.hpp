@@ -143,6 +143,7 @@ struct SupportGroup  {
     std::vector<int> support_indices;
     std::vector<int> support_elist;
     std::vector<double> support_ecap;
+    std::vector<double> lp_vec;
 
     bool connected;
     bool integral;

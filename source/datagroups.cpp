@@ -367,6 +367,8 @@ void SupportGroup::reset(const int ncount, const vector<Graph::Edge> &edges,
     support_elist.clear();
     support_ecap.clear();
 
+    lp_vec = lp_x;
+
     integral = true;
 
     try {
