@@ -147,14 +147,14 @@ PivType CoreLP::primal_pivot()
         get_base(tour_base.colstat, tour_base.rowstat);
     } CMR_CATCH_PRINT_THROW("getting base before pivoting", err);
 
+    vector<int> dfs_island;
+
     try {
-        nondegen_pivot(low_limit);
-        
+        nondegen_pivot(low_limit);        
         get_x(lp_edges);
-        
-        supp_data.reset(core_graph.node_count(), core_graph.get_edges(),
-                        lp_edges, graph_data.island);
-        
+        supp_data = Data::SupportGroup(core_graph.get_edges(),
+                                       lp_edges, dfs_island,
+                                       core_graph.node_count());        
     } CMR_CATCH_PRINT_THROW("pivoting and setting x", err);
 
     ++num_nd_pivots;
@@ -180,7 +180,7 @@ PivType CoreLP::primal_pivot()
 
     if (result == PivType::Tour) {
         try {
-            handle_aug_pivot();
+            handle_aug_pivot(dfs_island);
         } CMR_CATCH_PRINT_THROW("handling augmentation", err);
     }
 
@@ -199,11 +199,11 @@ void CoreLP::pivot_back()
     }
 }
 
-void CoreLP::handle_aug_pivot()
+void CoreLP::handle_aug_pivot(const std::vector<int> &tour_nodes)
 {
     runtime_error err("Problem in CoreLP::handle_aug_pivot");
     
-    best_data.best_tour_nodes = graph_data.island;
+    best_data.best_tour_nodes = tour_nodes;
     tour_base.best_tour_edges = lp_edges;
 
     for (int i = 0; i < lp_edges.size(); ++i)

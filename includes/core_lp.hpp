@@ -68,10 +68,12 @@ public:
     friend class CMR::Solver;
 
 private:
-    void handle_aug_pivot();
+    void handle_aug_pivot(const std::vector<int> &tour_nodes);
     void set_best_tour(const std::vector<int> &tour_nodes);
 
-    void update_best_data();
+    //// TODO make this a bestgroup method that takes tour nodes, edges,
+    /// and coregraph edges
+    void update_best_data(); 
 
     void prune_slacks();
 
