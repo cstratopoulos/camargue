@@ -111,11 +111,12 @@ SCENARIO ("Comparing pivot protocols with round of cuts",
                     data[start_ind++] = deg_piv_t;
                     data[start_ind++] = deg_piv_val;
 
+                    Data::SupportGroup s_dat;
                     int ncount = inst.node_count();
                     auto piv_x = core.lp_vec();
 
-                    Data::SupportGroup s_dat(g_dat.core_graph.get_edges(),
-                                             piv_x, g_dat.island, ncount);
+                    s_dat.reset(ncount, g_dat.core_graph.get_edges(), piv_x,
+                                g_dat.island);
 
                     Graph::TourGraph TG(b_dat.best_tour_edges,
                                         g_dat.core_graph.get_edges(),
