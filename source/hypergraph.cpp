@@ -72,6 +72,30 @@ HyperGraph::HyperGraph(CliqueBank &bank, ToothBank &tbank,
     throw runtime_error("HyperGraph dominoparity constructor failed.");
 }
 
+/**
+ * Constructs a HyperGraph from the handle nodes and edge teeth nodes of an
+ * exact primal blossom inequality.
+ * @param[in] bank the source CliqueBank.
+ * @param[in] blossom_handle the handle of the blossom inequality;
+ * @param[in] tooth_edges a vector of vectors of length two, consisting of
+ * the end points of edges which are the blossom teeth.
+ */
+HyperGraph::HyperGraph(CliqueBank &bank,
+                       const vector<int> &blossom_handle,
+                       const vector<vector<int>> &tooth_edges) try
+    : sense('G'), rhs ((3 * tooth_edges.size()) + 1), source_bank(&bank),
+      source_toothbank(nullptr)
+{
+    vector<int> handle(blossom_handle);
+    cliques.push_back(source_bank->add_clique(handle));
+    
+    for (vector<int> tooth_edge : tooth_edges)
+        cliques.push_back(source_bank->add_clique(tooth_edge));
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("HyperGraph ex_blossom constructor failed.");
+}
+
 HyperGraph::~HyperGraph()
 {
     if (source_bank != nullptr)
@@ -204,6 +228,17 @@ void ExternalCuts::add_cut(const dominoparity &dp_cut, const double rhs,
                            const vector<int> &current_tour)
 {
     cuts.emplace_back(clique_bank, tooth_bank, dp_cut, rhs, current_tour);
+}
+
+/**
+ * @param[in] blossom_handle the handle of the blossom inequality;
+ * @param[in] tooth_edges a vector of vectors of length two, consisting of
+ * the end points of edges which are the blossom teeth.
+ */
+void ExternalCuts::add_cut(const vector<int> &blossom_handle,
+                           const vector<vector<int>> &tooth_edges)
+{
+    cuts.emplace_back(clique_bank, blossom_handle, tooth_edges);
 }
 
 /**

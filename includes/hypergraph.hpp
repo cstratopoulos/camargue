@@ -30,8 +30,13 @@ public:
 
     /// Construct a HyperGraph from a simple tooth inequality.
     HyperGraph(CliqueBank &bank, ToothBank &tbank,
-               const dominoparity &dp_cut, const double _rhs,
+               const dominoparity &dp_cut, double _rhs,
                const std::vector<int> &tour);
+
+    /// Construct a HyperGraph from ex_blossom handle/tooth indices
+    HyperGraph(CliqueBank &bank,
+               const std::vector<int> &blossom_handle,
+               const std::vector<std::vector<int>> &tooth_edges);
 
     ~HyperGraph(); //!< Destruct and decrement/delete Clique/Tooth refs.
 
@@ -105,6 +110,10 @@ public:
     /// Add a simple DP cut.
     void add_cut(const dominoparity &dp_cut, const double rhs,
                  const std::vector<int> &current_tour);
+
+    /// Add an ex_blossom cut
+    void add_cut(const std::vector<int> &blossom_handle,
+                 const std::vector<std::vector<int>> &tooth_edges);
 
     /// Add a Non HyperGraph cut.
     void add_cut();
