@@ -46,20 +46,20 @@ Instance::Instance() noexcept { CCutil_init_datagroup(&dat); }
 
 
 /**
- * @param[in] fname a path to a TSPLIB file specified from the executable 
+ * @param[in] fname a path to a TSPLIB file specified from the executable
  * directory.
  * @param[in] seed the random seed to be used throughout.
  */
 Instance::Instance(const string &fname, const int seed)
 try : random_seed(seed) {
     CCutil_init_datagroup(&dat);
-    
+
     if (CCutil_gettsplib(const_cast<char*>(fname.c_str()), &nodecount,
                          ptr()))
         throw runtime_error("CCutil_gettsplib failed.");
-    
-    cout << "Random seed " << seed << "\n";
-    
+
+    cout << "Random seed " << seed << endl;
+
     pname = fname.substr(fname.find_last_of("/") + 1);
     pname = pname.substr(0, pname.find_last_of("."));
 
@@ -71,7 +71,7 @@ try : random_seed(seed) {
 }
 
 /**
- * @param[in] seed the random seed used to generate the problem, and for all 
+ * @param[in] seed the random seed used to generate the problem, and for all
  * other later random computations.
  * @param[in] ncount the number of nodes in the problem
  * @param[in] gridsize the nodes will be generated from a square grid with this
@@ -82,10 +82,10 @@ try : nodecount(ncount), random_seed(seed),
       pname("r" + to_string(ncount) + "g" + to_string(gridsize)) {
   if (ncount <= 2)
       throw logic_error("Specified bad ncount.");
-  
+
   if (gridsize <= 0)
       throw logic_error("Specified bad gridsize.");
-    
+
   CCrandstate rstate;
   int allow_dups = 1;
   int binary_in = 0;
@@ -96,15 +96,15 @@ try : nodecount(ncount), random_seed(seed),
   CCutil_sprand(seed, &rstate);
 
   CCutil_init_datagroup(&dat);
-  
+
   if (CCutil_getdata((char *) NULL, binary_in, CC_EUCLIDEAN,
 		    &tmp_ncount, ptr(), tmp_gridsize, allow_dups, &rstate))
     throw runtime_error("CCutil_getdata failed.");
 
   cout << std::fixed;
 
-  
-  cout << "Random problem, random seed " << seed << "\n";
+
+  cout << "Random problem, random seed " << seed << endl;
 } catch (const exception &e) {
   cerr << e.what() << "\n";
   throw runtime_error("Instance constructor failed.");
@@ -130,7 +130,7 @@ Instance::Instance(Instance &&I) noexcept :
 {
     CCutil_freedatagroup(&dat);
     dat = I.dat;
-    
+
     CCutil_init_datagroup(&I.dat);
     I.nodecount = 0;
     I.random_seed = 0;
@@ -149,19 +149,19 @@ Instance& Instance::operator=(Instance &&I) noexcept
   CCutil_init_datagroup(&I.dat);
   I.nodecount = 0;
   I.random_seed = 0;
-  I.pname.clear();  
-  
+  I.pname.clear();
+
   return *this;
 }
 
 Instance::~Instance() { CCutil_freedatagroup(&dat); }
 
 GraphGroup::GraphGroup(const Instance &inst)
-try     
+try
 {
     int ncount = inst.node_count();
     int ecount = 0;
-    
+
     CCedgegengroup plan;
     CCrandstate rstate;
 
@@ -188,7 +188,7 @@ try
     delta.resize(ecount, 0);
     node_marks.resize(ncount, 0);
 
-    cout << "Initialized with " << ecount << " edges.\n";    
+    cout << "Initialized with " << ecount << " edges." << endl;
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("GraphGroup constructor failed.");
@@ -217,7 +217,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
 
     int kicks = 1000;
     int trials = 10;
-    
+
     if (CClinkern_tour(ncount, inst.ptr(), ecount, &elist[0], ncount, kicks,
                        (int *) NULL, &best_tour_nodes[0], &min_tour_value,
                        1, 0.0, 0.0, (char *) NULL, CC_LK_GEOMETRIC_KICK,
@@ -245,7 +245,7 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
         cout.flush();
     }
 
-    cout << ")\n";
+    cout << ")" << endl;
 
     if (CClinkern_tour(ncount, inst.ptr(), ecount, &elist[0], ncount,
                        2 * kicks, &best_tour_nodes[0], &cyc[0], &min_tour_value,
@@ -367,7 +367,7 @@ SupportGroup::SupportGroup(const vector<Graph::Edge> &edges,
 try : lp_vec(lp_x)
 {
     integral = true;
-    
+
     for (int i = 0; i < lp_vec.size(); ++i)
         if (lp_vec[i] >= Eps::Zero) {
             support_indices.push_back(i);
@@ -381,8 +381,6 @@ try : lp_vec(lp_x)
 
     supp_graph = Graph::AdjList(ncount, edges, lp_x, support_indices);
     connected = supp_graph.connected(island, 0);
-
-    
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("SupportGroup constructor failed.\n");
@@ -404,6 +402,9 @@ SupportGroup &SupportGroup::operator=(SupportGroup &&SG) noexcept
     support_elist = std::move(SG.support_elist);
     support_ecap = std::move(SG.support_ecap);
     supp_graph = std::move(SG.supp_graph);
+
+    connected = SG.connected;
+    integral = SG.integral;
 
     return *this;
 }
