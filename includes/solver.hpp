@@ -79,7 +79,9 @@ private:
 
     void report_aug(bool piv_aug); //!< Output info about a new tour found.
 
-    bool restart_loop(LP::PivType piv, double delta_ratio);
+    bool restart_loop(LP::PivType piv, Data::SupportGroup &supp_dat,
+                      double delta_metric);
+
     bool return_pivot(LP::PivType piv);
 
     LP::PivType cut_and_piv(int &round, bool do_price);
