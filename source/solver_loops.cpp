@@ -51,7 +51,7 @@ namespace Eps = Epsilon;
  * @tparam Qtype the queue representation of the cuts found by \p sepcall.
  * @param[in] sepcall a function which returns true if cuts are found, in which
  * case they are stored in \p sep_q.
- * @param[out] piv if cuts are found, this is the pivot type that occurred 
+ * @param[out] piv if cuts are found, this is the pivot type that occurred
  * after they were added.
  * @param[in] core_lp the LP relaxation for performing pivots and adding cuts.
  * @param[in] tourlen the length of the best known tour.
@@ -59,8 +59,8 @@ namespace Eps = Epsilon;
  * a new value if cuts are found.
  * @param[in/out] total_delta the sum of changes in objective values attained
  * by separation routines called thus far.
- * @param[out] delta_ratio if cuts are found, this is the ratio of the 
- * difference between the new pivot value and \p prev_val divided by 
+ * @param[out] delta_ratio if cuts are found, this is the ratio of the
+ * difference between the new pivot value and \p prev_val divided by
  * \p tourlen.
  * @param[out] num_pruned number of cuts pruned from the LP after a pivot call.
  * @returns the value of \p sepcall, i.e., true iff cuts are found.
@@ -85,7 +85,7 @@ bool call_separator(const function<bool()> &sepcall, const Qtype &sep_q,
         double new_val = core_lp.get_objval();
         double delta = std::abs(new_val - prev_val);
         prev_val = new_val;
-        
+
         total_delta += delta;
         delta_ratio = (delta / tourlen);
     }
@@ -97,12 +97,12 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
 {
     runtime_error err("Problem in Solver::cut_and_piv");
     bool silent = true;
-    
+
     const double tourlen = core_lp.get_objval();
     double prev_val = tourlen;
     double total_delta = 0.0;
     double delta_ratio = 0.0;
-    
+
     PivType piv;
 
     Data::SupportGroup &supp_data = core_lp.supp_data;
@@ -182,6 +182,10 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
 
                 if (total_delta >= Eps::Zero)
                     return cut_and_piv(round, num_pruned, do_price);
+
+                sep = util::make_unique<Sep::Separator>(graph_data, best_data,
+                                                        supp_data, karp_part,
+                                                        TG);
             }
         } CMR_CATCH_PRINT_THROW("calling exact 2m sep", err);
 
@@ -237,10 +241,10 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
 
                     } else {
                         throw logic_error("Disconnected w no connect cuts??");
-                    }                
+                    }
                 } CMR_CATCH_PRINT_THROW("doing connect cut loop", err);
             }
-        
+
             if (piv == PivType::Tour || piv == PivType::FathomedTour) {
                 return piv;
             } else {
@@ -262,7 +266,7 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
 #if CMR_HAVE_SAFEGMI
 
     unique_ptr<Sep::SafeGomory> &gmi_sep = gmi_separator;
-    
+
     if (cut_sel.safeGMI)
         if (!do_price) {
             try {
@@ -271,7 +275,7 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
                                                              core_lp.tour_base
                                                              .best_tour_edges,
                                                              lp_x);
-                
+
                 if (call_separator([&gmi_sep]()
                                    { return gmi_sep->find_cuts(); },
                                    gmi_sep->gomory_q(), piv, core_lp,
@@ -286,14 +290,14 @@ PivType Solver::cut_and_piv(int &round, int &num_pruned, bool do_price)
                 }
             } CMR_CATCH_PRINT_THROW("doing safe GMI sep", err);
         }
-    
+
 #endif
 
 
     if (!silent)
         cout << "\tTried all routines, returning " << piv << ", "
              << total_delta << " total delta\n";
-    return piv;    
+    return piv;
 }
 
 PivType Solver::abc_dfs(int depth, bool do_price)
@@ -301,7 +305,7 @@ PivType Solver::abc_dfs(int depth, bool do_price)
     using Problem = ABC::Problem;
     using Ptype = Problem::Type;
     using ProbArray = std::array<Problem, 2>;
-    
+
     runtime_error err("Prolem in Solver::abc_dfs");
 
     PivType piv = PivType::Frac;
@@ -356,7 +360,7 @@ PivType Solver::abc_dfs(int depth, bool do_price)
         }
 
         if (call_again)
-            piv = abc_dfs(++depth, do_price);        
+            piv = abc_dfs(++depth, do_price);
 
         try {
             cout << "\n\tSearch depth " << depth << "\n";
@@ -368,7 +372,7 @@ PivType Solver::abc_dfs(int depth, bool do_price)
 }
 
 PivType Solver::frac_recover()
-{    
+{
     runtime_error err("Problem in Solver::frac_recover");
 
     Data::SupportGroup &s_dat = core_lp.supp_data;
@@ -378,7 +382,7 @@ PivType Solver::frac_recover()
     try { cyc.resize(ncount); } CMR_CATCH_PRINT_THROW("allocating cyc", err);
 
     double val = DoubleMax;
-    CCrandstate rstate;            
+    CCrandstate rstate;
     CCutil_sprand(tsp_instance.seed(), &rstate);
 
     if (CCtsp_x_greedy_tour_lk(tsp_instance.ptr(), ncount,
@@ -392,7 +396,7 @@ PivType Solver::frac_recover()
 
     if (val >= best_data.min_tour_value)
         return PivType::Frac;
-    
+
     vector<Graph::Edge> new_edges;
     Graph::CoreGraph &graph = graph_data.core_graph;
 
@@ -418,10 +422,10 @@ PivType Solver::frac_recover()
         // cout << "\tRecover tour contains " << new_edges.size() << " new edges, "
         //      << (orig_rowcount - new_rowcount) << " gmi cuts purged.\n";
     }
-    
+
     try { core_lp.set_best_tour(cyc); }
     CMR_CATCH_PRINT_THROW("passing recover tour to core_lp", err);
-    
+
     return LP::PivType::Tour;
 }
 
