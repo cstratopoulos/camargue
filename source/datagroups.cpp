@@ -386,29 +386,6 @@ try : lp_vec(lp_x)
     throw runtime_error("SupportGroup constructor failed.\n");
 }
 
-SupportGroup::SupportGroup(SupportGroup &&SG) noexcept
-    : lp_vec(std::move(SG.lp_vec)),
-      support_indices(std::move(SG.support_indices)),
-      support_elist(std::move(SG.support_elist)),
-      support_ecap(std::move(SG.support_ecap)),
-      supp_graph(std::move(SG.supp_graph)),
-      connected(SG.connected), integral(SG.integral)
-{}
-
-SupportGroup &SupportGroup::operator=(SupportGroup &&SG) noexcept
-{
-    lp_vec = std::move(SG.lp_vec);
-    support_indices = std::move(SG.support_indices);
-    support_elist = std::move(SG.support_elist);
-    support_ecap = std::move(SG.support_ecap);
-    supp_graph = std::move(SG.supp_graph);
-
-    connected = SG.connected;
-    integral = SG.integral;
-
-    return *this;
-}
-
 bool SupportGroup::in_subtour_poly()
 {
     if (!connected)

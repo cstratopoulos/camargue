@@ -38,31 +38,31 @@ struct Edge : EndPts {
 
 /** Wrapper to the Concorde CCtsp_lpgraph structure.
  * This class constructs a CCtsp_lpgraph which corresponds to a tour specified
- * by the constructor arguments. It is used to check whether cuts found by 
- * Concorde standard heuristics are tight at the current tour. 
+ * by the constructor arguments. It is used to check whether cuts found by
+ * Concorde standard heuristics are tight at the current tour.
  */
 class TourGraph {
 public:
     TourGraph() noexcept;
-    
+
     TourGraph(const std::vector<int> &tour_edges,
               const std::vector<Edge> &edges,
               const std::vector<int> &perm);
 
     TourGraph(TourGraph &&T) noexcept;
     TourGraph &operator=(TourGraph &&T) noexcept;
-    
+
     ~TourGraph();
 
     TourGraph(const TourGraph &T) = delete;
     TourGraph &operator=(const TourGraph &T) = delete;
 
-    
+
 
     CCtsp_lpgraph* pass_ptr() { return &L; }
     double* tour_array() { return &d_tour[0]; }
     int node_count() const { return L.ncount; }
-  
+
 private:
   std::vector<double> d_tour;
   CCtsp_lpgraph L;
@@ -72,7 +72,7 @@ struct AdjObj {
     AdjObj() = default;
     AdjObj(int otherend, int index, double _val) :
         other_end(otherend), edge_index(index), val(_val) {}
-    
+
     int other_end;
     int edge_index;
     double val;
@@ -87,13 +87,13 @@ struct AdjObj {
 
 struct Node {
     Node() : mark(0) {}
-    
+
     int degree() const { return neighbors.size(); }
     std::vector<AdjObj> neighbors;
     int mark;
 };
 
-/// Representation of a graph as an adjacency list. 
+/// Representation of a graph as an adjacency list.
 struct AdjList {
     AdjList() = default;
 
@@ -110,9 +110,9 @@ struct AdjList {
             const std::vector<double> &ref_elist_caps,
             const std::vector<int> &keep_indices);
 
-    AdjList(AdjList &&AL) noexcept;
+    AdjList(AdjList &&AL) noexcept = default;
 
-    AdjList &operator=(AdjList &&AL) noexcept;
+    AdjList &operator=(AdjList &&AL) noexcept = default;
 
     bool connected(std::vector<int> &island, int start_node);
 
@@ -133,7 +133,7 @@ struct AdjList {
 
     int node_count;
     int edge_count;
-    
+
     std::vector<Node> nodelist;
 
 };
@@ -157,14 +157,14 @@ public:
     int find_edge_ind(int end0, int end1) const;
 
     Edge get_edge(int index) const { return edges[index]; }
-    
+
     std::vector<Edge> &get_edges() { return edges; }
     const std::vector<Edge> &get_edges() const { return edges; }
 
     void get_elist(std::vector<int> &elist, std::vector<int> &elen) const;
 
     const AdjList &get_adj() const { return adj_list; }
-    
+
     void add_edge(int end0, int end1, int len);
     void add_edge(const Edge &e);
 
@@ -174,7 +174,7 @@ private:
     int nodecount;
 };
 
-//TODO get rid of all the versions that need island/deltacount, etc. 
+//TODO get rid of all the versions that need island/deltacount, etc.
 std::vector<int> delta_inds(const std::vector<int> &node_list,
                             const std::vector<Edge> &edges,
                             int ncount);

@@ -13,7 +13,7 @@ namespace Sep {
 /** Class for separation of cutting planes.
  * This class is instantiated with data about active edges in a relaxation
  * and a current lp solution, then used to search for cuts violated by the
- * solution vector. 
+ * solution vector.
  */
 class Separator {
 public:
@@ -32,7 +32,11 @@ public:
               Data::KarpPartition &kpart,
               Graph::TourGraph &_TG,
               int round_limit);
-    
+
+    Separator(Separator &&S) noexcept = default;
+
+    Separator &operator=(Separator &&S) noexcept = default;
+
     bool segment_sep();
     bool fast2m_sep();
     bool blkcomb_sep();
@@ -52,9 +56,9 @@ public:
     const LPcutList &connect_cuts_q() const { return connect_q; }
 
 private:
-    const int max_total;
+    int max_total;
     int running_total;
-    
+
     Data::GraphGroup &graph_data;
     Data::BestGroup &best_data;
     Data::SupportGroup &supp_data;

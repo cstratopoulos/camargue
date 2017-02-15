@@ -12,6 +12,7 @@
 #include <vector>
 #include <limits>
 #include <list>
+#include <utility>
 
 
 
@@ -23,36 +24,40 @@ template<typename cut_rep>
 class CutQueue {
 public:
     /** Construct a CutQueue with unlimited capacity. */
-    CutQueue() : q_capacity(std::numeric_limits<int>::max()) {}
+    CutQueue() : q_cap(std::numeric_limits<int>::max()) {}
 
     /** Construct a CutQueue with capacity \p cap. */
-    CutQueue(const int cap) : q_capacity(cap) {}
-  
-    const int q_capacity; /**< How many cuts can be stored in the queue. */
+    CutQueue(const int cap) : q_cap(cap) {}
+
+    CutQueue(CutQueue &&CQ) noexcept = default;
+
+    CutQueue &operator=(CutQueue &&CQ) noexcept = default;
+
+    int q_capacity() const { return q_cap; }
 
     /** A reference to the most recently added cut. */
     const cut_rep &peek_front() const { return cut_q.front(); }
-  
+
     /** Push a new cut to the front, popping from the back if at capacity. */
     void push_front(const cut_rep &H)
         {
             cut_q.push_front(H);
-            if(cut_q.size() > q_capacity) cut_q.pop_back();
+            if(cut_q.size() > q_capacity()) cut_q.pop_back();
         }
 
     /** Push to the back, popping from back first if at capacity. */
     void push_back(const cut_rep &H)
         {
-            if(cut_q.size() >= q_capacity) cut_q.pop_back();
+            if(cut_q.size() >= q_capacity()) cut_q.pop_back();
             cut_q.push_back(H);
         }
-    
+
     void pop_front() { cut_q.pop_front(); }  /**< Pop the front cut. */
 
     /** Add the cuts in Q to this list, emptying Q. */
     void splice(CutQueue<cut_rep> &Q){ cut_q.splice(cut_q.end(), Q.cut_q); }
 
-    
+
     bool empty() const { return cut_q.empty(); } /**< Is the queue empty. */
     int size() const { return cut_q.size(); } /**< Number of cuts in queue. */
 
@@ -69,6 +74,7 @@ public:
 
 private:
     std::list<cut_rep> cut_q;
+    int q_cap;
 };
 
 class CutTranslate {
@@ -83,7 +89,7 @@ public:
                         std::vector<int> &rmatind,
                         std::vector<double> &rmatval, char &sense,
                         double &rhs);
-    
+
     void get_sparse_row(const dominoparity &dp_cut,
                         const std::vector<int> &tour_nodes,
                         std::vector<int> &rmatind, std::vector<double> &rmatval,
@@ -94,7 +100,7 @@ public:
                         std::vector<int> &rmatind,
                         std::vector<double> &rmatval,
                         char &sense, double &rhs);
-  
+
     template<typename number_type>
     void get_activity(double &activity, const std::vector<number_type> &x,
                       const std::vector<int> &rmatind,
@@ -113,7 +119,7 @@ private:
     std::vector<int> &node_marks;
 };
 
-/// Gets the indices of the teeth for an ex_blossom \p B relative to \p edges. 
+/// Gets the indices of the teeth for an ex_blossom \p B relative to \p edges.
 std::vector<int> teeth_inds(const ex_blossom &B,
                             const std::vector<int> &tour_edges,
                             const std::vector<double> &lp_vec,
@@ -128,13 +134,13 @@ std::vector<int> teeth_inds(const ex_blossom &B,
                             int ncount, const std::vector<int> &handle_delta);
 
 
-/// Returns true if the blossom is invalid for some reason. 
+/// Returns true if the blossom is invalid for some reason.
 bool bad_blossom(const ex_blossom &B,
                  const std::vector<int> &tour_edges,
                  const std::vector<double> &lp_vec,
                  const std::vector<Graph::Edge> &edges, int ncount);
 
-}  
+}
 }
 
 

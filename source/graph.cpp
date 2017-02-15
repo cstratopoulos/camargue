@@ -195,20 +195,6 @@ AdjList::AdjList(int  ncount,
     throw runtime_error("AdjList indices/ecap constructor failed.");
 }
 
-AdjList::AdjList(AdjList &&AL) noexcept
-    : node_count(AL.node_count), edge_count(AL.edge_count),
-      nodelist(std::move(AL.nodelist))
-{}
-
-AdjList &AdjList::operator=(Graph::AdjList &&AL) noexcept
-{
-    node_count = AL.node_count;
-    edge_count = AL.edge_count;
-    nodelist = std::move(AL.nodelist);
-
-    return *this;
-}
-
 bool AdjList::connected(vector<int> &island, int start_node)
 {
     island.clear();
