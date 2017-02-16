@@ -1,3 +1,9 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/** @file
+ * @brief Representing cuts outside the LP solver.
+ *
+\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef CMR_HYPERGRAPH_H
 #define CMR_HYPERGRAPH_H
 
@@ -19,9 +25,10 @@ namespace Sep {
 /// External representation of a cut added to the lp relaxation.
 class HyperGraph {
 public:
-    /// Default construct an empty Non HyperGraph cut. 
-    HyperGraph() : source_bank(nullptr), source_toothbank(nullptr) {}
-    
+    /// Default construct an empty Type::Non HyperGraph cut.
+    HyperGraph()
+        : sense('\0'), source_bank(nullptr), source_toothbank(nullptr) {}
+
 
     /// Construct a HyperGraph from a Concorde cut.
     HyperGraph(CliqueBank &bank,
@@ -38,6 +45,10 @@ public:
                const std::vector<int> &blossom_handle,
                const std::vector<std::vector<int>> &tooth_edges);
 
+    HyperGraph(HyperGraph &&H) noexcept; //!< Move construct a HyperGraph.
+
+    HyperGraph &operator=(HyperGraph &&H) noexcept; //!< Move assign.
+
     ~HyperGraph(); //!< Destruct and decrement/delete Clique/Tooth refs.
 
     /// Enumeration for the types of HyperGraph inequalities.
@@ -46,7 +57,7 @@ public:
         Subtour = 1, //!< An SEC.
         Comb = 2, //!< A comb-like constraint.
         Non = 3, //!< Non HyperGraph cut: Gomory cut or branching constraint.
-        Branch = 3, //!< A constraint to enforce branching. 
+        Branch = 3, //!< A constraint to enforce branching.
     };
 
     Type cut_type() const; //!< Find the Type of this cut.
@@ -60,10 +71,10 @@ public:
                     std::vector<int> &rmatind,
                     std::vector<double> &rmatval) const;
 
-    char get_sense() const { return sense; } //!< Get the sense of the cut.    
+    char get_sense() const { return sense; } //!< Get the sense of the cut.
     double get_rhs() const { return rhs; } //!< Get the rhs of the cut.
 
-    
+
     const std::vector<Clique::Ptr> &get_cliques() const
         { return cliques; } //!< Constant ref to the vector of Clique refs.
 
@@ -71,11 +82,11 @@ public:
         { return teeth; } //!< Constant ref to the vector of Tooth refs.
 
     friend class ExternalCuts;
-    
+
 private:
     char sense; //!< The inequality sense of the cut.
     double rhs; //!< The righthand-side of the cut.
-    
+
     std::vector<Clique::Ptr> cliques; //!< The cliques comprising the cut.
     std::vector<Tooth::Ptr> teeth; //!< The teeth comprising the cut.
 
@@ -139,34 +150,28 @@ public:
     void get_col(int end0, int end1,
                  std::vector<int> &cmatind, std::vector<double> &cmatval) const;
 
-    /// Retrieve exact/estimated duals for use in computing reduced costs.
-    template <typename numtype>
-    void get_duals(bool remove_neg,
-                   const LP::Relaxation &relax,
-                   std::vector<numtype> &node_pi,
-                   std::vector<numtype> &node_pi_est,
-                   std::vector<numtype> &cut_pi,
-                   std::unordered_map<Clique, numtype> &clique_pi) const;
-
 private:
     /// Number of nodes in the Instance being tracked.
     /// Used to compute offsets for indices of cuts from LP::Relaxation.
-    const int node_count; 
+    const int node_count;
 
     CliqueBank clique_bank; //!< Bank for adding and dispensing cliques.
     ToothBank tooth_bank; //!< Bank for adding and dispensing teeth.
 
-    std::vector<HyperGraph> cuts; //!< List of the cuts in the LP::Relaxation.
+    std::vector<HyperGraph> cuts; //!< List of the cuts in the CoreLP.
+
+    std::vector<HyperGraph> cut_pool; //!< Pool of cuts pruned from CoreLP.
+
 };
 
 //////////////////// TEMPLATE METHOD IMPLEMENTATIONS //////////////////////////
 
 /**
- * @tparam EndPt_type a structure derived from EndPts that stores an edge `e` 
+ * @tparam EndPt_type a structure derived from EndPts that stores an edge `e`
  * as a length-two array accessed as `e.end[0]` and `e.end[1]`
  * @param[in] edges the list of edges for which to generate coefficients.
  * @param[in,out] rmatind the indices of edges with nonzero coefficients.
- * @param[in,out] rmatval the coefficients corresponding to entries of 
+ * @param[in,out] rmatval the coefficients corresponding to entries of
  * \p rmatind.
  */
 template <typename EndPt_type>
@@ -175,16 +180,16 @@ void HyperGraph::get_coeffs(const std::vector<EndPt_type> &edges,
                             std::vector<double> &rmatval) const
 {
     using std::vector;
-    
+
     if (cut_type() == Type::Non)
         throw std::logic_error("Tried HyperGraph::get_coeffs on Non cut.");
-    
+
     rmatind.clear();
     rmatval.clear();
 
     const vector<int> &def_tour = source_bank->ref_tour();
     int ncount = def_tour.size();
-    
+
     std::map<int, double> coeff_map;
     vector<bool> node_marks(ncount, false);
 
@@ -244,14 +249,14 @@ void HyperGraph::get_coeffs(const std::vector<EndPt_type> &edges,
         const Clique &root_clq = t_ref->set_pair()[0];
         const Clique &bod_clq = t_ref->set_pair()[1];
 
-        for (const Segment &seg : bod_clq.seg_list()) 
+        for (const Segment &seg : bod_clq.seg_list())
             for (int k = seg.start; k <= seg.end; ++k)
                 node_marks[def_tour[k]] = true;
 
         for (int i = 0; i < edges.size(); ++i) {
             int e0 = edges[i].end[0];
             int e1 = edges[i].end[1];
-            
+
             bool bod_e0 = node_marks[e0];
             bool bod_e1 = node_marks[e1];
 
@@ -290,164 +295,7 @@ void HyperGraph::get_coeffs(const std::vector<EndPt_type> &edges,
             coeff = floor(coeff);
         }
 
-    
-}
 
-/**
- * This method will use the LP::Relaxation to query the lp solver for dual 
- * values, and use the ExternalCuts collection of cuts, cliques, and teeth to
- * generate clique multiplicities and node pi estimates for use in exactly
- * pricing edges not currently in the Relaxation.
- * @param[in] relax the core lp relaxation, for use in grabbing node and cut
- * pi values from the lp solver.
- * @param[in,out] node_pi a vector for storing dual values associated to 
- * degree constraints
- * @param[in,out] node_pi_est a vector for storing estimated degree constraint
- * duals, computed Standard HyperGraph duals and by overestimating the 
- * Domino HyperGraph duals.
- * @param[in,out] cut_pi the dual values associated to cuts in the Relaxation.
- * @param[in,out] clique_pi a hash table of multiplicities associated to 
- * Cliques from the source CliqueBank.
- */
-template <typename numtype>
-void ExternalCuts::get_duals(bool remove_neg,
-                             const LP::Relaxation &relax,
-                             std::vector<numtype> &node_pi,
-                             std::vector<numtype> &node_pi_est,
-                             std::vector<numtype> &cut_pi,
-                             std::unordered_map<Clique,
-                             numtype> &clique_pi) const
-{
-    using CutType = HyperGraph::Type;
-    using std::vector;
-    using std::cout;
-    using std::cerr;
-    using std::endl;
-    
-    std::runtime_error err("Problem in ExternalCuts::get_duals.");
-
-    vector<double> full_pi;
-
-    vector<double> d_node_pi;
-    vector<double> d_cut_pi;
-
-
-    if (relax.num_rows() != node_count + cuts.size()) {
-        cerr << "Relaxation row count: " << relax.num_rows() << ", "
-             << "ExternalCuts expects: "
-             << (node_count + cuts.size()) << "\n";
-        throw std::logic_error("Size mismatch in ExternalCuts::get_duals.");
-    }
-
-    clique_pi.clear();
-
-    try {
-        clique_pi.reserve(clique_bank.size());
-
-        relax.get_pi(full_pi, 0, relax.num_rows() - 1);
-    } CMR_CATCH_PRINT_THROW("getting/allocating double pi containers.", err);
-    
-    try {
-        node_pi = vector<numtype>(full_pi.begin(),
-                                  full_pi.begin() + node_count);
-        node_pi_est = node_pi;
-
-        if (!cuts.empty()) 
-            cut_pi = vector<numtype>(full_pi.begin() + node_count,
-                                     full_pi.end());
-        else
-            cut_pi.clear();
-
-        if (node_pi.size() != node_count || cut_pi.size() != cuts.size())
-            throw std::logic_error("Node pi or cut pi size mismatch");
-    } CMR_CATCH_PRINT_THROW("copying to result vectors", err);
-
-    if (remove_neg) {
-        for (int i = 0; i < cuts.size(); ++i) {
-            if (cuts[i].sense == 'G') {
-                if (cut_pi[i] < 0)
-                    cut_pi[i] = 0;
-            } else if (cuts[i].sense == 'L') {
-                if (cut_pi[i] > 0)
-                    cut_pi[i] = 0;
-            }
-        }
-    }
-
-    //get clique_pi for non-domino cuts
-    for (int i = 0; i < cuts.size(); ++i) {
-        const Sep::HyperGraph &H = cuts[i];
-
-        if (H.cut_type() == CutType::Non)
-            throw std::logic_error("Tried to get_duals with Non cut present.");
-        
-        if (H.cut_type() == CutType::Domino)
-            continue;
-
-        numtype pival = cut_pi[i];
-
-        for (const Sep::Clique::Ptr &clq_ref : H.get_cliques()) {
-            if (clique_pi.count(*clq_ref) == 0)
-                clique_pi[*clq_ref] = 0.0;
-            
-            clique_pi[*clq_ref] += pival;
-        }
-    }
-
-    const vector<int> &def_tour = clique_bank.ref_tour();
-
-    //use clique_pi to build node_pi for all cliques with nonzero pi
-    for (const std::pair<Sep::Clique, numtype> &kv : clique_pi) {
-        const Sep::Clique &clq = kv.first;
-        numtype pival = kv.second;
-
-        if (pival > 0.0) {
-            for (const Segment &seg : clq.seg_list()) {
-                for (int k = seg.start; k <= seg.end; ++k) {
-                    int node = def_tour[k];
-                    
-                    node_pi[node] += pival;
-                    node_pi_est[node] += pival;
-                }
-            }            
-        } else if (pival < 0.0) {
-            for (const Segment &seg : clq.seg_list()) {
-                for (int k = seg.start; k <= seg.end; ++k) {
-                    int node = def_tour[k];
-                    
-                    node_pi[node] += pival;
-                }
-            }
-        }
-    }
-
-    //now get node_pi_est for domino cuts, skipping standard ones
-    for (int i = 0; i < cuts.size(); ++i) {
-        const Sep::HyperGraph &H = cuts[i];
-        if (H.cut_type() != CutType::Domino)
-            continue;
-
-        numtype pival = cut_pi[i];
-        if (pival <= 0.0)
-            continue;
-        
-        const Sep::Clique::Ptr &handle_ref = H.get_cliques()[0];
-        for (const Segment &seg : handle_ref->seg_list()) {
-            for (int k = seg.start; k <= seg.end; ++k) {
-                int node = def_tour[k];
-                node_pi_est[node] += pival;
-            }
-        }
-
-        for (const Sep::Tooth::Ptr &T : H.get_teeth())
-            for (const Sep::Clique &tpart : T->set_pair())
-                for (const Segment &seg : tpart.seg_list())
-                    for (int k = seg.start; k <= seg.end; ++k) {
-                        int node = def_tour[k];
-
-                        node_pi_est[node] += pival;
-                    }
-    }    
 }
 
 }

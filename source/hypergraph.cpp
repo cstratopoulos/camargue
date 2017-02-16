@@ -28,7 +28,7 @@ namespace Sep {
 
 
 /**
- * The cut corresponding to \p cc_lpcut will be represented using 
+ * The cut corresponding to \p cc_lpcut will be represented using
  * Clique pointers from \p bank, assuming that the cut was found with
  * \p tour as the resident best tour.
  */
@@ -41,14 +41,14 @@ HyperGraph::HyperGraph(CliqueBank &bank, const lpcut_in &cc_lpcut,
         lpclique &cc_clq = cc_lpcut.cliques[i];
         cliques.push_back(source_bank->add_clique(cc_clq, tour));
     }
-    
+
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("HyperGraph CC lpcut_in constructor failed.");
 }
 
 /**
- * The cut corresponding to \p dp_cut will be represented using Clique 
+ * The cut corresponding to \p dp_cut will be represented using Clique
  * pointers from \p bank and Tooth pointers from \p tbank, assuming the cut
  * was found with \p tour as the resident best tour. The righthand side of the
  * cut stored shall be \p _rhs.
@@ -61,12 +61,12 @@ HyperGraph::HyperGraph(CliqueBank &bank, ToothBank &tbank,
     vector<int> nodes(dp_cut.degree_nodes);
     for(int &n : nodes)
         n = tour[n];
-        
+
     cliques.push_back(source_bank->add_clique(nodes));
 
     for (const SimpleTooth &T : dp_cut.used_teeth)
         teeth.push_back(source_toothbank->add_tooth(T, tour));
-    
+
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("HyperGraph dominoparity constructor failed.");
@@ -88,12 +88,49 @@ HyperGraph::HyperGraph(CliqueBank &bank,
 {
     vector<int> handle(blossom_handle);
     cliques.push_back(source_bank->add_clique(handle));
-    
+
     for (vector<int> tooth_edge : tooth_edges)
         cliques.push_back(source_bank->add_clique(tooth_edge));
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("HyperGraph ex_blossom constructor failed.");
+}
+
+/**
+ * The moved-from Hypergraph \p H is left in a null but valid state, as if it
+ * had been default constructed.
+ */
+HyperGraph::HyperGraph(HyperGraph &&H) noexcept
+    : sense(H.sense), rhs(H.rhs),
+      cliques(std::move(H.cliques)), teeth(std::move(H.teeth)),
+      source_bank(H.source_bank), source_toothbank(H.source_toothbank)
+{
+    H.sense = '\0';
+    H.source_bank = nullptr;
+    H.source_toothbank = nullptr;
+}
+
+/**
+ * The move-assigned-from HyperGraph \p H is left null but valid as if default
+ * constructed.
+ */
+HyperGraph &HyperGraph::operator=(Sep::HyperGraph &&H) noexcept
+{
+    sense = H.sense;
+    H.sense = '\0';
+
+    rhs = H.rhs;
+
+    cliques = std::move(H.cliques);
+    teeth = std::move(H.teeth);
+
+    source_bank = H.source_bank;
+    H.source_bank = nullptr;
+
+    source_toothbank = H.source_toothbank;
+    H.source_toothbank = nullptr;
+
+    return *this;
 }
 
 HyperGraph::~HyperGraph()
@@ -127,9 +164,9 @@ double HyperGraph::get_coeff(int end0, int end1) const
 
     if (cut_type() == Type::Non)
         throw logic_error("Tried HyperGraph::get_coeff on Non cut.");
-    
+
     double result = 0.0;
-    
+
     if (cut_type() != Type::Domino) {
         const vector<int> &perm = source_bank->ref_perm();
 
@@ -153,19 +190,19 @@ double HyperGraph::get_coeff(int end0, int end1) const
     const vector<int> &handle_perm = source_bank->ref_perm();
     int end0_ind = handle_perm[end0];
     int end1_ind = handle_perm[end1];
-    
+
     const Clique::Ptr &handle_clq = cliques[0];
-    
+
     bool contains_end0 = handle_clq->contains(end0_ind);
     bool contains_end1 = handle_clq->contains(end1_ind);
-    
+
     if (contains_end0 && contains_end1) //in E(H)
         pre_result += 2;
     else if (contains_end0 != contains_end1) // in delta(H)
         pre_result += 1;
 
     const vector<int> &tooth_perm = source_toothbank->ref_perm();
-    
+
     end0_ind = tooth_perm[end0];
     end1_ind = tooth_perm[end1];
     contains_end0 = false;
@@ -222,7 +259,7 @@ void ExternalCuts::add_cut(const lpcut_in &cc_lpcut,
 /**
  * @param[in] dp_cut the domino parity inequality to be added.
  * @param[in] rhs the righthand-side of the cut.
- * @param[in] current_tour the tour active when dp_cut was found. 
+ * @param[in] current_tour the tour active when dp_cut was found.
  */
 void ExternalCuts::add_cut(const dominoparity &dp_cut, const double rhs,
                            const vector<int> &current_tour)
@@ -242,25 +279,33 @@ void ExternalCuts::add_cut(const vector<int> &blossom_handle,
 }
 
 /**
- * Add a branching constraint or Non HyperGraph cut to the list. Maintains 
- * indexing that agrees with the Relaxation for bookkeeping and cut pruning 
- * purposes. 
+ * Add a branching constraint or Non HyperGraph cut to the list. Maintains
+ * indexing that agrees with the Relaxation for bookkeeping and cut pruning
+ * purposes.
  */
 void ExternalCuts::add_cut() { cuts.emplace_back(); }
 
 /**
- * @param[in] delset the entry `delset[i]` shall be one if the cut 
+ * @param[in] delset the entry `delset[i]` shall be one if the cut
  * `cuts[i + node_count]` is to be deleted, zero otherwise.
  */
 void ExternalCuts::del_cuts(const vector<int> &delset)
 {
-    int i = 0;
+    using CutType = HyperGraph::Type;
 
+    int i = 0;
     for (HyperGraph &H : cuts) {
-        if (delset[i + node_count] == -1)
-            H.rhs = '\0';
+        CutType Htype = H.cut_type();
+        if (delset[i + node_count] == -1) {
+            if (Htype == CutType::Comb || Htype == CutType::Domino)
+                cut_pool.emplace_back(std::move(H));
+            else
+                H.rhs = '\0';
+        }
         ++i;
     }
+
+    cout << "Cut pool now has size " << cut_pool.size() << "\n";
 
     cuts.erase(std::remove_if(cuts.begin(), cuts.end(),
                               [](const HyperGraph &H) {
@@ -273,24 +318,24 @@ void ExternalCuts::del_cuts(const vector<int> &delset)
 /**
  * @param[in] end0 one end of the edge to be added
  * @param[in] end1 the other end of the edge to be added
- * @param[in,out] cmatind the indices of the rows having nonzero 
+ * @param[in,out] cmatind the indices of the rows having nonzero
  * coefficients for the new edge
- * @param[in,out] cmatval the coefficients corresponding to entries of 
+ * @param[in,out] cmatval the coefficients corresponding to entries of
  * \p cmatind.
  */
 void ExternalCuts::get_col(const int end0, const int end1,
                            vector<int> &cmatind, vector<double> &cmatval) const
 {
     runtime_error err("Problem in ExternalCuts::get_col");
-    
+
     if (end0 == end1) {
         cerr << "Edge has same endpoints.\n";
         throw err;
     }
-    
+
     cmatind.clear();
     cmatval.clear();
-    
+
     int lp_size = node_count + cuts.size();
 
     try {
