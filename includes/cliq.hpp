@@ -1,7 +1,15 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/** @file
+ * @brief Reference counted storage of Cliques and Tooth objects.
+ * The structures in this file are meant to be managed by a HyperGraph
+ * and ExternalCuts.
+ *
+\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef CMR_CLIQ_H
 #define CMR_CLIQ_H
 
-#include "tooth.hpp"
+#include "cut_structs.hpp"
 #include "util.hpp"
 
 #include <array>
@@ -17,17 +25,17 @@ extern "C" {
 namespace CMR {
 namespace Sep {
 
-/** Class for storing segment lists representing edges of a hypergraph. 
+/** Class for storing segment lists representing edges of a hypergraph.
  * A Clique stores a subset of vertices as a list of CMR::Segment objects,
- * where the start and endpoints indicate a range of nodes from a tour. 
- * Thus, a Clique is meaningless without a tour from which to be 
- * derefrenced. 
+ * where the start and endpoints indicate a range of nodes from a tour.
+ * Thus, a Clique is meaningless without a tour from which to be
+ * derefrenced.
  */
 class Clique {
 public:
     Clique() = default; //!< Default construct an empty Clique.
-    
-    /// Construct a Clique from a Concorde clique. 
+
+    /// Construct a Clique from a Concorde clique.
     Clique(const CCtsp_lpclique &cc_cliq,
            const std::vector<int> &saved_tour,
            const std::vector<int> &saved_perm,
@@ -53,7 +61,7 @@ public:
 
     /// A list of literal nodes represented by the Clique.
     std::vector<int> node_list(const std::vector<int> &saved_tour) const;
-    
+
     bool operator==(const Clique &rhs) const
         { return seglist == rhs.seglist; } //!< Equality operator.
 
@@ -64,21 +72,21 @@ public:
                 return true;
         return false;
     }
-    
+
 private:
     /// A vector of start and endpoints of tour intervals stored as Segment.
     std::vector<CMR::Segment> seglist;
 };
 
 /** Vertex set structure used in tooth inequalities for domino parity cuts.
- * This class holds a tooth in the sense used by Fleischer et al. (2006) 
+ * This class holds a tooth in the sense used by Fleischer et al. (2006)
  * meaning two disjoint, nonempty vertex subsets whose union is not the vertex
  * set of the graph. A tooth inequality is obtained by summing the SECs on the
- * two sets. 
+ * two sets.
  * @remark This underlying data in this class is sufficiently general to hold
  * general teeth (i.e., for general domino parity inequalities), but for now
- * there is only a constructor to implement simple teeth for simple domino 
- * parity inequalities, i.e., teeth where one of the sets is a singleton. 
+ * there is only a constructor to implement simple teeth for simple domino
+ * parity inequalities, i.e., teeth where one of the sets is a singleton.
  */
 class Tooth {
 public:
@@ -116,7 +124,7 @@ struct hash<CMR::Sep::Clique> {
     size_t operator()(const CMR::Sep::Clique &clq) const
         {
             size_t val = 0;
-        
+
             for (const CMR::Segment &seg : clq.seg_list())
                 val = (val * 65537) + (seg.start * 4099) + seg.end;
 
@@ -145,7 +153,7 @@ struct hash<CMR::Sep::Tooth> {
 namespace CMR {
 namespace Sep {
 
-/** Storage of a repository of Cliques, for use in building a HyperGraph. 
+/** Storage of a repository of Cliques, for use in building a HyperGraph.
  * This class is responsible for dispensing and deleting references to Clique
  * objects, for use in the edges of a HyperGraph. The interface allows
  * a Clique to be passed to the CliqueBank. A pointer to the Clique will be
@@ -192,14 +200,14 @@ public:
 
     Itr begin()
         { return bank.begin(); } //!< Begin iterator.
-    
+
     ConstItr begin() const
         { return bank.begin(); } //!< Const begin iter.
 
-    
+
     Itr end()
         { return bank.end(); } //!< Past the end iterator.
-    
+
     ConstItr end() const
         { return bank.end(); } //!< Const past end iter.
 
@@ -209,7 +217,7 @@ public:
     const std::vector<int> &ref_perm() const
         { return saved_perm; } //!< Const ref to saved perm for dereferncing.
 
-    
+
 private:
     const std::vector<int> saved_tour; //!< Saved tour for dereferencing.
     const std::vector<int> saved_perm; //!< Permutation vector for saved_tour.
@@ -218,8 +226,8 @@ private:
 
 
 /** Storage of a repository of Teeth, for use in building a HyperGraph.
- * This class is like CliqueBank, but instead it dispenses and deletes 
- * references to Tooth objects instead. 
+ * This class is like CliqueBank, but instead it dispenses and deletes
+ * references to Tooth objects instead.
  */
 class ToothBank {
 public:
@@ -247,13 +255,13 @@ public:
 
     Itr begin()
         { return bank.begin(); } //!< Begin iterator.
-    
+
     ConstItr begin() const
         { return bank.begin(); } //!< Const begin iterator.
 
     Itr end()
         { return bank.end(); } //!< Past the end iterator.
-    
+
     ConstItr end() const
         { return bank.end(); } //!< Const past the end iterator.
 
