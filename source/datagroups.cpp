@@ -156,10 +156,14 @@ Instance& Instance::operator=(Instance &&I) noexcept
 
 Instance::~Instance() { CCutil_freedatagroup(&dat); }
 
-GraphGroup::GraphGroup(const Instance &inst)
-try
+}
+
+namespace Graph {
+
+CoreGraph::CoreGraph(const Data::Instance &inst) try
+    : nodecount(inst.node_count())
 {
-    int ncount = inst.node_count();
+    int ncount = nodecount;
     int ecount = 0;
 
     CCedgegengroup plan;
@@ -181,30 +185,114 @@ try
 
     util::c_array_ptr<int> edge_handle(elist);
 
-    core_graph = Graph::CoreGraph(ncount, ecount, elist,
-                                  inst.edgelen_func());
+    edges.reserve(ecount);
 
-    island.resize(ncount);
-    delta.resize(ecount, 0);
-    node_marks.resize(ncount, 0);
+    for (int i = 0; i < ecount; ++i) {
+        int e0 = elist[2 * i];
+        int e1 = elist[(2 * i) + 1];
+        edges.emplace_back(e0, e1, inst.edgelen(e0, e1));
+    }
+
+    adj_list = AdjList(ncount, edges);
 
     cout << "Initialized with " << ecount << " edges." << endl;
 } catch (const exception &e) {
     cerr << e.what() << "\n";
-    throw runtime_error("GraphGroup constructor failed.");
+    throw runtime_error("CoreGraph Instance constructor failed.");
 }
 
-BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
-    best_tour_edges(std::vector<int>(graph_data.core_graph.edge_count(), 0)),
-    best_tour_nodes(std::vector<int>(graph_data.core_graph.node_count())),
+CoreGraph::CoreGraph(int ncount, int ecount, const int *elist,
+                     const std::function<double(int, int)> edgelen) try
+    : nodecount(ncount)
+{
+    edges.reserve(ecount);
+
+    for (int i = 0; i < ecount; ++i) {
+        int e0 = elist[2 * i];
+        int e1 = elist[(2 * i) + 1];
+        edges.emplace_back(e0, e1, edgelen(e0, e1));
+    }
+
+    adj_list = AdjList(ncount, edges);
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("CoreGraph constructor failed.");
+}
+
+CoreGraph::CoreGraph(const vector<int> &tour_nodes,
+                     const std::function<double(int, int)> edgelen) try
+    : nodecount(tour_nodes.size())
+{
+    edges.reserve(nodecount);
+
+    for (int i = 0; i < nodecount; ++i) {
+        int e0 = tour_nodes[i];
+        int e1 = tour_nodes[(i + 1) % nodecount];
+
+        edges.emplace_back(e0, e1, edgelen(e0, e1));
+    }
+
+    adj_list = AdjList(nodecount, edges);
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("CoreGraph constructor failed.");
+}
+
+int CoreGraph::find_edge_ind(int end0, int end1) const
+{
+    const AdjObj *adj_ptr = adj_list.find_edge(end0, end1);
+    if (adj_ptr == nullptr)
+        return -1;
+    return adj_ptr->edge_index;
+}
+
+void CoreGraph::get_elist(vector<int> &elist, vector<int> &elen) const
+{
+    elen.resize(edges.size());
+    elist.resize(2 * edges.size());
+
+    for (int i = 0; i < edges.size(); ++i) {
+        const Edge &e = edges[i];
+        elen[i] = e.len;
+        elist[2 * i] = e.end[0];
+        elist [(2 * i) + 1] = e.end[1];
+    }
+}
+
+void CoreGraph::add_edge( int end0, int end1, int len )
+{
+    if (find_edge_ind(end0, end1) != -1)
+        return;
+
+    int new_ind = edge_count();
+
+    edges.emplace_back(end0, end1, len);
+    adj_list.add_edge(end0, end1, new_ind, len);
+}
+
+void CoreGraph::add_edge(const Edge &e)
+{
+    if (find_edge_ind(e.end[0], e.end[1]) != -1)
+        return;
+
+    int new_ind = edge_count();
+    edges.push_back(e);
+    adj_list.add_edge(e.end[0], e.end[1], new_ind, e.len);
+}
+
+}
+
+namespace Data {
+
+BestGroup::BestGroup(const Instance &inst, Graph::CoreGraph &core_graph) try :
+    best_tour_edges(std::vector<int>(core_graph.edge_count(), 0)),
+    best_tour_nodes(std::vector<int>(core_graph.node_count())),
     perm(best_tour_nodes.size()),
     min_tour_value(DoubleMax)
 {
 
     CCrandstate rstate;
     CCutil_sprand(inst.seed(), &rstate);
-
-    Graph::CoreGraph &core_graph = graph_data.core_graph;
 
     int ncount = core_graph.node_count();
     int ecount = core_graph.edge_count();
@@ -259,8 +347,6 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
     for (int i = 0; i < perm.size(); ++i)
         perm[best_tour_nodes[i]] = i;
 
-    vector<int> &delta = graph_data.delta;
-
     for (int i = 0; i < ncount; ++i) {
         int e0 = best_tour_nodes[i];
         int e1 = best_tour_nodes[(i + 1) % ncount];
@@ -272,7 +358,6 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
             find_ind = core_graph.find_edge_ind(e0, e1);
 
             best_tour_edges.push_back(0);
-            delta.push_back(0);
         }
 
         best_tour_edges[find_ind] = 1;
@@ -289,7 +374,6 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
             find_ind = core_graph.find_edge_ind(e0, e1);
 
             best_tour_edges.push_back(0);
-            delta.push_back(0);
         }
     }
 } catch (const exception &e) {
@@ -297,23 +381,19 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data) try :
     throw runtime_error("BestGroup LK constructor failed.");
 }
 
-BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
-          const std::string &tourfile) try :
-    best_tour_edges(std::vector<int>(graph_data.core_graph.edge_count(), 0)),
-    best_tour_nodes(std::vector<int>(graph_data.core_graph.node_count())),
+BestGroup::BestGroup(const Instance &inst, Graph::CoreGraph &core_graph,
+                     const std::string &tourfile) try :
+    best_tour_edges(std::vector<int>(core_graph.edge_count(), 0)),
+    best_tour_nodes(std::vector<int>(core_graph.node_count())),
     perm(best_tour_nodes.size()),
     min_tour_value(DoubleMax)
 {
-    Graph::CoreGraph &core_graph = graph_data.core_graph;
-
     int ncount = core_graph.node_count();
 
     util::get_tour_nodes(ncount, best_tour_nodes, tourfile);
 
     for (int i = 0; i < best_tour_nodes.size(); ++i)
         perm[best_tour_nodes[i]] = i;
-
-    vector<int> &delta = graph_data.delta;
 
     for (int i = 0; i < ncount; ++i) {
         int e0 = best_tour_nodes[i];
@@ -326,7 +406,6 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
             find_ind = core_graph.find_edge_ind(e0, e1);
 
             best_tour_edges.push_back(0);
-            delta.push_back(0);
         }
 
         best_tour_edges[find_ind] = 1;
@@ -344,7 +423,6 @@ BestGroup::BestGroup(const Instance &inst, GraphGroup &graph_data,
             find_ind = core_graph.find_edge_ind(e0, e1);
 
             best_tour_edges.push_back(0);
-            delta.push_back(0);
         }
     }
 

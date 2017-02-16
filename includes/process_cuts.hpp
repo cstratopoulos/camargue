@@ -74,39 +74,32 @@ private:
     int q_cap;
 };
 
-class CutTranslate {
-public:
-    CutTranslate(Data::GraphGroup &graph_group) :
-        core_graph(graph_group.core_graph),
-        delta(graph_group.delta),
-        node_marks(graph_group.node_marks) {}
 
-    LP::SparseRow get_row(const CCtsp_lpcut_in &cc_cut,
-                                 const std::vector<int> &perm);
 
-    LP::SparseRow get_row(const dominoparity &dp_cut,
-                          const std::vector<int> &tour_nodes);
+LP::SparseRow get_row(const CCtsp_lpcut_in &cc_cut,
+                      const std::vector<int> &perm,
+                      const Graph::CoreGraph &core_graph);
 
-    LP::SparseRow get_row(const std::vector<int> &handle_delta,
-                          const std::vector<std::vector<int>> &tooth_edges);
+LP::SparseRow get_row(const dominoparity &dp_cut,
+                      const std::vector<int> &tour_nodes,
+                      const Graph::CoreGraph &core_graph);
 
-    template<typename number_type>
-    double get_activity(const std::vector<number_type> &x,
-                        const LP::SparseRow &R)
-        {
-           double result = 0.0;
-            for(auto i = 0; i < R.rmatind.size(); i++){
-                int index = R.rmatind[i];
-                result += x[index] * R.rmatval[i];
-            }
-            return result;
-        }
+LP::SparseRow get_row(const std::vector<int> &handle_delta,
+                      const std::vector<std::vector<int>> &tooth_edges,
+                      const Graph::CoreGraph &core_graph);
 
-private:
-    const Graph::CoreGraph &core_graph;
-    std::vector<int> &delta;
-    std::vector<int> &node_marks;
-};
+template<typename number_type>
+double get_activity(const std::vector<number_type> &x,
+                    const LP::SparseRow &R)
+{
+    double result = 0.0;
+    for(auto i = 0; i < R.rmatind.size(); i++){
+        int index = R.rmatind[i];
+        result += x[index] * R.rmatval[i];
+    }
+    return result;
+}
+
 
 /// Gets the indices of the teeth for an ex_blossom \p B relative to \p edges.
 std::vector<int> teeth_inds(const ex_blossom &B,

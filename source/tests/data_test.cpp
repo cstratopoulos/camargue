@@ -34,18 +34,18 @@ SCENARIO ("Consructing a GraphGroup and BestGroup",
             string solfile = "test_data/tours/" + prob + ".sol";
 
             CMR::Data::Instance inst(probfile, 99);
-            CMR::Data::GraphGroup g_dat(inst);
+            CMR::Graph::CoreGraph core_graph(inst);
             CMR::Data::BestGroup b_dat;
             
             WHEN ("An LK BestGroup is constructed") {
                 THEN ("Its constructor does not throw") {
-                    REQUIRE_NOTHROW(b_dat = CMR::Data::BestGroup(inst, g_dat));
+                    REQUIRE_NOTHROW(b_dat = CMR::Data::BestGroup(inst, core_graph));
                 }
             }
 
             WHEN ("A tour file BestGroup is constructed") {
                 THEN ("Its constructor does not throw.") {
-                    REQUIRE_NOTHROW(b_dat = CMR::Data::BestGroup(inst, g_dat,
+                    REQUIRE_NOTHROW(b_dat = CMR::Data::BestGroup(inst, core_graph,
                                                                  solfile));
                 }
             }
@@ -63,12 +63,12 @@ SCENARIO ("Verifying a BestGroup with a GraphGroup",
             string solfile = "test_data/tours/" + prob + ".sol";
 
             CMR::Data::Instance inst(probfile, 99);
-            CMR::Data::GraphGroup g_dat(inst);
-            int ncount = g_dat.core_graph.node_count();
+            CMR::Graph::CoreGraph core_graph(inst);
+            int ncount = core_graph.node_count();
 
             WHEN ("An LK tour is constructed") {
                 THEN ("Its values can be verified by GraphGroup") {
-                    CMR::Data::BestGroup b_dat(inst, g_dat);
+                    CMR::Data::BestGroup b_dat(inst, core_graph);
                     double best_val = b_dat.min_tour_value;
                     double edge_val = 0;
                     double node_val = 0;
@@ -78,21 +78,21 @@ SCENARIO ("Verifying a BestGroup with a GraphGroup",
 
                     for (int i = 0; i < tour_edges.size(); ++i)
                         if (tour_edges[i])
-                            edge_val += g_dat.core_graph.get_edges()[i].len;
+                            edge_val += core_graph.get_edges()[i].len;
 
                     bool failed_lookup = false;
                     
                     for (int i = 0; i < tour_nodes.size(); ++i) {
                         int e0 = tour_nodes[i];
                         int e1 = tour_nodes[(i + 1) % ncount];
-                        int find_ind = g_dat.core_graph.find_edge_ind(e0, e1);
+                        int find_ind = core_graph.find_edge_ind(e0, e1);
 
                         if (find_ind == -1) {
                             failed_lookup = true;
                             break;
                         }
 
-                        node_val += g_dat.core_graph.get_edge(find_ind).len;
+                        node_val += core_graph.get_edge(find_ind).len;
                     }
 
                     REQUIRE_FALSE(failed_lookup);
@@ -103,7 +103,7 @@ SCENARIO ("Verifying a BestGroup with a GraphGroup",
 
             WHEN ("A file tour is constructed") {
                 THEN ("Its values can be verified by GraphGroup") {
-                    CMR::Data::BestGroup b_dat(inst, g_dat, solfile);
+                    CMR::Data::BestGroup b_dat(inst, core_graph, solfile);
                     double best_val = b_dat.min_tour_value;
                     double edge_val = 0;
                     double node_val = 0;
@@ -113,21 +113,21 @@ SCENARIO ("Verifying a BestGroup with a GraphGroup",
 
                     for (int i = 0; i < tour_edges.size(); ++i)
                         if (tour_edges[i])
-                            edge_val += g_dat.core_graph.get_edge(i).len;
+                            edge_val += core_graph.get_edge(i).len;
 
                     bool failed_lookup = false;
                     
                     for (int i = 0; i < tour_nodes.size(); ++i) {
                         int e0 = tour_nodes[i];
                         int e1 = tour_nodes[(i + 1) % ncount];
-                        int find_ind = g_dat.core_graph.find_edge_ind(e0, e1);
+                        int find_ind = core_graph.find_edge_ind(e0, e1);
 
                         if (find_ind == -1) {
                             failed_lookup = true;
                             break;
                         }
 
-                        node_val += g_dat.core_graph.get_edge(find_ind).len;
+                        node_val += core_graph.get_edge(find_ind).len;
                     }
 
                     REQUIRE_FALSE(failed_lookup);

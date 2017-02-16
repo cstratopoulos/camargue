@@ -28,18 +28,18 @@ namespace Data {
 
 void make_cut_test(const string &tsp_fname,
                    const string &tour_nodes_fname,
-                   const string &lp_sol_fname, GraphGroup &graph_data,
+                   const string &lp_sol_fname, Graph::CoreGraph &core_graph,
                    BestGroup &best_data, vector<double> &lp_edges,
                    SupportGroup &supp_data)
 {
   Instance inst;
-  make_cut_test(tsp_fname, tour_nodes_fname, lp_sol_fname, graph_data,
+  make_cut_test(tsp_fname, tour_nodes_fname, lp_sol_fname, core_graph,
 		best_data, lp_edges, supp_data, inst);
 }
 
 void make_cut_test(const string &tsp_fname,
                    const string &tour_nodes_fname,
-                   const string &lp_sol_fname, GraphGroup &graph_data,
+                   const string &lp_sol_fname, Graph::CoreGraph &core_graph,
                    BestGroup &best_data, vector<double> &lp_edges,
                    SupportGroup &supp_data,
                    Instance &inst)
@@ -51,15 +51,11 @@ void make_cut_test(const string &tsp_fname,
     } CMR_CATCH_PRINT_THROW("getting Instance", err);
 
     int ncount = inst.node_count();
-    Graph::CoreGraph &core_graph = graph_data.core_graph;
 
     best_data.min_tour_value = 0.0;
 
-    try {
-        graph_data.island.resize(ncount);
-        graph_data.node_marks.resize(ncount, 0);
-        best_data.perm.resize(ncount);
-    }  CMR_CATCH_PRINT_THROW("doing ncount resizes", err);
+    try { best_data.perm.resize(ncount); }
+    CMR_CATCH_PRINT_THROW("doing ncount resizes", err);
 
     vector<int> sup_elist;
     vector<double> sup_ecap;
@@ -70,14 +66,12 @@ void make_cut_test(const string &tsp_fname,
         util::get_lp_sol(ncount, sup_elist, sup_ecap, lp_sol_fname);
     } CMR_CATCH_PRINT_THROW("getting data from file", err);
 
-    vector<int> &delta = graph_data.delta;
     vector<int> &best_tour_edges = best_data.best_tour_edges;
 
     try {
         core_graph = Graph::CoreGraph(best_data.best_tour_nodes,
                                            inst.edgelen_func());
 
-        delta.resize(core_graph.edge_count(), 0);
         best_tour_edges.resize(core_graph.edge_count(), 1);
         lp_edges.resize(core_graph.edge_count(), 0);
     } CMR_CATCH_PRINT_THROW("adding best tour edges", err);
@@ -98,16 +92,17 @@ void make_cut_test(const string &tsp_fname,
 
                 best_tour_edges.push_back(0);
                 lp_edges.push_back(0);
-                delta.push_back(0);
             } CMR_CATCH_PRINT_THROW("pushing back new lp edge", err);
         }
 
         lp_edges[find_ind] = sup_ecap[i];
     }
 
+    vector<int> island;
+
     try {
         supp_data = Data::SupportGroup(core_graph.get_edges(),
-                                       lp_edges, graph_data.island,
+                                       lp_edges, island,
                                        core_graph.node_count());
     } CMR_CATCH_PRINT_THROW("resetting support data", err);
 }

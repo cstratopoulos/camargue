@@ -74,17 +74,17 @@ SCENARIO ("Registering abstract cliques in a bank",
                         THEN ("Size is unchanged but ref goes up") {
                             REQUIRE(cbank.size() == 2);
                             REQUIRE(ptr1_copy.use_count() == 3);
-                            
+
                             AND_WHEN ("We remove a copied clique") {
                                 cbank.del_clique(ptr1_copy);
-                                
+
                                 THEN ("Size is unchanged but ref goes down") {
                                     REQUIRE(cbank.size() == 2);
                                     REQUIRE(ptr1.use_count() == 2);
-                                    
+
                                     AND_WHEN ("We remove a lone clique") {
                                         cbank.del_clique(ptr2);
-                                        
+
                                         THEN ("Size goes down, clique is null")
                                         {
                                             REQUIRE(cbank.size() == 1);
@@ -103,7 +103,7 @@ SCENARIO ("Registering abstract cliques in a bank",
 
 SCENARIO ("Testing equality and hash values of cliques",
           "[.Clique][.hash][tiny]") {
-    
+
     GIVEN ("A tour and some nodes") {
         vector<int> tour(10);
         vector<int> perm(10);
@@ -146,22 +146,22 @@ SCENARIO ("Generating cliques from Concorde cliques",
                     blossomfile = "test_data/blossom_lp/" + fname + ".2m.x",
                     subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-                    CMR::Data::GraphGroup g_dat;
+                    CMR::Graph::CoreGraph core_graph;
                     CMR::Data::BestGroup b_dat;
                     CMR::Data::SupportGroup s_dat;
                     std::vector<double> lp_edges;
                     CMR::Sep::LPcutList cutq;
                     REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
                                                              subtourfile,
-                                                             g_dat, b_dat,
+                                                             core_graph, b_dat,
                                                              lp_edges, s_dat));
 
-	
+
                     CMR::Graph::TourGraph TG(b_dat.best_tour_edges,
-                                      g_dat.core_graph.get_edges(),
+                                      core_graph.get_edges(),
                                       b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
-	
+
                     CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist,
                                                   s_dat.support_ecap, TG, cutq);
                     REQUIRE(fb_sep.find_cuts());
@@ -192,7 +192,7 @@ SCENARIO ("Generating cliques from Concorde cliques",
                             std::sort(cc_nodes.begin(), cc_nodes.end());
 
                             REQUIRE(cmr_nodes == cc_nodes);
-                  
+
                             free(ar);
                         }
                     }
@@ -200,7 +200,7 @@ SCENARIO ("Generating cliques from Concorde cliques",
             }
         }
     }
-}                
+}
 
 SCENARIO ("Abstract testing of tiny printed cliques",
           "[.Clique][.Sep][tiny]") {
@@ -244,7 +244,7 @@ SCENARIO ("Abstract testing of tiny printed cliques",
                         const CMR::Segment seg = clq.seg_list().front();
                         cout << "Represented as: " << seg.start << ", "
                              << seg.end << "\n";
-                        
+
                         CHECK(clq.seg_count() == 1);
                         CHECK(seg.size() == vec_copy.size());
 
@@ -252,7 +252,7 @@ SCENARIO ("Abstract testing of tiny printed cliques",
 
                         CHECK(from_clq == vec_copy);
                     }
-                }                
+                }
             }
 
             WHEN ("We grab disjoint segments") {

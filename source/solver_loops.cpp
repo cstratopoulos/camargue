@@ -104,7 +104,8 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
     PivType piv;
 
     Data::SupportGroup &supp_data = core_lp.supp_data;
-    unique_ptr<Sep::Separator> sep;
+    unique_ptr<Sep::Separator> &sep = separator;
+    const std::vector<Graph::Edge> &core_edges = core_graph.get_edges();
 
     ++round;
     if (!silent)
@@ -112,7 +113,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
     try {
         piv = core_lp.primal_pivot();
-        Sep::ptr_reset(sep, graph_data, best_data, supp_data, karp_part, TG);
+        Sep::ptr_reset(sep, core_edges, best_data, supp_data, karp_part, TG);
     } CMR_CATCH_PRINT_THROW("initializing pivot and separator", err);
 
     if (return_pivot(piv)) {
@@ -134,7 +135,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
                 if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
                     return cut_and_piv(round, do_price);
-                Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                Sep::ptr_reset(sep, core_edges, best_data, supp_data,
                                karp_part, TG);
             }
         } CMR_CATCH_PRINT_THROW("calling segment sep", err);
@@ -154,7 +155,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                 if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
                     return cut_and_piv(round, do_price);
 
-                Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                Sep::ptr_reset(sep, core_edges, best_data, supp_data,
                                karp_part, TG);
             }
         } CMR_CATCH_PRINT_THROW("calling fast2m sep", err);
@@ -171,7 +172,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                 if (total_delta >= Eps::Zero)
                     return cut_and_piv(round, do_price);
 
-                Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                Sep::ptr_reset(sep, core_edges, best_data, supp_data,
                                karp_part, TG);
             }
         } CMR_CATCH_PRINT_THROW("calling exact 2m sep", err);
@@ -189,7 +190,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                     !supp_data.connected)
                     return cut_and_piv(round,  do_price);
 
-                Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                Sep::ptr_reset(sep, core_edges, best_data, supp_data,
                                karp_part, TG);
             }
         } CMR_CATCH_PRINT_THROW("calling blkcomb sep", err);
@@ -218,7 +219,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                                        tourlen, prev_val, total_delta,
                                        delta_ratio)) {
                         num_add += sep->connect_cuts_q().size();
-                        Sep::ptr_reset(sep, graph_data, best_data, supp_data,
+                        Sep::ptr_reset(sep, core_edges, best_data, supp_data,
                                        karp_part, TG);
 
                     } else {
@@ -380,11 +381,10 @@ PivType Solver::frac_recover()
         return PivType::Frac;
 
     vector<Graph::Edge> new_edges;
-    Graph::CoreGraph &graph = graph_data.core_graph;
 
     for (int i = 0; i < ncount; ++i) {
         EndPts e(cyc[i], cyc[(i + 1) % ncount]);
-        if (graph.find_edge_ind(e.end[0], e.end[1]) == -1) {
+        if (core_graph.find_edge_ind(e.end[0], e.end[1]) == -1) {
             try {
                 new_edges.emplace_back(e.end[0], e.end[1],
                                        tsp_instance.edgelen(e.end[0],

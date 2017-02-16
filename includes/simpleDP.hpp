@@ -19,8 +19,7 @@ namespace Sep {
 class SimpleDP {
 public:
     /// Construct a separator to separate over partitioned DPwitness graphs.
-    SimpleDP(Data::GraphGroup &graph_dat,
-             Data::KarpPartition &_kpart,
+    SimpleDP(Data::KarpPartition &_kpart,
              Data::BestGroup &best_dat,
              Data::SupportGroup &supp_dat,
              Sep::CutQueue<dominoparity> &_dp_q);

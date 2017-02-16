@@ -27,8 +27,9 @@ using SparseRow = LP::SparseRow;
 
 namespace Sep {
 
-SparseRow CutTranslate::get_row(const CCtsp_lpcut_in &cc_cut,
-                                const std::vector<int> &perm)
+SparseRow get_row(const CCtsp_lpcut_in &cc_cut,
+                  const std::vector<int> &perm,
+                  const Graph::CoreGraph &core_graph)
 {
     SparseRow result;
     result.sense = cc_cut.sense;
@@ -74,15 +75,16 @@ SparseRow CutTranslate::get_row(const CCtsp_lpcut_in &cc_cut,
 }
 
 
-SparseRow CutTranslate::get_row(const dominoparity &dp_cut,
-                                const vector<int> &tour_nodes)
+SparseRow get_row(const dominoparity &dp_cut,
+                  const vector<int> &tour_nodes,
+                  const Graph::CoreGraph &core_graph)
 {
-    runtime_error err("Problem in CutTranslate::get_row dp cut.");
+    runtime_error err("Problem in get_row dp cut.");
 
     SparseRow result;
     vector<double> coeff_buff;
 
-    for (int &i : node_marks) i = 0;
+    vector<int> node_marks(core_graph.node_count(), 0);
 
     result.sense = 'L';
     vector<int> &rmatind = result.rmatind;
@@ -171,8 +173,9 @@ SparseRow CutTranslate::get_row(const dominoparity &dp_cut,
     return result;
 }
 
-SparseRow CutTranslate::get_row(const vector<int> &handle_delta,
-                                const vector<vector<int>> &tooth_edges)
+SparseRow get_row(const vector<int> &handle_delta,
+                  const vector<vector<int>> &tooth_edges,
+                  const Graph::CoreGraph &core_graph)
 {
     SparseRow result;
 

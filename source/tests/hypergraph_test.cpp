@@ -55,13 +55,12 @@ SCENARIO ("Comparing HyperGraph edge coeffs to CPLEX coefs",
 
                     solver.cutting_loop(false, true, true);
 
-                    const Data::GraphGroup &g_dat = solver.graph_info();
+                    const Graph::CoreGraph &core_graph = solver.graph_info();
                     const LP::CoreLP &core_lp = solver.get_core_lp();
 
-                    const vector<Graph::Edge> &edges = g_dat.core_graph
-                    .get_edges();
+                    const vector<Graph::Edge> &edges = core_graph.get_edges();
 
-                    int ncount = g_dat.core_graph.node_count();
+                    int ncount = core_graph.node_count();
                     int numrows = core_lp.num_rows();
 
                     for (int i = 0; i < edges.size(); ++i) {
@@ -105,7 +104,7 @@ SCENARIO ("Comparing HyperGraph edge coeffs to comb/domino sparse rows",
         solfile = "test_data/tours/" + fname + ".sol",
         subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-        Data::GraphGroup g_dat;
+        Graph::CoreGraph core_graph;
         Data::BestGroup b_dat;
         Data::SupportGroup s_dat;
         vector<double> lp_edges;
@@ -113,29 +112,27 @@ SCENARIO ("Comparing HyperGraph edge coeffs to comb/domino sparse rows",
         Data::KarpPartition kpart;
 
         GIVEN ("A subtour lp solution for " + fname) {
-            Data::make_cut_test(probfile, solfile, subtourfile, g_dat,
+            Data::make_cut_test(probfile, solfile, subtourfile, core_graph,
                                      b_dat, lp_edges, s_dat, inst);
-            int ncount = g_dat.core_graph.node_count();
+            int ncount = core_graph.node_count();
 
-
-            Sep::CutTranslate translator(g_dat);
 
             kpart = Data::KarpPartition(inst);
             Graph::TourGraph TG(b_dat.best_tour_edges,
-                                     g_dat.core_graph.get_edges(),
+                                     core_graph.get_edges(),
                                      b_dat.perm);
 
-            Sep::Separator sep(g_dat, b_dat, s_dat, kpart, TG,
-                                    IntMax);
+            Sep::Separator sep(core_graph.get_edges(), b_dat, s_dat, kpart, TG,
+                               IntMax);
 
 
             Sep::CliqueBank cbank(b_dat.best_tour_nodes,
                                        b_dat.perm);
             Sep::ToothBank tbank(cbank);
 
-            vector<Price::PrEdge<double>> pr_edges(g_dat.core_graph.edge_count());
+            vector<Price::PrEdge<double>> pr_edges(core_graph.edge_count());
             for (int i = 0; i < pr_edges.size(); ++i)
-                pr_edges[i].end = g_dat.core_graph.get_edge(i).end;
+                pr_edges[i].end = core_graph.get_edge(i).end;
 
             WHEN ("Cuts are found") {
                 bool fast2m = sep.fast2m_sep();
@@ -155,14 +152,15 @@ SCENARIO ("Comparing HyperGraph edge coeffs to comb/domino sparse rows",
                     for (const CCtsp_lpcut_in* headptr : qheads)
                         for (const CCtsp_lpcut_in *cur = headptr;
                              cur; cur = cur->next) {
-                            LP::SparseRow R = translator.get_row(*cur, perm);
+                            LP::SparseRow R = Sep::get_row(*cur, perm,
+                                                           core_graph);
                             Sep::HyperGraph hg(cbank, *cur, tour);
 
                             for (int i = 0; i < R.rmatind.size(); ++i) {
                                 int edge_ind = R.rmatind[i];
                                 double ref_coeff = R.rmatval[i];
                                 Graph::Edge e =
-                                g_dat.core_graph.get_edge(edge_ind);
+                                core_graph.get_edge(edge_ind);
 
                                 double hg_coeff = hg.get_coeff(e.end[0],
                                                                e.end[1]);
@@ -183,7 +181,8 @@ SCENARIO ("Comparing HyperGraph edge coeffs to comb/domino sparse rows",
                         for (auto it = sep.simpleDP_q().begin();
                              it != sep.simpleDP_q().end(); ++it) {
                             const Sep::dominoparity &dp_cut = *it;
-                            LP::SparseRow R = translator.get_row(dp_cut, tour);
+                            LP::SparseRow R = Sep::get_row(dp_cut, tour,
+                                                           core_graph);
                             Sep::HyperGraph hg(cbank, tbank, dp_cut, R.rhs,
                                                     tour);
 
@@ -191,7 +190,7 @@ SCENARIO ("Comparing HyperGraph edge coeffs to comb/domino sparse rows",
                                 int edge_ind = R.rmatind[i];
                                 double ref_coeff = R.rmatval[i];
                                 Graph::Edge e =
-                                g_dat.core_graph.get_edge(edge_ind);
+                                core_graph.get_edge(edge_ind);
 
                                 double hg_coeff = hg.get_coeff(e.end[0],
                                                                e.end[1]);

@@ -44,7 +44,7 @@ struct TourBasis {
  */
 class CoreLP : public Relaxation {
 public:
-    CoreLP(Data::GraphGroup &graph_data_,
+    CoreLP(Graph::CoreGraph &core_graph_,
            Data::BestGroup &best_data_);
 
     LP::PivType primal_pivot();
@@ -81,7 +81,7 @@ private:
 
     void purge_gmi();
 
-    Data::GraphGroup &graph_data;
+    Graph::CoreGraph &core_graph;
     Data::BestGroup &best_data;
     Data::SupportGroup supp_data;
 

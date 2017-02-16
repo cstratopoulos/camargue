@@ -43,10 +43,10 @@ SCENARIO ("Generating figures to compare primal pivots",
         REQUIRE_NOTHROW(util::write_xy_coords(dat->x, dat->y, ncount,
                                               "pcb442.xy"));
         cout << "\tWrote xy coords to pcb442.xy.\n";
-        
-        const auto &edges = solver.graph_info().core_graph.get_edges();
+
+        const auto &edges = solver.graph_info().get_edges();
         const auto &b_dat = solver.best_info();
-        
+
         REQUIRE_NOTHROW(util::write_tour_edges(b_dat.best_tour_edges,
                                                edges,
                                                ncount,
@@ -62,7 +62,7 @@ SCENARIO ("Generating figures to compare primal pivots",
 
             vector<int> lp_elist;
             vector<double> lp_ecap;
-            
+
 
             for (int i = 0; i < lp_vec.size(); ++i)
                 if (lp_vec[i] >= Eps::Zero) {
@@ -99,7 +99,7 @@ SCENARIO ("Generating figures to compare primal pivots",
 
             vector<int> lp_elist;
             vector<double> lp_ecap;
-            
+
 
             for (int i = 0; i < lp_vec.size(); ++i)
                 if (lp_vec[i] >= Eps::Zero) {
@@ -140,9 +140,9 @@ SCENARIO ("Benchmarking rounds of cuts",
         GIVEN ("The TSP instance " + prob) {
             THEN ("We test the changes from adding cuts in rounds") {
                     Data::Instance inst("problems/" + prob + ".tsp", 99);
-                    Data::GraphGroup g_dat(inst);
-                    Data::BestGroup b_dat(inst, g_dat);
-                    LP::CoreLP core(g_dat, b_dat);
+                    Graph::CoreGraph core_graph(inst);
+                    Data::BestGroup b_dat(inst, core_graph);
+                    LP::CoreLP core(core_graph, b_dat);
 
                     vector<double> tourx = core.lp_vec();
                     double tourlen = core.get_objval();
@@ -155,17 +155,19 @@ SCENARIO ("Benchmarking rounds of cuts",
 
                     int ncount = inst.node_count();
 
-                    Data::SupportGroup s_dat(g_dat.core_graph.get_edges(),
-                                             pivx, g_dat.island,
+                    vector<int> island;
+                    Data::SupportGroup s_dat(core_graph.get_edges(),
+                                             pivx, island,
                                              ncount);
 
                     Graph::TourGraph TG(b_dat.best_tour_edges,
-                                        g_dat.core_graph.
+                                        core_graph.
                                         get_edges(), b_dat.perm);
                     Data::KarpPartition kpart;
 
                     unique_ptr<Sep::Separator> sep =
-                    util::make_unique<Sep::Separator>(g_dat, b_dat, s_dat,
+                    util::make_unique<Sep::Separator>(core_graph.get_edges(),
+                                                      b_dat, s_dat,
                                                       kpart, TG);
 
                     if (sep->connect_sep()) {
@@ -181,14 +183,13 @@ SCENARIO ("Benchmarking rounds of cuts",
                              << "\tStat " << piv << "\n";
                         pivx = newx;
                         pval = newpiv;
-                        s_dat = Data::SupportGroup(g_dat.core_graph.get_edges(),
-                                                   pivx, g_dat.island,
+                        vector<int> island;
+                        s_dat = Data::SupportGroup(core_graph.get_edges(),
+                                                   pivx, island,
                                                    ncount);
-                        sep = (util::make_unique<Sep::Separator>(g_dat,
-                                                                    b_dat,
-                                                                    s_dat,
-                                                                    kpart,
-                                                                    TG));
+
+                        Sep::ptr_reset(sep, core_graph.get_edges(), b_dat,
+                                       s_dat, kpart, TG);
                     }
 
                     if (sep->fast2m_sep()) {
@@ -206,12 +207,13 @@ SCENARIO ("Benchmarking rounds of cuts",
                              << "\tStat " << piv << "\n";
                         pivx = newx;
                         pval = newpiv;
-                        s_dat = Data::SupportGroup(g_dat.core_graph.get_edges(),
-                                                   pivx, g_dat.island,
+                        vector<int> island;
+                        s_dat = Data::SupportGroup(core_graph.get_edges(),
+                                                   pivx, island,
                                                    ncount);
-                        sep = util::make_unique<Sep::Separator>(g_dat, b_dat,
-                                                                s_dat, kpart,
-                                                                TG);
+                        Sep::ptr_reset(sep, core_graph.get_edges(), b_dat,
+                                       s_dat, kpart, TG);
+
                     }
 
                     if (sep->blkcomb_sep()) {
@@ -227,12 +229,12 @@ SCENARIO ("Benchmarking rounds of cuts",
                              << "\tStat " << piv << "\n";
                         pivx = newx;
                         pval = newpiv;
-                        s_dat = Data::SupportGroup(g_dat.core_graph.get_edges(),
-                                                   pivx, g_dat.island,
+                        vector<int> island;
+                        s_dat = Data::SupportGroup(core_graph.get_edges(),
+                                                   pivx, island,
                                                    ncount);
-                        sep = util::make_unique<Sep::Separator>(g_dat, b_dat,
-                                                                s_dat, kpart,
-                                                                TG);
+                        Sep::ptr_reset(sep, core_graph.get_edges(), b_dat,
+                                       s_dat, kpart, TG);
                     }
             }
         }
@@ -249,9 +251,9 @@ SCENARIO ("Performing single pivots",
             WHEN ("We pivot to a new solution") {
                 THEN ("The LP vector changes") {
                     Data::Instance inst("problems/" + prob + ".tsp", 99);
-                    Data::GraphGroup g_dat(inst);
-                    Data::BestGroup b_dat(inst, g_dat);
-                    LP::CoreLP core(g_dat, b_dat);
+                    Graph::CoreGraph core_graph(inst);
+                    Data::BestGroup b_dat(inst, core_graph);
+                    LP::CoreLP core(core_graph, b_dat);
 
                     vector<double> tourx = core.lp_vec();
                     double tourlen = core.get_objval();
@@ -271,17 +273,18 @@ SCENARIO ("Performing single pivots",
                             REQUIRE(core.get_objval() == tourlen);
                             REQUIRE(tourx == core.lp_vec());
 
-                            Data::SupportGroup s_dat(g_dat.core_graph
-                                                     .get_edges(), pivx,
-                                                     g_dat.island,
+                            vector<int> island;
+                            Data::SupportGroup s_dat(core_graph.get_edges(),
+                                                     pivx, island,
                                                      inst.node_count());
 
                             Graph::TourGraph TG(b_dat.best_tour_edges,
-                                                     g_dat.core_graph.
+                                                     core_graph.
                                                      get_edges(), b_dat.perm);
                             Data::KarpPartition kpart;
-                            Sep::Separator sep(g_dat, b_dat, s_dat,
-                                                    kpart, TG);
+                            Sep::Separator sep(core_graph.get_edges(),
+                                               b_dat, s_dat,
+                                               kpart, TG);
 
                             bool found_some = false;
 
@@ -300,7 +303,7 @@ SCENARIO ("Performing single pivots",
                             }
 
                             REQUIRE(found_some);
-                            
+
                             AND_WHEN("We pivot again after adding cuts") {
                                 THEN("The tour vector changes again.") {
                                     core.primal_pivot();
@@ -331,17 +334,17 @@ SCENARIO ("Consructing a Core LP",
         GIVEN ("The TSP instance " + prob) {
             WHEN ("A core LP is constructed") {
                 Data::Instance inst("problems/" + prob + ".tsp", 99);
-                Data::GraphGroup g_dat(inst);
-                Data::BestGroup b_dat(inst, g_dat);
+                Graph::CoreGraph core_graph(inst);
+                Data::BestGroup b_dat(inst, core_graph);
                 THEN ("Its constructor doesn't throw.") {
                     std::unique_ptr<LP::CoreLP> core;
                     REQUIRE_NOTHROW(core =
-                                    util::make_unique<LP::CoreLP>(g_dat,
+                                    util::make_unique<LP::CoreLP>(core_graph,
                                                                   b_dat));
                 }
 
                 AND_THEN ("The degree LP is feasible at the best tour") {
-                    LP::CoreLP core(g_dat, b_dat);
+                    LP::CoreLP core(core_graph, b_dat);
                     vector<double> feas;
                     vector<double> tour = core.lp_vec();
                     REQUIRE_NOTHROW(core.get_row_infeas(tour, feas, 0,
@@ -388,7 +391,7 @@ SCENARIO ("Black box testing of failures in constructing LP Relaxations",
         WHEN ("A nonzero rval occurs in the constructor") {
             THEN ("No memory is leaked") {
                 int rval = 0;
-        
+
                 CPXLPptr cplex_lp = (CPXLPptr) NULL;
                 CPXENVptr cplex_env = CPXopenCPLEX(&rval);
 

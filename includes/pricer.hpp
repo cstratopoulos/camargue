@@ -25,18 +25,18 @@ namespace CMR {
 /// Matters related to pricing sets of edges.
 namespace Price {
 
-/// Get reduced costs for edges not in the core lp. 
+/// Get reduced costs for edges not in the core lp.
 class Pricer {
 public:
-    
+
     Pricer(LP::CoreLP &core, const Data::Instance &_inst,
-           Data::GraphGroup &graphgroup); //!< Construct a Pricer.
+           Graph::CoreGraph &core_graph_); //!< Construct a Pricer.
 
     Pricer(const Pricer &P) = delete;
     Pricer &operator=(const Pricer &P) = delete;
 
     ~Pricer(); //!< Destruct and free resource handles.
-    
+
     ScanStat gen_edges(LP::PivType piv_stat); //!< Generate/add edges to core.
 
     util::Fixed64 exact_lb(bool full);
@@ -49,23 +49,23 @@ private:
     std::vector<Graph::Edge> pool_chunk(std::vector<PrEdge<double>> &edge_q);
 
     bool scan_adjlist(std::vector<PrEdge<util::Fixed64>> &gen_edges,
-                      int &node_index);    
+                      int &node_index);
 
     bool scan_edges(std::vector<PrEdge<util::Fixed64>> &gen_edges,
                     int &loop1, int &loop2);
-    
+
     // bool f64_gen_edges(const std::vector<util::Fixed64> &node_pi_est,
     //                    std::vector<PrEdge<double>64> &gen_edges,
     //                    int &loop1, int &loop2);
-    
+
     LP::CoreLP &core_lp; //!< The LP relaxation to query/modify.
     const Data::Instance &inst; //!< To get lengths for edges not in core_lp.
     const Sep::ExternalCuts &ext_cuts;  //!< For computing duals.
 
-    Data::GraphGroup &graph_group; //!< Graph data for the core_lp.
+    Graph::CoreGraph &core_graph; //!< Graph data for the core_lp.
 
     const int gen_max; //!< The max number of edges to generate at a time.
-    
+
     std::vector<int> gen_elist; //!< Raw node-node list of generated edges.
     std::vector<int> gen_elen;  //!< Unused dummy parameter to pass.
 
@@ -112,10 +112,10 @@ void Pricer::price_edges(std::vector<PrEdge<numtype>> &target_edges,
     } CMR_CATCH_PRINT_THROW("Couldn't build price adjlist.", err);
 
     vector<Graph::Node> &price_nodelist = price_adjlist.nodelist;
-    
+
     const std::vector<int> &def_tour = ext_cuts.get_cbank().ref_tour();
     int marker = 0;
-    
+
     for (const std::pair<Sep::Clique, numtype> &kv : clique_pi) {
         const Sep::Clique &clq = kv.first;
         numtype pival = kv.second;
@@ -123,12 +123,12 @@ void Pricer::price_edges(std::vector<PrEdge<numtype>> &target_edges,
         if (pival != 0.0) {
             numtype add_back = pival + pival;
             ++marker;
-            
+
             for (int j : clq.node_list(def_tour)) {
                 for (Graph::AdjObj &nbr : price_nodelist[j].neighbors)
                     if (price_nodelist[nbr.other_end].mark == marker)
                         target_edges[nbr.edge_index].redcost += add_back;
-                    
+
                 price_nodelist[j].mark = marker;
             }
         }
@@ -141,16 +141,16 @@ void Pricer::price_edges(std::vector<PrEdge<numtype>> &target_edges,
     for (int i = 0; i < cutlist.size(); ++i) {
         numtype pival = cut_pi[i];
         const Sep::HyperGraph &H = cutlist[i];
-        
+
         if (H.cut_type() == CutType::Non)
             throw std::logic_error("Called pricing w Non HyperGraph present.");
-        
+
         if (H.cut_type() != CutType::Domino)
             continue;
 
         if (pival == 0)
             continue;
-        
+
         try {
             H.get_coeffs(target_edges, rmatind, rmatval);
         } CMR_CATCH_PRINT_THROW("geting domino price edge coeffs", err);

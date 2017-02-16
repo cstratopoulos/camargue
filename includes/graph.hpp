@@ -139,40 +139,7 @@ struct AdjList {
 };
 
 /// Graph object representing the edges in a core lp relaxation.
-class CoreGraph {
-public:
-    CoreGraph() = default;
 
-    /// Construct a CoreGraph from a length func and a c-array node-node elist.
-    CoreGraph(int ncount, int ecount, const int *elist,
-              const std::function<double(int, int)> edgelen);
-
-    /// Construct a CoreGraph containing the nodes of a TSP tour.
-    CoreGraph(const std::vector<int> &tour_nodes,
-              const std::function<double(int, int)> edgelen);
-
-    int node_count() const { return nodecount; }
-    int edge_count() const { return edges.size(); }
-
-    int find_edge_ind(int end0, int end1) const;
-
-    Edge get_edge(int index) const { return edges[index]; }
-
-    std::vector<Edge> &get_edges() { return edges; }
-    const std::vector<Edge> &get_edges() const { return edges; }
-
-    void get_elist(std::vector<int> &elist, std::vector<int> &elen) const;
-
-    const AdjList &get_adj() const { return adj_list; }
-
-    void add_edge(int end0, int end1, int len);
-    void add_edge(const Edge &e);
-
-private:
-    std::vector<Edge> edges;
-    AdjList adj_list;
-    int nodecount;
-};
 
 //TODO get rid of all the versions that need island/deltacount, etc.
 std::vector<int> delta_inds(const std::vector<int> &node_list,

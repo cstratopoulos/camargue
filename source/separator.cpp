@@ -21,12 +21,12 @@ using std::cerr;
 namespace CMR {
 namespace Sep {
 
-Separator::Separator(Data::GraphGroup &graphdata,
+Separator::Separator(const vector<Graph::Edge> &core_edges_,
                      Data::BestGroup &bestdata,
                      Data::SupportGroup &suppdata,
                      Data::KarpPartition &kpart, Graph::TourGraph &_TG) try
     : max_total(8), running_total(0),
-      graph_data(graphdata), best_data(bestdata), supp_data(suppdata),
+      core_edges(core_edges_), best_data(bestdata), supp_data(suppdata),
       karp_part(kpart), TG(_TG), perm_elist(supp_data.support_elist)
 {
     for (int i = 0; i < perm_elist.size(); ++i)
@@ -36,13 +36,13 @@ Separator::Separator(Data::GraphGroup &graphdata,
     throw runtime_error("Separator constructor failed.");
 }
 
-Separator::Separator(Data::GraphGroup &graphdata,
+Separator::Separator(const vector<Graph::Edge> &core_edges_,
                      Data::BestGroup &bestdata,
                      Data::SupportGroup &suppdata,
                      Data::KarpPartition &kpart, Graph::TourGraph &_TG,
                      int round_limit) try
     : max_total(round_limit), running_total(0),
-      graph_data(graphdata), best_data(bestdata), supp_data(suppdata),
+      core_edges(core_edges_), best_data(bestdata), supp_data(suppdata),
       karp_part(kpart), TG(_TG), perm_elist(supp_data.support_elist)
 {
     for (int i = 0; i < perm_elist.size(); ++i)
@@ -52,12 +52,13 @@ Separator::Separator(Data::GraphGroup &graphdata,
     throw runtime_error("Separator constructor failed.");
 }
 
-void ptr_reset(std::unique_ptr<Separator> &sep, Data::GraphGroup &g_dat,
+void ptr_reset(std::unique_ptr<Separator> &sep,
+               const vector<Graph::Edge> &c_edges,
                Data::BestGroup &b_dat, Data::SupportGroup &s_dat,
                Data::KarpPartition &kpart,
                Graph::TourGraph &TG)
 {
-    sep = util::make_unique<Separator>(g_dat, b_dat, s_dat, kpart, TG);
+    sep = util::make_unique<Separator>(c_edges, b_dat, s_dat, kpart, TG);
 }
 
 bool Separator::segment_sep() try
@@ -98,9 +99,7 @@ bool Separator::blkcomb_sep() try
 
 bool Separator::exact2m_sep() try
 {
-    ExBlossoms ex2m(graph_data.core_graph.get_edges(),
-                    best_data, supp_data,
-                    ex2m_q);
+    ExBlossoms ex2m(core_edges, best_data, supp_data, ex2m_q);
     bool result = ex2m.find_cuts();
 
     running_total += ex2m_q.size();
@@ -113,7 +112,7 @@ bool Separator::exact2m_sep() try
 bool Separator::simpleDP_sep() try {
     if (supp_data.connected)
         if (supp_data.in_subtour_poly()) {
-            SimpleDP dominos(graph_data, karp_part, best_data, supp_data,
+            SimpleDP dominos(karp_part, best_data, supp_data,
                              dp_q);
             if (dominos.find_cuts()) {
                 running_total += dp_q.size();

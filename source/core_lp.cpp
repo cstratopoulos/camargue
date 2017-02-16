@@ -30,12 +30,11 @@ namespace Eps = CMR::Epsilon;
 
 namespace LP {
 
-CoreLP::CoreLP(Data::GraphGroup &graph_data_,
+CoreLP::CoreLP(Graph::CoreGraph &core_graph_,
                Data::BestGroup &best_data_) try :
-    graph_data(graph_data_), best_data(best_data_),
+    core_graph(core_graph_), best_data(best_data_),
     ext_cuts(best_data.best_tour_nodes, best_data.perm)
 {
-    Graph::CoreGraph &core_graph = graph_data.core_graph;
     int ncount = core_graph.node_count();
 
     char degree_sense = 'E';
@@ -141,7 +140,6 @@ PivType CoreLP::primal_pivot()
     runtime_error err("Problem in CoreLP::primal_pivot");
 
     double low_limit = best_data.min_tour_value - Eps::Zero;
-    Graph::CoreGraph &core_graph = graph_data.core_graph;
 
     try {
         get_base(tour_base.colstat, tour_base.rowstat);
@@ -234,11 +232,9 @@ void CoreLP::set_best_tour(const std::vector<int> &tour_nodes)
         d_tour_edges[i] = 0.0;
     }
 
-    const Graph::CoreGraph &CG = graph_data.core_graph;
-
     for (int i = 0; i < ncount; ++i) {
         EndPts e(tour_nodes[i], tour_nodes[(i + 1) % ncount]);
-        int ind = CG.find_edge_ind(e.end[0], e.end[1]);
+        int ind = core_graph.find_edge_ind(e.end[0], e.end[1]);
         if (ind == -1) {
             cerr << "Edge " << e.end[0] << ", " << e.end[1]
                  << " still not in graph\n";
@@ -262,12 +258,11 @@ void CoreLP::update_best_data()
 {
     double edge_objval = 0.0;
 
-    const Graph::CoreGraph &G = graph_data.core_graph;
     const vector<int> &tour_edges = best_data.best_tour_edges;
 
     for (int i = 0; i < tour_edges.size(); ++i)
         if (tour_edges[i] == 1)
-            edge_objval += G.get_edge(i).len;
+            edge_objval += core_graph.get_edge(i).len;
 
     if (edge_objval > best_data.min_tour_value) {
         cerr << "Edge objval is " << edge_objval << "\n";
@@ -292,7 +287,7 @@ void CoreLP::prune_slacks()
         if (fabs(lp_edges[i] - tour_base.best_tour_edges[i]) >= Eps::Zero)
             throw runtime_error("Tried to prune slacks with non-tour vec");
 
-    int ncount = graph_data.core_graph.node_count();
+    int ncount = core_graph.node_count();
 
     vector<double> slacks = row_slacks(ncount, num_rows() - 1);
 
@@ -331,7 +326,7 @@ void CoreLP::rebuild_basis()
 
     get_row_infeas(tour, feas_stat, 0, num_rows() - 1);
 
-    int ncount = graph_data.core_graph.node_count();
+    int ncount = core_graph.node_count();
 
     for (int i = 0; i < feas_stat.size(); ++i) {
         if (std::abs(feas_stat[i] >= Eps::Zero)) {
@@ -354,12 +349,11 @@ void CoreLP::add_cuts(const Sep::LPcutList &cutq)
 
     runtime_error err("Problem in CoreLP::add_cuts LPcutList");
 
-    Sep::CutTranslate translator(graph_data);
     vector<int> &perm = best_data.perm;
     vector<int> &tour = best_data.best_tour_nodes;
     try {
         for (const lpcut_in *cur = cutq.begin(); cur; cur = cur->next) {
-            SparseRow R = translator.get_row(*cur, perm);
+            SparseRow R = Sep::get_row(*cur, perm, core_graph);
             add_cut(R);
             ext_cuts.add_cut(*cur, tour);
         }
@@ -373,14 +367,13 @@ void CoreLP::add_cuts(const Sep::CutQueue<Sep::dominoparity> &dpq)
 
     runtime_error err("Problem in CoreLP::add_cuts(Sep::dominoparity)");
 
-    Sep::CutTranslate translator(graph_data);
     vector<int> &tour_nodes = best_data.best_tour_nodes;
 
     try {
         for (Sep::CutQueue<Sep::dominoparity>::ConstItr it = dpq.begin();
              it != dpq.end(); ++it) {
             const Sep::dominoparity &dp_cut = *it;
-            SparseRow R = translator.get_row(dp_cut, tour_nodes);
+            SparseRow R = Sep::get_row(dp_cut, tour_nodes, core_graph);
             add_cut(R);
             ext_cuts.add_cut(dp_cut, R.rhs, tour_nodes);
         }
@@ -410,16 +403,14 @@ void CoreLP::add_cuts(const Sep::CutQueue<Sep::ex_blossom> &ex2m_q)
 
     runtime_error err("Problem in CoreLP::add_cuts(Sep::ex_blossom)");
 
-    Sep::CutTranslate translator(graph_data);
-    int ncount = graph_data.core_graph.node_count();
+    int ncount = core_graph.node_count();
 
     try {
         for (Sep::CutQueue<Sep::ex_blossom>::ConstItr it = ex2m_q.begin();
              it != ex2m_q.end(); ++it) {
             const Sep::ex_blossom &B = *it;
             const vector<int> &handle_nodes = B.handle;
-            const vector<Graph::Edge> &edges = graph_data.core_graph
-            .get_edges();
+            const vector<Graph::Edge> &edges = core_graph.get_edges();
 
             vector<int> handle_delta  = Graph::delta_inds(handle_nodes, edges,
                                                           ncount);
@@ -435,7 +426,7 @@ void CoreLP::add_cuts(const Sep::CutQueue<Sep::ex_blossom> &ex2m_q)
                 tooth_edges.emplace_back(vector<int>{e.end[0], e.end[1]});
             }
 
-            SparseRow R = translator.get_row(handle_delta, tooth_edges);
+            SparseRow R = Sep::get_row(handle_delta, tooth_edges, core_graph);
             add_cut(R);
             ext_cuts.add_cut(handle_nodes, tooth_edges);
         }
@@ -446,12 +437,10 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch)
 {
     runtime_error err("Problem in CoreLP::add_edges");
 
-    Graph::CoreGraph &core_graph = graph_data.core_graph;
     int old_ecount = core_graph.edge_count();
     int new_ecount = old_ecount + batch.size();
 
     try {
-        graph_data.delta.resize(new_ecount, 0);
         best_data.best_tour_edges.resize(new_ecount, 0);
         for (const Graph::Edge &e : batch)
             core_graph.add_edge(e);
@@ -480,7 +469,7 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch)
 void CoreLP::purge_gmi()
 {
     vector<int> delrows(num_rows(), 0);
-    int ncount = graph_data.core_graph.node_count();
+    int ncount = core_graph.node_count();
 
     int delcount = 0;
     int i = 0;

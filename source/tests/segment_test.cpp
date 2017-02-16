@@ -26,7 +26,7 @@ SCENARIO("Exact primal separation of subtours",
 	blossomfile = "test_data/blossom_lp/" + fname + ".2m.x",
 	subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-      CMR::Data::GraphGroup g_dat;
+      CMR::Graph::CoreGraph core_graph;
       CMR::Data::BestGroup b_dat;
       CMR::Data::SupportGroup s_dat;
       std::vector<double> lp_edges;
@@ -35,10 +35,10 @@ SCENARIO("Exact primal separation of subtours",
       WHEN("The tour is good but the solution is in the subtour polytope") {
       	THEN("No segment cuts are found") {
 	  REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
-						  blossomfile, g_dat, b_dat,
+						  blossomfile, core_graph, b_dat,
 						  lp_edges, s_dat));
 
-	  CMR::Graph::TourGraph TG(b_dat.best_tour_edges, g_dat.core_graph.get_edges(),
+	  CMR::Graph::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
 			     b_dat.perm);
           
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];

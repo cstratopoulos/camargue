@@ -21,8 +21,7 @@ enum class ListStat {None, Merge, Full};
 
 class CandidateTeeth {
 public:
-    CandidateTeeth(Data::GraphGroup &_graph_dat,
-                   Data::BestGroup &_best_dat,
+    CandidateTeeth(Data::BestGroup &_best_dat,
                    Data::SupportGroup &_supp_dat);
 
     void get_light_teeth();
@@ -38,7 +37,7 @@ public:
                          const ToothBody &s2) const;
 
     void sort_by_root();
-  
+
     static void print_tooth(const SimpleTooth &T, bool full,
                             const std::vector<int> &tour_nodes);
     void print_tooth(const SimpleTooth &T, bool full);
@@ -58,61 +57,60 @@ public:
 
 private:
     friend class DPwitness;
-  
-    std::vector<int> endmark;    
-  
+
+    std::vector<int> endmark;
+
     static void add_tooth(ToothList &teeth,
                           const std::vector<std::vector<int>> &zones,
                           std::vector<IteratorMat> &ranges,
                           std::array<int, 3> &sizes,
                           const int root, const int body_start,
                           const int body_end, const double slack);
-  
-  static int teeth_cb(double cut_val, int cut_start, int cut_end,
-		      void *u_data);
 
-  struct LinsubCBData {
-      LinsubCBData(std::vector<ToothList> &_light_teeth,
-                   std::vector<std::vector<int>> &_adj_zones,
-                   std::vector<IteratorMat>
-                   &_ranges,
-                   std::vector<std::array<int, 3>> &_list_sizes,
-                   std::vector<int> &_node_marks,
-                   std::vector<int> &_tour_nodes,
-                   std::vector<int> &_perm,
-                   const Graph::AdjList &_G_s) :
-          light_teeth(_light_teeth),
-          adj_zones(_adj_zones), ranges(_ranges), list_sizes(_list_sizes),
-          node_marks(_node_marks),
-          tour_nodes(_tour_nodes), perm(_perm),
-          G_s(_G_s),
-          old_seg(_G_s.node_count - 1, _G_s.node_count - 1, 0.0)
-          {}
+    static int teeth_cb(double cut_val, int cut_start, int cut_end,
+                        void *u_data);
 
-      std::vector<std::vector<SimpleTooth::Ptr>> &light_teeth;
-      std::vector<std::vector<int>> &adj_zones;
-      std::vector<IteratorMat> &ranges;
-      std::vector<std::array<int, 3>> &list_sizes;
+    struct LinsubCBData {
+        LinsubCBData(std::vector<ToothList> &_light_teeth,
+                     std::vector<std::vector<int>> &_adj_zones,
+                     std::vector<IteratorMat>
+                     &_ranges,
+                     std::vector<std::array<int, 3>> &_list_sizes,
+                     std::vector<bool> &_node_marks,
+                     std::vector<int> &_tour_nodes,
+                     std::vector<int> &_perm,
+                     const Graph::AdjList &_G_s) :
+            light_teeth(_light_teeth),
+            adj_zones(_adj_zones), ranges(_ranges), list_sizes(_list_sizes),
+            node_marks(_node_marks),
+            tour_nodes(_tour_nodes), perm(_perm),
+            G_s(_G_s),
+            old_seg(_G_s.node_count - 1, _G_s.node_count - 1, 0.0)
+            {}
 
-      std::vector<int> &node_marks;
-      std::vector<int> &tour_nodes;
-      std::vector<int> &perm;
+        std::vector<std::vector<SimpleTooth::Ptr>> &light_teeth;
+        std::vector<std::vector<int>> &adj_zones;
+        std::vector<IteratorMat> &ranges;
+        std::vector<std::array<int, 3>> &list_sizes;
 
-      const Graph::AdjList &G_s;
+        std::vector<bool> &node_marks;
+        std::vector<int> &tour_nodes;
+        std::vector<int> &perm;
 
-      ToothBody old_seg;
-    
-      std::unordered_map<int, double> rb_sums;
-  };
+        const Graph::AdjList &G_s;
 
-  Data::GraphGroup &graph_dat;
-  Data::BestGroup &best_dat;
-  Data::SupportGroup &supp_dat;
+        ToothBody old_seg;
 
-  CMR::Timer t_all;
-  CMR::Timer t_zones;
-  CMR::Timer t_find;
-  CMR::Timer t_sort;
+        std::unordered_map<int, double> rb_sums;
+    };
+
+    Data::BestGroup &best_dat;
+    Data::SupportGroup &supp_dat;
+
+    CMR::Timer t_all;
+    CMR::Timer t_zones;
+    CMR::Timer t_find;
+    CMR::Timer t_sort;
 };
 
 }

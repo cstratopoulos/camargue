@@ -27,7 +27,7 @@ SCENARIO ("Tiny primal exact blossom separation",
 
     GIVEN ("The tiny instance blossom6 with an obvious blossom") {
         THEN ("Blossoms are found") {
-            Data::GraphGroup g_dat;
+            Graph::CoreGraph core_graph;
             Data::BestGroup b_dat;
             Data::SupportGroup s_dat;
             vector<double> lp_edges;
@@ -35,10 +35,10 @@ SCENARIO ("Tiny primal exact blossom separation",
             Data::make_cut_test("test_data/blossom6.tsp",
                                 "test_data/tours/blossom6.sol",
                                 "test_data/subtour_lp/blossom6.sub.x",
-                                g_dat, b_dat, lp_edges, s_dat);
+                                core_graph, b_dat, lp_edges, s_dat);
             Sep::CutQueue<Sep::ex_blossom> blossom_q;
-                    
-            Sep::ExBlossoms ex_b(g_dat.core_graph.get_edges(),
+
+            Sep::ExBlossoms ex_b(core_graph.get_edges(),
                                  b_dat, s_dat,
                                  blossom_q);
             REQUIRE(ex_b.find_cuts());
@@ -48,7 +48,7 @@ SCENARIO ("Tiny primal exact blossom separation",
 
 SCENARIO ("Primal exact blossom separation",
           "[Sep][ExBlossoms]") {
-    using namespace CMR;    
+    using namespace CMR;
     vector<string> probs {
         "pr76",
         // "d493",
@@ -67,19 +67,19 @@ SCENARIO ("Primal exact blossom separation",
             blossomfile = "test_data/blossom_lp/" + prob + ".2m.x",
             subtourfile = "test_data/subtour_lp/" + prob + ".sub.x";
 
-            Data::GraphGroup g_dat;
+            Graph::CoreGraph core_graph;
             Data::BestGroup b_dat;
             Data::SupportGroup s_dat;
             vector<double> lp_edges;
-            
+
             WHEN ("The solution is in the blossom polytope") {
                 Data::make_cut_test(probfile, solfile, blossomfile,
-                                    g_dat, b_dat, lp_edges, s_dat);
+                                    core_graph, b_dat, lp_edges, s_dat);
 
                 THEN ("No blossoms are found") {
                     Sep::CutQueue<Sep::ex_blossom> blossom_q;
-                    
-                    Sep::ExBlossoms ex_b(g_dat.core_graph.get_edges(),
+
+                    Sep::ExBlossoms ex_b(core_graph.get_edges(),
                                          b_dat, s_dat,
                                          blossom_q);
 
@@ -89,27 +89,27 @@ SCENARIO ("Primal exact blossom separation",
 
             WHEN ("The solution is in the subtour polytope") {
                 Data::make_cut_test(probfile, solfile, subtourfile,
-                                    g_dat, b_dat, lp_edges, s_dat);
+                                    core_graph, b_dat, lp_edges, s_dat);
 
                 THEN ("ExBlossoms succeeds when FastBlossoms does") {
                     Sep::CutQueue<Sep::ex_blossom> blossom_q;
-                    
-                    Sep::ExBlossoms ex_b(g_dat.core_graph.get_edges(),
+
+                    Sep::ExBlossoms ex_b(core_graph.get_edges(),
                                          b_dat, s_dat,
                                          blossom_q);
 
                     int found_ex = ex_b.find_cuts();
 
                     Graph::TourGraph TG(b_dat.best_tour_edges,
-                                        g_dat.core_graph.get_edges(),
+                                        core_graph.get_edges(),
                                         b_dat.perm);
                     Data::KarpPartition kpart;
 
-                    Sep::Separator sep(g_dat, b_dat, s_dat, kpart, TG);
+                    Sep::Separator sep(core_graph.get_edges(), b_dat, s_dat, kpart, TG);
 
                     int found_fast = sep.fast2m_sep();
                     CHECK(found_ex >= found_fast);
-                    
+
                     if (found_ex < found_fast) {
                         auto &f2m_q =
                         const_cast<Sep::LPcutList &>(sep.fastblossom_q());
@@ -126,7 +126,7 @@ SCENARIO ("Primal exact blossom separation",
 
 SCENARIO ("Black box ExBlossoms testing",
           "[.Sep][.ExBlossoms][cut_ecap]") {
-    using namespace CMR;    
+    using namespace CMR;
     vector<string> probs {
         "pr76",
         "d493",
@@ -145,20 +145,20 @@ SCENARIO ("Black box ExBlossoms testing",
             blossomfile = "test_data/blossom_lp/" + prob + ".2m.x",
             subtourfile = "test_data/subtour_lp/" + prob + ".sub.x";
 
-            Data::GraphGroup g_dat;
+            Graph::CoreGraph core_graph;
             Data::BestGroup b_dat;
             Data::SupportGroup s_dat;
             vector<double> lp_edges;
 
             Data::make_cut_test(probfile, solfile, subtourfile,
-                                g_dat, b_dat, lp_edges, s_dat);
+                                core_graph, b_dat, lp_edges, s_dat);
 
             WHEN ("We set up ecaps as in find_cuts") {
                 vector<int> &sup_inds = s_dat.support_indices;
                 vector<double> &sup_ecap = s_dat.support_ecap;
                 vector<int> &sup_elist = s_dat.support_elist;
                 const vector<int> &tour_edges = b_dat.best_tour_edges;
-    
+
                 vector<double> cut_ecap;
 
                 cut_ecap = sup_ecap;

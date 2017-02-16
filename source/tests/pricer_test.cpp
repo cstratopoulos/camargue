@@ -64,10 +64,10 @@ SCENARIO ("Elminating edges after a run of cutting_loop",
                 auto objval = core.get_objval();
                 cout << "\tPrimal opt objval " << objval << "\n";
 
-                Data::GraphGroup &g_dat =
-                const_cast<Data::GraphGroup &>(solver.graph_info());
+                Graph::CoreGraph &core_graph =
+                const_cast<Graph::CoreGraph &>(solver.graph_info());
 
-                Price::Pricer pricer(core, solver.inst_info(), g_dat);
+                Price::Pricer pricer(core, solver.inst_info(), core_graph);
 
                 f64 tourlen{solver.best_info().min_tour_value};
                 f64 lb = pricer.exact_lb(false);
@@ -91,7 +91,7 @@ SCENARIO ("Elminating edges after a run of cutting_loop",
 
                 vector<Price::PrEdge<f64>> graph_edges;
 
-                for (auto &e : g_dat.core_graph.get_edges())
+                for (auto &e : core_graph.get_edges())
                     graph_edges.emplace_back(e.end[0], e.end[1]);
 
                 pricer.price_edges(graph_edges, dg);
@@ -165,10 +165,10 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
                     const auto &hcuts = core.external_cuts().get_cuts();
                     auto sense = core.senses(0, numrows - 1);
 
-                    Data::GraphGroup &g_dat =
-                    const_cast<Data::GraphGroup &>(solver.graph_info());
+                    Graph::CoreGraph &core_graph =
+                    const_cast<Graph::CoreGraph &>(solver.graph_info());
 
-                    Price::Pricer pricer(core, solver.inst_info(), g_dat);
+                    Price::Pricer pricer(core, solver.inst_info(), core_graph);
                     auto dg =
                     util::make_unique<LP::DualGroup<f64>>(true, core,
                                                           core.
@@ -176,7 +176,7 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
 
                     vector<Price::PrEdge<f64>> graph_edges;
 
-                    for (auto &e : g_dat.core_graph.get_edges())
+                    for (auto &e : core_graph.get_edges())
                         graph_edges.emplace_back(e.end[0], e.end[1]);
 
                     pricer.price_edges(graph_edges, dg);
@@ -235,9 +235,9 @@ SCENARIO ("Trying to compute dual bounds for the degree LP",
         GIVEN ("The TSP instance " + prob) {
             WHEN("We primal opt the degree LP") {
                 Data::Instance inst("problems/" + prob + ".tsp", 99);
-                Data::GraphGroup g_dat(inst);
-                Data::BestGroup b_dat(inst, g_dat);
-                LP::CoreLP core(g_dat, b_dat);
+                Graph::CoreGraph core_graph(inst);
+                Data::BestGroup b_dat(inst, core_graph);
+                LP::CoreLP core(core_graph, b_dat);
                 core.primal_opt();
                 auto objval = core.get_objval();
                 THEN ("We can compute the same objval manually") {
@@ -276,11 +276,11 @@ SCENARIO ("Trying to compute dual bounds for the degree LP",
                             util::add_mult(pi_sum, pi, rhs[i++]);
                         INFO("Exact node pi before rc: " << pi_sum);
 
-                        Price::Pricer price(core, inst, g_dat);
+                        Price::Pricer price(core, inst, core_graph);
 
                         vector<Price::PrEdge<f64>> graph_edges;
 
-                        for (auto &e : g_dat.core_graph.get_edges())
+                        for (auto &e : core_graph.get_edges())
                             graph_edges.emplace_back(e.end[0], e.end[1]);
 
                         price.price_edges(graph_edges, dg);
@@ -345,13 +345,14 @@ SCENARIO ("Optimizing and computing lower bounds",
 
                     LP::CoreLP &core = const_cast<LP::CoreLP &>(solver.
                                                                 get_core_lp());
-                    Data::GraphGroup &g_dat =
-                    const_cast<Data::GraphGroup &>(solver.graph_info());
+
+                    Graph::CoreGraph &core_graph =
+                    const_cast<Graph::CoreGraph &>(solver.graph_info());
 
                     core.primal_opt();
                     auto objval = core.get_objval();
 
-                    Price::Pricer pricer(core, solver.inst_info(), g_dat);
+                    Price::Pricer pricer(core, solver.inst_info(), core_graph);
 
                     auto lb = pricer.exact_lb(false);
                     auto d_lb = lb.to_d();
@@ -398,20 +399,21 @@ vector<ProbPair> probs {
 
                     solver.cutting_loop(false, true, true);
 
-                    Data::GraphGroup &g_dat =
-                    const_cast<Data::GraphGroup&>(solver.graph_info());
+                    Graph::CoreGraph &core_graph =
+                    const_cast<Graph::CoreGraph &>(solver.graph_info());
 
                     LP::CoreLP &core_lp =
                     const_cast<LP::CoreLP&>(solver.get_core_lp());
 
-                    int ncount = g_dat.core_graph.node_count();
+                    int ncount = core_graph.node_count();
                     int rowcount = core_lp.num_rows();
 
-                    Price::Pricer pricer(core_lp, solver.inst_info(), g_dat);
+                    Price::Pricer pricer(core_lp, solver.inst_info(),
+                                         core_graph);
                     vector<Price::PrEdge<double>> pr_edges;
                     vector<Price::PrEdge<util::Fixed64>> f64_edges;
 
-                    for (const Graph::Edge &e : g_dat.core_graph.get_edges()) {
+                    for (const Graph::Edge &e : core_graph.get_edges()) {
                         pr_edges.emplace_back(e.end[0], e.end[1]);
                         f64_edges.emplace_back(e.end[0], e.end[1]);
                     }
@@ -444,7 +446,7 @@ vector<ProbPair> probs {
                         INFO("Edge " << i << " ("
                              << pr_edges[i].end[0] << ", "
                              << pr_edges[i].end[1] << "), len "
-                             << g_dat.core_graph.get_edge(i).len
+                             << core_graph.get_edge(i).len
                              << ", node pis "
                              << node_pi[pr_edges[i].end[0]] << ", "
                              << node_pi[pr_edges[i].end[1]] << ", basic: "

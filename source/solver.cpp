@@ -44,8 +44,8 @@ inline static int make_seed(const int seed)
 Solver::Solver(const string &fname, const int seed, const OutPrefs outprefs)
 try : tsp_instance(fname, make_seed(seed)),
       karp_part(tsp_instance),
-      graph_data(tsp_instance), best_data(tsp_instance, graph_data),
-      core_lp(graph_data, best_data),
+      core_graph(tsp_instance), best_data(tsp_instance, core_graph),
+      core_lp(core_graph, best_data),
       output_prefs(outprefs)
 {} catch (const exception &e) {
     cerr << e.what() << "\n";
@@ -56,9 +56,9 @@ Solver::Solver(const string &fname, const string &tour_fname,
                const int seed, const OutPrefs outprefs)
 try : tsp_instance(fname, make_seed(seed)),
       karp_part(tsp_instance),
-      graph_data(tsp_instance),
-      best_data(tsp_instance, graph_data, tour_fname),
-      core_lp(graph_data, best_data),
+      core_graph(tsp_instance),
+      best_data(tsp_instance, core_graph, tour_fname),
+      core_lp(core_graph, best_data),
       output_prefs(outprefs)
 {} catch (const exception &e) {
     cerr << e.what() << "\n";
@@ -69,8 +69,8 @@ Solver::Solver(const int seed, const int node_count,
                const int gridsize, const OutPrefs outprefs)
 try : tsp_instance(make_seed(seed), node_count, gridsize),
       karp_part(tsp_instance),
-      graph_data(tsp_instance), best_data(tsp_instance, graph_data),
-      core_lp(graph_data, best_data),
+      core_graph(tsp_instance), best_data(tsp_instance, core_graph),
+      core_lp(core_graph, best_data),
       output_prefs(outprefs)
 {} catch (const exception &e) {
     cerr << e.what() << "\n";
@@ -135,7 +135,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
         try {
             edge_pricer = util::make_unique<Price::Pricer>(core_lp,
                                                            tsp_instance,
-                                                           graph_data);
+                                                           core_graph);
         } CMR_CATCH_PRINT_THROW("instantiating/allocating Pricer", err);
 
     PivType piv = PivType::Frac;
@@ -143,7 +143,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
     int auground = 0;
 
     vector<int> &tour_edges = best_data.best_tour_edges;
-    const vector<Graph::Edge> &edges = graph_data.core_graph.get_edges();
+    const vector<Graph::Edge> &edges = core_graph.get_edges();
     vector<int> &perm = best_data.perm;
 
     try {
@@ -252,8 +252,8 @@ PivType Solver::abc(bool do_price)
 
     try {
         brancher = util::make_unique<ABC::Brancher>(core_lp,
-                                                    graph_data.core_graph
-                                                    .get_edges(), tour_basis(),
+                                                    core_graph.get_edges(),
+                                                    tour_basis(),
                                                     best_data.min_tour_value,
                                                     ABC::ContraStrat::Fix);
     } CMR_CATCH_PRINT_THROW("allocating/instantiating Brancher", err);

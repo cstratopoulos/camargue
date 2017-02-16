@@ -16,7 +16,7 @@ using std::vector;
 
 SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 	 "[LPcutList][filter_primal]") {
-  CMR::Data::GraphGroup g_dat;
+  CMR::Graph::CoreGraph core_graph;
   CMR::Data::BestGroup b_dat;
   CMR::Data::SupportGroup s_dat;
   std::vector<double> lp_edges;
@@ -28,11 +28,11 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 	REQUIRE_NOTHROW(CMR::Data::make_cut_test("test_data/blossom6.tsp",
 						"test_data/tours/blossom6.bad.sol",
 						"test_data/subtour_lp/blossom6.sub.x",
-						g_dat, b_dat, lp_edges, s_dat));
-	CMR::Graph::TourGraph TG(b_dat.best_tour_edges, g_dat.core_graph.get_edges(),
+						core_graph, b_dat, lp_edges, s_dat));
+	CMR::Graph::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
 			   b_dat.perm);
 	for (int &i : s_dat.support_elist) i = b_dat.perm[i];
-	
+
 	CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
 
       REQUIRE_FALSE(fb_sep.find_cuts());
@@ -51,15 +51,15 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 	REQUIRE_NOTHROW(CMR::Data::make_cut_test("problems/d493.tsp",
 						"test_data/tours/d493.sol",
 						"test_data/subtour_lp/d493.sub.x",
-						g_dat, b_dat, lp_edges,
+						core_graph, b_dat, lp_edges,
 						s_dat));
-	CMR::Graph::TourGraph TG(b_dat.best_tour_edges, g_dat.core_graph.get_edges(),
+	CMR::Graph::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
 			   b_dat.perm);
 	for (int &i : s_dat.support_elist) i = b_dat.perm[i];
-	
+
 	CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
       REQUIRE(fb_sep.find_cuts());
-      
+
 	int nncount = 0;
 	for (auto it = cutq.begin(); it; it = it->next)
 	  ++nncount;
@@ -73,11 +73,11 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 // TEST_CASE("Basic member tests",
 // 	  "[LPcutList]") {
 //   CMR::Sep::LPcutList wrap;
-//   CMR::Data::GraphGroup g_dat;
+//   CMR::Graph::CoreGraph core_graph;
 //   CMR::Data::BestGroup b_dat;
 //   CMR::Data::SupportGroup s_dat;
 //   std::vector<double> lp_edges;
-  
+
 //   SECTION("Cutcount changes appropriately") {
 //     vector<string> probs{"blossom6", "comb9", "lin318"};
 //     for (string &fname : probs) {
@@ -88,7 +88,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 // 	  subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
 // 	REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile, subtourfile,
-// 						g_dat, b_dat, lp_edges,
+// 						core_graph, b_dat, lp_edges,
 // 						s_dat));
 
 // 	SECTION("Cuts found makes cut count positive") {
@@ -107,7 +107,7 @@ SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 // 					   s_dat.G_s.edge_count,
 // 					   &s_dat.support_elist[0],
 // 					   &s_dat.support_ecap[0]));
-// 	  REQUIRE(wrap.size() == 0);	  
+// 	  REQUIRE(wrap.size() == 0);
 // 	}
 //       }
 //     }

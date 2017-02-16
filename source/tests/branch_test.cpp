@@ -94,7 +94,7 @@ SCENARIO ("Instating a Brancher and getting problems",
                     std::unique_ptr<ABC::Brancher> branch;
 
                     const vector<Graph::Edge> &edges = solver.graph_info().
-                    core_graph.get_edges();
+                    get_edges();
 
                     const LP::TourBasis &tbase = solver.tour_basis();
 
@@ -199,7 +199,7 @@ SCENARIO ("Computing branching edges",
 
                     vector<int> sb1inds =
                         ABC::length_weighted_cands(solver.graph_info().
-                                                   core_graph.get_edges(),
+                                                   get_edges(),
                                                    lw_inds, x, 5);
 
                     // cout << "\t" << sb1inds.size()
@@ -282,7 +282,7 @@ SCENARIO ("Computing branching edges",
                     vector<int> elist;
                     vector<int> elen;
 
-                    solver.graph_info().core_graph.get_elist(elist, elen);
+                    solver.graph_info().get_elist(elist, elen);
 
                     Data::Instance sp_inst(prob, 99, ncount, elist, elen);
 
@@ -317,7 +317,7 @@ SCENARIO ("Computing branching edges",
                                                  CC_LK_GEOMETRIC_KICK,
                                                  &rstate));
 
-                    const auto &graph = solver.graph_info().core_graph;
+                    const auto &graph = solver.graph_info();
                     const auto &edges = graph.get_edges();
 
 

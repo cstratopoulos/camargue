@@ -18,7 +18,7 @@ using std::string;
 using std::vector;
 
 SCENARIO("Primal blossom separation by fast standard heuristics",
-	 "[fast2m][Sep][CutTranslate]") {
+	 "[fast2m][Sep][get_row]") {
     using namespace CMR;
     vector<string> probs{"pr76", "d493", "pr1002"};
     for (string &fname : probs) {
@@ -29,7 +29,7 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
             blossomfile = "test_data/blossom_lp/" + fname + ".2m.x",
             subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-            Data::GraphGroup g_dat;
+            Graph::CoreGraph core_graph;
             Data::BestGroup b_dat;
             Data::SupportGroup s_dat;
             std::vector<double> lp_edges;
@@ -38,13 +38,13 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
             WHEN("The tour is good and blossoms exit") {
                 THEN("Primal blossoms are found") {
                     REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile,
-                                                        subtourfile, g_dat,
+                                                        subtourfile, core_graph,
                                                         b_dat, lp_edges,
                                                         s_dat));
 
 
                     Graph::TourGraph TG(b_dat.best_tour_edges,
-                                        g_dat.core_graph.get_edges(),
+                                        core_graph.get_edges(),
                                         b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
@@ -54,13 +54,11 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
 
                     vector<int> &perm = b_dat.perm;
 
-                    Sep::CutTranslate processor(g_dat);
-
                     for (auto cur = cutq.begin(); cur; cur = cur->next) {
-                        LP::SparseRow R = processor.get_row(*cur, perm);
+                        LP::SparseRow R = Sep::get_row(*cur, perm, core_graph);
                         double tour_act =
-                        processor.get_activity(b_dat.best_tour_edges, R);
-                        double lp_act = processor.get_activity(lp_edges, R);
+                        Sep::get_activity(b_dat.best_tour_edges, R);
+                        double lp_act = Sep::get_activity(lp_edges, R);
                         REQUIRE(tour_act == R.rhs);
                         REQUIRE(lp_act < R.rhs);
                     }
@@ -69,11 +67,12 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
             AND_WHEN("The tour is good but the solution is in the blossom polytope") {
                 THEN("No primal blossoms are found") {
                     REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile,
-                                                             blossomfile, g_dat, b_dat,
-                                                             lp_edges, s_dat));
+                                                        blossomfile,
+                                                        core_graph, b_dat,
+                                                        lp_edges, s_dat));
 
                     Graph::TourGraph TG(b_dat.best_tour_edges,
-                                             g_dat.core_graph.get_edges(), b_dat.perm);
+                                             core_graph.get_edges(), b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
                     Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
@@ -86,7 +85,7 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
 }
 
 SCENARIO("Primal heuristic fast blossom sep in tiny instances",
-	 "[fast2m][tiny][Sep][CutTranslate]") {
+	 "[fast2m][tiny][Sep][get_row]") {
     using namespace CMR;
     vector<string> probs{"blossom6", "comb9"};
     for (string &fname : probs) {
@@ -97,7 +96,7 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
             badsolfile = "test_data/tours/" + fname + ".bad.sol",
             subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-            Data::GraphGroup g_dat;
+            Graph::CoreGraph core_graph;
             Data::BestGroup b_dat;
             Data::SupportGroup s_dat;
             std::vector<double> lp_edges;
@@ -106,10 +105,11 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
             WHEN("The tour is good") {
                 THEN("Violated primal blossoms are found") {
                     REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile,
-                                                             subtourfile, g_dat, b_dat,
-                                                             lp_edges, s_dat));
+                                                        subtourfile, core_graph,
+                                                        b_dat, lp_edges,
+                                                        s_dat));
 
-                    Graph::TourGraph TG(b_dat.best_tour_edges,g_dat.core_graph.get_edges(),
+                    Graph::TourGraph TG(b_dat.best_tour_edges,core_graph.get_edges(),
                                              b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
@@ -118,14 +118,13 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
 
                     vector<int> &perm = b_dat.perm;
 
-                    Sep::CutTranslate processor(g_dat);
 
                     for (auto cur = cutq.begin(); cur; cur = cur->next) {
-                        LP::SparseRow R = processor.get_row(*cur, perm);
+                        LP::SparseRow R = Sep::get_row(*cur, perm, core_graph);
                         double tour_act =
-                        processor.get_activity(b_dat.best_tour_edges, R);
+                        Sep::get_activity(b_dat.best_tour_edges, R);
 
-                        double lp_act = processor.get_activity(lp_edges, R);
+                        double lp_act = Sep::get_activity(lp_edges, R);
                         REQUIRE(tour_act == R.rhs);
                         REQUIRE(lp_act < R.rhs);
                     }
@@ -135,11 +134,11 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
             AND_WHEN("The tour is bad") {
                 THEN("No primal blossoms are found") {
                     REQUIRE_NOTHROW(Data::make_cut_test(probfile, badsolfile,
-                                                             subtourfile,
-                                                             g_dat, b_dat, lp_edges,
-                                                             s_dat));
+                                                        subtourfile, core_graph,
+                                                        b_dat, lp_edges,
+                                                        s_dat));
 
-                    Graph::TourGraph TG(b_dat.best_tour_edges, g_dat.core_graph.get_edges(),
+                    Graph::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
                                              b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 

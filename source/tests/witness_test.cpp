@@ -49,7 +49,7 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
         probfile = "problems/" + fname + ".tsp",
         solfile = "test_data/tours/" + fname + ".sol",
         subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-        Data::GraphGroup g_dat;
+        Graph::CoreGraph core_graph;
         Data::BestGroup b_dat;
         Data::SupportGroup s_dat;
         vector<double> lp_edges;
@@ -59,15 +59,14 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
         GIVEN("A karp partition and candidate teeth for " + fname) {
             THEN("We can get simple DP inequalities in a mini cutgraph") {
                 REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile,
-                                                    subtourfile, g_dat, b_dat,
+                                                    subtourfile, core_graph, b_dat,
                                                     lp_edges, s_dat, inst));
-                int ncount = g_dat.core_graph.node_count();
+                int ncount = core_graph.node_count();
 
                 REQUIRE_NOTHROW(kpart = Data::KarpPartition(inst));
-                Sep::CutTranslate translator(g_dat);
 
                 double tt = util::zeit();
-                Sep::CandidateTeeth cands(g_dat, b_dat, s_dat);
+                Sep::CandidateTeeth cands(b_dat, s_dat);
                 REQUIRE_NOTHROW(cands.get_light_teeth());
                 cands.sort_by_root();
                 tt = util::zeit() - tt;
@@ -100,12 +99,13 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
 
                         const Sep::dominoparity &dp_cut = dp_q.peek_front();
                         vector<int> &bt = b_dat.best_tour_nodes;
-                        REQUIRE_NOTHROW(R = translator.get_row(dp_cut, bt));
+                        REQUIRE_NOTHROW(R = Sep::get_row(dp_cut, bt,
+                                                         core_graph));
                         double tour_activity =
-                        translator.get_activity(b_dat.best_tour_edges, R);
+                        Sep::get_activity(b_dat.best_tour_edges, R);
 
                         double lp_activity =
-                        translator.get_activity(lp_edges, R);
+                        Sep::get_activity(lp_edges, R);
 
                         REQUIRE(tour_activity <= R.rhs);
 

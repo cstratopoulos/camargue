@@ -80,23 +80,50 @@ private:
     std::string pname;
 };
 
-/** Pure combinatorial information about the problem.
- * This structure uses a CoreGraph to encode a weighted undirected graph
- * containing the subset of complete graph edges under consideration in the
- * current CoreLP.
- */
-struct GraphGroup {
-    GraphGroup() = default;
+}
 
-    /// Generate edges from an Instance and create the associated Coregraph.
-    GraphGroup(const Instance &inst);
+namespace Graph {
 
-    Graph::CoreGraph core_graph; //!< The Edge list and AdjList.
+class CoreGraph {
+public:
+    CoreGraph() = default;
 
-    std::vector<int> island; //!< Stores components from a dfs of m_graph.
-    std::vector<int> delta; //!< Stores edges in delta of some node set.
-    std::vector<int> node_marks; //!< Marks nodes for adjacency computations.
+    CoreGraph(const Data::Instance &inst);
+
+    /// Construct a CoreGraph from a length func and a c-array node-node elist.
+    CoreGraph(int ncount, int ecount, const int *elist,
+              const std::function<double(int, int)> edgelen);
+
+    /// Construct a CoreGraph containing the nodes of a TSP tour.
+    CoreGraph(const std::vector<int> &tour_nodes,
+              const std::function<double(int, int)> edgelen);
+
+    int node_count() const { return nodecount; }
+    int edge_count() const { return edges.size(); }
+
+    int find_edge_ind(int end0, int end1) const;
+
+    Edge get_edge(int index) const { return edges[index]; }
+
+    std::vector<Edge> &get_edges() { return edges; }
+    const std::vector<Edge> &get_edges() const { return edges; }
+
+    void get_elist(std::vector<int> &elist, std::vector<int> &elen) const;
+
+    const AdjList &get_adj() const { return adj_list; }
+
+    void add_edge(int end0, int end1, int len);
+    void add_edge(const Edge &e);
+
+private:
+    std::vector<Edge> edges;
+    AdjList adj_list;
+    int nodecount;
 };
+
+}
+
+namespace Data {
 
 /** Stores information about the current best tour.
  * This structure manages the incumbent best tour for the TSP instance, as
@@ -107,10 +134,10 @@ struct BestGroup {
     BestGroup() : min_tour_value(0) {}
 
     /** The LK constructor. */
-    BestGroup(const Instance &inst, GraphGroup &graph_data);
+    BestGroup(const Instance &inst, Graph::CoreGraph &core_graph);
 
     /** The tour from file constructor. */
-    BestGroup(const Instance &inst, GraphGroup &graph_data,
+    BestGroup(const Instance &inst, Graph::CoreGraph &core_graph,
               const std::string &tourfile);
 
   std::vector<int> best_tour_edges; /**< Binary vector indicating edges used
@@ -149,37 +176,24 @@ struct SupportGroup {
     bool integral;
 };
 
-/** Load just enough Data to test cut separation routines.
- * This pseudo-constructor function is designed for testing separation routines
- * using the tour in \p tour_nodes_fname and the lp solution in \p lp_sol_fname
- * as a tour/lp solution on the tsp instance in \p tsp_fname. It will
- * populate \p graph_data with precisely the edges in \p lp_sol_fname, together
- * with the edges joining adjacent nodes in \p tour_nodes_fname. Then,
- * \p best_data will be initialized with the tour in \p tour_nodes_fname.
- * The vector \p lp_edges will then have size equal to
- * `graph_data.m_graph.edge_count`, with binary entries indicating the lp
- * solution from \p lp_sol_fname. Finally, \p lp_edges and \p graph_data
- * will be used to populate \p supp_data.
- * @pre \p tsp_fname is the name of a TSPLIB instance.
- * @pre \p tour_nodes_fname is as in CMR::get_tour_nodes.
- * @pre \p lp_sol_fname is as in CMR::get_lp_sol.
- */
+/// Load just enough data to test separation routines.
 void make_cut_test(const std::string &tsp_fname,
 		   const std::string &tour_nodes_fname,
 		   const std::string &lp_sol_fname,
-		   Data::GraphGroup &graph_data,
+                   Graph::CoreGraph &core_graph,
 		   Data::BestGroup &best_data,
 		   std::vector<double> &lp_edges,
 		   Data::SupportGroup &supp_data);
 
+/// As above, but with access to the generated Instance.
 void make_cut_test(const std::string &tsp_fname,
 		   const std::string &tour_nodes_fname,
 		   const std::string &lp_sol_fname,
-		   Data::GraphGroup &graph_data,
+                   Graph::CoreGraph &core_graph,
 		   Data::BestGroup &best_data,
 		   std::vector<double> &lp_edges,
 		   Data::SupportGroup &supp_data,
-		   Data::Instance &inst_p);
+		   Data::Instance &inst);
 
 }
 }

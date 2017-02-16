@@ -29,20 +29,20 @@ using d_PrEdge = PrEdge<double>;
 /**
  * @param[in] _relax the Relaxation for grabbing dual values
  * @param[in] _inst the TSP instance for generating edges
- * @param[in] _ext_cuts the HyperGraph representation of the cuts in 
+ * @param[in] _ext_cuts the HyperGraph representation of the cuts in
  * \p _relax.
  */
 Pricer::Pricer(LP::CoreLP &core, const Data::Instance &_inst,
-               Data::GraphGroup &graphgroup) try :
+               Graph::CoreGraph &core_graph_) try :
     core_lp(core), inst(_inst), ext_cuts(core.external_cuts()),
-    graph_group(graphgroup),
+    core_graph(core_graph_),
     gen_max(EstBatch + ScaleBatch * inst.node_count()),
     gen_elist(vector<int>(2 * gen_max)), gen_elen(gen_max),
     edge_hash(gen_max)
 {
     CCrandstate rstate;
     CCutil_sprand(inst.seed(), &rstate);
-    
+
     if (CCtsp_init_edgegenerator(&eg_inside, inst.node_count(), inst.ptr(),
                                  (CCtsp_genadj *) NULL, Nearest, 1, &rstate))
         throw runtime_error("CCtsp_init_edgegenerator(50) failed.");
@@ -65,11 +65,11 @@ Pricer::~Pricer()
 
 
 /**
- * @param[in] piv_stat the PivType from the solution when edge generation 
- * is called. The partial edge set is scanned iff \p piv_stat is 
- * PivType::Tour. Full edge set may be scanned if \p piv_stat is 
+ * @param[in] piv_stat the PivType from the solution when edge generation
+ * is called. The partial edge set is scanned iff \p piv_stat is
+ * PivType::Tour. Full edge set may be scanned if \p piv_stat is
  * PivType::FathomedTour, or PivType::Tour with a small enough graph, or
- * if a partial scan finds no edges to add. 
+ * if a partial scan finds no edges to add.
  * @returns a ScanStat indicating the outcome of the pricing scan.
  */
 ScanStat Pricer::gen_edges(LP::PivType piv_stat)
@@ -78,7 +78,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     ScanStat result =
     (piv_stat == LP::PivType::Tour) ? ScanStat::PartOpt : ScanStat::FullOpt;
     bool silent = true;
-    
+
     edge_hash.clear();
 
     try {
@@ -105,7 +105,6 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         throw err;
     }
 
-    Graph::CoreGraph &core_graph = graph_group.core_graph;
     CCrandstate rstate;
 
     CCutil_sprand(inst.seed(), &rstate);
@@ -123,7 +122,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
     vector<d_PrEdge> edge_q;
 
     while (!finished) {
-        if (!silent) 
+        if (!silent)
             cout << "\tEntering EG loop, pass " << ++outercount << "\n\t";
 
         int num_gen = 0;
@@ -176,8 +175,8 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                     vector<Graph::Edge> add_batch = pool_chunk(edge_q);
                     core_lp.add_edges(add_batch);
                 } CMR_CATCH_PRINT_THROW("adding edges for aug tour", err);
-                
-                return ScanStat::Partial;                
+
+                return ScanStat::Partial;
             } else if (finished) {
                 return ScanStat::PartOpt;
             } else
@@ -190,7 +189,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         double new_objval = 0.0;
         int num_added = 0;
         int innercount = 0;
-        
+
         while (((!finished && edge_q.size() >= PoolSize) ||
                 (finished && penalty < -MaxPenalty && !edge_q.empty()))) {
             if (!silent)
@@ -200,7 +199,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
             try {
                 vector<Graph::Edge> add_batch = pool_chunk(edge_q);
-                
+
                 num_added = add_batch.size();
                 total_added += num_added;
                 core_lp.add_edges(add_batch);
@@ -247,7 +246,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                     cerr << "CCtsp_reset_edgegenerator failed.\n";
                     throw err;
                 }
-                
+
                 finished = 0;
                 edge_hash.clear();
                 for (const d_PrEdge &e : edge_q)
@@ -260,7 +259,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                      << edge_q.size() << ", finished: " << finished << "\n";
         }
     }
-    
+
     cout << "added " << total_added << " edges, " << result << "\n";
     return result;
 }
@@ -270,7 +269,7 @@ f64 Pricer::exact_lb(bool full)
     for (const Sep::HyperGraph &H : ext_cuts.get_cuts())
         if (H.cut_type() == CutType::Non)
             throw logic_error("Pricer::exact_lb was called w non cut present");
-    
+
     runtime_error err("Problem in Pricer::exact_lb");
 
     try {
@@ -318,14 +317,14 @@ f64 Pricer::exact_lb(bool full)
             for (int j = 0; j < ncount; ++j)
                 target_edges.emplace_back(i, j);
     } else {
-        for (const Graph::Edge &e : graph_group.core_graph.get_edges())
+        for (const Graph::Edge &e : core_graph.get_edges())
             target_edges.emplace_back(e.end[0], e.end[1]);
     }
 
     price_edges(target_edges, ex_duals);
 
     f64 rc_sum{0.0};
-    
+
     for (const PrEdge<f64> &e : target_edges)
         if (e.redcost < 0.0)
             rc_sum -= e.redcost;
@@ -384,7 +383,7 @@ bool Pricer::scan_edges(vector<PrEdge<f64>> &gen_edges, int &loop1,
         throw logic_error("Tried to scan edges without exact duals.");
 
     const vector<f64> &node_pi_est = ex_duals->node_pi_est;
-    const Graph::AdjList &alist = graph_group.core_graph.get_adj();
+    const Graph::AdjList &alist = core_graph.get_adj();
 
     int ncount = inst.node_count();
     int i = loop1;
@@ -412,7 +411,7 @@ bool Pricer::scan_edges(vector<PrEdge<f64>> &gen_edges, int &loop1,
         }
     }
 
-    // for(; i < ncount; ++i) {        
+    // for(; i < ncount; ++i) {
     //     int stop = ncount;
     //     if (first == 0)
     //         j = i + 1;
@@ -433,7 +432,7 @@ bool Pricer::scan_edges(vector<PrEdge<f64>> &gen_edges, int &loop1,
 
     loop1 = ncount;
     loop2 = ncount;
-    return true;    
+    return true;
 }
 
 

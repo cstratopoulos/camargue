@@ -33,18 +33,18 @@ SCENARIO ("Constructing core LP adjacency lists",
             string solfile = "test_data/tours/" + prob + ".sol";
 
             Data::Instance inst(probfile, 99);
-            Data::GraphGroup g_dat(inst);
+            Graph::CoreGraph core_graph(inst);
 
             Graph::AdjList full_alist;
 
             THEN ("We can construct an adj list from the edges") {
                 REQUIRE_NOTHROW(full_alist = Graph::AdjList(inst.node_count(),
-                                                            g_dat.core_graph
+                                                            core_graph
                                                             .get_edges()));
 
                 AND_THEN ("Edge finding in the alist agrees with the edges") {
                     const vector<Graph::Edge> &edges =
-                    g_dat.core_graph.get_edges();
+                    core_graph.get_edges();
 
                     for (int i = 0; i < edges.size(); ++i) {
                         auto e = edges[i];
@@ -82,7 +82,7 @@ SCENARIO ("Constructing support adjacency lists",
         probfile = "problems/" + fname + ".tsp",
         solfile = "test_data/tours/" + fname + ".sol",
         subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-        Data::GraphGroup g_dat;
+        Graph::CoreGraph core_graph;
         Data::BestGroup b_dat;
         Data::SupportGroup s_dat;
         vector<double> lp_edges;
@@ -90,14 +90,14 @@ SCENARIO ("Constructing support adjacency lists",
 
         GIVEN("A subtour polytope LP solution for " + fname) {
             THEN("We can construct an adj list for the support graph") {
-                Data::make_cut_test(probfile, solfile, subtourfile, g_dat,
+                Data::make_cut_test(probfile, solfile, subtourfile, core_graph,
                                          b_dat, lp_edges, s_dat, inst);
-                int ncount = g_dat.core_graph.node_count();
+                int ncount = core_graph.node_count();
 
                 REQUIRE(s_dat.connected);
 
                 Graph::AdjList &sup_alist = s_dat.supp_graph;
-                const vector<Graph::Edge> &edges = g_dat.core_graph.get_edges();
+                const vector<Graph::Edge> &edges = core_graph.get_edges();
 
 
                 AND_THEN ("We find only the edges that should be there") {

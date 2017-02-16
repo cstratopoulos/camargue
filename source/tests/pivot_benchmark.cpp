@@ -91,10 +91,10 @@ SCENARIO ("Comparing pivot protocols with round of cuts",
         vector<double> &data = pp.second;
         GIVEN ("A core LP for " + prob) {
             Data::Instance inst("problems/" + prob + ".tsp", 99);
-            Data::GraphGroup g_dat(inst);
-            Data::BestGroup b_dat(inst, g_dat,
+            Graph::CoreGraph core_graph(inst);
+            Data::BestGroup b_dat(inst, core_graph,
                                   "test_data/tours/" + prob + ".sol");
-            LP::CoreLP core(g_dat, b_dat);
+            LP::CoreLP core(core_graph, b_dat);
             for (int i = 0; i < 2; ++i) {
                 string &impl_name = piv_impls[i].first;
                 auto impl_func = piv_impls[i].second;
@@ -114,15 +114,17 @@ SCENARIO ("Comparing pivot protocols with round of cuts",
                     int ncount = inst.node_count();
                     auto piv_x = core.lp_vec();
 
-                    Data::SupportGroup s_dat(g_dat.core_graph.get_edges(),
-                                             piv_x, g_dat.island, ncount);
+                    vector<int> island;
+                    Data::SupportGroup s_dat(core_graph.get_edges(),
+                                             piv_x, island, ncount);
 
                     Graph::TourGraph TG(b_dat.best_tour_edges,
-                                        g_dat.core_graph.get_edges(),
+                                        core_graph.get_edges(),
                                         b_dat.perm);
                     Data::KarpPartition kpart;
 
-                    Sep::Separator sep(g_dat, b_dat, s_dat, kpart, TG);
+                    Sep::Separator sep(core_graph.get_edges(),
+                                       b_dat, s_dat, kpart, TG);
 
                     core.pivot_back();
 
@@ -192,10 +194,10 @@ SCENARIO ("Comparing pivot protocols as optimizers",
          int ncount = std::get<3>(te);
         GIVEN ("The degree LP for " + prob) {
             Data::Instance inst("problems/" + prob + ".tsp", 99);
-            Data::GraphGroup g_dat(inst);
-            Data::BestGroup b_dat(inst, g_dat,
+            Graph::CoreGraph core_graph(inst);
+            Data::BestGroup b_dat(inst, core_graph,
                                   "test_data/tours/" + prob + ".sol");
-            LP::CoreLP core(g_dat, b_dat);
+            LP::CoreLP core(core_graph, b_dat);
 
             double tourlen = b_dat.min_tour_value;
             REQUIRE(core.get_objval() == tourlen);

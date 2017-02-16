@@ -39,7 +39,7 @@ static int dump_segment(double cut_val, int cut_start, int cut_end,
 
 TEST_CASE("New tiny candidate teeth with no elim",
 	  "[.SimpleTooth][tiny]") {
-    using namespace CMR; 
+    using namespace CMR;
     vector<string> tests{"fleisA9", "fleisB9", "comb9"};
 
     for (string &fname : tests) {
@@ -48,29 +48,29 @@ TEST_CASE("New tiny candidate teeth with no elim",
             probfile = "test_data/" + fname + ".tsp",
             solfile = "test_data/tours/" + fname + ".sol",
             subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-            Data::GraphGroup g_dat;
+            Graph::CoreGraph core_graph;
             Data::BestGroup b_dat;
             Data::SupportGroup s_dat;
             std::vector<double> lp_edges;
-	
+
             REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile, subtourfile,
-                                                     g_dat, b_dat, lp_edges,
+                                                     core_graph, b_dat, lp_edges,
                                                      s_dat));
             int ncount = s_dat.supp_graph.node_count;
-      
+
             cout << "Best tour:\n";
             for (int i : b_dat.best_tour_nodes) cout << " " << i << ", ";
             cout << "\n";
-      
 
-            Sep::CandidateTeeth cands(g_dat, b_dat, s_dat);
+
+            Sep::CandidateTeeth cands(b_dat, s_dat);
             REQUIRE_NOTHROW(cands.get_light_teeth());
-      
+
             int numfound = 0;
             for (auto &v : cands.light_teeth)
                 numfound += v.size();
             cout << "\t" << numfound << " teeth found.\n";
-      
+
             cout << "\n\n";
         }
     }
@@ -93,20 +93,20 @@ TEST_CASE("New candidate teeth with elim",
             probfile = "problems/" + fname + ".tsp",
             solfile = "test_data/tours/" + fname + ".sol",
             subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-            Data::GraphGroup g_dat;
+            Graph::CoreGraph core_graph;
             Data::BestGroup b_dat;
             Data::SupportGroup s_dat;
             std::vector<double> lp_edges;
-	
+
             REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile, subtourfile,
-                                                g_dat, b_dat, lp_edges,
+                                                core_graph, b_dat, lp_edges,
                                                 s_dat));
             int ncount = s_dat.supp_graph.node_count;
 
-            Sep::CandidateTeeth cands(g_dat, b_dat, s_dat);
+            Sep::CandidateTeeth cands(b_dat, s_dat);
 
             cout << "Did adj zones preprocessing.\n";
-      
+
             REQUIRE_NOTHROW(cands.get_light_teeth());
 
             cands.sort_by_root();
@@ -140,9 +140,9 @@ TEST_CASE("New candidate teeth with elim",
                 }
 
                 array<int, 3> sizes{num_left, num_right, num_dist};
-                REQUIRE(sizes == cands.list_sizes[i]);                
+                REQUIRE(sizes == cands.list_sizes[i]);
             }
-            
+
             cout << "Got collection of " << numfound << ".\n";
 
 
@@ -167,30 +167,30 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
 	  "[adj_zones][.tiny][.SimpleTooth]") {
     using namespace CMR;
     vector<string> tests{"fleisA9", "fleisB9", "comb9"};
-  
+
     for (string &fname : tests) {
         SECTION(fname) {
             string
             probfile = "test_data/" + fname + ".tsp",
             solfile = "test_data/tours/" + fname + ".sol",
             subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-            Data::GraphGroup g_dat;
+            Graph::CoreGraph core_graph;
             Data::BestGroup b_dat;
             Data::SupportGroup s_dat;
             std::vector<double> lp_edges;
-	
+
             REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile, subtourfile,
-                                                g_dat, b_dat, lp_edges,
+                                                core_graph, b_dat, lp_edges,
                                                 s_dat));
             Graph::AdjList &G_s = s_dat.supp_graph;
             int max_deg = 0;
-            Sep::CandidateTeeth cands(g_dat, b_dat, s_dat);
-            int ncount = g_dat.core_graph.node_count();
+            Sep::CandidateTeeth cands(b_dat, s_dat);
+            int ncount = core_graph.node_count();
 
             if (ncount <= 20) {
                 cout << "Best tour:\n";
                 for (int i : b_dat.best_tour_nodes) {
-                    cout << " " << i << ", "; 
+                    cout << " " << i << ", ";
                     if (G_s.nodelist[i].degree() > max_deg)
                         max_deg = G_s.nodelist[i].degree();
                 }
@@ -220,7 +220,7 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
             vector<int> &tour = b_dat.best_tour_nodes;
             vector<int> &perm = b_dat.perm;
             vector<int> endmark(ncount, CC_LINSUB_BOTH_END);
-      
+
             REQUIRE_FALSE(CCcut_linsub_allcuts(G_s.node_count, G_s.edge_count,
                                                &b_dat.best_tour_nodes[0],
                                                &endmark[0],
@@ -233,14 +233,14 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
             for (auto s1 = seg_vec.begin(); s1 != seg_vec.end() - 1; ++s1) {
                 for (auto s2 = s1 + 1; s2 != seg_vec.end(); ++s2) {
                     Sep::ToothBody seg1 = *s1, seg2 = *s2;
-	  
+
                     int min_start = fmin(seg1.start, seg2.start);
                     int max_end = fmin(seg1.end, seg2.end);
 
                     for (int root = 0; root < ncount; ++root) {
                         if (seg1.contains(root) || seg2.contains(root))
                             continue;
-	    
+
                         bool zone_equiv = cands.root_equivalent(root, seg1,
                                                                 seg2);
                         bool brute_equiv = true;
@@ -255,7 +255,7 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
                                 break;
                             }
                         }
-	    
+
                         CHECK(zone_equiv == brute_equiv);
                         if (zone_equiv != brute_equiv) {
                             cout << "^^Considering root " << root

@@ -21,17 +21,16 @@ namespace CMR {
 /**
  * Constructs a separator from a core LP graph and LP solution.
  * @param[in] graph_dat the info of the core edge set/graph.
- * @param[in] _kpart the KarpPartition for separating over partitioned 
+ * @param[in] _kpart the KarpPartition for separating over partitioned
  * DPwitness graphs.
  * @param[in] supp_dat the SupportGroup for the current LP solution.
  * @param[in] _dp_q the CutQueue where all found cuts will be stored.
  */
-Sep::SimpleDP::SimpleDP(Data::GraphGroup &graph_dat,
-                        Data::KarpPartition &_kpart,
+Sep::SimpleDP::SimpleDP(Data::KarpPartition &_kpart,
                         Data::BestGroup &best_dat,
                         Data::SupportGroup &supp_dat,
                         Sep::CutQueue<dominoparity> &_dp_q) try :
-  candidates(graph_dat, best_dat, supp_dat), kpart(_kpart), dp_q(_dp_q)
+  candidates(best_dat, supp_dat), kpart(_kpart), dp_q(_dp_q)
 {} catch (const exception &e) {
     cerr << e.what() << " constructing SimpleDP.\n";
     throw runtime_error("SimpleDP constructor failed.");
@@ -51,9 +50,9 @@ bool Sep::SimpleDP::find_cuts()
 
     for (int i = 0; i < kpart.num_parts(); ++i) {
         CutQueue<dominoparity> mini_q(25);
-      
+
         try {
-            DPwitness cutgraph(candidates, kpart[i]);      
+            DPwitness cutgraph(candidates, kpart[i]);
             cutgraph.simple_DP_sep(mini_q);
         } CMR_CATCH_PRINT_THROW("making a mini cutgraph sep call", err);
 
@@ -70,7 +69,7 @@ bool Sep::SimpleDP::find_cuts()
 bool Sep::SimpleDP::find_cuts()
 {
     runtime_error err("Problem in SimpleDP::find_cuts.");
-    
+
     bool at_capacity = false;
     bool caught_exception = false;
 
@@ -84,7 +83,7 @@ bool Sep::SimpleDP::find_cuts()
         if(at_capacity || caught_exception)
             continue;
         CutQueue<dominoparity> mini_q(25);
-        
+
         try {
             DPwitness cutgraph(candidates, kpart[i]);
 
@@ -93,7 +92,7 @@ bool Sep::SimpleDP::find_cuts()
             #pragma omp critical
             {
                 cerr << "Caught " << e.what() << " in witness subproblem.\n";
-                caught_exception = true;                
+                caught_exception = true;
             }
         }
 

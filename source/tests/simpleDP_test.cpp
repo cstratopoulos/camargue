@@ -44,7 +44,7 @@ SCENARIO("Separating simple DP inequalities in small instances",
         probfile = "problems/" + fname + ".tsp",
         solfile = "test_data/tours/" + fname + ".sol",
         subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-        Data::GraphGroup g_dat;
+        Graph::CoreGraph core_graph;
         Data::BestGroup b_dat;
         Data::SupportGroup s_dat;
         vector<double> lp_edges;
@@ -54,16 +54,15 @@ SCENARIO("Separating simple DP inequalities in small instances",
         GIVEN("A subtour polytope LP solution for " + fname) {
             THEN("We can get light simple DP inequalities") {
                 REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile,
-                                                         subtourfile, g_dat,
-                                                         b_dat, lp_edges,
-                                                         s_dat, inst));
-                int ncount = g_dat.core_graph.node_count();
+                                                    subtourfile, core_graph,
+                                                    b_dat, lp_edges,
+                                                    s_dat, inst));
+                int ncount = core_graph.node_count();
 
                 REQUIRE_NOTHROW(kpart = Data::KarpPartition(inst));
-                Sep::CutTranslate translator(g_dat);
                 Sep::CutQueue<Sep::dominoparity> dp_q(100);
 
-                Sep::SimpleDP sDP(g_dat, kpart, b_dat, s_dat, dp_q);
+                Sep::SimpleDP sDP(kpart, b_dat, s_dat, dp_q);
 
                 REQUIRE(sDP.find_cuts());
                 cout << "Cut queue now has size: " << dp_q.size() << "\n";
@@ -74,13 +73,13 @@ SCENARIO("Separating simple DP inequalities in small instances",
 
                     const Sep::dominoparity &dp_cut = dp_q.peek_front();
                     vector<int> &bt = b_dat.best_tour_nodes;
-                    REQUIRE_NOTHROW(R = translator.get_row(dp_cut, bt));
+                    REQUIRE_NOTHROW(R = Sep::get_row(dp_cut, bt, core_graph));
 
                     double tour_activity =
-                    translator.get_activity(b_dat.best_tour_edges, R);
+                    Sep::get_activity(b_dat.best_tour_edges, R);
 
                     double lp_activity =
-                    translator.get_activity(lp_edges, R);
+                    Sep::get_activity(lp_edges, R);
 
                     bool viol_or_within = (lp_activity > R.rhs ||
                                            ((R.rhs - lp_activity) < 1));
@@ -126,7 +125,7 @@ SCENARIO("Separating simple DP inequalities in medium instances",
         probfile = "problems/" + fname + ".tsp",
         solfile = "test_data/tours/" + fname + ".sol",
         subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-        Data::GraphGroup g_dat;
+        Graph::CoreGraph core_graph;
         Data::BestGroup b_dat;
         Data::SupportGroup s_dat;
         vector<double> lp_edges;
@@ -136,16 +135,16 @@ SCENARIO("Separating simple DP inequalities in medium instances",
         GIVEN("A subtour polytope LP solution for " + fname) {
             THEN("We can get light simple DP inequalities") {
                 REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile,
-                                                         subtourfile, g_dat,
-                                                         b_dat, lp_edges,
-                                                         s_dat, inst));
-                int ncount = g_dat.core_graph.node_count();
+                                                    subtourfile,
+                                                    core_graph,
+                                                    b_dat, lp_edges,
+                                                    s_dat, inst));
+                int ncount = core_graph.node_count();
 
                 REQUIRE_NOTHROW(kpart = Data::KarpPartition(inst));
-                Sep::CutTranslate translator(g_dat);
                 Sep::CutQueue<Sep::dominoparity> dp_q(1000);
 
-                Sep::SimpleDP sDP(g_dat, kpart, b_dat, s_dat, dp_q);
+                Sep::SimpleDP sDP(kpart, b_dat, s_dat, dp_q);
 
                 REQUIRE(sDP.find_cuts());
                 cout << "Cut queue now has size: " << dp_q.size() << "\n";
@@ -157,13 +156,13 @@ SCENARIO("Separating simple DP inequalities in medium instances",
                     const Sep::dominoparity &dp_cut = dp_q.peek_front();
                     vector<int> &bt = b_dat.best_tour_nodes;
 
-                    REQUIRE_NOTHROW(R = translator.get_row(dp_cut, bt));
+                    REQUIRE_NOTHROW(R = Sep::get_row(dp_cut, bt, core_graph));
 
                     double tour_activity =
-                    translator.get_activity(b_dat.best_tour_edges, R);
+                    Sep::get_activity(b_dat.best_tour_edges, R);
 
                     double lp_activity =
-                    translator.get_activity(lp_edges, R);
+                    Sep::get_activity(lp_edges, R);
 
                     bool viol_or_within = (lp_activity > R.rhs ||
                                            ((R.rhs - lp_activity) < 1));
@@ -215,7 +214,7 @@ SCENARIO("Separating simple DP inequalities in large instances",
         probfile = "problems/" + fname + ".tsp",
         solfile = "test_data/tours/" + fname + ".sol",
         subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-        Data::GraphGroup g_dat;
+        Graph::CoreGraph core_graph;
         Data::BestGroup b_dat;
         Data::SupportGroup s_dat;
         vector<double> lp_edges;
@@ -225,16 +224,15 @@ SCENARIO("Separating simple DP inequalities in large instances",
         GIVEN("A subtour polytope LP solution for " + fname) {
             THEN("We can get light simple DP inequalities") {
                 REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile,
-                                                         subtourfile, g_dat,
-                                                         b_dat, lp_edges,
-                                                         s_dat, inst));
-                int ncount = g_dat.core_graph.node_count();
+                                                    subtourfile, core_graph,
+                                                    b_dat, lp_edges,
+                                                    s_dat, inst));
+                int ncount = core_graph.node_count();
 
                 REQUIRE_NOTHROW(kpart = Data::KarpPartition(inst));
-                Sep::CutTranslate translator(g_dat);
                 Sep::CutQueue<Sep::dominoparity> dp_q(1000);
 
-                Sep::SimpleDP sDP(g_dat, kpart, b_dat, s_dat, dp_q);
+                Sep::SimpleDP sDP(kpart, b_dat, s_dat, dp_q);
 
                 REQUIRE(sDP.find_cuts());
                 cout << "Cut queue now has size: " << dp_q.size() << "\n";
@@ -244,13 +242,13 @@ SCENARIO("Separating simple DP inequalities in large instances",
                     LP::SparseRow R;
                     const Sep::dominoparity &dp_cut = dp_q.peek_front();
                     vector<int> &bt = b_dat.best_tour_nodes;
-                    REQUIRE_NOTHROW(R = translator.get_row(dp_cut, bt));
+                    REQUIRE_NOTHROW(R = Sep::get_row(dp_cut, bt, core_graph));
 
                     double tour_activity =
-                    translator.get_activity(b_dat.best_tour_edges, R);
+                    Sep::get_activity(b_dat.best_tour_edges, R);
 
                     double lp_activity =
-                    translator.get_activity(lp_edges, R);
+                    Sep::get_activity(lp_edges, R);
 
                     bool viol_or_within = (lp_activity > R.rhs ||
                                            ((R.rhs - lp_activity) < 1));

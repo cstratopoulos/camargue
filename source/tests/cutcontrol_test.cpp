@@ -32,15 +32,15 @@ SCENARIO ("Adding duplicate cuts",
             WHEN ("We add duplicate cuts and pivot back") {
                 THEN ("The slack for the added cuts is in the tour basis") {
                     CMR::Data::Instance inst("problems/" + prob + ".tsp", 99);
-                    CMR::Data::GraphGroup g_dat(inst);
-                    CMR::Data::BestGroup b_dat(inst, g_dat);
-                    CMR::LP::CoreLP core(g_dat, b_dat);
+                    CMR::Graph::CoreGraph core_graph(inst);
+                    CMR::Data::BestGroup b_dat(inst, core_graph);
+                    CMR::LP::CoreLP core(core_graph, b_dat);
 
                     CMR::Graph::TourGraph TG(b_dat.best_tour_edges,
-                                      g_dat.core_graph.get_edges(), b_dat.perm);
+                                      core_graph.get_edges(), b_dat.perm);
 
                     REQUIRE_NOTHROW(core.primal_pivot());
-                    
+
                     CMR::Data::SupportGroup &s_dat = core.supp_data;
 
                     CMR::Sep::LPcutList cutq;
@@ -54,8 +54,8 @@ SCENARIO ("Adding duplicate cuts",
 
                     REQUIRE_NOTHROW(core.add_cuts(cutq));
                     REQUIRE_NOTHROW(core.add_cuts(cutq));
-                    
-                    int ncount = g_dat.core_graph.node_count();
+
+                    int ncount = core_graph.node_count();
                     int expect_rowcount = ncount + 4;
 
                     REQUIRE(core.num_rows() == expect_rowcount);
@@ -94,9 +94,9 @@ SCENARIO ("Pivoting and adding cuts",
             WHEN ("We pivot to a new solution") {
                 THEN ("We can find cuts, add them, and pivot back") {
                     Data::Instance inst("problems/" + prob + ".tsp", 99);
-                    Data::GraphGroup g_dat(inst);
-                    Data::BestGroup b_dat(inst, g_dat);
-                    LP::CoreLP core(g_dat, b_dat);
+                    Graph::CoreGraph core_graph(inst);
+                    Data::BestGroup b_dat(inst, core_graph);
+                    LP::CoreLP core(core_graph, b_dat);
                     Data::KarpPartition kpart(inst);
 
                     vector<double> tour1 = core.lp_vec();
@@ -107,15 +107,17 @@ SCENARIO ("Pivoting and adding cuts",
 
                     vector<double> piv1 = core.lp_vec();
 
-                    Data::SupportGroup s_dat(g_dat.core_graph.get_edges(),
-                                             piv1, g_dat.island,
+                    vector<int> island;
+                    Data::SupportGroup s_dat(core_graph.get_edges(),
+                                             piv1, island,
                                              inst.node_count());
 
                     Graph::TourGraph TG(b_dat.best_tour_edges,
-                                      g_dat.core_graph.get_edges(),
+                                      core_graph.get_edges(),
                                       b_dat.perm);
 
-                    Sep::Separator control(g_dat, b_dat, s_dat, kpart, TG);
+                    Sep::Separator control(core_graph.get_edges(),
+                                           b_dat, s_dat, kpart, TG);
 
                     bool fast2m = control.fast2m_sep();
                     bool blkcomb = control.blkcomb_sep();
@@ -151,7 +153,7 @@ SCENARIO ("Pivoting and adding cuts",
 
                     REQUIRE(piv1 != piv2);
 
-                    
+
                     cout << "\n\n";
                 }
             }

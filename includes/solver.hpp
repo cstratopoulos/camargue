@@ -53,7 +53,7 @@ public:
 
     const Data::Instance &inst_info() const { return tsp_instance; }
 
-    const Data::GraphGroup &graph_info() const { return graph_data; }
+    const Graph::CoreGraph &graph_info() const { return core_graph; }
 
     const Data::BestGroup &best_info() const{ return best_data; }
 
@@ -92,12 +92,14 @@ private:
 
     Data::Instance tsp_instance;
     Data::KarpPartition karp_part;
-    Data::GraphGroup graph_data;
+    Graph::CoreGraph core_graph;
     Data::BestGroup best_data;
 
     LP::CoreLP core_lp;
 
     Graph::TourGraph TG;
+
+    std::unique_ptr<Sep::Separator> separator;
 
 #if CMR_HAVE_SAFEGMI
     std::unique_ptr<Sep::SafeGomory> gmi_separator;

@@ -28,7 +28,7 @@ using std::pair;
 
 SCENARIO("Karp partition constructor tests",
 	 "[.karp][valgrind]") {
-  CMR::Data::GraphGroup g_dat;
+  CMR::Graph::CoreGraph core_graph;
   CMR::Data::BestGroup b_dat;
   CMR::Data::SupportGroup s_dat;
   vector<double> lp_edges;
@@ -38,7 +38,7 @@ SCENARIO("Karp partition constructor tests",
   REQUIRE_NOTHROW(CMR::Data::make_cut_test("problems/st70.tsp",
 					    "test_data/tours/st70.sol",
 					    "test_data/subtour_lp/st70.sub.x",
-					    g_dat, b_dat, lp_edges, s_dat,
+					    core_graph, b_dat, lp_edges, s_dat,
 					    inst));
 }
 
@@ -51,7 +51,7 @@ SCENARIO("Karp partitions for too small instances",
     ((fname == "dantzig42") ? "problems/" : "test_data/") + fname + ".tsp",
     solfile = "test_data/tours/" + fname + ".sol",
     subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
-    CMR::Data::GraphGroup g_dat;
+    CMR::Graph::CoreGraph core_graph;
     CMR::Data::BestGroup b_dat;
     CMR::Data::SupportGroup s_dat;
     vector<double> lp_edges;
@@ -61,9 +61,9 @@ SCENARIO("Karp partitions for too small instances",
     GIVEN("The TSPLIB instance " + fname) {
       THEN("The Karp partition is trivial bc there are too few nodes.") {
         REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
-                                                 subtourfile, g_dat, b_dat,
+                                                 subtourfile, core_graph, b_dat,
                                                  lp_edges, s_dat, inst));
-        int ncount = g_dat.core_graph.node_count();
+        int ncount = core_graph.node_count();
 	  
         REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(inst));
         REQUIRE(kpart.num_parts() == 1);

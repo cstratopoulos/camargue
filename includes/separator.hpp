@@ -4,8 +4,10 @@
 #include "process_cuts.hpp"
 #include "datagroups.hpp"
 #include "karp.hpp"
+#include "graph.hpp"
 
 #include <memory>
+#include <vector>
 
 namespace CMR {
 
@@ -21,14 +23,14 @@ class Separator {
 public:
 
     /// Construct a Separator using problem data.
-    Separator(Data::GraphGroup &graphdata,
+    Separator(const std::vector<Graph::Edge> &core_edges_,
               Data::BestGroup &bestdata,
               Data::SupportGroup &suppdata,
               Data::KarpPartition &kpart,
               Graph::TourGraph &_TG);
 
     /// Construct a Separator, but with limit of number of cuts returned.
-    Separator(Data::GraphGroup &graphdata,
+    Separator(const std::vector<Graph::Edge> &core_edges_,
               Data::BestGroup &bestdata,
               Data::SupportGroup &suppdata,
               Data::KarpPartition &kpart,
@@ -57,7 +59,7 @@ private:
     int max_total;
     int running_total;
 
-    Data::GraphGroup &graph_data;
+    const std::vector<Graph::Edge> &core_edges;
     Data::BestGroup &best_data;
     Data::SupportGroup &supp_data;
     Data::KarpPartition &karp_part;
@@ -78,7 +80,8 @@ private:
 
 /// This is a shorthand for resetting a unique_ptr to a Separator, like
 /// a surrogate move assign since Separator has mostly reference members.
-void ptr_reset(std::unique_ptr<Separator> &sep, Data::GraphGroup &g_dat,
+void ptr_reset(std::unique_ptr<Separator> &sep,
+               const std::vector<Graph::Edge> &c_edges,
                Data::BestGroup &b_dat, Data::SupportGroup &s_dat,
                Data::KarpPartition &kpart,
                Graph::TourGraph &TG);
