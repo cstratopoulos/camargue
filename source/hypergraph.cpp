@@ -299,13 +299,10 @@ void ExternalCuts::del_cuts(const vector<int> &delset)
         if (delset[i + node_count] == -1) {
             if (Htype == CutType::Comb || Htype == CutType::Domino)
                 cut_pool.emplace_back(std::move(H));
-            else
-                H.rhs = '\0';
+            H.rhs = '\0';
         }
         ++i;
     }
-
-    cout << "Cut pool now has size " << cut_pool.size() << "\n";
 
     cuts.erase(std::remove_if(cuts.begin(), cuts.end(),
                               [](const HyperGraph &H) {

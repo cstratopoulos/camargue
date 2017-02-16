@@ -137,18 +137,17 @@ public:
         return cuts[lp_rownum - node_count];
     }
 
-    /// Get a constant reference to the list of cuts.
     const std::vector<HyperGraph> &get_cuts() const { return cuts; }
 
-    /// Get a constant reference to the CliqueBank.
+    const std::vector<HyperGraph> &get_cutpool() const { return cut_pool; }
+
     const CliqueBank &get_cbank() const { return clique_bank; };
 
-    /// Get a constant reference to the ToothBank. */
     const ToothBank &get_tbank() const { return tooth_bank; };
 
     /// Get the column associated with an edge to be added to the lp.
-    void get_col(int end0, int end1,
-                 std::vector<int> &cmatind, std::vector<double> &cmatval) const;
+    void get_col(int end0, int end1, std::vector<int> &cmatind,
+                 std::vector<double> &cmatval) const;
 
 private:
     /// Number of nodes in the Instance being tracked.

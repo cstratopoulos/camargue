@@ -1,3 +1,9 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/** @file
+ * @brief Wrapper/arithmetic operators for fixed precision arithmetic.
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef CMR_FIXED64_H
 #define CMR_FIXED64_H
 
@@ -11,44 +17,45 @@ namespace CMR {
 namespace util {
 
 /// A 64-bit fixed precision number type "implemented" as a wrapper to CCbigguy.
+/// @warning Concorde will call abort if any of these computations overflow.
 class Fixed64 {
 public:
-    Fixed64() = default; //!< Default constructor.
-    
+    Fixed64() = default;
+
     Fixed64(int i) :
         bg(CCbigguy_itobigguy(i)) {} //!< Construct from integer.
-    
-    Fixed64(double d) :
-        bg(CCbigguy_dtobigguy(d)) {}; //!< Construct from double. 
 
-    
+    Fixed64(double d) :
+        bg(CCbigguy_dtobigguy(d)) {}; //!< Construct from double.
+
+
     double to_d() const
         { return CCbigguy_bigguytod(bg); } //!< Convert to double.
 
     Fixed64 &operator+=(Fixed64 f)
         { CCbigguy_add(&bg, f.bg); return *this; } //!< Plus increment.
-    
+
     Fixed64 &operator-=(Fixed64 f)
         { CCbigguy_sub(&bg, f.bg); return *this; } //!< Minus decrement.
 
     friend void add_mult(Fixed64 &f, const Fixed64 &g, int m);
-    
+
     /// Integer ceiling.
     Fixed64 ceil() const
         { Fixed64 result; result.bg = CCbigguy_ceil(bg); return result; }
-    
+
 
     bool operator<(const Fixed64 &f) const
-        { return CCbigguy_cmp(bg, f.bg) == -1; } //!< Less than operator.
+        { return CCbigguy_cmp(bg, f.bg) == -1; }
 
     bool operator==(const Fixed64 &f) const
-        { return CCbigguy_cmp(bg, f.bg) == 0; } //!< Equality operator.
+        { return CCbigguy_cmp(bg, f.bg) == 0; }
 
     bool operator!=(const Fixed64 &f) const
         { return CCbigguy_cmp(bg, f.bg) != 0; }
 
     bool operator>(const Fixed64 &f) const
-        { return CCbigguy_cmp(bg, f.bg) == 1; } //!< Greater than operator.
+        { return CCbigguy_cmp(bg, f.bg) == 1; }
 
     bool operator<=(const Fixed64 &f) const
         { return CCbigguy_cmp(bg, f.bg) <= 0; }
