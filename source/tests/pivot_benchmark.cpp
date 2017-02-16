@@ -83,7 +83,7 @@ static vector<RepTuple> table_entries{
 
 //this test uses some pretty heinous array indexing tricks
 SCENARIO ("Comparing pivot protocols with round of cuts",
-          "[.LP][.Sep][.one_primal_pivot][.nondegen_pivot][benchmark]") {
+          "[.LP][.Sep][.one_primal_pivot][.nondegen_pivot][.benchmark]") {
     using namespace CMR;
 
     for (ProbPair &pp : impl_benchmarks) {
@@ -181,7 +181,7 @@ SCENARIO ("Comparing pivot protocols with round of cuts",
 }
 
 SCENARIO ("Comparing pivot protocols as optimizers",
-          "[.LP][.Relaxation][.single_pivot][.nondegen_pivot][benchmark]") {
+          "[.LP][.Relaxation][.single_pivot][.nondegen_pivot][.benchmark]") {
     using namespace CMR;
     namespace Eps = Epsilon;
 
