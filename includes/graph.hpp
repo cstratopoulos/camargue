@@ -1,3 +1,9 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/** @file
+ * @brief Header for classes/structures/functions to work with graphs.
+ *
+\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef CMR_GRAPH_H
 #define CMR_GRAPH_H
 

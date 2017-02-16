@@ -1,3 +1,9 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/** @file
+ * @brief Structures for storing and processing cuts.
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef CMR_PROCESS_CUTS_H
 #define CMR_PROCESS_CUTS_H
 
@@ -20,45 +26,45 @@
 namespace CMR {
 namespace Sep {
 
-/** Class template for dealing with a queue of cuts of some representation. */
+/// Class template for queue of cuts in some form.
 template<typename cut_rep>
 class CutQueue {
 public:
-    /** Construct a CutQueue with unlimited capacity. */
+    /// Construct a CutQueue with unlimited capacity.
     CutQueue() : q_cap(std::numeric_limits<int>::max()) {}
 
-    /** Construct a CutQueue with capacity \p cap. */
+    /// Construct a CutQueue with capacity \p cap.
     CutQueue(const int cap) : q_cap(cap) {}
 
     int q_capacity() const { return q_cap; }
 
-    /** A reference to the most recently added cut. */
+    /// A reference to the most recently added cut.
     const cut_rep &peek_front() const { return cut_q.front(); }
 
-    /** Push a new cut to the front, popping from the back if at capacity. */
+    /// Push a new cut to the front, popping from the back if at capacity.
     void push_front(const cut_rep &H)
         {
             cut_q.push_front(H);
             if(cut_q.size() > q_capacity()) cut_q.pop_back();
         }
 
-    /** Push to the back, popping from back first if at capacity. */
+    /// Push to the back, popping from back first if at capacity.
     void push_back(const cut_rep &H)
         {
             if(cut_q.size() >= q_capacity()) cut_q.pop_back();
             cut_q.push_back(H);
         }
 
-    void pop_front() { cut_q.pop_front(); }  /**< Pop the front cut. */
+    void pop_front() { cut_q.pop_front(); }  //!< Pop the front cut.
 
-    /** Add the cuts in Q to this list, emptying Q. */
+    /// Add the cuts in Q to this list, emptying Q.
     void splice(CutQueue<cut_rep> &Q){ cut_q.splice(cut_q.end(), Q.cut_q); }
 
 
-    bool empty() const { return cut_q.empty(); } /**< Is the queue empty. */
-    int size() const { return cut_q.size(); } /**< Number of cuts in queue. */
+    bool empty() const { return cut_q.empty(); }
+    int size() const { return cut_q.size(); }
 
-    void clear() { cut_q.clear(); } /**< Clear the queue. */
+    void clear() { cut_q.clear(); } //!< Clear the queue.
 
     using Itr = typename std::list<cut_rep>::iterator;
     using ConstItr = typename std::list<cut_rep>::const_iterator;
@@ -75,19 +81,22 @@ private:
 };
 
 
-
+/// SparseRow corresponding to Concorde cut.
 LP::SparseRow get_row(const CCtsp_lpcut_in &cc_cut,
                       const std::vector<int> &perm,
                       const Graph::CoreGraph &core_graph);
 
+/// SparseRow corresponding to simple DP inequality.
 LP::SparseRow get_row(const dominoparity &dp_cut,
                       const std::vector<int> &tour_nodes,
                       const Graph::CoreGraph &core_graph);
 
+/// SparseRow corresponding to the handle and tooth edges of a blossom.
 LP::SparseRow get_row(const std::vector<int> &handle_delta,
                       const std::vector<std::vector<int>> &tooth_edges,
                       const Graph::CoreGraph &core_graph);
 
+/// Function template for determining the activity or lhs of a vector on a row.
 template<typename number_type>
 double get_activity(const std::vector<number_type> &x,
                     const LP::SparseRow &R)
