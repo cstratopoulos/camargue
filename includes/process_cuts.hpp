@@ -10,7 +10,6 @@
 #include "datagroups.hpp"
 #include "cc_lpcuts.hpp"
 #include "graph.hpp"
-#include "tooth.hpp"
 #include "cut_structs.hpp"
 #include "lp_util.hpp"
 #include "util.hpp"
