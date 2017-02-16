@@ -120,6 +120,7 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
                         cout << "Breaking on part " << i << "\n"; break;
                     }
                 }
+                REQUIRE(total_count > 0);
                 cout << "\t" << total_count << " total cuts in "
                      << total_time << "s\n\n";
             }

@@ -55,9 +55,9 @@ struct Basis {
 struct SparseRow {
     std::vector<int> rmatind; //!< Indices of nonzero entries.
     std::vector<double> rmatval; //!< Coefficients for indices in rmatind.
-    char sense; //!< 'G' for >=, 'L' for <=, 'E' for ==.
-    double rhs; //!< The righthand side.
-    double lp_viol; //!< (Optional) violation wrt some vector.
+    char sense = '\0'; //!< 'G' for >=, 'L' for <=, 'E' for ==.
+    double rhs = 0.0; //!< The righthand side.
+    double lp_viol = 0.0; //!< (Optional) violation wrt some vector.
 };
 
 /// Operator overload for writing LP::PivType to output stream.
