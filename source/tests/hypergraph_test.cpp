@@ -53,7 +53,7 @@ SCENARIO ("Comparing HyperGraph edge coeffs to CPLEX coefs",
                     OutPrefs outprefs;
                     Solver solver(probfile, 99, outprefs);
 
-                    solver.cutting_loop(false, true, true);
+                    solver.cutting_loop(false, false, true);
 
                     const Graph::CoreGraph &core_graph = solver.graph_info();
                     const LP::CoreLP &core_lp = solver.get_core_lp();

@@ -51,7 +51,7 @@ SCENARIO ("Elminating edges after a run of cutting_loop",
             OutPrefs prefs;
             Solver solver(probfile, seed, prefs);
 
-            auto piv = solver.cutting_loop(true, true, true);
+            auto piv = solver.cutting_loop(true, false, true);
 
             LP::CoreLP &core =
             const_cast<LP::CoreLP &>(solver.get_core_lp());
@@ -341,7 +341,7 @@ SCENARIO ("Optimizing and computing lower bounds",
                     OutPrefs outprefs;
                     Solver solver(probfile, seed, outprefs);
 
-                    solver.cutting_loop(true, true, true);
+                    solver.cutting_loop(true, false, true);
 
                     LP::CoreLP &core = const_cast<LP::CoreLP &>(solver.
                                                                 get_core_lp());
@@ -397,7 +397,7 @@ vector<ProbPair> probs {
                     OutPrefs outprefs;
                     Solver solver(probfile, seed, outprefs);
 
-                    solver.cutting_loop(false, true, true);
+                    solver.cutting_loop(false, false, true);
 
                     Graph::CoreGraph &core_graph =
                     const_cast<Graph::CoreGraph &>(solver.graph_info());
