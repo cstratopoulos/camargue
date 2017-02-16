@@ -12,47 +12,13 @@ using std::logic_error;
 using std::exception;
 
 namespace CMR {
+namespace Graph {
 
-void Graph::get_delta (const std::vector<int> &nodelist,
-                       std::vector<Graph::Edge> &elist,
-			    int *deltacount_p, std::vector<int> &delta,
-			    std::vector<int> &marks) {
-  for (int i = 0; i < nodelist.size(); i++)
-    marks[nodelist[i]] = 1;
-
-  int k = 0;
-  for (int i = 0; i < elist.size(); i++)
-    if (marks[elist[i].end[0]] + marks[elist[i].end[1]] == 1)
-      delta[k++] = i;
-
-  *deltacount_p = k;
-
-  for (int i = 0; i < nodelist.size(); i++)
-    marks[nodelist[i]] = 0;
-}
-
-void Graph::get_delta (int nsize, int *nlist, int ecount, int *elist,
-			 int *deltacount, int *delta, int *marks) {
-  int i, k = 0;
-
-  for (i = 0; i < nsize; i++) marks[nlist[i]] = 1;
-
-  for (i = 0; i < ecount; i++) {
-    if (marks[elist[2*i]] + marks[elist[2*i+1]] == 1) {
-      delta[k++] = i;
-    }
-  }
-
-  *deltacount = k;
-
-  for (i = 0; i < nsize; i++) marks[nlist[i]] = 0;
-}
-
-void Graph::get_delta(const int interval_start, const int interval_end,
-			   const vector<int> &tour_nodes,
-			   const vector<int> &elist,
-			   int &deltacount, vector<int> &delta,
-			   vector<int> &node_marks)
+void get_delta(const int interval_start, const int interval_end,
+               const vector<int> &tour_nodes,
+               const vector<int> &elist,
+               int &deltacount, vector<int> &delta,
+               vector<int> &node_marks)
 {
   for (int i = interval_start; i <= interval_end; i++)
     node_marks[tour_nodes[i]] = 1;
@@ -68,7 +34,6 @@ void Graph::get_delta(const int interval_start, const int interval_end,
     node_marks[tour_nodes[i]] = 0;
 }
 
-namespace Graph {
 
 vector<int> delta_inds(const vector<int> &node_list, const vector<Edge> &edges,
                        int ncount)
@@ -84,6 +49,27 @@ vector<int> delta_inds(const vector<int> &node_list, const vector<Edge> &edges,
         if (node_marks[e.end[0]] != node_marks[e.end[1]])
             result.push_back(i);
     }
+
+    return result;
+}
+
+vector<int> delta_inds(const vector<int> &node_list, const vector<int> &elist,
+                       int ncount)
+{
+    vector<int> result;
+    vector<bool> node_marks(ncount, false);
+
+    for (int n : node_list)
+        node_marks[n] = true;
+
+    if (elist.size() % 2 != 0)
+        throw logic_error("Odd number of nodes in elist for delta_inds");
+
+    int ecount = elist.size() / 2;
+
+    for (int i = 0; i < ecount; ++i)
+        if (node_marks[elist[2 * i]] != node_marks[elist[(2 * i) + 1]])
+            result.push_back(i);
 
     return result;
 }

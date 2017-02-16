@@ -41,12 +41,12 @@ bool DPwitness::simple_DP_sep(CutQueue<dominoparity> &dp_q)
 {
     try {
         build_light_tree();
-    
+
         add_web_edges();
-    
+
         build_gh_tree();
         if (CC_gh_q.empty()) return false;
-    
+
         grab_dominos(dp_q);
     } catch (const exception &e) {
         cerr << e.what() << "\n";
@@ -104,7 +104,7 @@ void DPwitness::build_light_tree()
                 int child_index = child->cutgraph_index;
                 double child_slack = child->slack;
                 bool found_parent = false;
-      
+
                 for (auto parent = child + 1;
                      parent != light_teeth[i].end(); ++parent) {
                     found_parent = child->is_subset_of(*parent);
@@ -114,7 +114,7 @@ void DPwitness::build_light_tree()
                         cut_elist.push_back(child_index);
                         cut_elist.push_back(parent_index);
                         cut_ecap.push_back(child_slack);
-	  
+
                         node_marks[child_index] = !(node_marks[child_index]);
                         node_marks[parent_index] = !(node_marks[parent_index]);
 
@@ -141,19 +141,16 @@ void DPwitness::build_light_tree()
         }
     } CMR_CATCH_PRINT_THROW("setting gomoryhu marked nodes", err);
 
-  
+
     int num_teeth = 0;
     for (const vector<SimpleTooth> &vec : light_teeth)
     num_teeth += vec.size();
-
-    try { cg_delta_marks.resize(cutgraph_nodes.size(), 0); }
-    CMR_CATCH_PRINT_THROW("allocating delta marks", err);  
 }
 
 void DPwitness::add_web_edges()
 {
     runtime_error err("Problem in DPwitness::add_web_edges.");
-  
+
     const vector<int> &support_elist = supp_dat.support_elist;
     const vector<double> &support_ecap = supp_dat.support_ecap;
 
@@ -187,10 +184,6 @@ void DPwitness::add_web_edges()
             cut_ecap.push_back(lp_weight);
         } CMR_CATCH_PRINT_THROW("pushing back web edge", err);
     }
-
-    try {
-        cutgraph_delta.resize(cut_ecap.size());
-    } CMR_CATCH_PRINT_THROW("allocating cutgraph delta", err);
 }
 
 void DPwitness::build_gh_tree()
@@ -202,7 +195,7 @@ void DPwitness::build_gh_tree()
 
     CCrandstate rstate;
     int seed = 99;
-  
+
     CCutil_sprand(seed, &rstate);
 
     if (CCcut_gomory_hu(&gh_tree, ncount, ecount, &cut_elist[0], &cut_ecap[0],
@@ -223,21 +216,23 @@ void DPwitness::grab_dominos(CutQueue<dominoparity> &dp_q)
 
     while (!CC_gh_q.empty()) {
         vector<int> cut_shore_nodes;
-        int deltacount = 0;
-    
-        vector<int> handle_nodes;
-        vector<SimpleTooth> used_teeth;
-        vector<IntPair> nonneg_edges;
 
         try { expand_cut(CC_gh_q.peek_front(), cut_shore_nodes); }
         CMR_CATCH_PRINT_THROW("expanding cut nodes", err);
 
-        Graph::get_delta(cut_shore_nodes.size(), &cut_shore_nodes[0],
-                              cut_ecap.size(), &cut_elist[0], &deltacount,
-                              &cutgraph_delta[0], &cg_delta_marks[0]);
+        vector<int> cutgraph_delta;
+        int ncount = cutgraph_nodes.size();
 
-        for (int i = 0; i < deltacount; ++i) {
-            int edge_ind = cutgraph_delta[i];
+        try {
+            cutgraph_delta = Graph::delta_inds(cut_shore_nodes, cut_elist,
+                                               ncount);
+        } CMR_CATCH_PRINT_THROW("getting cut delta", err);
+
+        vector<int> handle_nodes;
+        vector<SimpleTooth> used_teeth;
+        vector<IntPair> nonneg_edges;
+
+        for (int edge_ind : cutgraph_delta) {
             int end0 = cut_elist[2 * edge_ind];
             int end1 = cut_elist[(2 * edge_ind) + 1];
 
@@ -279,7 +274,7 @@ void DPwitness::grab_dominos(CutQueue<dominoparity> &dp_q)
 
         try {
             dominoparity newDP(used_teeth, handle_nodes, nonneg_edges);
-      
+
             dp_q.push_back(newDP);
         } CMR_CATCH_PRINT_THROW("adding new dp ineq", err);
 

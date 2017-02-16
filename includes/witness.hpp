@@ -22,10 +22,10 @@ public:
   DPwitness(CandidateTeeth &cands,
             const std::vector<int> &partition_nodes);
   ~DPwitness();
-  
+
   /** Create a cutgraph and grab odd cuts from it. */
   bool simple_DP_sep(CutQueue<dominoparity> &domino_q);
-  
+
 private:
   void build_light_tree();  /**< Build the tooth inequality tree. */
   void add_web_edges(); /**< Add nonnegativity inequality edges. */
@@ -52,13 +52,10 @@ private:
   std::vector<int> odd_nodes_list;
   std::vector<bool> node_marks;
 
-  std::vector<int> cutgraph_delta;
-  std::vector<int> cg_delta_marks;
-
   CutQueue<CC_GHnode *> CC_gh_q;
 
   CC_GHtree gh_tree;
-  
+
   void grab_cuts(CutQueue<dominoparity> &domino_q);
 
 };

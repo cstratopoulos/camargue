@@ -179,12 +179,9 @@ std::vector<int> delta_inds(const std::vector<int> &node_list,
                             const std::vector<Edge> &edges,
                             int ncount);
 
-void get_delta (const std::vector<int> &nodelist, std::vector<Edge> &elist,
-		int *deltacount_p, std::vector<int> &delta,
-		std::vector<int> &marks);
-
-void get_delta (int nsize, int *nlist, int ecount, int *elist,
-		int *deltacount, int *delta, int *node_marks);
+std::vector<int> delta_inds(const std::vector<int> &node_list,
+                            const std::vector<int> &elist,
+                            int ncount);
 
 void get_delta (const int interval_start, const int interval_end,
 		const std::vector<int> &tour_nodes,
