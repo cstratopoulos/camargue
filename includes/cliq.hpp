@@ -50,14 +50,13 @@ public:
     /// Construct a Clique from a list of literal nodes.
     Clique(std::vector<int> &nodes, const std::vector<int> &perm);
 
-
     using Ptr = std::shared_ptr<Clique>; //!< shared_ptr alias declaration.
 
     /// How many segments are used to represent the Clique.
     int seg_count() const { return seglist.size(); }
 
     /// A constant reference to the list of segments in the Clique.
-    const std::vector<CMR::Segment> &seg_list() const { return seglist; }
+    const std::vector<Segment> &seg_list() const { return seglist; }
 
     /// A list of literal nodes represented by the Clique.
     std::vector<int> node_list(const std::vector<int> &saved_tour) const;
@@ -75,7 +74,7 @@ public:
 
 private:
     /// A vector of start and endpoints of tour intervals stored as Segment.
-    std::vector<CMR::Segment> seglist;
+    std::vector<Segment> seglist;
 };
 
 /** Vertex set structure used in tooth inequalities for domino parity cuts.
@@ -170,27 +169,30 @@ public:
     CliqueBank(const std::vector<int> &tour, const std::vector<int> &perm);
 
     /// Add a Clique to the bank, and get a reference to it.
-    Sep::Clique::Ptr add_clique(const Sep::Clique &clq);
+    Clique::Ptr add_clique(const Clique &clq);
 
     /// Construct a Clique in place, add it, and get a reference to it.
-    Sep::Clique::Ptr add_clique(const CCtsp_lpclique &cc_cliq,
+    Clique::Ptr add_clique(const CCtsp_lpclique &cc_cliq,
                                 const std::vector<int> &tour);
 
     /// Construct/add/get a reference to the Clique from endpoints.
-    Sep::Clique::Ptr add_clique(int start, int end,
+    Clique::Ptr add_clique(int start, int end,
                                 const std::vector<int> &tour);
 
     /// Construct/add/get a reference to a Clique from a node list.
-    Sep::Clique::Ptr add_clique(std::vector<int> &nodes);
+    Clique::Ptr add_clique(std::vector<int> &nodes);
+
+    /// Put the pointed Clique in this bank.
+    void steal_clique(Clique::Ptr &clq_ptr, CliqueBank &from_bank);
 
     /// Decrement the reference count of a Clique, possibly removing it.
-    void del_clique(Sep::Clique::Ptr &clq_ptr);
+    void del_clique(Clique::Ptr &clq_ptr);
 
     int size() const
         { return bank.size(); } //!< The number of unique Cliques in the bank.
 
     /// Alias declaration for Clique hash table.
-    using CliqueHash = std::unordered_map<Sep::Clique, Sep::Clique::Ptr>;
+    using CliqueHash = std::unordered_map<Clique, Clique::Ptr>;
 
     using Itr = CliqueHash::iterator;
     using ConstItr = CliqueHash::const_iterator;

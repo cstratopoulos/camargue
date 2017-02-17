@@ -239,7 +239,8 @@ double HyperGraph::get_coeff(int end0, int end1) const
 }
 
 ExternalCuts::ExternalCuts(const vector<int> &tour, const vector<int> &perm)
-try : node_count(tour.size()), clique_bank(tour, perm), tooth_bank(tour, perm)
+try : node_count(tour.size()), clique_bank(tour, perm), tooth_bank(tour, perm),
+      pool_cliques(tour, perm)
 {
 } catch (const exception &e) {
     cerr << e.what() << "\n";
@@ -293,15 +294,19 @@ void ExternalCuts::del_cuts(const vector<int> &delset)
 {
     using CutType = HyperGraph::Type;
 
-    int i = 0;
-    for (HyperGraph &H : cuts) {
+    for (int i = 0; i < cuts.size(); ++i) {
+        HyperGraph &H = cuts[i];
         CutType Htype = H.cut_type();
         if (delset[i + node_count] == -1) {
-            if (Htype == CutType::Comb || Htype == CutType::Domino)
+            if (Htype == CutType::Comb || Htype == CutType::Domino) {
+                for (Clique::Ptr &clq_ptr : H.cliques) {
+                    pool_cliques.steal_clique(clq_ptr, clique_bank);
+                    H.source_bank = &pool_cliques;
+                }
                 cut_pool.emplace_back(std::move(H));
+            }
             H.rhs = '\0';
         }
-        ++i;
     }
 
     cuts.erase(std::remove_if(cuts.begin(), cuts.end(),

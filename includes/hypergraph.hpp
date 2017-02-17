@@ -141,7 +141,9 @@ public:
 
     const std::vector<HyperGraph> &get_cutpool() const { return cut_pool; }
 
-    const CliqueBank &get_cbank() const { return clique_bank; };
+    const CliqueBank &get_cbank() const { return clique_bank; }
+
+    const CliqueBank &get_pool_cbank() const { return pool_cliques; }
 
     const ToothBank &get_tbank() const { return tooth_bank; };
 
@@ -158,6 +160,8 @@ private:
 
     CliqueBank clique_bank; //!< Bank for adding and dispensing cliques.
     ToothBank tooth_bank; //!< Bank for adding and dispensing teeth.
+
+    CliqueBank pool_cliques; //!< Bank of cliques for cuts in cut_pool.
 
     std::vector<HyperGraph> cuts; //!< List of the cuts in the CoreLP.
 
