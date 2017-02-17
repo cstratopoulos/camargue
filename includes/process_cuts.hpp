@@ -47,8 +47,20 @@ public:
             if(cut_q.size() > q_capacity()) cut_q.pop_back();
         }
 
+    void push_front(cut_rep &&H)
+        {
+            cut_q.emplace_front(H);
+            if (cut_q.size() > q_capacity()) cut_q.pop_back();
+        }
+
     /// Push to the back, popping from back first if at capacity.
     void push_back(const cut_rep &H)
+        {
+            if(cut_q.size() >= q_capacity()) cut_q.pop_back();
+            cut_q.push_back(H);
+        }
+
+    void push_back(cut_rep &&H)
         {
             if(cut_q.size() >= q_capacity()) cut_q.pop_back();
             cut_q.push_back(H);

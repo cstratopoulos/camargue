@@ -190,32 +190,19 @@ public:
         { return bank.size(); } //!< The number of unique Cliques in the bank.
 
     /// Alias declaration for Clique hash table.
-    using CliqueHash = std::unordered_map<Sep::Clique,
-                                          Sep::Clique::Ptr>;
+    using CliqueHash = std::unordered_map<Sep::Clique, Sep::Clique::Ptr>;
 
+    using Itr = CliqueHash::iterator;
+    using ConstItr = CliqueHash::const_iterator;
 
-    using Itr = CliqueHash::iterator; //!< Iterator alias.
-    using ConstItr = CliqueHash::const_iterator; //!< Const iter alias. */
+    Itr begin() { return bank.begin(); }
+    Itr end() { return bank.end(); }
 
+    ConstItr begin() const { return bank.begin(); }
+    ConstItr end() const { return bank.end(); }
 
-    Itr begin()
-        { return bank.begin(); } //!< Begin iterator.
-
-    ConstItr begin() const
-        { return bank.begin(); } //!< Const begin iter.
-
-
-    Itr end()
-        { return bank.end(); } //!< Past the end iterator.
-
-    ConstItr end() const
-        { return bank.end(); } //!< Const past end iter.
-
-    const std::vector<int> &ref_tour() const
-        { return saved_tour; } //!< Const ref to saved tour for dereferencing.
-
-    const std::vector<int> &ref_perm() const
-        { return saved_perm; } //!< Const ref to saved perm for dereferncing.
+    const std::vector<int> &ref_tour() const { return saved_tour; }
+    const std::vector<int> &ref_perm() const { return saved_perm; }
 
 
 private:

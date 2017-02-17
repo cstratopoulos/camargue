@@ -1,3 +1,9 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/** @file
+ * @brief Utility structures for running safe Gomory cut separation.
+ *
+\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef CMR_MIRGROUP_H
 #define CMR_MIRGROUP_H
 
@@ -37,6 +43,12 @@ struct VinfoDeleter {
     }
 };
 
+
+/** Memory-managed access to classes needed during safe GMI separation.
+ * This is just a collection of safemir data structures with custom deleters.
+ * Populating the data depends on the LP::Relaxation solver_impl, so the real
+ * work of constructing a MIRgroup is done by the function init_mir_data.
+ */
 struct MIRgroup {
     MIRgroup()
     {
@@ -54,7 +66,7 @@ struct MIRgroup {
 
         settings.save_cuts = 0;
     }
-    
+
     SLVRcutterSettings_t settings;
 
     std::unique_ptr<CUTSsystem_t<double>, SystemDeleter> constraint_matrix;
@@ -67,7 +79,7 @@ struct MIRgroup {
 
     std::vector<char> vartype;
     std::vector<double> vranking;
-    
+
 };
 
 }

@@ -1,3 +1,9 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/** @file
+ * @brief Primal safe Gomory cut separation.
+ *
+\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef CMR_SAFEGMI_H
 #define CMR_SAFEGMI_H
 

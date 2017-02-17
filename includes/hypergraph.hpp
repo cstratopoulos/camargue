@@ -149,6 +149,8 @@ public:
     void get_col(int end0, int end1, std::vector<int> &cmatind,
                  std::vector<double> &cmatval) const;
 
+    friend class PoolCuts;
+
 private:
     /// Number of nodes in the Instance being tracked.
     /// Used to compute offsets for indices of cuts from LP::Relaxation.

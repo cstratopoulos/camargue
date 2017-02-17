@@ -12,6 +12,7 @@
 #include "karp.hpp"
 #include "datagroups.hpp"
 #include "separator.hpp"
+#include "pool_sep.hpp"
 
 #if CMR_HAVE_SAFEGMI
 
@@ -99,6 +100,7 @@ private:
     Graph::TourGraph TG;
 
     std::unique_ptr<Sep::Separator> separator;
+    std::unique_ptr<Sep::PoolCuts> pool_separator;
 
 #if CMR_HAVE_SAFEGMI
     std::unique_ptr<Sep::SafeGomory> gmi_separator;
