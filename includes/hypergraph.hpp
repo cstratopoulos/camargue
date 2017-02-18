@@ -29,7 +29,6 @@ public:
     HyperGraph()
         : sense('\0'), source_bank(nullptr), source_toothbank(nullptr) {}
 
-
     /// Construct a HyperGraph from a Concorde cut.
     HyperGraph(CliqueBank &bank,
                const CCtsp_lpcut_in &cc_lpcut,
@@ -45,9 +44,11 @@ public:
                const std::vector<int> &blossom_handle,
                const std::vector<std::vector<int>> &tooth_edges);
 
-    HyperGraph(HyperGraph &&H) noexcept; //!< Move construct a HyperGraph.
+    HyperGraph(HyperGraph &&H) noexcept;
+    HyperGraph &operator=(HyperGraph &&H) noexcept;
 
-    HyperGraph &operator=(HyperGraph &&H) noexcept; //!< Move assign.
+    /// Change the source_bank to \p new_source_bank.
+    void transfer_source(CliqueBank &new_source_bank);
 
     ~HyperGraph(); //!< Destruct and decrement/delete Clique/Tooth refs.
 
@@ -60,7 +61,7 @@ public:
         Branch = 3, //!< A constraint to enforce branching.
     };
 
-    Type cut_type() const; //!< Find the Type of this cut.
+    Type cut_type() const;
 
     /// Get the coefficient of an edge specified by endpoints.
     double get_coeff(int end0, int end1) const;
@@ -71,15 +72,11 @@ public:
                     std::vector<int> &rmatind,
                     std::vector<double> &rmatval) const;
 
-    char get_sense() const { return sense; } //!< Get the sense of the cut.
-    double get_rhs() const { return rhs; } //!< Get the rhs of the cut.
+    char get_sense() const { return sense; }
+    double get_rhs() const { return rhs; }
 
-
-    const std::vector<Clique::Ptr> &get_cliques() const
-        { return cliques; } //!< Constant ref to the vector of Clique refs.
-
-    const std::vector<Tooth::Ptr> &get_teeth() const
-        { return teeth; } //!< Constant ref to the vector of Tooth refs.
+    const std::vector<Clique::Ptr> &get_cliques() const { return cliques; }
+    const std::vector<Tooth::Ptr> &get_teeth() const { return teeth; }
 
     friend class ExternalCuts;
 
@@ -126,6 +123,9 @@ public:
     void add_cut(const std::vector<int> &blossom_handle,
                  const std::vector<std::vector<int>> &tooth_edges);
 
+    /// Add a HyperGraph cut from a pool.
+    void add_cut(HyperGraph &H);
+
     /// Add a Non HyperGraph cut.
     void add_cut();
 
@@ -138,13 +138,10 @@ public:
     }
 
     const std::vector<HyperGraph> &get_cuts() const { return cuts; }
-
     const std::vector<HyperGraph> &get_cutpool() const { return cut_pool; }
 
     const CliqueBank &get_cbank() const { return clique_bank; }
-
     const CliqueBank &get_pool_cbank() const { return pool_cliques; }
-
     const ToothBank &get_tbank() const { return tooth_bank; };
 
     /// Get the column associated with an edge to be added to the lp.

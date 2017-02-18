@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** @file
  * @brief WRAPPERS FOR CONCORDE LP STRUCTURES AND CUT SEPARATORS
- * 
+ *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_CC_LPCUTS_HPP
@@ -34,14 +34,14 @@ public:
 
     int size() const { return cutcount; }
     bool empty() const { return cutcount == 0; }
-  
+
     CCtsp_lpcut_in *begin() { return head_cut.get(); }
     const CCtsp_lpcut_in *begin() const { return head_cut.get(); }
 
     void filter_primal(Graph::TourGraph &TG);
 
     void clear();
-  
+
 private:
   struct hungry_delete {
     void operator()(CCtsp_lpcut_in *cut) const {
@@ -57,11 +57,11 @@ private:
 };
 
 
-/** Abstract base class for calling Concorde separation routines. 
+/** Abstract base class for calling Concorde separation routines.
  * Separator classes based on separation routines from Concorde should derive
  * from this class and provide an implementation of find_cuts which calls
  * an appropriate separation routine or sequence of routines. See FastBlossoms,
- * BlockCombs, or SegmentCuts for examples. 
+ * BlockCombs, or SegmentCuts for examples.
  */
 class ConcordeSeparator {
 public:
@@ -71,17 +71,17 @@ public:
         elist(supp_elist), ecap(supp_ecap), TG(_TG), cutq(_cutq) {}
 
     /** The call to the separation routine.
-     * @returns `true` if cuts are found, `false` otherwise. 
+     * @returns `true` if cuts are found, `false` otherwise.
      * @throws std::runtime_error if a call to a concorde routine fails.
      */
     virtual bool find_cuts() = 0;
-  
-protected:  
+
+protected:
     std::vector<int> &elist;
     std::vector<double> &ecap;
-  
+
     Graph::TourGraph &TG;
-  
+
     Sep::LPcutList &cutq;
 };
 
@@ -93,7 +93,7 @@ public:
         ConcordeSeparator(elist, ecap, TG, cutq) {}
 
     /** Finds subtours arising from intervals of the current best tour. */
-    bool find_cuts(); 
+    bool find_cuts();
 };
 
 /** Standard separation of connect cuts. */
@@ -104,7 +104,7 @@ public:
         ConcordeSeparator(elist, ecap, TG, cutq) {}
 
     /** Finds subtours arising from connected components. */
-    bool find_cuts(); 
+    bool find_cuts();
 };
 
 /** Primal separation of comb ineqalities via standard block comb heuristic. */

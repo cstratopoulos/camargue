@@ -133,6 +133,24 @@ HyperGraph &HyperGraph::operator=(Sep::HyperGraph &&H) noexcept
     return *this;
 }
 
+/**
+ * Ownership of the cliques in this HyperGraph is transferred to
+ * \p new_source_bank, and \p new_source_bank becomes source_bank.
+ */
+void HyperGraph::transfer_source(CliqueBank &new_source_bank) try
+{
+    if (cut_type() == Type::Non || cut_type() == Type::Branch)
+        throw logic_error("Tried to transfer_source on Non cut");
+
+    for (Clique::Ptr &clq_ptr : cliques)
+        new_source_bank.steal_clique(clq_ptr, *source_bank);
+
+    source_bank = &new_source_bank;
+} catch (const exception &e) {
+    cerr << e.what() << "\n";
+    throw runtime_error("HyperGraph::transfer_source failed.");
+}
+
 HyperGraph::~HyperGraph()
 {
     if (source_bank != nullptr)
@@ -280,6 +298,17 @@ void ExternalCuts::add_cut(const vector<int> &blossom_handle,
 }
 
 /**
+ * This function is meant to be invoked after a call to PoolSep which takes
+ * \p H from cut_pool and identifies that it is violated by the current LP
+ * solution, hence adding it back to the LP and the vector cuts.
+ */
+void ExternalCuts::add_cut(HyperGraph &H)
+{
+    H.transfer_source(clique_bank);
+    cuts.emplace_back(std::move(H));
+}
+
+/**
  * Add a branching constraint or Non HyperGraph cut to the list. Maintains
  * indexing that agrees with the Relaxation for bookkeeping and cut pruning
  * purposes.
@@ -299,10 +328,7 @@ void ExternalCuts::del_cuts(const vector<int> &delset)
         CutType Htype = H.cut_type();
         if (delset[i + node_count] == -1) {
             if (Htype == CutType::Comb || Htype == CutType::Domino) {
-                for (Clique::Ptr &clq_ptr : H.cliques) {
-                    pool_cliques.steal_clique(clq_ptr, clique_bank);
-                    H.source_bank = &pool_cliques;
-                }
+                H.transfer_source(pool_cliques);
                 cut_pool.emplace_back(std::move(H));
             }
             H.rhs = '\0';
@@ -310,9 +336,8 @@ void ExternalCuts::del_cuts(const vector<int> &delset)
     }
 
     cuts.erase(std::remove_if(cuts.begin(), cuts.end(),
-                              [](const HyperGraph &H) {
-                                  return H.rhs == '\0';
-                              }),
+                              [](const HyperGraph &H)
+                              { return H.rhs == '\0'; }),
                cuts.end());
 }
 

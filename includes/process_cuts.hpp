@@ -39,6 +39,7 @@ public:
 
     /// A reference to the most recently added cut.
     const cut_rep &peek_front() const { return cut_q.front(); }
+    cut_rep &peek_front() { return cut_q.front(); }
 
     /// Push a new cut to the front, popping from the back if at capacity.
     void push_front(const cut_rep &H)

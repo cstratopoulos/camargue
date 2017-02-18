@@ -18,9 +18,13 @@ using std::exception;
 using std::vector;
 
 namespace CMR {
+
 namespace Eps = Epsilon;
 
 namespace Sep {
+
+using CutType = HyperGraph::Type;
+
 
 PoolCuts::PoolCuts(ExternalCuts &EC_,
                    const std::vector<Graph::Edge> &core_edges_,
@@ -28,7 +32,7 @@ PoolCuts::PoolCuts(ExternalCuts &EC_,
     : EC(EC_), core_edges(core_edges_), supp_data(s_dat),
       hg_q(50), cut_slacks(vector<double>(EC_.get_cutpool().size(), 0.0))
 {
-    clique_vals.reserve(EC.get_cbank().size());
+    clique_vals.reserve(EC.get_pool_cbank().size());
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("PoolCuts constructor failed.");
@@ -43,11 +47,54 @@ bool PoolCuts::find_cuts()
     if (!result)
         return result;
 
+    using CVpair = std::pair<HyperGraph, double>;
+    vector<CVpair> viol_cuts;
+    vector<HyperGraph> &cut_pool = EC.cut_pool;
+
+    try {
+        for (int i = 0; i < cut_pool.size(); ++i)
+            if (cut_slacks[i] <= -Eps::Cut) {
+                viol_cuts.emplace_back(CVpair(std::move(cut_pool[i]),
+                                              cut_slacks[i]));
+                cut_pool[i] = HyperGraph();
+            }
+    } CMR_CATCH_PRINT_THROW("emplacing violated cut pairs", err);
+
+    cut_pool.erase(std::remove_if(cut_pool.begin(), cut_pool.end(),
+                                  [](const HyperGraph &H)
+                                  { return H.cut_type() == CutType::Non; }),
+                   cut_pool.end());
+
+    int end_range = 0;
+    int q_cap = hg_q.q_capacity();
+
+    if (viol_cuts.size() > q_cap) {
+        end_range = q_cap;
+        std::sort(viol_cuts.begin(), viol_cuts.end(),
+                  [](const CVpair &A, const CVpair &B)
+                  { return A.second > B.second; }); //most violated cuts at back
+    } else
+        end_range = viol_cuts.size();
+
+    cout << "Viol cuts size " << viol_cuts.size() << endl;
+    cout << "End range " << end_range << endl;
+
+    for (auto r_it = viol_cuts.rbegin(); r_it != r_it + end_range; ++r_it) {
+        hg_q.emplace_back(std::move(r_it->first));
+        viol_cuts.pop_back();
+    }
+
+    try {
+        for (CVpair &CV : viol_cuts)
+            cut_pool.emplace_back(std::move(CV.first));
+    } CMR_CATCH_PRINT_THROW("putting cuts back in pool", err);
+
     return result;
 }
 
 bool PoolCuts::price_cuts()
 {
+    bool report = true;
     Timer t("Price cuts");
     t.start();
 
@@ -59,7 +106,6 @@ bool PoolCuts::price_cuts()
     Timer hgt("Pricing HG cuts", &t);
     Timer dpt("Pricing dominos", &t);
 
-    using CutType = HyperGraph::Type;
     const vector<HyperGraph> &pool = EC.get_cutpool();
     bool result = false;
 
@@ -95,16 +141,18 @@ bool PoolCuts::price_cuts()
         }
 
         cut_slacks[i] = slack;
-        if (slack <= Eps::Cut)
+        if (slack <= -Eps::Cut)
             result = true;
     }
 
     t.stop();
 
-    pc.report(false);
-    hgt.report(false);
-    dpt.report(false);
-    t.report(false);
+    if (report) {
+        pc.report(false);
+        hgt.report(false);
+        dpt.report(false);
+        t.report(false);
+    }
 
 
     return result;
@@ -118,11 +166,12 @@ void PoolCuts::price_cliques()
     for (Graph::Node &n : nodelist)
         n.mark = 0;
 
-    const CliqueBank &cbank = EC.get_cbank();
-    const vector<int> &def_tour = cbank.ref_tour();
+    const CliqueBank &pool_cliques = EC.get_pool_cbank();
+    const vector<int> &def_tour = pool_cliques.ref_tour();
     int marker = 0;
 
-    for (CliqueBank::ConstItr it = cbank.begin(); it != cbank.end(); ++it) {
+    for (CliqueBank::ConstItr it = pool_cliques.begin();
+         it != pool_cliques.end(); ++it) {
         const Clique &clq = it->first;
         double val = 0.0;
         ++marker;

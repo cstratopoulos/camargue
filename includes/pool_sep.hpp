@@ -27,10 +27,12 @@ public:
     bool find_cuts(); //!< Search cut_pool for cuts violated by supp_data.
     bool price_cuts(); //!< Find cut_slacks; return true if some are negative.
 
-    const CutQueue<HyperGraph> &pool_q() const { return hg_q; }
+    CutQueue<HyperGraph> &pool_q() { return hg_q; }
     const std::vector<double> &get_slacks() const { return cut_slacks; }
 
 private:
+    void price_cliques(); //!< Populate clique_vals.
+
     ExternalCuts &EC;
     const std::vector<Graph::Edge> &core_edges;
     Data::SupportGroup &supp_data;
@@ -44,7 +46,7 @@ private:
     /// Cut values associated to cliques.
     std::unordered_map<Clique, double> clique_vals;
 
-    void price_cliques(); //!< Populate clique_vals.
+
 };
 }
 }

@@ -63,6 +63,7 @@ public:
 
     /// Which separation routines should be called.
     struct CutSel {
+        bool cutpool = true; //!< Cuts from a cut pool.
         bool segment = true; //!< Primal SECs.
         bool fast2m = true; //!< Standard fast blossom heuristics.
         bool blkcomb = true; //!< Standard block comb heuristics.

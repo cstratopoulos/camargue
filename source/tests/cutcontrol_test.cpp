@@ -133,7 +133,7 @@ SCENARIO ("Pivoting and adding cuts",
                     REQUIRE(tour1 == tour2);
 
 
-                    std::array<const Sep::LPcutList*,
+                    std::array<Sep::LPcutList*,
                                4> qlist{
                         &control.segment_q(),
                         &control.fastblossom_q(),
