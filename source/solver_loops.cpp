@@ -64,7 +64,7 @@ namespace Eps = Epsilon;
  * \p tourlen.
  */
 template<class Qtype>
-bool call_separator(const function<bool()> &sepcall, const Qtype &sep_q,
+bool call_separator(const function<bool()> &sepcall, Qtype &sep_q,
                     PivType &piv, LP::CoreLP &core_lp,
                     const double tourlen, double &prev_val,
                     double &total_delta, double &delta_ratio)

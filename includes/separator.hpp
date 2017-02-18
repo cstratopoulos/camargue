@@ -46,14 +46,14 @@ public:
 
     bool connect_sep();
 
-    const LPcutList &segment_q() const { return seg_q; }
-    const LPcutList &fastblossom_q() const { return fast2m_q; }
-    const LPcutList &blockcomb_q() const { return blkcomb_q; }
+    LPcutList &segment_q()  { return seg_q; }
+    LPcutList &fastblossom_q()  { return fast2m_q; }
+    LPcutList &blockcomb_q()  { return blkcomb_q; }
 
-    const CutQueue<ex_blossom> &exblossom_q() const { return ex2m_q; }
-    const CutQueue<dominoparity> &simpleDP_q() const { return dp_q; }
+    CutQueue<ex_blossom> &exblossom_q()  { return ex2m_q; }
+    CutQueue<dominoparity> &simpleDP_q()  { return dp_q; }
 
-    const LPcutList &connect_cuts_q() const { return connect_q; }
+    LPcutList &connect_cuts_q()  { return connect_q; }
 
 private:
     int max_total;

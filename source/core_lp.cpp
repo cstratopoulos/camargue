@@ -433,6 +433,26 @@ void CoreLP::add_cuts(const Sep::CutQueue<Sep::ex_blossom> &ex2m_q)
     } CMR_CATCH_PRINT_THROW("processing/adding cuts", err);
 }
 
+void CoreLP::add_cuts(Sep::CutQueue<Sep::HyperGraph> &pool_q)
+{
+    if (pool_q.empty())
+        return;
+
+    runtime_error err("Problem in CoreLP::add_cuts(Sep::HyperGraph)");
+
+    try {
+        for (auto it = pool_q.begin(); it != pool_q.end(); ++it) {
+            Sep::HyperGraph &H = *it;
+            SparseRow R;
+            R.sense = H.get_sense();
+            R.rhs = H.get_rhs();
+            H.get_coeffs(core_graph.get_edges(), R.rmatind, R.rmatval);
+            add_cut(R);
+            ext_cuts.add_cut(H);
+        }
+    } CMR_CATCH_PRINT_THROW("processing/adding cuts", err);
+}
+
 void CoreLP::add_edges(const vector<Graph::Edge> &batch)
 {
     runtime_error err("Problem in CoreLP::add_edges");

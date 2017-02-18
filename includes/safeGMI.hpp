@@ -29,7 +29,7 @@ public:
                const std::vector<double> &lp_x);
 
     bool find_cuts();
-    const CutQueue<LP::SparseRow> &gomory_q() const { return gmi_q; }
+    CutQueue<LP::SparseRow> &gomory_q() { return gmi_q; }
 
 private:
     LP::Relaxation &lp_relax;

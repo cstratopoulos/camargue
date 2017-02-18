@@ -47,9 +47,10 @@ public:
             if(cut_q.size() > q_capacity()) cut_q.pop_back();
         }
 
-    void push_front(cut_rep &&H)
+    template <typename ...Args>
+    void emplace_front(Args &&...args)
         {
-            cut_q.emplace_front(H);
+            cut_q.emplace_front(std::forward<Args>(args)...);
             if (cut_q.size() > q_capacity()) cut_q.pop_back();
         }
 
@@ -60,10 +61,11 @@ public:
             cut_q.push_back(H);
         }
 
-    void push_back(cut_rep &&H)
+    template <typename ...Args>
+    void emplace_back(Args &&...args)
         {
             if(cut_q.size() >= q_capacity()) cut_q.pop_back();
-            cut_q.push_back(H);
+            cut_q.emplace_back(std::forward<Args>(args)...);
         }
 
     void pop_front() { cut_q.pop_front(); }  //!< Pop the front cut.

@@ -50,10 +50,11 @@ public:
     LP::PivType primal_pivot();
     void pivot_back();
 
-    void add_cuts(const Sep::LPcutList &cutq);
-    void add_cuts(const Sep::CutQueue<Sep::dominoparity> &dp_q);
-    void add_cuts(const Sep::CutQueue<LP::SparseRow> &gmi_q);
-    void add_cuts(const Sep::CutQueue<Sep::ex_blossom> &ex2m_q);
+    void add_cuts(Sep::LPcutList &cutq);
+    void add_cuts(Sep::CutQueue<Sep::dominoparity> &dp_q);
+    void add_cuts(Sep::CutQueue<LP::SparseRow> &gmi_q);
+    void add_cuts(Sep::CutQueue<Sep::ex_blossom> &ex2m_q);
+    void add_cuts(Sep::CutQueue<Sep::HyperGraph> &pool_q);
 
     void add_edges(const std::vector<Graph::Edge> &add_batch);
 
