@@ -342,7 +342,7 @@ void CoreLP::rebuild_basis()
     }
 }
 
-void CoreLP::add_cuts(const Sep::LPcutList &cutq)
+void CoreLP::add_cuts(Sep::LPcutList &cutq)
 {
     if (cutq.empty())
         return;
@@ -358,57 +358,49 @@ void CoreLP::add_cuts(const Sep::LPcutList &cutq)
             ext_cuts.add_cut(*cur, tour);
         }
     } CMR_CATCH_PRINT_THROW("processing/adding cut", err);
+
+    cutq.clear();
 }
 
-void CoreLP::add_cuts(const Sep::CutQueue<Sep::dominoparity> &dpq)
+void CoreLP::add_cuts(Sep::CutQueue<Sep::dominoparity> &dpq)
 {
-    if (dpq.empty())
-        return;
-
     runtime_error err("Problem in CoreLP::add_cuts(Sep::dominoparity)");
 
     vector<int> &tour_nodes = best_data.best_tour_nodes;
 
     try {
-        for (Sep::CutQueue<Sep::dominoparity>::ConstItr it = dpq.begin();
-             it != dpq.end(); ++it) {
-            const Sep::dominoparity &dp_cut = *it;
+        while(!dpq.empty()) {
+            const Sep::dominoparity &dp_cut = dpq.peek_front();
             SparseRow R = Sep::get_row(dp_cut, tour_nodes, core_graph);
             add_cut(R);
             ext_cuts.add_cut(dp_cut, R.rhs, tour_nodes);
+            dpq.pop_front();
         }
     } CMR_CATCH_PRINT_THROW("processing/adding cut", err);
 }
 
-void CoreLP::add_cuts(const Sep::CutQueue<SparseRow> &gmi_q)
+void CoreLP::add_cuts(Sep::CutQueue<SparseRow> &gmi_q)
 {
-    if (gmi_q.empty())
-        return;
-
     runtime_error err("Problem in CoreLP::add_cuts(Sep::SparseRow)");
 
     try {
-        for (Sep::CutQueue<SparseRow>::ConstItr it = gmi_q.begin();
-             it != gmi_q.end(); ++it) {
-            add_cut(*it);
+        while (!gmi_q.empty()) {
+            add_cut(gmi_q.peek_front());
             ext_cuts.add_cut();
+            gmi_q.pop_front();
         }
     } CMR_CATCH_PRINT_THROW("adding sparse cut row", err);
 }
 
-void CoreLP::add_cuts(const Sep::CutQueue<Sep::ex_blossom> &ex2m_q)
+void CoreLP::add_cuts(Sep::CutQueue<Sep::ex_blossom> &ex2m_q)
 {
-    if (ex2m_q.empty())
-        return;
-
     runtime_error err("Problem in CoreLP::add_cuts(Sep::ex_blossom)");
 
     int ncount = core_graph.node_count();
 
     try {
-        for (Sep::CutQueue<Sep::ex_blossom>::ConstItr it = ex2m_q.begin();
-             it != ex2m_q.end(); ++it) {
-            const Sep::ex_blossom &B = *it;
+        while (!ex2m_q.empty()) {
+            const Sep::ex_blossom &B = ex2m_q.peek_front();
             const vector<int> &handle_nodes = B.handle;
             const vector<Graph::Edge> &edges = core_graph.get_edges();
 
@@ -429,26 +421,26 @@ void CoreLP::add_cuts(const Sep::CutQueue<Sep::ex_blossom> &ex2m_q)
             SparseRow R = Sep::get_row(handle_delta, tooth_edges, core_graph);
             add_cut(R);
             ext_cuts.add_cut(handle_nodes, tooth_edges);
+            ex2m_q.pop_front();
         }
     } CMR_CATCH_PRINT_THROW("processing/adding cuts", err);
 }
 
 void CoreLP::add_cuts(Sep::CutQueue<Sep::HyperGraph> &pool_q)
 {
-    if (pool_q.empty())
-        return;
-
     runtime_error err("Problem in CoreLP::add_cuts(Sep::HyperGraph)");
 
     try {
-        for (auto it = pool_q.begin(); it != pool_q.end(); ++it) {
-            Sep::HyperGraph &H = *it;
+        while (!pool_q.empty()) {
+            Sep::HyperGraph &H = pool_q.peek_front();
             SparseRow R;
+
             R.sense = H.get_sense();
             R.rhs = H.get_rhs();
             H.get_coeffs(core_graph.get_edges(), R.rmatind, R.rmatval);
             add_cut(R);
             ext_cuts.add_cut(H);
+            pool_q.pop_front();
         }
     } CMR_CATCH_PRINT_THROW("processing/adding cuts", err);
 }
