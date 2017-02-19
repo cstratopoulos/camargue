@@ -164,7 +164,7 @@ SCENARIO ("Pricing cuts from a cutpool",
         ProbPair("pr1002", 1487347814),
         ProbPair("d2103", 1487347819),
         ProbPair("pr2392", 1487353952),
-        ProbPair("pcb3038", 99),
+         ProbPair("pcb3038", 99),
         };
 
     for (ProbPair &pp : probs) {

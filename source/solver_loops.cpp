@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implementation of private Solver methods with recursive calls.
+ * @brief Private Solver methods with recursive/loop calls.
  */
 
 #include "config.hpp"
