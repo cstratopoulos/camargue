@@ -1,4 +1,7 @@
 #include "config.hpp"
+
+#ifdef CMR_DO_TESTS
+
 #include "cc_lpcuts.hpp"
 #include "datagroups.hpp"
 
@@ -12,7 +15,7 @@ using std::cout;
 using std::string;
 using std::vector;
 
-#ifdef CMR_DO_TESTS
+
 
 SCENARIO("Filtering primal cuts frees and deletes cuts from list",
 	 "[LPcutList][filter_primal]") {

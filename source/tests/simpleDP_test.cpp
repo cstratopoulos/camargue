@@ -1,4 +1,7 @@
 #include "config.hpp"
+
+#ifdef CMR_DO_TESTS
+
 #include "datagroups.hpp"
 #include "tooth.hpp"
 #include "simpleDP.hpp"
@@ -23,7 +26,6 @@ using std::pair;
 
 using CMR::IntPair;
 
-#ifdef CMR_DO_TESTS
 
 SCENARIO("Separating simple DP inequalities in small instances",
          "[SimpleDP][small]") {
