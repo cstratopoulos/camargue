@@ -58,8 +58,9 @@ public:
 
     void add_edges(const std::vector<Graph::Edge> &add_batch);
 
-    const Sep::ExternalCuts &external_cuts() const
-        { return ext_cuts; } //!< Const reference to the external cut reps.
+    const Sep::ExternalCuts &external_cuts() const { return ext_cuts; }
+
+    const Data::SupportGroup &support_data() const { return supp_data; }
 
     /// Average number of iterations per primal_pivot.
     int avg_itcount() const { return sum_it_count / num_nd_pivots; }
