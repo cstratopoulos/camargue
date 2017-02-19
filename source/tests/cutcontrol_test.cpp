@@ -20,68 +20,6 @@ using std::vector;
 using std::string;
 using std::cout;
 
-
-
-/*
-SCENARIO ("Adding duplicate cuts",
-          "[LP][Sep][CoreLP][Separator][Basis]") {
-    vector<string> probs{"dantzig42", "pr76"};
-
-    for (string &prob : probs) {
-        GIVEN ("The TSP instance " + prob) {
-            WHEN ("We add duplicate cuts and pivot back") {
-                THEN ("The slack for the added cuts is in the tour basis") {
-                    CMR::Data::Instance inst("problems/" + prob + ".tsp", 99);
-                    CMR::Graph::CoreGraph core_graph(inst);
-                    CMR::Data::BestGroup b_dat(inst, core_graph);
-                    CMR::LP::CoreLP core(core_graph, b_dat);
-
-                    CMR::Graph::TourGraph TG(b_dat.best_tour_edges,
-                                      core_graph.get_edges(), b_dat.perm);
-
-                    REQUIRE_NOTHROW(core.primal_pivot());
-
-                    CMR::Data::SupportGroup &s_dat = core.supp_data;
-
-                    CMR::Sep::LPcutList cutq;
-                    CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist,
-                                                  s_dat.support_ecap, TG,
-                                                  cutq);
-
-                    REQUIRE(fb_sep.find_cuts());
-
-                    REQUIRE_NOTHROW(core.pivot_back());
-
-                    REQUIRE_NOTHROW(core.add_cuts(cutq));
-                    REQUIRE_NOTHROW(core.add_cuts(cutq));
-
-                    int ncount = core_graph.node_count();
-                    int expect_rowcount = ncount + 4;
-
-                    REQUIRE(core.num_rows() == expect_rowcount);
-
-                    REQUIRE_NOTHROW(core.factor_basis());
-
-                    vector<int> rowstat, colstat;
-
-                    core.get_base(colstat, rowstat);
-                    bool found_basis = false;
-                    for (int i = ncount; i < rowstat.size(); ++i) {
-                        cout << "\t Row " << i << " stat: "
-                             << ((rowstat[i] == 0) ? "LOWER" : "BASIC")
-                             << "\n";
-                        if (rowstat[i])
-                            found_basis = true;
-                    }
-
-                    REQUIRE(found_basis);
-                }
-            }
-        }
-    }
-}
-*/
-
 SCENARIO ("Pivoting and adding cuts",
          "[LP][Sep][CoreLP][Separator]") {
     using namespace CMR;

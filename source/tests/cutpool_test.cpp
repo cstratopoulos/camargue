@@ -22,6 +22,135 @@ using std::endl;
 using std::string;
 using std::vector;
 
+SCENARIO ("Experimenting with CutMonitor metrics",
+          "[Sep][LP][pivot_age][tour_age][CutMonitor][experiment]") {
+    using namespace CMR;
+    vector<string> probs{
+        "swiss42",
+        "dantzig42",
+        "gr48",
+        "eil51",
+        "pr76",
+        "lin105",
+        };
+
+    for (string &prob : probs) {
+    GIVEN ("Graphs/LP relaxations/Solvers for " + prob) {
+        OutPrefs prefs;
+        Solver solver("problems/" + prob + ".tsp", 99, prefs);
+
+
+        Graph::CoreGraph &core_graph =
+        const_cast<Graph::CoreGraph &>(solver.graph_info());
+
+        Data::BestGroup &b_dat =
+        const_cast<Data::BestGroup &>(solver.best_info());
+
+        LP::CoreLP &core =
+        const_cast<LP::CoreLP &>(solver.get_core_lp());
+
+        Graph::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
+                            b_dat.perm);
+        int ncount = core_graph.node_count();
+
+        WHEN ("We pivot and add duplicate cuts") {
+            core.primal_pivot();
+
+            Data::SupportGroup &s_dat =
+            const_cast<Data::SupportGroup &>(core.support_data());
+
+            Sep::LPcutList bq_1;
+            Sep::LPcutList bq_2;
+
+            Sep::FastBlossoms fb_sep1(s_dat.support_elist,
+                                      s_dat.support_ecap, TG, bq_1);
+            Sep::FastBlossoms fb_sep2(s_dat.support_elist,
+                                      s_dat.support_ecap, TG, bq_2);
+
+            bool find1 = fb_sep1.find_cuts();
+            bool find2 = fb_sep2.find_cuts();
+
+            if (!find1 && !find2) {
+                cout << "\tNo fast blossoms found" << endl;
+            } else {
+
+            REQUIRE(bq_1.size() == bq_2.size());
+            int numcuts = bq_1.size();
+            cout << "Found " << numcuts << " fast blossoms, adding twice"
+                 << endl;
+
+            core.pivot_back();
+            core.add_cuts(bq_1);
+            core.add_cuts(bq_2);
+            int numrows = core.num_rows();
+            vector<int> colstat;
+            vector<int> rowstat;
+
+            THEN ("We can inspect the dual variables at the next pivot") {
+                core.primal_pivot();
+                vector<double> piv_pi = core.pi(ncount, numrows - 1);
+                cout << "Pivot pi values:\n";
+                for (double pi : piv_pi)
+                    cout << pi << "\n";
+                cout << endl;
+
+                core.get_base(colstat, rowstat);
+                cout << "Pivot basis stats:\n";
+                for (int i = ncount; i < numrows; ++i)
+                    cout << rowstat[i] << "\n";
+                cout << endl;
+                AND_THEN ("We can inspect duals/base stats at  the tour") {
+                    core.pivot_back();
+                    REQUIRE(core.get_objval() == b_dat.min_tour_value);
+                    vector<double> tour_pi = core.pi(ncount, numrows - 1);
+                    cout << "Tour pi values:\n";
+                    for (double pi : piv_pi)
+                        cout << pi << "\n";
+                    cout << endl;
+
+                    core.get_base(colstat, rowstat);
+                    cout << "Tour basis stats of cuts:\n";
+                    for (int i = ncount; i < numrows; ++i)
+                        cout << rowstat[i] << "\n";
+                    cout << endl;
+                }
+            }
+            }
+        }
+
+        THEN ("We can inspect duals after sparse cut & piv until optimal") {
+            LP::PivType piv = solver.cutting_loop(false, false, true);
+            if (piv != LP::PivType::FathomedTour)
+                continue;
+            vector<int> colstat;
+            vector<int> rowstat;
+            vector<int> delset(core.num_rows(), 0);
+
+            core.get_base(colstat, rowstat);
+            cout << "Optimal tour cut basic statuses:\n";
+            for (int i = ncount; i < core.num_rows(); ++i) {
+                cout << rowstat[i] << "\n";
+                if (rowstat[i] == 1)
+                    delset[i] = 1;
+            }
+            cout << endl;
+
+            vector<double> tourpi = core.pi(ncount, core.num_rows() - 1);
+            cout << "Optimal tour cut dual values:\n";
+            for (double pi : tourpi)
+                cout << pi << "\n";
+            cout << endl;
+
+            core.del_set_rows(delset);
+            core.primal_opt();
+            cout << "Optimal obj value after deleting basic cuts: "
+                 << core.get_objval() << "\n";
+            cout << endl;
+        }
+    }
+    }
+}
+
 SCENARIO ("Pricing cuts from a cutpool",
           "[Sep][PoolCuts][price_cuts]") {
     using namespace CMR;
