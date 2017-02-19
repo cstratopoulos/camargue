@@ -96,7 +96,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
     runtime_error err("Problem in Solver::cut_and_piv");
     bool silent = true;
 
-    const double tourlen = core_lp.get_objval();
+    double tourlen = core_lp.get_objval();
     double prev_val = tourlen;
     double total_delta = 0.0;
     double delta_ratio = 0.0;
@@ -105,6 +105,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
     Data::SupportGroup &supp_data = core_lp.supp_data;
     unique_ptr<Sep::Separator> &sep = separator;
+    unique_ptr<Sep::PoolCuts> &pool_sep = pool_separator;
     const std::vector<Graph::Edge> &core_edges = core_graph.get_edges();
 
     ++round;
@@ -120,8 +121,33 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
         return piv;
     }
 
-    bool found_seg = false;
     bool found_primal = false;
+
+    if (cut_sel.cutpool && !core_lp.external_cuts().get_cutpool().empty())
+        try {
+            pool_sep = util::make_unique<Sep::PoolCuts>(core_lp.ext_cuts,
+                                                        core_graph.get_edges(),
+                                                        tour_basis()
+                                                        .best_tour_edges,
+                                                        core_lp.supp_data);
+            if (call_separator([&pool_sep]() { return pool_sep->find_cuts(); },
+                               pool_sep->pool_q(), piv, core_lp, tourlen,
+                               prev_val, total_delta, delta_ratio)) {
+                found_primal = true;
+                cout << "\n\n\tADDED POOL CUTS!!!!\n\n";
+                if (return_pivot(piv))
+                    return piv;
+
+                if (!core_lp.supp_data.connected || delta_ratio > Eps::SepRound)
+                    return cut_and_piv(round, do_price);
+
+                Sep::ptr_reset(sep, core_edges, best_data, supp_data,
+                               karp_part, TG);
+            }
+        } CMR_CATCH_PRINT_THROW("calling pool sep", err);
+
+    bool found_seg = false;
+
 
     if (cut_sel.segment)
         try {
