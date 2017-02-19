@@ -88,7 +88,8 @@ public:
 
     Basis base() const; //!< Return the resident basis.
 
-    std::vector<int> col_stat() const; //!< Get the column basis.
+    std::vector<int> col_stat() const; //!< Return the column basis.
+    std::vector<int> row_stat() const; //!< Return the row basis.
 
     /// Get constraint slacks for resident solution.
     void get_row_slacks(std::vector<double> &slack, int begin,

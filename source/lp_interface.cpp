@@ -518,6 +518,17 @@ vector<int> Relaxation::col_stat() const
     return result;
 }
 
+vector<int> Relaxation::row_stat() const
+{
+    vector<int> result(num_rows());
+
+    int rval = CPXgetbase(simpl_p->env, simpl_p->lp, NULL, &result[0]);
+    if (rval)
+        throw cpx_err(rval, "CPXgetbase");
+
+    return result;
+}
+
 void Relaxation::copy_start(const vector<double> &x)
 {
     int rval = CPXcopystart(simpl_p->env, simpl_p->lp,
