@@ -187,14 +187,33 @@ PivType CoreLP::primal_pivot()
 
 void CoreLP::pivot_back()
 {
+    runtime_error err("Problem in CoreLP::pivot_back");
     try {
         copy_start(tour_base.best_tour_edges, tour_base.colstat,
                    tour_base.rowstat);
         factor_basis();
-    } catch (const exception &e) {
-        cerr << e.what() << "\n";
-        throw runtime_error("Problem in CoreLP::pivot_back.");
-    }
+    } CMR_CATCH_PRINT_THROW("copying/factoring basis", err);
+
+    vector<int> cut_base;
+    vector<int> delset;
+    int numrows = num_rows();
+    int delct = 0;
+
+    try {
+        cut_base = row_stat();
+        delset = vector<int>(numrows, 0);
+    } CMR_CATCH_PRINT_THROW("getting row base/delset", err);
+
+    for (int i = prev_numrows; i < numrows; ++i)
+        if (cut_base[i] == 1) {
+            delset[i] = 1;
+            ++delct;
+        }
+
+    if (delct > 0)
+        try {
+            ext_cuts.del_cuts(delset, false);
+        } CMR_CATCH_PRINT_THROW("deleting cuts in tour basis", err);
 }
 
 void CoreLP::handle_aug_pivot(const std::vector<int> &tour_nodes)
@@ -303,7 +322,7 @@ void CoreLP::prune_slacks()
     }
 
     del_set_rows(delrows);
-    ext_cuts.del_cuts(delrows);
+    ext_cuts.del_cuts(delrows, true);
     factor_basis();
 }
 
@@ -346,6 +365,7 @@ void CoreLP::add_cuts(Sep::LPcutList &cutq)
 {
     if (cutq.empty())
         return;
+    prev_numrows = num_rows();
 
     runtime_error err("Problem in CoreLP::add_cuts LPcutList");
 
@@ -365,6 +385,7 @@ void CoreLP::add_cuts(Sep::LPcutList &cutq)
 void CoreLP::add_cuts(Sep::CutQueue<Sep::dominoparity> &dpq)
 {
     runtime_error err("Problem in CoreLP::add_cuts(Sep::dominoparity)");
+    prev_numrows = num_rows();
 
     vector<int> &tour_nodes = best_data.best_tour_nodes;
 
@@ -382,6 +403,7 @@ void CoreLP::add_cuts(Sep::CutQueue<Sep::dominoparity> &dpq)
 void CoreLP::add_cuts(Sep::CutQueue<SparseRow> &gmi_q)
 {
     runtime_error err("Problem in CoreLP::add_cuts(Sep::SparseRow)");
+    prev_numrows = num_rows();
 
     try {
         while (!gmi_q.empty()) {
@@ -395,6 +417,7 @@ void CoreLP::add_cuts(Sep::CutQueue<SparseRow> &gmi_q)
 void CoreLP::add_cuts(Sep::CutQueue<Sep::ex_blossom> &ex2m_q)
 {
     runtime_error err("Problem in CoreLP::add_cuts(Sep::ex_blossom)");
+    prev_numrows = num_rows();
 
     int ncount = core_graph.node_count();
 
@@ -429,6 +452,7 @@ void CoreLP::add_cuts(Sep::CutQueue<Sep::ex_blossom> &ex2m_q)
 void CoreLP::add_cuts(Sep::CutQueue<Sep::HyperGraph> &pool_q)
 {
     runtime_error err("Problem in CoreLP::add_cuts(Sep::HyperGraph)");
+    prev_numrows = num_rows();
 
     try {
         while (!pool_q.empty()) {
@@ -495,7 +519,7 @@ void CoreLP::purge_gmi()
 
     if (delcount > 0) {
         del_set_rows(delrows);
-        ext_cuts.del_cuts(delrows);
+        ext_cuts.del_cuts(delrows, false);
         factor_basis();
     }
 }

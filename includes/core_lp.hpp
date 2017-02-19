@@ -96,6 +96,8 @@ private:
 
     int num_nd_pivots = 0;
     int sum_it_count = 0;
+
+    int prev_numrows = 0;
 };
 
 /** Class template for dual LP solutions.
