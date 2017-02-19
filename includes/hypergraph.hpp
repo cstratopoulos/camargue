@@ -129,8 +129,8 @@ public:
     /// Add a Non HyperGraph cut.
     void add_cut();
 
-    /// Delete a specified set of cuts.
-    void del_cuts(const std::vector<int> &delset);
+    /// Delete a specified set of cuts or move them to the cut pool.
+    void del_cuts(const std::vector<int> &delset, bool add_to_pool);
 
     /// Return a cut corresponding to a row number index from the lp.
     const HyperGraph &get_cut(int lp_rownum) const {

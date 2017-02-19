@@ -316,10 +316,14 @@ void ExternalCuts::add_cut(HyperGraph &H)
 void ExternalCuts::add_cut() { cuts.emplace_back(); }
 
 /**
+ * The specified set of cuts will be removed from the vector of cuts, in
+ * accordance with a deletion from the LP relaxation.
  * @param[in] delset the entry `delset[i]` shall be one if the cut
  * `cuts[i + node_count]` is to be deleted, zero otherwise.
+ * @param[in] add_to_pool if true, then the deleted cuts will be stored in
+ * the cut pool for later use, not including subtour cuts or Non cuts.
  */
-void ExternalCuts::del_cuts(const vector<int> &delset)
+void ExternalCuts::del_cuts(const vector<int> &delset, bool add_to_pool)
 {
     using CutType = HyperGraph::Type;
 
@@ -327,10 +331,11 @@ void ExternalCuts::del_cuts(const vector<int> &delset)
         HyperGraph &H = cuts[i];
         CutType Htype = H.cut_type();
         if (delset[i + node_count] == -1) {
-            if (Htype == CutType::Comb || Htype == CutType::Domino) {
-                H.transfer_source(pool_cliques);
-                cut_pool.emplace_back(std::move(H));
-            }
+            if (add_to_pool)
+                if (Htype == CutType::Comb || Htype == CutType::Domino) {
+                    H.transfer_source(pool_cliques);
+                    cut_pool.emplace_back(std::move(H));
+                }
             H.rhs = '\0';
         }
     }
