@@ -48,7 +48,7 @@ try : tsp_instance(fname, make_seed(seed)),
       core_lp(core_graph, best_data),
       output_prefs(outprefs)
 {} catch (const exception &e) {
-    cerr << e.what() << "\n";
+    cerr << e.what() << endl;
     throw runtime_error("Solver TSPLIB constructor failed.");
 }
 
@@ -61,7 +61,7 @@ try : tsp_instance(fname, make_seed(seed)),
       core_lp(core_graph, best_data),
       output_prefs(outprefs)
 {} catch (const exception &e) {
-    cerr << e.what() << "\n";
+    cerr << e.what() << endl;
     throw runtime_error("Solver TSPLIB/tour constructor failed.");
 }
 
@@ -73,18 +73,18 @@ try : tsp_instance(make_seed(seed), node_count, gridsize),
       core_lp(core_graph, best_data),
       output_prefs(outprefs)
 {} catch (const exception &e) {
-    cerr << e.what() << "\n";
+    cerr << e.what() << endl;
     throw runtime_error("Solver random constructor failed.");
 }
 
 void Solver::report_lp(PivType piv)
 {
     int rowcount = core_lp.num_rows();
-    cout << "\tPivot status:\t" << piv << "\n"
+    cout << "\tPivot status:\t" << piv << endl
          << "\tLP objective value: " << core_lp.get_objval()
-         << ", dual feasible: " << core_lp.dual_feas() << "\n";
+         << ", dual feasible: " << core_lp.dual_feas() << endl;
     cout << "\t" << rowcount << " rows, "
-         << core_lp.num_cols() << " cols in LP.\n\n";
+         << core_lp.num_cols() << " cols in LP.\n" << endl;
 }
 
 /**
@@ -96,7 +96,7 @@ void Solver::report_aug(bool piv_aug)
 {
     cout << "\tTour " << ++num_augs << ": "
          << core_lp.get_objval() << ", augmented from "
-         << (piv_aug ? "primal pivot" : "x-heuristic") << "\n";
+         << (piv_aug ? "primal pivot" : "x-heuristic") << endl;
 }
 
 void Solver::report_cuts()
@@ -123,7 +123,7 @@ void Solver::report_cuts()
          << gmicount << " GMI cuts. \n\t("
          << (core_lp.num_rows() - tsp_instance.node_count())
          << " cuts total, " << core_lp.num_cols() << " cols).\n";
-    cout << "\n";
+    cout << endl;
 }
 
 
@@ -219,7 +219,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
 
     if (pure_cut) {
         cout << "\tPivot status " << piv << ", obj val "
-             << core_lp.get_objval() << "\n";
+             << core_lp.get_objval() << endl;
         report_cuts();
 
         timer.report(true);
@@ -271,7 +271,7 @@ PivType Solver::abc(bool do_price)
     abct.stop();
 
     cout << "\n\tABC search completed, optimal tour has length "
-         << best_data.min_tour_value << "\n";
+         << best_data.min_tour_value << endl;
     report_cuts();
 
     abct.report(true);
