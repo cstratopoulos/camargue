@@ -93,8 +93,8 @@ SCENARIO ("Instating a Brancher and getting problems",
 
                     std::unique_ptr<ABC::Brancher> branch;
 
-                    const vector<Graph::Edge> &edges = solver.graph_info().
-                    get_edges();
+                    const Graph::CoreGraph &cgraph = solver.graph_info();
+                    const vector<Graph::Edge> &edges = cgraph.get_edges();
 
                     const LP::TourBasis &tbase = solver.tour_basis();
 
@@ -103,7 +103,7 @@ SCENARIO ("Instating a Brancher and getting problems",
 
                     REQUIRE_NOTHROW(branch =
                                     util::make_unique<ABC::Brancher>(rel,
-                                                                     edges,
+                                                                     cgraph,
                                                                      tbase,
                                                                      tourlen,
                                                                      ABC::ContraStrat::Fix));
@@ -199,8 +199,9 @@ SCENARIO ("Computing branching edges",
                     // }
                     // cout << "\n";
 
-                    const vector<int> &tourcol = solver.tour_basis().colstat;
-                    const vector<int> &tourrow = solver.tour_basis().rowstat;
+                    const LP::Basis &tbase = solver.tour_basis().base;
+                    const vector<int> &tourcol = tbase.colstat;
+                    const vector<int> &tourrow = tbase.rowstat;
                     vector<LP::Basis> cbases;
 
                     int sb1ic = std::max(100, 2 * avgit);
@@ -265,47 +266,28 @@ SCENARIO ("Computing branching edges",
                          << win.up_est.second << "\n"
                          << "\tScore " << win.score << "\n\n";
 
-                    vector<int> elist;
-                    vector<int> elen;
+                    const Graph::CoreGraph &coregraph = solver.graph_info();
 
-                    solver.graph_info().get_elist(elist, elen);
+                    ABC::Brancher brancher(rel, coregraph,
+                                           solver.tour_basis(),
+                                           tourval, ABC::ContraStrat::Fix);
 
-                    Data::Instance sp_inst(prob, 99, ncount, elist, elen);
+                    using Estats = ABC::Brancher::EdgeStats;
+                    auto &bstats =
+                    const_cast<vector<Estats> &>(brancher.branch_statuses());
 
-                    int default_len = sp_inst.ptr()->default_len;
+                    bstats.push_back(Estats(coregraph.get_edge(ind),
+                                            1 - tour_edges[ind]));
 
-                    if (tour_edges[ind] == 1)
-                        elen[ind] = default_len;
-                    else
-                        elen[ind] = - default_len;
+                    vector<int> &tour_nodes
+                    = const_cast<vector<int> &>(solver.best_info()
+                                                .best_tour_nodes);
 
-                    sp_inst = Data::Instance(prob, 99, ncount, elist, elen);
+                    vector<int> out_cyc;
 
-                    vector<int> tour_nodes = solver.best_info()
-                    .best_tour_nodes;
-                    vector<int> out_cyc(ncount);
-
-                    CCrandstate rstate;
-                    CCutil_sprand(99, &rstate);
-                    double val;
-
-                    cout << "\n\tRunning branch linkern....\n";
-
-                    REQUIRE_FALSE(CClinkern_tour(ncount, sp_inst.ptr(),
-                                                 elen.size(), &elist[0],
-                                                 ncount, 500,
-                                                 // &tour_nodes[0],
-                                                 NULL,
-                                                 &out_cyc[0],
-                                                 &val,
-                                                 1, 0, 0,
-                                                 (char *) NULL,
-                                                 CC_LK_GEOMETRIC_KICK,
-                                                 &rstate));
-
-                    const auto &graph = solver.graph_info();
-                    const auto &edges = graph.get_edges();
-
+                    REQUIRE_NOTHROW(out_cyc =
+                                    brancher.branch_tour(solver.inst_info(),
+                                                         tour_nodes));
 
                     bool found_branch_edge = false;
                     double newval = 0.0;
@@ -316,7 +298,7 @@ SCENARIO ("Computing branching edges",
                         EndPts e(out_cyc[i], out_cyc[(i + 1) % ncount]);
                         newval += solver.inst_info().edgelen(e.end[0],
                                                              e.end[1]);
-                        int ii = graph.find_edge_ind(e.end[0], e.end[1]);
+                        int ii = coregraph.find_edge_ind(e.end[0], e.end[1]);
                         if (ii == -1) {
                             tour_edges.push_back(0);
                             new_tour_edges.push_back(1);
@@ -326,8 +308,6 @@ SCENARIO ("Computing branching edges",
                     }
 
                     REQUIRE(tour_edges[ind] != new_tour_edges[ind]);
-
-                    cout << "\tRaw lk val: " << val << "\n";
 
                     double orig_val = solver.best_info().min_tour_value;
                     cout << "\tOrig val: " << orig_val
