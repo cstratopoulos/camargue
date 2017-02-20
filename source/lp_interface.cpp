@@ -219,7 +219,7 @@ static int ndpiv_cb(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
         getbase = ((pfeas_ic % basis_freq) == 0);
 
     if (getbase)
-        handle.tour_base = handle.rel.base();
+        handle.tour_base = handle.rel.basis_obj();
 
     return 0;
 }
@@ -558,7 +558,7 @@ void Relaxation::get_base(vector<int> &colstat,
         throw cpx_err(rval, "CPXgetbase");
 }
 
-Basis Relaxation::base() const
+Basis Relaxation::basis_obj() const
 {
     Basis result;
     get_base(result.colstat, result.rowstat);
@@ -931,7 +931,7 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                     if (!primal_feas())
                         cout << "Infeasible with stat "
                              << CPXgetstat(simpl_p->env, simpl_p->lp) << "\n";
-                    contra_bases.emplace_back(base());
+                    contra_bases.emplace_back(basis_obj());
                 } else {
                     copy_base(contra_bases[i].colstat,
                               contra_bases[i].rowstat);

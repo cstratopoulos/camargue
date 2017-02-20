@@ -86,7 +86,7 @@ public:
     void get_base(std::vector<int> &colstat,
                   std::vector<int> &rowstat) const;
 
-    Basis base() const; //!< Return the resident basis.
+    Basis basis_obj() const; //!< Return the resident basis.
 
     std::vector<int> col_stat() const; //!< Return the column basis.
     std::vector<int> row_stat() const; //!< Return the row basis.
