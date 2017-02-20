@@ -81,6 +81,11 @@ Relaxation::solver_impl::solver_impl() try
     if (rval)
         throw cpx_err(rval, "CPXsetintparam thread count");
 
+    rval = CPXsetintparam(env, CPX_PARAM_PARALLELMODE,
+                          CPX_PARALLEL_DETERMINISTIC);
+    if (rval)
+        throw cpx_err(rval, "CPXsetintparam parallel mode");
+
     rval = CPXsetintparam(env, CPX_PARAM_PERIND, CPX_OFF);
     if (rval)
         throw cpx_err(rval, "CPXsetintparam perturbation");
@@ -189,24 +194,29 @@ static int ndpiv_cb(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
         return 0;
 
     NDpivotHandle &handle = *(static_cast<NDpivotHandle *>(cbhandle));
-    ++handle.pfeas_itcount;
+    int &pfeas_ic = handle.pfeas_itcount;
 
-    int pfeas_itcount = handle.pfeas_itcount;
+    ++pfeas_ic;
 
-    double objval = CMR::DoubleMax;
-    get_callback_info(cpx_env, cbdata, wherefrom,
-                      CPX_CALLBACK_INFO_PRIMAL_OBJ, &objval,
-                      "primal objval callback");
+    double upper_bound = handle.upper_bound;
+    double objval = 0.0;
 
-    if (objval <= handle.low_limit)
-        return 1;
+    get_callback_info(cpx_env, cbdata, wherefrom, CPX_CALLBACK_INFO_PRIMAL_OBJ,
+                      &objval, "primal objval callback");
+
+    if (objval != upper_bound)
+        return 0;
 
     int basis_freq = handle.basis_freq;
+    bool getbase = false;
+
     if (basis_freq < 0)
         throw logic_error("Negative basis_freq in ndpiv_cb");
 
-    bool getbase = ((basis_freq == 0 && pfeas_itcount == 1) ||
-                    (pfeas_itcount % basis_freq == 0));
+    if (basis_freq == 0)
+        getbase = (pfeas_ic == 1);
+    else
+        getbase = ((pfeas_ic % basis_freq) == 0);
 
     if (getbase)
         handle.tour_base = handle.rel.base();
@@ -650,9 +660,11 @@ void Relaxation::dual_opt()
         throw cpx_err(rval, "CPXdualopt");
 }
 
-void Relaxation::nondegen_pivot(const double lowlimit)
+void Relaxation::nondegen_pivot(double upper_bound)
 {
     runtime_error err("Problem in Relaxation::nondegen_pivot.");
+
+    double lowlimit = upper_bound - Eps::Zero;
     CPXdblParamGuard obj_ll(CPX_PARAM_OBJLLIM, lowlimit, simpl_p->env,
                             "nondegen_pivot obj limit");
 
@@ -673,11 +685,16 @@ void Relaxation::nondegen_pivot(const double lowlimit)
 }
 
 
-void Relaxation::cb_nondegen_pivot(const double lowlimit, Basis &base)
+void Relaxation::cb_nondegen_pivot(double upper_bound,
+                                   Basis &base)
 {
     runtime_error err("Problem in Relaxation::nondegen_pivot.");
 
-    NDpivotHandle piv_handle(*this, lowlimit);
+    double lowlimit = upper_bound - Eps::Zero;
+    CPXdblParamGuard obj_ll(CPX_PARAM_OBJLLIM, lowlimit, simpl_p->env,
+                            "nondegen_pivot obj limit");
+
+    NDpivotHandle piv_handle(*this, upper_bound);
     piv_handle.basis_freq = 0;
 
     int rval = CPXsetlpcallbackfunc(simpl_p->env, ndpiv_cb, &piv_handle);
@@ -698,6 +715,7 @@ void Relaxation::cb_nondegen_pivot(const double lowlimit, Basis &base)
 
     if (solstat != CPX_STAT_OPTIMAL &&
         solstat != CPX_STAT_OPTIMAL_INFEAS &&
+        solstat != CPX_STAT_ABORT_OBJ_LIM &&
         solstat != CPX_STAT_ABORT_USER) {
         cerr << "Solstat: " << solstat << "\n";
         throw err;

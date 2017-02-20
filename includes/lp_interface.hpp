@@ -194,10 +194,11 @@ public:
 
     void dual_opt(); //!< Optimize the relaxation with dual simplex.
 
+    /// Do a primal non-degenerate pivot.
+    void nondegen_pivot(double upper_bound);
 
-    void nondegen_pivot(double lowlimit); //!< Do a primal non-degenerate pivot.
-
-    void cb_nondegen_pivot(double lowlimit, Basis &base);
+    /// Do a primal non-degenerate pivot with a callback to record a basis.
+    void cb_nondegen_pivot(double upper_bound, Basis &base);
 
 
     void one_primal_pivot(); //!< Perform exactly one primal simplex pivot.
@@ -224,13 +225,13 @@ private:
 
 /// Handle for data during a non-degenerate pivot callback.
 struct NDpivotHandle {
-    NDpivotHandle(Relaxation &_rel, double lowlim)
-        : rel(_rel), tour_base(), low_limit(lowlim), pfeas_itcount(0) {}
+    NDpivotHandle(Relaxation &_rel, double ub)
+        : rel(_rel), tour_base(), upper_bound(ub), pfeas_itcount(0) {}
 
     Relaxation &rel;
     Basis tour_base; //!< A new basis for the tour to be set by the callback.
 
-    double low_limit; //!< Objective lower limit where optimization stops.
+    double upper_bound; //!< Value of best primal feasible solution.
 
     /// How often to copy a basis.
     /// Zero for only the first primal feasible basis.
