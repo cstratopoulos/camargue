@@ -26,6 +26,11 @@ enum class PivType {
     FathomedTour //!< A tour with a dual feasible basis in the current lp.
 };
 
+inline bool is_tour_piv(PivType P)
+{
+    return P == PivType::Tour || P == PivType::FathomedTour;
+}
+
 enum BStat {
     AtLower = 0,
     Basic = 1,
