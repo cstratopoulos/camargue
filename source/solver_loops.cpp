@@ -134,7 +134,6 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                                pool_sep->pool_q(), piv, core_lp, tourlen,
                                prev_val, total_delta, delta_ratio)) {
                 found_primal = true;
-                cout << "\n\n\tADDED POOL CUTS!!!!\n\n";
                 if (return_pivot(piv))
                     return piv;
 
