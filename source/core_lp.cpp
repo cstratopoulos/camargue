@@ -33,7 +33,8 @@ namespace LP {
 CoreLP::CoreLP(Graph::CoreGraph &core_graph_,
                Data::BestGroup &best_data_) try :
     core_graph(core_graph_), best_data(best_data_),
-    ext_cuts(best_data.best_tour_nodes, best_data.perm)
+    ext_cuts(best_data.best_tour_nodes, best_data.perm),
+    prev_numrows(core_graph_.node_count())
 {
     int ncount = core_graph.node_count();
 
