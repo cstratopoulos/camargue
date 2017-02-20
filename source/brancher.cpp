@@ -99,21 +99,21 @@ ScoreTuple Brancher::next_branch_obj()
     ScoreTuple winner = std::move(ranked_cands(sb2inds, downobj, upobj,
                                                sb2bases,
                                                StrongMult, tour_len, 1)[0]);
-    
+
     cout << "\n\tWinner edge " << winner.index << ", tour entry "
          << tour_base.best_tour_edges[winner.index] << "\n";
     cout << "\t\tDown priority " << winner.down_est.first << ", estimate "
          << winner.down_est.second << "\n"
          << "\t\tUp winner priority " << winner.up_est.first << ", estimate "
          << winner.up_est.second << "\n";
-    
+
     return winner;
 }
 
 void Brancher::do_branch(Problem &prob)
 {
     runtime_error err("Problem in Brancher::do_branch");
-    
+
     int ind = prob.edge_ind;
     double tour_entry = tour_base.best_tour_edges[ind];
     Ptype ptype = prob.type;
@@ -173,13 +173,13 @@ void Brancher::undo_branch(Problem &prob)
 /**
  * @param[in] rel the Relaxation to modify.
  * @param[in] branch_ind the index of the edge to branch on.
- * @param[in] tour_entry the entry of the best tour corresponding to 
+ * @param[in] tour_entry the entry of the best tour corresponding to
  * \p branch_ind.
  * This function modifies the Relaxation to explore a branch where the solution
  * is fixed to disagree with the current best tour. This is done by changing
  * bounds on \p branch_ind so that the upper bound is zero if \p tour_entry
  * is one, and the lower bound is one if \p tour_entry is zero. In either case,
- * effectively adds the constraint that `x[branch_ind] = 1 - tour_entry` to 
+ * effectively adds the constraint that `x[branch_ind] = 1 - tour_entry` to
  * \p rel.
  */
 void contra_fix_enforce(LP::Relaxation &rel, const int branch_ind,
@@ -189,18 +189,18 @@ void contra_fix_enforce(LP::Relaxation &rel, const int branch_ind,
         rel.tighten_bound(branch_ind, 'U', 0);
     else if (tour_entry == 0)
         rel.tighten_bound(branch_ind, 'L', 1);
-    
+
     return;
 }
 
 /**
  * @param[in] rel the Relaxation to modify.
  * @param[in] branch_ind the index of the edge to undo a branch on.
- * @param[in] tour_entry the entry of the best tour corresponding to 
+ * @param[in] tour_entry the entry of the best tour corresponding to
  * \p branch_ind.
  * This function undoes a branch which was performed by contra_fix_enforce. It
  * assumes that upper or lower bounds have been modified precisely in the way
- * indicated by that function, hence restores them to normal values. If 
+ * indicated by that function, hence restores them to normal values. If
  * \p tour_entry is one, then branch_ind will have its upper bound relaxed
  * back to one. If it is zero, it will have its lower bound relaxed back to
  * zero.

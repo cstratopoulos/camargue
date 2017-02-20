@@ -685,8 +685,8 @@ void Relaxation::nondegen_pivot(double upper_bound)
 }
 
 
-void Relaxation::cb_nondegen_pivot(double upper_bound,
-                                   Basis &base)
+void Relaxation::cb_nondegen_pivot(double upper_bound, Basis &base,
+                                   int bas_freq)
 {
     runtime_error err("Problem in Relaxation::nondegen_pivot.");
 
@@ -694,8 +694,7 @@ void Relaxation::cb_nondegen_pivot(double upper_bound,
     CPXdblParamGuard obj_ll(CPX_PARAM_OBJLLIM, lowlimit, simpl_p->env,
                             "nondegen_pivot obj limit");
 
-    NDpivotHandle piv_handle(*this, upper_bound);
-    piv_handle.basis_freq = 0;
+    NDpivotHandle piv_handle(*this, upper_bound, bas_freq);
 
     int rval = CPXsetlpcallbackfunc(simpl_p->env, ndpiv_cb, &piv_handle);
     if (rval)

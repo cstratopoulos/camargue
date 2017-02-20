@@ -23,7 +23,7 @@ using std::string;
 using std::vector;
 
 SCENARIO ("Experimenting with CutMonitor metrics",
-          "[Sep][LP][pivot_age][tour_age][CutMonitor][experiment]") {
+          "[Sep][LP][pivot_age]CutMonitor][experiment]") {
     using namespace CMR;
     vector<string> probs{
         "swiss42",
@@ -79,7 +79,7 @@ SCENARIO ("Experimenting with CutMonitor metrics",
             cout << "Found " << numcuts << " fast blossoms, adding twice"
                  << endl;
 
-            core.pivot_back();
+            core.pivot_back(false);
             core.add_cuts(bq_1);
             core.add_cuts(bq_2);
             int numrows = core.num_rows();
@@ -100,7 +100,7 @@ SCENARIO ("Experimenting with CutMonitor metrics",
                     cout << rowstat[i] << "\n";
                 cout << endl;
                 AND_THEN ("We can inspect duals/base stats at  the tour") {
-                    core.pivot_back();
+                    core.pivot_back(false);
                     REQUIRE(core.get_objval() == b_dat.min_tour_value);
                     vector<double> tour_pi = core.pi(ncount, numrows - 1);
                     cout << "Tour pi values:\n";

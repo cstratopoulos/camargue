@@ -126,7 +126,7 @@ SCENARIO ("Comparing pivot protocols with round of cuts",
                     Sep::Separator sep(core_graph.get_edges(),
                                        b_dat, s_dat, kpart, TG);
 
-                    core.pivot_back();
+                    core.pivot_back(false);
 
                     int numrows = core.num_rows();
 

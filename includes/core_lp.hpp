@@ -48,8 +48,10 @@ public:
     CoreLP(Graph::CoreGraph &core_graph_,
            Data::BestGroup &best_data_);
 
+    /// Compute a primal non-degenerate pivot from the current tour.
     LP::PivType primal_pivot();
-    void pivot_back();
+
+    void pivot_back(bool prune_slacks); //!< Pivot back to the current tour.
 
     void add_cuts(Sep::LPcutList &cutq);
     void add_cuts(Sep::CutQueue<Sep::dominoparity> &dp_q);

@@ -3,12 +3,14 @@
 #include "util.hpp"
 
 #include <algorithm>
+#include <string>
 
 #include <cmath>
 
 using std::cout;
 using std::endl;
 using std::cerr;
+using std::string;
 
 using std::vector;
 
@@ -141,16 +143,17 @@ PivType CoreLP::primal_pivot()
     runtime_error err("Problem in CoreLP::primal_pivot");
 
     int ncount = core_graph.node_count();
-    double low_limit = best_data.min_tour_value - Eps::Zero;
 
-    try {
-        get_base(tour_base.colstat, tour_base.rowstat);
-    } CMR_CATCH_PRINT_THROW("getting base before pivoting", err);
+    // try {
+    //     get_base(tour_base.colstat, tour_base.rowstat);
+    // } CMR_CATCH_PRINT_THROW("getting base before pivoting", err);
 
     vector<int> dfs_island;
+    Basis bas;
 
     try {
-        nondegen_pivot(low_limit);
+        //nondegen_pivot(best_data.min_tour_value);
+        cb_nondegen_pivot(best_data.min_tour_value, bas, 1);
         get_x(lp_edges);
         supp_data = Data::SupportGroup(core_graph.get_edges(),
                                        lp_edges, dfs_island,
@@ -162,11 +165,17 @@ PivType CoreLP::primal_pivot()
 
     bool integral = supp_data.integral;
     bool connected = supp_data.connected;
+    bool genuine_opt_tour = false;
     PivType result = PivType::Frac;
 
     if (integral) {
         if (connected) {
-            result =  dual_feas() ? PivType::FathomedTour : PivType::Tour;
+            if (dual_feas()) {
+                result = PivType::FathomedTour;
+                genuine_opt_tour = true;
+            } else {
+                result = PivType::Tour;
+            }
         } else {
             result =  PivType::Subtour;
         }
@@ -182,7 +191,17 @@ PivType CoreLP::primal_pivot()
         try {
             handle_aug_pivot(dfs_island);
         } CMR_CATCH_PRINT_THROW("handling augmentation", err);
+    } else if (genuine_opt_tour) {
+        try {
+            get_base(tour_base.colstat, tour_base.rowstat);
+        } CMR_CATCH_PRINT_THROW("setting opt tour base", err);
+    } else {
+        if (!bas.empty()) {
+            tour_base.colstat = std::move(bas.colstat);
+            tour_base.rowstat = std::move(bas.rowstat);
+        }
     }
+
 
     // try {
     //     if (is_tour_piv(result))
@@ -198,42 +217,58 @@ PivType CoreLP::primal_pivot()
     return result;
 }
 
-void CoreLP::pivot_back()
+/**
+ * @post the tour in best_data is instated as the current LP solution with
+ * an associated row and column basis. Calls to lp_vec, get_objval, etc. are
+ * valid and return the best tour.
+ * @param prune_slacks if true, this function will delete all cuts whose slack
+ * variables are in the current tour basis.
+ */
+void CoreLP::pivot_back(bool prune_slacks)
 {
-    runtime_error err("Problem in CoreLP::pivot_back");
-    try {
-        copy_start(tour_base.best_tour_edges);
-        // copy_start(tour_base.best_tour_edges, tour_base.colstat,
-        //            tour_base.rowstat);
-        factor_basis();
-        // cout << "Objval after tour pivot back "
-        //      << get_objval() << endl;
-    } CMR_CATCH_PRINT_THROW("copying/factoring basis", err);
+    string error_string =
+    "Problem in CoreLP::pivot_back, prune " + std::to_string(prune_slacks);
 
-    // vector<int> cut_base;
-    // vector<int> delset;
-    // int numrows = num_rows();
-    // int delct = 0;
+    runtime_error err(error_string);
 
-    // try {
-    //     cut_base = row_stat();
-    //     delset = vector<int>(numrows, 0);
-    // } CMR_CATCH_PRINT_THROW("getting row base/delset", err);
+    int delct = 0;
+    int numrows = num_rows();
+    int rowdiff = numrows - prev_numrows;
 
-    // for (int i = prev_numrows; i < numrows; ++i)
-    //     if (cut_base[i] == 1) {
-    //         delset[i] = 1;
-    //         ++delct;
-    //     }
+    vector<int> &cut_stats = tour_base.rowstat;
+    vector<int> delset(numrows, 0);
 
-    // // should also add check of pivot ages here
+    if (prune_slacks)
+        for (int i = prev_numrows; i < numrows; ++i)
+            if (cut_stats[i] == 1) {
+                delset[i] = 1;
+                ++delct;
+            }
 
-    // if (delct > 0)
-    //     try {
-    //         del_set_rows(delset);
-    //         ext_cuts.del_cuts(delset, false);
-    //         factor_basis();
-    //     } CMR_CATCH_PRINT_THROW("deleting cuts in tour basis", err);
+    if (delct > 0 && delct != rowdiff) {
+        try {
+            del_set_rows(delset);
+            ext_cuts.del_cuts(delset, false);
+            copy_start(tour_base.best_tour_edges);
+            factor_basis();
+            // cout << "Deleted " << delct << " / "
+            //      << (numrows - prev_numrows) << " basic slack cuts" << endl;
+        } CMR_CATCH_PRINT_THROW("deleting cuts/factoring tour basis", err);
+    } else {
+        try {
+            copy_start(tour_base.best_tour_edges);
+            // copy_start(tour_base.best_tour_edges, tour_base.colstat,
+            //            tour_base.rowstat);
+            factor_basis();
+        } CMR_CATCH_PRINT_THROW("copying/factoring basis", err);
+    }
+
+    double objval = get_objval();
+    if (fabs(objval - best_tourlen()) >= Eps::Zero) {
+        cerr << "Objval disagreement: " << objval << " vs tour length "
+             << best_tourlen() << endl;
+        throw err;
+    }
 }
 
 void CoreLP::handle_aug_pivot(const std::vector<int> &tour_nodes)

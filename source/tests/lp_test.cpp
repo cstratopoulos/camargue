@@ -171,7 +171,7 @@ SCENARIO ("Benchmarking rounds of cuts",
                                                       kpart, TG);
 
                     if (sep->connect_sep()) {
-                        core.pivot_back();
+                        core.pivot_back(false);
                         core.add_cuts(sep->connect_cuts_q());
                         LP::PivType piv = core.primal_pivot();
                         vector<double> newx = core.lp_vec();
@@ -193,7 +193,7 @@ SCENARIO ("Benchmarking rounds of cuts",
                     }
 
                     if (sep->fast2m_sep()) {
-                        core.pivot_back();
+                        core.pivot_back(false);
                         core.add_cuts(sep->fastblossom_q());
                         LP::PivType piv = core.primal_pivot();
                         vector<double> newx = core.lp_vec();
@@ -217,7 +217,7 @@ SCENARIO ("Benchmarking rounds of cuts",
                     }
 
                     if (sep->blkcomb_sep()) {
-                        core.pivot_back();
+                        core.pivot_back(false);
                         core.add_cuts(sep->blockcomb_q());
                         LP::PivType piv = core.primal_pivot();
                         vector<double> newx = core.lp_vec();
@@ -269,7 +269,7 @@ SCENARIO ("Performing single pivots",
 
                     AND_WHEN("We pivot back") {
                         THEN("The tour vector changes back.") {
-                            REQUIRE_NOTHROW(core.pivot_back());
+                            REQUIRE_NOTHROW(core.pivot_back(false));
                             REQUIRE(core.get_objval() == tourlen);
                             REQUIRE(tourx == core.lp_vec());
 

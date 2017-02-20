@@ -198,7 +198,7 @@ public:
     void nondegen_pivot(double upper_bound);
 
     /// Do a primal non-degenerate pivot with a callback to record a basis.
-    void cb_nondegen_pivot(double upper_bound, Basis &base);
+    void cb_nondegen_pivot(double upper_bound, Basis &base, int bas_freq);
 
 
     void one_primal_pivot(); //!< Perform exactly one primal simplex pivot.
@@ -225,8 +225,8 @@ private:
 
 /// Handle for data during a non-degenerate pivot callback.
 struct NDpivotHandle {
-    NDpivotHandle(Relaxation &_rel, double ub)
-        : rel(_rel), tour_base(), upper_bound(ub), pfeas_itcount(0) {}
+    NDpivotHandle(Relaxation &_rel, double ub, int bfreq)
+        : rel(_rel), tour_base(), upper_bound(ub), basis_freq(bfreq) {}
 
     Relaxation &rel;
     Basis tour_base; //!< A new basis for the tour to be set by the callback.
@@ -239,7 +239,7 @@ struct NDpivotHandle {
     /// `n > 1` for only when `pfeas_itcount % n == 0`
     int basis_freq;
 
-    int pfeas_itcount; //!< Number of iterations since becoming primal feasible.
+    int pfeas_itcount = 0; //!< Number of pivots since becoming primal feasible.
 };
 
 }

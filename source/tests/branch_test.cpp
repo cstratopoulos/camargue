@@ -119,21 +119,7 @@ SCENARIO ("Instating a Brancher and getting problems",
                          << "\n";
 
 
-                    double zero_coeff;
-                    double one_coeff;
-
-                    ABC::dive_coeffs(tourlen, zero_coeff, one_coeff);
-                    cout << "\tSuggested dive coeffs\t" << zero_coeff << "\t"
-                         << one_coeff << "\n";
-
-                    core.pivot_back();
-                    double changeto = tour_entry == 0 ? one_coeff : zero_coeff;
-
-                    REQUIRE_NOTHROW(rel.change_obj(ind, changeto));
-                    core.primal_pivot();
-                    double new_lp_entry = rel.lp_vec()[ind];
-                    REQUIRE(new_lp_entry != tour_entry);
-                    cout << "\tDived objval: " << rel.get_objval() << "\n\n";
+                    core.pivot_back(false);
                 }
             }
         }

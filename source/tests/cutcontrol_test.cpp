@@ -64,7 +64,7 @@ SCENARIO ("Pivoting and adding cuts",
                     bool found = fast2m || blkcomb || dp || con;
                     REQUIRE(found);
 
-                    REQUIRE_NOTHROW(core.pivot_back());
+                    REQUIRE_NOTHROW(core.pivot_back(false));
 
                     vector<double> tour2 = core.lp_vec();
 

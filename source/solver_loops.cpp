@@ -71,7 +71,7 @@ bool call_separator(const function<bool()> &sepcall, Qtype &sep_q,
 {
     bool result = sepcall();
     if (result) {
-        core_lp.pivot_back();
+        core_lp.pivot_back(true);
         core_lp.add_cuts(sep_q);
         piv = core_lp.primal_pivot();
 
