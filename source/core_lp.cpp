@@ -140,6 +140,7 @@ PivType CoreLP::primal_pivot()
 {
     runtime_error err("Problem in CoreLP::primal_pivot");
 
+    int ncount = core_graph.node_count();
     double low_limit = best_data.min_tour_value - Eps::Zero;
 
     try {
@@ -153,7 +154,7 @@ PivType CoreLP::primal_pivot()
         get_x(lp_edges);
         supp_data = Data::SupportGroup(core_graph.get_edges(),
                                        lp_edges, dfs_island,
-                                       core_graph.node_count());
+                                       ncount);
     } CMR_CATCH_PRINT_THROW("pivoting and setting x", err);
 
     ++num_nd_pivots;
@@ -183,6 +184,19 @@ PivType CoreLP::primal_pivot()
         } CMR_CATCH_PRINT_THROW("handling augmentation", err);
     }
 
+    try {
+        if (is_tour_piv(result))
+            cut_mon = LP::CutMonitor(num_rows() - ncount);
+        else {
+            if (num_rows() > ncount) {
+                get_pi(pi_vals, ncount, num_rows() - 1);
+                cut_mon.update_pivs(pi_vals);
+            }
+        }
+    } CMR_CATCH_PRINT_THROW("updating CutMonitor", err);
+
+
+
     return result;
 }
 
@@ -210,6 +224,8 @@ void CoreLP::pivot_back()
             delset[i] = 1;
             ++delct;
         }
+
+    // should also add check of pivot ages here
 
     if (delct > 0)
         try {
@@ -247,10 +263,8 @@ void CoreLP::set_best_tour(const std::vector<int> &tour_nodes)
     vector<int> &tour_edges = best_data.best_tour_edges;
     vector<double> &d_tour_edges = tour_base.best_tour_edges;
 
-    for (int i = 0; i < tour_edges.size(); ++i) {
-        tour_edges[i] = 0;
-        d_tour_edges[i] = 0.0;
-    }
+    std::fill(tour_edges.begin(), tour_edges.end(), 0);
+    std::fill(d_tour_edges.begin(), d_tour_edges.end(), 0.0);
 
     for (int i = 0; i < ncount; ++i) {
         EndPts e(tour_nodes[i], tour_nodes[(i + 1) % ncount]);

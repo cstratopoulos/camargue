@@ -271,7 +271,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
         }
     } else {//on a new degree node
         //clean up after the old one
-        marks = vector<bool>(ncount, false);
+        std::fill(marks.begin(), marks.end(), false);
         rb_sums.clear();
 
         //set up for the new one
