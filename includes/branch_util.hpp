@@ -38,7 +38,7 @@ constexpr int one_factor = 5; //!< Magnitude factor for fixing var to one.
 constexpr int zero_factor = 10; //!< Magnitude factor for fixing var to zero.
 
 /// Alias declaration for integer ranking and objective value estimate.
-/// Higher is better for both entries, to be sorted lexicographically. 
+/// Higher is better for both entries, to be sorted lexicographically.
 using ScorePair = std::pair<int, double>;
 
 /// A simple structure for recording the status of branching subproblems.
@@ -48,7 +48,7 @@ struct Problem {
         Affirm, //!< Enforcing agreement with current tour.
         Contra //!< Enforcing departure from current tour.
     };
-    
+
     Problem() = default;
 
     Problem(int ind, ScorePair r);
@@ -67,7 +67,6 @@ std::ostream &operator<<(std::ostream &os, const Problem &prob);
 /// Strategies for enforcing Problem::Type::Contra branches.
 enum class ContraStrat {
     Fix, /// Change the bounds on an edge in the Relaxation.
-    Dive, /// Perturb objective function coefficients.
     Naive, /// Add a single branch constraint to the Relaxation.
 };
 
@@ -81,21 +80,21 @@ struct ScoreTuple {
 
     int index; //!< The index of the edge being scored.
 
-    /// How valuable is the estimate obtained. Higher is better. 
+    /// How valuable is the estimate obtained. Higher is better.
     int score_priority;
 
     ScorePair down_est; //!< The estimate for clamping to zero.
     ScorePair up_est; //!< The estimate for clamping to one.
 
     LP::Basis contra_base;
-    
+
     double score; //!< The priority score formed from down_est and up_est.
 };
 
 bool operator>(const ScoreTuple &s, const ScoreTuple &t);
 
 /// Rank a branching variable in terms of its down and up estimates.
-double var_score(double mult, double v0, double v1); 
+double var_score(double mult, double v0, double v1);
 
 /// Get a list of candidate branch edges using the J\"unger et al. metric.
 std::vector<int> length_weighted_cands(const std::vector<Graph::Edge> &edges,
@@ -110,18 +109,6 @@ std::vector<ScoreTuple> ranked_cands(const std::vector<int> &cand_inds,
                                      std::vector<LP::Basis> &contra_bases,
                                      const double mult,
                                      const double ub, const int num_return);
-
-int num_digits(const double val); /**< The number of base 10 digits in val. */
-
-/// Get coefficients for imposing objective function diving.
-void dive_coeffs(const double upper_bound,
-                 double &zero_coeff, double &one_coeff);
-
-/// Determine if an objective value implies compliance with Dive branching.
-bool branch_compliant(const double zero_coeff, const double one_coeff,
-                      const double branch_objval,
-                      const int zero_count, const int one_count);
-
 
 }
 }

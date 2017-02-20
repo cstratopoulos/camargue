@@ -31,7 +31,7 @@ try
 }
 
 /**
- * For some estimation metric, evaluate a priority score for branching on a 
+ * For some estimation metric, evaluate a priority score for branching on a
  * given variable.
  * @param[in] v0 the estimate obtained for fixing a variable to zero
  * @param[in] v1 the estimate obtained for fixing the same variable to one
@@ -44,7 +44,7 @@ double var_score(double mult, double v0, double v1)
 {
     double denom = mult + 1;
     double num;
-    
+
     if (v0 < v1)
         num = mult * v0 + v1;
     else
@@ -70,7 +70,7 @@ bool operator>(const ScoreTuple &s, const ScoreTuple &t)
  * @param[in] edges the list of Edges in the core lp.
  * @param[in] indices the indices of fractional basic variables from \p edges
  * @param[in] x the lp solution
- * @param[in] num_return the maximum number of candidate indices returned. 
+ * @param[in] num_return the maximum number of candidate indices returned.
  */
 vector<int> length_weighted_cands(const vector<Graph::Edge> &edges,
                                   const vector<int> &indices,
@@ -120,12 +120,12 @@ vector<int> length_weighted_cands(const vector<Graph::Edge> &edges,
  * @param[in] up_est like down_est but for setting to one.
  * @param[in] mult the multiplier used to generate the variable score.
  * @param[in] ub current upperbound for the problem. If a variable has down or
- * up estimate bigger than this that is a hint the LP was infeasible or can 
- * be pruned by lower bound. 
- * @param[in] num_return return at most this many ranked candidates. 
+ * up estimate bigger than this that is a hint the LP was infeasible or can
+ * be pruned by lower bound.
+ * @param[in] num_return return at most this many ranked candidates.
  * @pre `cand_inds.size() == down_est.size() == up_est.size()`
  * @returns a vector of ScoreTuple objects sorted in non-increasing order by
- * score. 
+ * score.
  */
 vector<ScoreTuple> ranked_cands(const vector<int> &cand_inds,
                                 const vector<ScorePair> &down_est,
@@ -148,52 +148,6 @@ vector<ScoreTuple> ranked_cands(const vector<int> &cand_inds,
         result.resize(num_return);
         return result;
     }
-}
-
-int num_digits(const double val)
-{
-    int factor = 10;
-    int result = 1;
-    
-    int check = std::abs(val);
-
-    while ((check % factor) != val) {
-        ++result;
-        factor *= 10;
-    }
-
-    return result;
-}
-
-
-/**
- * @param[in] upper_bound an upper bound on the minimization problem
- * @param[out] zero_coeff objective function coeff for fixing a var to zero
- * @param[out] one_coeff objective function coeff for fixing a var to one.
- * @returns the pair of coeffs \p zero_coeff and \p one_coeff that can be used
- * to implicitly force or exclude a variable by objective function 
- * perturbation.
- */
-void dive_coeffs(const double upper_bound,
-                 double &zero_coeff, double &one_coeff)
-{
-    double result = 1;
-
-    int num_dig = num_digits(upper_bound);
-    int one_pow = num_dig + one_factor;
-    int zero_pow = num_dig + zero_factor;
-
-    int i = 0;
-
-    while (i++ < one_pow)
-        result *= 10;
-
-    one_coeff = -result;
-
-    while (i++ < zero_pow)
-        result *= 10;
-
-    zero_coeff = result;
 }
 
 ostream &operator<<(ostream &os, Ptype type)
@@ -220,15 +174,15 @@ ostream &operator<<(ostream &os, const Problem &prob)
     return os;
 }
 
-/** 
+/**
  * @param[in] zero_coeff the coefficient used to fix variables to zero
  * @param[in] one_coeff the coefficient used to fix variables to one
  * @param[in] branch_objval the objective value of a solution in the branch
  * tree.
  * @param[in] zero_count the number of variables being fixed to zero.
- * @param[in] one_count the number of variables being fixed to one. 
+ * @param[in] one_count the number of variables being fixed to one.
  * @returns True iff \p branch_objval implies that variables are being fixed
- * to their desired values, false otherwise. 
+ * to their desired values, false otherwise.
  */
 
 }
