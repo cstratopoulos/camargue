@@ -14,6 +14,22 @@ using std::exception;
 namespace CMR {
 namespace Graph {
 
+void get_elist(const vector<Edge> &edges, vector<int> &elist,
+               vector<int> &elen)
+{
+    elen.clear();
+    elist.clear();
+    elen.resize(edges.size());
+    elist.resize(2 * edges.size());
+
+    for (int i = 0; i < edges.size(); ++i) {
+        const Edge &e = edges[i];
+        elen[i] = e.len;
+        elist[2 * i] = e.end[0];
+        elist [(2 * i) + 1] = e.end[1];
+    }
+}
+
 void get_delta(const int interval_start, const int interval_end,
                const vector<int> &tour_nodes,
                const vector<int> &elist,

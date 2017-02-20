@@ -115,6 +115,7 @@ Instance::Instance(const string &probname, int seed, int ncount,
 try
     : nodecount(ncount), random_seed(seed), pname(probname)
 {
+    cout << "\tCreating sparse Instance...";
     if (CCutil_graph2dat_sparse(ncount, elen.size(), &elist[0], &elen[0], 0,
                                 ptr()))
         throw runtime_error("CCutil_getdata failed.");
@@ -244,19 +245,6 @@ int CoreGraph::find_edge_ind(int end0, int end1) const
     if (adj_ptr == nullptr)
         return -1;
     return adj_ptr->edge_index;
-}
-
-void CoreGraph::get_elist(vector<int> &elist, vector<int> &elen) const
-{
-    elen.resize(edges.size());
-    elist.resize(2 * edges.size());
-
-    for (int i = 0; i < edges.size(); ++i) {
-        const Edge &e = edges[i];
-        elen[i] = e.len;
-        elist[2 * i] = e.end[0];
-        elist [(2 * i) + 1] = e.end[1];
-    }
 }
 
 void CoreGraph::add_edge( int end0, int end1, int len )

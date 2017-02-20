@@ -42,6 +42,9 @@ struct Edge : EndPts {
     bool removable;
 };
 
+void get_elist(const std::vector<Edge> &edges, std::vector<int> &elist,
+               std::vector<int> &ecap);
+
 /** Wrapper to the Concorde CCtsp_lpgraph structure.
  * This class constructs a CCtsp_lpgraph which corresponds to a tour specified
  * by the constructor arguments. It is used to check whether cuts found by
