@@ -194,7 +194,11 @@ public:
 
     void dual_opt(); //!< Optimize the relaxation with dual simplex.
 
+
     void nondegen_pivot(double lowlimit); //!< Do a primal non-degenerate pivot.
+
+    void cb_nondegen_pivot(double lowlimit, Basis &base);
+
 
     void one_primal_pivot(); //!< Perform exactly one primal simplex pivot.
     void one_dual_pivot(); //!< Perform exactly one dual simplex pivot.
@@ -216,6 +220,25 @@ public:
 private:
     struct solver_impl;
     std::unique_ptr<solver_impl> simpl_p;
+};
+
+/// Handle for data during a non-degenerate pivot callback.
+struct NDpivotHandle {
+    NDpivotHandle(Relaxation &_rel, double lowlim)
+        : rel(_rel), tour_base(), low_limit(lowlim), pfeas_itcount(0) {}
+
+    Relaxation &rel;
+    Basis tour_base; //!< A new basis for the tour to be set by the callback.
+
+    double low_limit; //!< Objective lower limit where optimization stops.
+
+    /// How often to copy a basis.
+    /// Zero for only the first primal feasible basis.
+    /// One for every new primal feasible basis.
+    /// `n > 1` for only when `pfeas_itcount % n == 0`
+    int basis_freq;
+
+    int pfeas_itcount; //!< Number of iterations since becoming primal feasible.
 };
 
 }

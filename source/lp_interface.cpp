@@ -51,6 +51,7 @@ namespace LP {
 constexpr double CPXzero = 1E-10;
 constexpr double CPXint_tol = 0.0001;
 
+
 struct Relaxation::solver_impl {
     solver_impl();
     ~solver_impl();
@@ -152,8 +153,19 @@ void set_info_vec(cplex_query F, const char *Fname,
         throw cpx_err(rval, Fname);
 }
 
-static int pfeas_cb (CPXCENVptr cpx_env, void *cbdata, int wherefrom,
-                     void *cbhandle)
+template <typename info_type>
+void get_callback_info(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
+                       int which_info, info_type *result_p,
+                       const char *query_description)
+{
+    int rval = CPXgetcallbackinfo(cpx_env, cbdata, wherefrom, which_info,
+                                  result_p);
+    if (rval)
+        throw cpx_err(rval, query_description);
+}
+
+static int pfeas_cb(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
+                    void *cbhandle)
 {
     int pfeas = 0;
 
@@ -164,6 +176,42 @@ static int pfeas_cb (CPXCENVptr cpx_env, void *cbdata, int wherefrom,
         throw cpx_err(rval, "CPXgetcallbackinfo pfeas.");
 
     return pfeas;
+}
+
+static int ndpiv_cb(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
+    void *cbhandle)
+{
+    int pfeas = 0;
+    get_callback_info(cpx_env, cbdata, wherefrom,
+                      CPX_CALLBACK_INFO_PRIMAL_FEAS, &pfeas,
+                      "primal feas callback");
+    if (!pfeas)
+        return 0;
+
+    NDpivotHandle &handle = *(static_cast<NDpivotHandle *>(cbhandle));
+    ++handle.pfeas_itcount;
+
+    int pfeas_itcount = handle.pfeas_itcount;
+
+    double objval = CMR::DoubleMax;
+    get_callback_info(cpx_env, cbdata, wherefrom,
+                      CPX_CALLBACK_INFO_PRIMAL_OBJ, &objval,
+                      "primal objval callback");
+
+    if (objval <= handle.low_limit)
+        return 1;
+
+    int basis_freq = handle.basis_freq;
+    if (basis_freq < 0)
+        throw logic_error("Negative basis_freq in ndpiv_cb");
+
+    bool getbase = ((basis_freq == 0 && pfeas_itcount == 1) ||
+                    (pfeas_itcount % basis_freq == 0));
+
+    if (getbase)
+        handle.tour_base = handle.rel.base();
+
+    return 0;
 }
 
 class CPXintParamGuard {
@@ -605,16 +653,10 @@ void Relaxation::dual_opt()
 void Relaxation::nondegen_pivot(const double lowlimit)
 {
     runtime_error err("Problem in Relaxation::nondegen_pivot.");
-    int rval = 0;
-
     CPXdblParamGuard obj_ll(CPX_PARAM_OBJLLIM, lowlimit, simpl_p->env,
                             "nondegen_pivot obj limit");
 
-    rval = CPXprimopt(simpl_p->env, simpl_p->lp);
-    if (rval) {
-        cerr << "CPXprimopt failed, rval: " << rval << "\n";
-        throw err;
-    }
+    primal_opt();
 
     int solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
     if (solstat == CPX_STAT_INFEASIBLE) {
@@ -630,15 +672,44 @@ void Relaxation::nondegen_pivot(const double lowlimit)
     }
 }
 
+
+void Relaxation::cb_nondegen_pivot(const double lowlimit, Basis &base)
+{
+    runtime_error err("Problem in Relaxation::nondegen_pivot.");
+
+    NDpivotHandle piv_handle(*this, lowlimit);
+    piv_handle.basis_freq = 0;
+
+    int rval = CPXsetlpcallbackfunc(simpl_p->env, ndpiv_cb, &piv_handle);
+    if (rval)
+        throw cpx_err(rval, "Setting nondegen_pivot callback");
+
+    primal_opt();
+
+    rval = CPXsetlpcallbackfunc(simpl_p->env, NULL, NULL);
+    if (rval)
+        throw cpx_err(rval, "Removing nondegen_pivot callback ");
+
+    int solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
+    if (solstat == CPX_STAT_INFEASIBLE) {
+        cerr << "Relaxation is infeasible.\n";
+        throw err;
+    }
+
+    if (solstat != CPX_STAT_OPTIMAL &&
+        solstat != CPX_STAT_OPTIMAL_INFEAS &&
+        solstat != CPX_STAT_ABORT_USER) {
+        cerr << "Solstat: " << solstat << "\n";
+        throw err;
+    }
+}
+
 void Relaxation::one_primal_pivot()
 {
-    int rval = 0;
     CPXlongParamGuard it_clamp(CPX_PARAM_ITLIM, 1, simpl_p->env,
                                "single pivot itlim clamp");
 
-    rval = CPXprimopt(simpl_p->env, simpl_p->lp);
-    if (rval)
-        throw cpx_err(rval, "CPXprimopt");
+    primal_opt();
 
     int solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
     if (solstat == CPX_STAT_INFEASIBLE)
