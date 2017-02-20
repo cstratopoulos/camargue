@@ -318,8 +318,8 @@ void ExternalCuts::add_cut() { cuts.emplace_back(); }
 /**
  * The specified set of cuts will be removed from the vector of cuts, in
  * accordance with a deletion from the LP relaxation.
- * @param[in] delset the entry `delset[i]` shall be one if the cut
- * `cuts[i + node_count]` is to be deleted, zero otherwise.
+ * @param[in] delset the entry `delset[i]` shall be -1 if the cut
+ * `cuts[i + node_count]` has been deleted from the LP.
  * @param[in] add_to_pool if true, then the deleted cuts will be stored in
  * the cut pool for later use, not including subtour cuts or Non cuts.
  */
