@@ -184,18 +184,16 @@ PivType CoreLP::primal_pivot()
         } CMR_CATCH_PRINT_THROW("handling augmentation", err);
     }
 
-    try {
-        if (is_tour_piv(result))
-            cut_mon = LP::CutMonitor(num_rows() - ncount);
-        else {
-            if (num_rows() > ncount) {
-                get_pi(pi_vals, ncount, num_rows() - 1);
-                cut_mon.update_pivs(pi_vals);
-            }
-        }
-    } CMR_CATCH_PRINT_THROW("updating CutMonitor", err);
-
-
+    // try {
+    //     if (is_tour_piv(result))
+    //         cut_mon = LP::CutMonitor(num_rows() - ncount);
+    //     else {
+    //         if (num_rows() > ncount) {
+    //             get_pi(pi_vals, ncount, num_rows() - 1);
+    //             cut_mon.update_pivs(pi_vals);
+    //         }
+    //     }
+    // } CMR_CATCH_PRINT_THROW("updating CutMonitor", err);
 
     return result;
 }
@@ -204,33 +202,38 @@ void CoreLP::pivot_back()
 {
     runtime_error err("Problem in CoreLP::pivot_back");
     try {
-        copy_start(tour_base.best_tour_edges, tour_base.colstat,
-                   tour_base.rowstat);
+        copy_start(tour_base.best_tour_edges);
+        // copy_start(tour_base.best_tour_edges, tour_base.colstat,
+        //            tour_base.rowstat);
         factor_basis();
+        // cout << "Objval after tour pivot back "
+        //      << get_objval() << endl;
     } CMR_CATCH_PRINT_THROW("copying/factoring basis", err);
 
-    vector<int> cut_base;
-    vector<int> delset;
-    int numrows = num_rows();
-    int delct = 0;
+    // vector<int> cut_base;
+    // vector<int> delset;
+    // int numrows = num_rows();
+    // int delct = 0;
 
-    try {
-        cut_base = row_stat();
-        delset = vector<int>(numrows, 0);
-    } CMR_CATCH_PRINT_THROW("getting row base/delset", err);
+    // try {
+    //     cut_base = row_stat();
+    //     delset = vector<int>(numrows, 0);
+    // } CMR_CATCH_PRINT_THROW("getting row base/delset", err);
 
-    for (int i = prev_numrows; i < numrows; ++i)
-        if (cut_base[i] == 1) {
-            delset[i] = 1;
-            ++delct;
-        }
+    // for (int i = prev_numrows; i < numrows; ++i)
+    //     if (cut_base[i] == 1) {
+    //         delset[i] = 1;
+    //         ++delct;
+    //     }
 
-    // should also add check of pivot ages here
+    // // should also add check of pivot ages here
 
-    if (delct > 0)
-        try {
-            ext_cuts.del_cuts(delset, false);
-        } CMR_CATCH_PRINT_THROW("deleting cuts in tour basis", err);
+    // if (delct > 0)
+    //     try {
+    //         del_set_rows(delset);
+    //         ext_cuts.del_cuts(delset, false);
+    //         factor_basis();
+    //     } CMR_CATCH_PRINT_THROW("deleting cuts in tour basis", err);
 }
 
 void CoreLP::handle_aug_pivot(const std::vector<int> &tour_nodes)
