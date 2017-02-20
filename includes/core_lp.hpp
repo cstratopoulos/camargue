@@ -12,6 +12,7 @@
 #include "process_cuts.hpp"
 #include "datagroups.hpp"
 #include "hypergraph.hpp"
+#include "cutmon.hpp"
 #include "util.hpp"
 
 #include <iostream>
@@ -58,9 +59,12 @@ public:
 
     void add_edges(const std::vector<Graph::Edge> &add_batch);
 
+    /// Get a const reference to the SupportGroup for the most recent pivot.
+    const Data::SupportGroup &support_data() const { return supp_data; }
+
     const Sep::ExternalCuts &external_cuts() const { return ext_cuts; }
 
-    const Data::SupportGroup &support_data() const { return supp_data; }
+    const LP::CutMonitor &cut_monitor() const { return cut_mon; }
 
     /// Average number of iterations per primal_pivot.
     int avg_itcount() const { return sum_it_count / num_nd_pivots; }
@@ -89,9 +93,12 @@ private:
 
     Sep::ExternalCuts ext_cuts;
 
+    LP::CutMonitor cut_mon;
+
     TourBasis tour_base;
 
     std::vector<double> lp_edges;
+    std::vector<double> pi_vals;
     std::vector<double> feas_stat;
 
     int num_nd_pivots = 0;
