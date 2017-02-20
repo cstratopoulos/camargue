@@ -252,7 +252,7 @@ PivType Solver::abc(bool do_price)
 
     try {
         brancher = util::make_unique<ABC::Brancher>(core_lp,
-                                                    core_graph.get_edges(),
+                                                    core_graph,
                                                     tour_basis(),
                                                     best_data.min_tour_value,
                                                     ABC::ContraStrat::Fix);

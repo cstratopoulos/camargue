@@ -343,8 +343,10 @@ PivType Solver::abc_dfs(int depth, bool do_price)
             brancher->do_branch(P);
             if (P.type == Ptype::Affirm)
                 core_lp.copy_start(tour_vec);
-            else
+            else {
                 core_lp.copy_base(*P.contra_base);
+                brancher->branch_tour(tsp_instance, best_data.best_tour_nodes);
+            }
 
             core_lp.factor_basis();
         }
