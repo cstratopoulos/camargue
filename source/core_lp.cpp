@@ -62,8 +62,8 @@ CoreLP::CoreLP(Graph::CoreGraph &core_graph_,
     get_row_infeas(tour_base.best_tour_edges,
                    feas_stat, 0, num_rows() - 1);
 
-    copy_start(tour_base.best_tour_edges, tour_base.colstat,
-               tour_base.rowstat);
+    copy_start(tour_base.best_tour_edges, tour_base.base.colstat,
+               tour_base.base.rowstat);
 
     factor_basis();
 
@@ -84,11 +84,14 @@ CoreLP::CoreLP(Graph::CoreGraph &core_graph_,
 
 TourBasis::TourBasis(const Graph::CoreGraph &core_graph,
                      const Data::BestGroup &best_data) try :
-    best_tour_edges(vector<double>(core_graph.edge_count())),
-    colstat(vector<int>(core_graph.edge_count(), BStat::AtLower)),
-    rowstat(vector<int>(core_graph.node_count(), BStat::AtLower))
+    best_tour_edges(vector<double>(core_graph.edge_count()))
 {
     const vector<int> &int_tour_edges = best_data.best_tour_edges;
+    vector<int> &colstat = base.colstat;
+    vector<int> &rowstat = base.rowstat;
+
+    colstat = vector<int>(core_graph.edge_count(), BStat::AtLower);
+    rowstat = vector<int>(core_graph.node_count(), BStat::AtLower);
 
     for(int i = 0; i < int_tour_edges.size(); ++i)
         best_tour_edges[i] = int_tour_edges[i];
@@ -144,10 +147,6 @@ PivType CoreLP::primal_pivot()
 
     int ncount = core_graph.node_count();
 
-    // try {
-    //     get_base(tour_base.colstat, tour_base.rowstat);
-    // } CMR_CATCH_PRINT_THROW("getting base before pivoting", err);
-
     vector<int> dfs_island;
     Basis bas;
 
@@ -193,12 +192,11 @@ PivType CoreLP::primal_pivot()
         } CMR_CATCH_PRINT_THROW("handling augmentation", err);
     } else if (genuine_opt_tour) {
         try {
-            get_base(tour_base.colstat, tour_base.rowstat);
+            tour_base.base = basis_obj();
         } CMR_CATCH_PRINT_THROW("setting opt tour base", err);
     } else {
         if (!bas.empty()) {
-            tour_base.colstat = std::move(bas.colstat);
-            tour_base.rowstat = std::move(bas.rowstat);
+            tour_base.base = std::move(bas);
         }
     }
 
@@ -235,7 +233,7 @@ void CoreLP::pivot_back(bool prune_slacks)
     int numrows = num_rows();
     int rowdiff = numrows - prev_numrows;
 
-    vector<int> &cut_stats = tour_base.rowstat;
+    vector<int> &cut_stats = tour_base.base.rowstat;
     vector<int> delset(numrows, 0);
 
     if (prune_slacks)
@@ -286,7 +284,7 @@ void CoreLP::handle_aug_pivot(const std::vector<int> &tour_nodes)
 
     try {
         update_best_data();
-        get_base(tour_base.colstat, tour_base.rowstat);
+        tour_base.base = basis_obj();
     } CMR_CATCH_PRINT_THROW("instating tour vec", err);
 
     try { prune_slacks(); } CMR_CATCH_PRINT_THROW("pruning slacks", err);
@@ -320,7 +318,7 @@ void CoreLP::set_best_tour(const std::vector<int> &tour_nodes)
         update_best_data();
         copy_start(d_tour_edges);
         factor_basis();
-        get_base(tour_base.colstat, tour_base.rowstat);
+        tour_base.base = basis_obj();
     } CMR_CATCH_PRINT_THROW("instating tour vec", err);
 
     try { prune_slacks(); } CMR_CATCH_PRINT_THROW("pruning slacks", err);
@@ -392,7 +390,7 @@ void CoreLP::rebuild_basis()
         if (std::abs(test_x[i] - tour[i]) >= Eps::Zero)
             throw runtime_error("tour not instated after basis rebuild.");
 
-    get_base(tour_base.colstat, tour_base.rowstat);
+    tour_base.base = basis_obj();
 
     vector<double> feas_stat;
 

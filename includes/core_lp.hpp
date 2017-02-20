@@ -29,13 +29,14 @@ namespace LP {
 
 struct TourBasis {
     TourBasis() = default;
+
+    /// Construct a starting basis using the Padberg-Hong approach.
     TourBasis(const Graph::CoreGraph &graph,
               const Data::BestGroup &best_data);
 
     std::vector<double> best_tour_edges;
 
-    std::vector<int> colstat;
-    std::vector<int> rowstat;
+    Basis base;
 };
 
 
