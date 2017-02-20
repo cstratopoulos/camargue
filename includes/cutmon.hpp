@@ -34,6 +34,9 @@ public:
     /// Update pivot_ages with the dual values in \p piv_duals.
     void update_pivs(const std::vector<double> &piv_duals);
 
+    /// Delete an indicated set of cuts.
+    void del_cuts(const std::vector<int> &delset, int ncount);
+
     const std::vector<int> &get_piv_ages() const { return pivot_ages; }
 
 private:

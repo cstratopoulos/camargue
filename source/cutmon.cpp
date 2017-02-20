@@ -2,6 +2,7 @@
 #include "util.hpp"
 #include "err_util.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <stdexcept>
 #include <utility>
@@ -64,6 +65,29 @@ void CutMonitor::update_pivs(const vector<double> &piv_duals)
             ++pivot_ages[i];
         else
             pivot_ages[i] = 0;
+}
+
+/**
+ * @param[in] delset the vector indicating the set of cuts to be deleted.
+ * @param[in] ncount the number of nodes in the problem, hence the number of
+ * rows in \p delset to ignore which correspond to the degree equations.
+ * The entry `pivot_ages[i]` will be removed from pivot_ages iff
+ * `delset[i + ncount]` is -1.
+ */
+void CutMonitor::del_cuts(const vector<int> &delset, int ncount)
+{
+    if (pivot_ages.size() + ncount != delset.size())
+        throw logic_error("Size mismatch in CutMonitor::del_cuts");
+
+    int i = 0;
+    pivot_ages.erase(std::remove_if(pivot_ages.begin(), pivot_ages.end(),
+                                    [&delset, &i, ncount](int) -> bool
+                                    {
+                                        bool result = delset[i + ncount] == -1;
+                                        ++i;
+                                        return result;
+                                    }),
+                     pivot_ages.end());
 }
 
 }
