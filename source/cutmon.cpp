@@ -23,22 +23,30 @@ namespace Eps = Epsilon;
 namespace LP {
 
 CutMonitor::CutMonitor(int cutcount) try
-    : pivot_ages(cutcount, 0), tour_ages(cutcount, 0)
+    : pivot_ages(cutcount, 0)
 {} catch (const exception &e) {
     cerr << e.what() << endl;
     throw runtime_error("CutMonitor constructor failed");
 }
 
 CutMonitor::CutMonitor(CutMonitor &&CM) noexcept
-    : pivot_ages(std::move(CM.pivot_ages)),
-      tour_ages(std::move(CM.tour_ages)) {}
+    : pivot_ages(std::move(CM.pivot_ages)) {}
+
 
 CutMonitor &CutMonitor::operator=(CutMonitor &&CM) noexcept
 {
     pivot_ages = std::move(CM.pivot_ages);
-    tour_ages = std::move(CM.tour_ages);
+    return *this;
 }
 
+/**
+ * @param[in] piv_duals dual values for each cut in the LP relaxation at the
+ * current non-degenerate pivot.
+ * @pre \p piv_duals shall be at least as big as pivot_ages.
+ * @post pivot_ages is the same size as \p piv_duals. For every entry of
+ * \p piv_duals greater than or equal to CMR::Epsilon::Cut, the corresponding
+ * entry of pivot_ages is reset to zero. Else, it is incremented by one.
+ */
 void CutMonitor::update_pivs(const vector<double> &piv_duals)
 {
     if (piv_duals.size() < pivot_ages.size())
