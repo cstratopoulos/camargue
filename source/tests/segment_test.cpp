@@ -38,7 +38,7 @@ SCENARIO("Exact primal separation of subtours",
 						  blossomfile, core_graph, b_dat,
 						  lp_edges, s_dat));
 
-	  CMR::Graph::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
+	  CMR::Sep::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
 			     b_dat.perm);
           
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];

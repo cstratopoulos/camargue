@@ -98,8 +98,6 @@ private:
 
     LP::CoreLP core_lp;
 
-    Graph::TourGraph TG;
-
     std::unique_ptr<Sep::Separator> separator;
     std::unique_ptr<Sep::PoolCuts> pool_separator;
 

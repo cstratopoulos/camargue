@@ -26,16 +26,7 @@ public:
     Separator(const std::vector<Graph::Edge> &core_edges_,
               Data::BestGroup &bestdata,
               Data::SupportGroup &suppdata,
-              Data::KarpPartition &kpart,
-              Graph::TourGraph &_TG);
-
-    /// Construct a Separator, but with limit of number of cuts returned.
-    Separator(const std::vector<Graph::Edge> &core_edges_,
-              Data::BestGroup &bestdata,
-              Data::SupportGroup &suppdata,
-              Data::KarpPartition &kpart,
-              Graph::TourGraph &_TG,
-              int round_limit);
+              Data::KarpPartition &kpart);
 
     bool segment_sep();
     bool fast2m_sep();
@@ -56,15 +47,12 @@ public:
     LPcutList &connect_cuts_q()  { return connect_q; }
 
 private:
-    int max_total;
-    int running_total;
-
     const std::vector<Graph::Edge> &core_edges;
     Data::BestGroup &best_data;
     Data::SupportGroup &supp_data;
     Data::KarpPartition &karp_part;
 
-    Graph::TourGraph &TG;
+    TourGraph TG;
 
     std::vector<int> perm_elist;
 
@@ -77,15 +65,6 @@ private:
 
     LPcutList connect_q;
 };
-
-/// This is a shorthand for resetting a unique_ptr to a Separator, like
-/// a surrogate move assign since Separator has mostly reference members.
-void ptr_reset(std::unique_ptr<Separator> &sep,
-               const std::vector<Graph::Edge> &c_edges,
-               Data::BestGroup &b_dat, Data::SupportGroup &s_dat,
-               Data::KarpPartition &kpart,
-               Graph::TourGraph &TG);
-
 
 }
 }

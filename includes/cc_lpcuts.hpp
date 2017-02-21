@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** @file
- * @brief WRAPPERS FOR CONCORDE LP STRUCTURES AND CUT SEPARATORS
+ * @brief Wrappers for Concorde LP structures and separators.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -15,12 +15,45 @@ extern "C" {
 }
 
 #include <memory>
+#include <vector>
 
 
 namespace CMR {
 
 /** Classes and functions related to cut separation. */
 namespace Sep {
+
+/** Wrapper to the Concorde CCtsp_lpgraph structure.
+ * This class constructs a CCtsp_lpgraph which corresponds to a tour specified
+ * by the constructor arguments. It is used to check whether cuts found by
+ * Concorde standard heuristics are tight at the current tour.
+ */
+class TourGraph {
+public:
+    TourGraph() noexcept;
+
+    TourGraph(const std::vector<int> &tour_edges,
+              const std::vector<Graph::Edge> &edges,
+              const std::vector<int> &perm);
+
+    TourGraph(TourGraph &&T) noexcept;
+    TourGraph &operator=(TourGraph &&T) noexcept;
+
+    ~TourGraph();
+
+    TourGraph(const TourGraph &T) = delete;
+    TourGraph &operator=(const TourGraph &T) = delete;
+
+
+
+    CCtsp_lpgraph* pass_ptr() { return &L; }
+    double* tour_array() { return &d_tour[0]; }
+    int node_count() const { return L.ncount; }
+
+private:
+  std::vector<double> d_tour;
+  CCtsp_lpgraph L;
+};
 
 class LPcutList {
 public:
@@ -38,7 +71,7 @@ public:
     CCtsp_lpcut_in *begin() { return head_cut.get(); }
     const CCtsp_lpcut_in *begin() const { return head_cut.get(); }
 
-    void filter_primal(Graph::TourGraph &TG);
+    void filter_primal(TourGraph &TG);
 
     void clear();
 
@@ -67,7 +100,7 @@ class ConcordeSeparator {
 public:
     ConcordeSeparator(std::vector<int> &supp_elist,
                       std::vector<double> &supp_ecap,
-                      Graph::TourGraph &_TG, Sep::LPcutList &_cutq) :
+                      TourGraph &_TG, Sep::LPcutList &_cutq) :
         elist(supp_elist), ecap(supp_ecap), TG(_TG), cutq(_cutq) {}
 
     /** The call to the separation routine.
@@ -80,7 +113,7 @@ protected:
     std::vector<int> &elist;
     std::vector<double> &ecap;
 
-    Graph::TourGraph &TG;
+    TourGraph &TG;
 
     Sep::LPcutList &cutq;
 };
@@ -89,7 +122,7 @@ protected:
 class SegmentCuts : ConcordeSeparator {
 public:
     SegmentCuts(std::vector<int> &elist, std::vector<double> &ecap,
-                Graph::TourGraph &TG, Sep::LPcutList &cutq) :
+                TourGraph &TG, Sep::LPcutList &cutq) :
         ConcordeSeparator(elist, ecap, TG, cutq) {}
 
     /** Finds subtours arising from intervals of the current best tour. */
@@ -100,7 +133,7 @@ public:
 class ConnectCuts : ConcordeSeparator {
 public:
     ConnectCuts(std::vector<int> &elist, std::vector<double> &ecap,
-                Graph::TourGraph &TG, Sep::LPcutList &cutq) :
+                TourGraph &TG, Sep::LPcutList &cutq) :
         ConcordeSeparator(elist, ecap, TG, cutq) {}
 
     /** Finds subtours arising from connected components. */
@@ -111,7 +144,7 @@ public:
 class BlockCombs : ConcordeSeparator {
 public:
     BlockCombs(std::vector<int> &elist, std::vector<double> &ecap,
-               Graph::TourGraph &TG, Sep::LPcutList &cutq) :
+               TourGraph &TG, Sep::LPcutList &cutq) :
         ConcordeSeparator(elist, ecap, TG, cutq) {}
 
     /** Returns true if block combs are found and some are tight at tour. */
@@ -122,7 +155,7 @@ public:
 class FastBlossoms : ConcordeSeparator {
 public:
     FastBlossoms(std::vector<int> &elist, std::vector<double> &ecap,
-                 Graph::TourGraph &TG, Sep::LPcutList &cutq) :
+                 TourGraph &TG, Sep::LPcutList &cutq) :
         ConcordeSeparator(elist, ecap, TG, cutq) {}
 
     /** Returns true if blossoms are found and some are tight at best tour.

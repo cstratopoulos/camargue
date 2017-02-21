@@ -43,7 +43,7 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
                                                         s_dat));
 
 
-                    Graph::TourGraph TG(b_dat.best_tour_edges,
+                    Sep::TourGraph TG(b_dat.best_tour_edges,
                                         core_graph.get_edges(),
                                         b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
@@ -71,7 +71,7 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
                                                         core_graph, b_dat,
                                                         lp_edges, s_dat));
 
-                    Graph::TourGraph TG(b_dat.best_tour_edges,
+                    Sep::TourGraph TG(b_dat.best_tour_edges,
                                              core_graph.get_edges(), b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
@@ -109,7 +109,7 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
                                                         b_dat, lp_edges,
                                                         s_dat));
 
-                    Graph::TourGraph TG(b_dat.best_tour_edges,core_graph.get_edges(),
+                    Sep::TourGraph TG(b_dat.best_tour_edges,core_graph.get_edges(),
                                              b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
@@ -138,7 +138,7 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
                                                         b_dat, lp_edges,
                                                         s_dat));
 
-                    Graph::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
+                    Sep::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
                                              b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 

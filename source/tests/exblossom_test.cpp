@@ -100,12 +100,10 @@ SCENARIO ("Primal exact blossom separation",
 
                     int found_ex = ex_b.find_cuts();
 
-                    Graph::TourGraph TG(b_dat.best_tour_edges,
-                                        core_graph.get_edges(),
-                                        b_dat.perm);
                     Data::KarpPartition kpart;
 
-                    Sep::Separator sep(core_graph.get_edges(), b_dat, s_dat, kpart, TG);
+                    Sep::Separator sep(core_graph.get_edges(), b_dat, s_dat,
+                                       kpart);
 
                     int found_fast = sep.fast2m_sep();
                     CHECK(found_ex >= found_fast);

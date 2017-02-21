@@ -50,12 +50,8 @@ SCENARIO ("Pivoting and adding cuts",
                                              piv1, island,
                                              inst.node_count());
 
-                    Graph::TourGraph TG(b_dat.best_tour_edges,
-                                      core_graph.get_edges(),
-                                      b_dat.perm);
-
                     Sep::Separator control(core_graph.get_edges(),
-                                           b_dat, s_dat, kpart, TG);
+                                           b_dat, s_dat, kpart);
 
                     bool fast2m = control.fast2m_sep();
                     bool blkcomb = control.blkcomb_sep();

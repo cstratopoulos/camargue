@@ -20,10 +20,6 @@
 
 #include <cmath>
 
-extern "C" {
-#include <concorde/INCLUDE/tsp.h>
-}
-
 namespace CMR {
 
 /// Classes and functions for working with graphs.
@@ -44,38 +40,6 @@ struct Edge : EndPts {
 
 void get_elist(const std::vector<Edge> &edges, std::vector<int> &elist,
                std::vector<int> &ecap);
-
-/** Wrapper to the Concorde CCtsp_lpgraph structure.
- * This class constructs a CCtsp_lpgraph which corresponds to a tour specified
- * by the constructor arguments. It is used to check whether cuts found by
- * Concorde standard heuristics are tight at the current tour.
- */
-class TourGraph {
-public:
-    TourGraph() noexcept;
-
-    TourGraph(const std::vector<int> &tour_edges,
-              const std::vector<Edge> &edges,
-              const std::vector<int> &perm);
-
-    TourGraph(TourGraph &&T) noexcept;
-    TourGraph &operator=(TourGraph &&T) noexcept;
-
-    ~TourGraph();
-
-    TourGraph(const TourGraph &T) = delete;
-    TourGraph &operator=(const TourGraph &T) = delete;
-
-
-
-    CCtsp_lpgraph* pass_ptr() { return &L; }
-    double* tour_array() { return &d_tour[0]; }
-    int node_count() const { return L.ncount; }
-
-private:
-  std::vector<double> d_tour;
-  CCtsp_lpgraph L;
-};
 
 struct AdjObj {
     AdjObj() = default;

@@ -118,13 +118,10 @@ SCENARIO ("Comparing pivot protocols with round of cuts",
                     Data::SupportGroup s_dat(core_graph.get_edges(),
                                              piv_x, island, ncount);
 
-                    Graph::TourGraph TG(b_dat.best_tour_edges,
-                                        core_graph.get_edges(),
-                                        b_dat.perm);
                     Data::KarpPartition kpart;
 
                     Sep::Separator sep(core_graph.get_edges(),
-                                       b_dat, s_dat, kpart, TG);
+                                       b_dat, s_dat, kpart);
 
                     core.pivot_back(false);
 

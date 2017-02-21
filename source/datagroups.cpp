@@ -14,6 +14,7 @@
 #include <cmath>
 
 extern "C" {
+#include <concorde/INCLUDE/cut.h>
 #include <concorde/INCLUDE/linkern.h>
 #include <concorde/INCLUDE/edgegen.h>
 }

@@ -157,7 +157,7 @@ SCENARIO ("Generating cliques from Concorde cliques",
                                                              lp_edges, s_dat));
 
 
-                    CMR::Graph::TourGraph TG(b_dat.best_tour_edges,
+                    CMR::Sep::TourGraph TG(b_dat.best_tour_edges,
                                       core_graph.get_edges(),
                                       b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];

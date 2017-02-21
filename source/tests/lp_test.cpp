@@ -160,15 +160,12 @@ SCENARIO ("Benchmarking rounds of cuts",
                                              pivx, island,
                                              ncount);
 
-                    Graph::TourGraph TG(b_dat.best_tour_edges,
-                                        core_graph.
-                                        get_edges(), b_dat.perm);
                     Data::KarpPartition kpart;
 
                     unique_ptr<Sep::Separator> sep =
                     util::make_unique<Sep::Separator>(core_graph.get_edges(),
                                                       b_dat, s_dat,
-                                                      kpart, TG);
+                                                      kpart);
 
                     if (sep->connect_sep()) {
                         core.pivot_back(false);
@@ -188,8 +185,8 @@ SCENARIO ("Benchmarking rounds of cuts",
                                                    pivx, island,
                                                    ncount);
 
-                        Sep::ptr_reset(sep, core_graph.get_edges(), b_dat,
-                                       s_dat, kpart, TG);
+                        util::ptr_reset(sep, core_graph.get_edges(), b_dat,
+                                       s_dat, kpart);
                     }
 
                     if (sep->fast2m_sep()) {
@@ -211,8 +208,8 @@ SCENARIO ("Benchmarking rounds of cuts",
                         s_dat = Data::SupportGroup(core_graph.get_edges(),
                                                    pivx, island,
                                                    ncount);
-                        Sep::ptr_reset(sep, core_graph.get_edges(), b_dat,
-                                       s_dat, kpart, TG);
+                        util::ptr_reset(sep, core_graph.get_edges(), b_dat,
+                                       s_dat, kpart);
 
                     }
 
@@ -233,8 +230,8 @@ SCENARIO ("Benchmarking rounds of cuts",
                         s_dat = Data::SupportGroup(core_graph.get_edges(),
                                                    pivx, island,
                                                    ncount);
-                        Sep::ptr_reset(sep, core_graph.get_edges(), b_dat,
-                                       s_dat, kpart, TG);
+                        util::ptr_reset(sep, core_graph.get_edges(), b_dat,
+                                       s_dat, kpart);
                     }
             }
         }
@@ -278,13 +275,10 @@ SCENARIO ("Performing single pivots",
                                                      pivx, island,
                                                      inst.node_count());
 
-                            Graph::TourGraph TG(b_dat.best_tour_edges,
-                                                     core_graph.
-                                                     get_edges(), b_dat.perm);
                             Data::KarpPartition kpart;
                             Sep::Separator sep(core_graph.get_edges(),
                                                b_dat, s_dat,
-                                               kpart, TG);
+                                               kpart);
 
                             bool found_some = false;
 

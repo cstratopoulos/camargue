@@ -142,15 +142,6 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
     int round = 0;
     int auground = 0;
 
-    vector<int> &tour_edges = best_data.best_tour_edges;
-    const vector<Graph::Edge> &edges = core_graph.get_edges();
-    vector<int> &perm = best_data.perm;
-
-    try {
-        TG = Graph::TourGraph(tour_edges, edges, perm);
-    } CMR_CATCH_PRINT_THROW("allocating tour graph", err);
-
-
     CMR::Timer timer(tsp_instance.problem_name() + " pure cut");
 
     timer.start();
@@ -189,10 +180,6 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                 } CMR_CATCH_PRINT_THROW("adding edges to core", err);
             }
 
-            try {
-                TG = Graph::TourGraph(tour_edges, edges, perm);
-            } CMR_CATCH_PRINT_THROW("updating tour graph", err);
-
             continue;
         }
 
@@ -202,7 +189,6 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                 if (frac_recover() == PivType::Tour) {
                     piv = PivType::Tour;
                     report_aug(false);
-                    TG = Graph::TourGraph(tour_edges, edges, perm);
 
                     continue;
                 }

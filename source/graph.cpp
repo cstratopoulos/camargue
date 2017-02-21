@@ -90,62 +90,6 @@ vector<int> delta_inds(const vector<int> &node_list, const vector<int> &elist,
     return result;
 }
 
-TourGraph::TourGraph() noexcept { CCtsp_init_lpgraph_struct(&L); }
-
-TourGraph::TourGraph(const vector<int> &tour_edges,
-		     const vector<Edge> &edges, const vector<int> &perm)
-try
-{
-    vector<int> elist;
-    int ncount = perm.size();
-    int ecount = edges.size();
-
-    for (const Edge &e : edges) {
-        elist.push_back(perm[e.end[0]]);
-        elist.push_back(perm[e.end[1]]);
-    }
-
-  for (int i : tour_edges)
-      d_tour.push_back(i);
-
-  CCtsp_init_lpgraph_struct(&L);
-
-  if (CCtsp_build_lpgraph(&L, ncount, ecount, &elist[0], (int *) NULL))
-      throw runtime_error("CCtsp_build_lpgraph failed.");
-
-  if (CCtsp_build_lpadj(&L, 0, ecount))
-      throw runtime_error("CCtsp_build_lpadj failed.");
-
-} catch (const std::exception &e) {
-    cerr << e.what() << "\n";
-    throw std::runtime_error("TourGraph constructor failed.");
-}
-
-TourGraph::TourGraph(TourGraph &&T) noexcept : d_tour(std::move(T.d_tour))
-{
-    CCtsp_free_lpgraph(&L);
-    L = T.L;
-
-    CCtsp_init_lpgraph_struct(&T.L);
-    T.d_tour.clear();
-}
-
-TourGraph &TourGraph::operator=(TourGraph &&T) noexcept
-{
-    d_tour = std::move(T.d_tour);
-
-    CCtsp_free_lpgraph(&L);
-    L = T.L;
-
-    CCtsp_init_lpgraph_struct(&T.L);
-    T.d_tour.clear();
-
-    return *this;
-}
-
-
-TourGraph::~TourGraph() {  CCtsp_free_lpgraph(&L); }
-
 /**
  * This constructor is meant to be used to create an AdjList representation of
  * a CoreGraph.
