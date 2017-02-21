@@ -50,7 +50,7 @@ struct Basis {
             return *this;
         }
 
-    bool empty() const { return colstat.empty() && rowstat.empty(); }
+    bool empty() const { return colstat.empty() || rowstat.empty(); }
 
     std::vector<int> colstat;
     std::vector<int> rowstat;
