@@ -131,6 +131,8 @@ TourBasis::TourBasis(const Graph::CoreGraph &core_graph,
         e0 = tour_nodes[0];
         e1 = tour_nodes[ncount - 2];
 
+        find_ind = core_graph.find_edge_ind(e0, e1);
+
         if (find_ind == -1) {
             cerr << e0 << ", " << e1 << " not in core graph.\n";
             throw logic_error("Graph does not contain all edges in tour.");
