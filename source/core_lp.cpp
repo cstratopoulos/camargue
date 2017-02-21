@@ -3,7 +3,9 @@
 #include "util.hpp"
 
 #include <algorithm>
+#include <iostream>
 #include <string>
+#include <stdexcept>
 
 #include <cmath>
 

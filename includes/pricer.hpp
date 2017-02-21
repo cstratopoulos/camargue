@@ -2,6 +2,7 @@
 #define CMR_PRICER_H
 
 #include "core_lp.hpp"
+#include "dualgroup.hpp"
 #include "datagroups.hpp"
 #include "hypergraph.hpp"
 #include "util.hpp"

@@ -3,6 +3,7 @@
 #ifdef CMR_DO_TESTS
 
 #include "solver.hpp"
+#include "dualgroup.hpp"
 #include "util.hpp"
 #include "timer.hpp"
 
