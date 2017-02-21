@@ -43,10 +43,15 @@ PoolCuts::PoolCuts(ExternalCuts &EC_,
 
     keep_inds.reserve(ncount);
     for (int i = 0; i < tour_edges.size(); ++i)
-        if (tour_edges[i] == 1.0)
+        if (tour_edges[i] > 1.0 - Epsilon::Zero)
             keep_inds.push_back(i);
 
     tour_adj = Graph::AdjList(ncount, core_edges, tour_edges, keep_inds);
+    if (tour_adj.edge_count != ncount) {
+        cerr << "Tour adj edge count " << tour_adj.edge_count << endl;
+        throw runtime_error("Not all edges made it into tour adj");
+    }
+
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("PoolCuts constructor failed.");

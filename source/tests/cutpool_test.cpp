@@ -49,7 +49,7 @@ SCENARIO ("Experimenting with CutMonitor metrics",
         LP::CoreLP &core =
         const_cast<LP::CoreLP &>(solver.get_core_lp());
 
-        Graph::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
+        Sep::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
                             b_dat.perm);
         int ncount = core_graph.node_count();
 
@@ -194,7 +194,23 @@ SCENARIO ("Pricing cuts from a cutpool",
                 if (pool.empty())
                     continue;
 
-                cout << "\tPool has " << pool.size() << " cuts\n";
+                int numcomb = 0;
+                int numdp = 0;
+                bool found_other = false;
+                using CutType = Sep::HyperGraph::Type;
+                for (const Sep::HyperGraph &H : pool)
+                    if (H.cut_type() == CutType::Comb)
+                        ++ numcomb;
+                    else if (H.cut_type() == CutType::Domino)
+                        ++numdp;
+                    else
+                        found_other = true;
+
+                REQUIRE_FALSE(found_other);
+                cout << "\tPool has " << pool.size() << " cuts" << endl;
+                cout << "\t" << numcomb << " combs, " << numdp << " dominos."
+                     << endl;
+
 
                 vector<double> lp_vec = core.lp_vec();
 
@@ -203,6 +219,17 @@ SCENARIO ("Pricing cuts from a cutpool",
 
                 Data::SupportGroup s_dat(edges, lp_vec, island, G.node_count());
                 Sep::PoolCuts pool_sep(EC, edges, tbase.best_tour_edges, s_dat);
+                bool found_dis = false;
+
+                for (int i = 0; i < tbase.best_tour_edges.size(); ++i)
+                    if (fabs(tbase.best_tour_edges[i] -
+                             solver.best_info().best_tour_edges[i]) >= 0.00001)
+                    {
+                        found_dis = true;
+                        break;
+                    }
+
+                REQUIRE_FALSE(found_dis);
 
                 bool found_pool = false;
                 double pt = util::zeit();
@@ -250,9 +277,9 @@ SCENARIO ("Pricing cuts from a cutpool",
                     INFO("Cut type " << H.cut_type());
                     INFO("LP: " << lp_activity << sense_str << rhs) ;
                     INFO("Tour: " << tour_activity << sense_str << rhs);
-                    REQUIRE(manual_lp_slack == Approx(pool_lp_slack));
-                    REQUIRE(manual_tour_slack == Approx(pool_tour_slack));
-                    REQUIRE(manual_tour_slack >= 0);
+                    CHECK(manual_lp_slack == Approx(pool_lp_slack));
+                    CHECK(manual_tour_slack == Approx(pool_tour_slack));
+                    CHECK(manual_tour_slack >= 0);
                     if (manual_lp_slack <= -Epsilon::Cut &&
                         tour_activity == rhs)
                         found_primal = true;
