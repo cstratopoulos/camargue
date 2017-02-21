@@ -154,7 +154,7 @@ vector<int> Brancher::branch_tour(const Data::Instance &inst,
         edges_copy = core_graph.get_edges();
         Graph::get_elist(edges_copy, elist, ecap);
 
-        Data::Instance tmp_spinst("tmp", inst.seed(), inst.node_count(), elist,
+        Data::Instance tmp_spinst("", inst.seed(), inst.node_count(), elist,
                                   ecap);
         double default_len = tmp_spinst.ptr()->default_len;
 
