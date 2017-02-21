@@ -27,7 +27,7 @@ namespace CMR {
  * will be saved to disk during the solution process. Existing files will
  * be overwritten; it is the responsibility of the calling routine to make
  * sure that they are hopefully only overwritten by better tours than before!
- * @todo Add a make GIF type parameter. 
+ * @todo Add a make GIF type parameter.
  */
 struct OutPrefs {
   OutPrefs() : save_tour(true),
@@ -40,7 +40,7 @@ struct OutPrefs {
     dump_xy(_dump_xy),
     save_tour_edges(_save_tour_edges),
     probname() {}
-  
+
   bool save_tour, /**< Save tour nodes to `probname.sol`. */
     dump_xy, /**< If possible, dump xy-coords to `probname.xy` */
     save_tour_edges; /**< Save tour edges to `probname_tour.x`. */
@@ -72,17 +72,27 @@ inline bool var_integral(double d)
 double zeit (void); //!< CPU time function.
 double real_zeit (void); //!< Wall clock time function.
 
-/// As per Herb Sutter, port of C++14's make_unique faculty. 
+/// As per Herb Sutter, port of C++14's make_unique faculty.
 template<typename T, typename ...Args>
 std::unique_ptr<T> make_unique( Args&& ...args )
 {
     return std::unique_ptr<T>( new T( std::forward<Args>(args)... ) );
 }
 
+/// Adaptation of make_unique to reset a unique_ptr to an object.
+/// For classes with reference members, we cannot easily define move
+/// constructors. This function provides a surrogate move constructor by
+/// resetting a unique_ptr to such an object.
+template<typename T, typename ...Args>
+void ptr_reset(std::unique_ptr<T> &target, Args&& ...args)
+{
+    target.reset(new T(std::forward<Args>(args)...));
+}
+
 /** Class template for deleting resources allocated by C functions.
- * In calls to Concorde, memory allocation takes place through malloc and 
+ * In calls to Concorde, memory allocation takes place through malloc and
  * free, and it can be dangerous to delete memory that was malloc'd. Thus,
- * A Concorde resource managed by a unique_ptr shall use this deleter to 
+ * A Concorde resource managed by a unique_ptr shall use this deleter to
  * free the memory associated with the resource.
  */
 template <typename T>
@@ -98,7 +108,7 @@ struct C_resource_deleter {
 
 /** Alias declaration for unique_ptr to C array.
  * This specialization of unique_ptr takes ownership of a C-style array which
- * was dynamically allocated by a C routine, freeing its memory 
+ * was dynamically allocated by a C routine, freeing its memory
  * appropriately when necessary.
  */
 template<typename numtype>
@@ -116,7 +126,7 @@ public:
     /// Move assignment.
     SquareUT &operator=(SquareUT &&M) noexcept
         { data = std::move(M.data); return *this; }
-    
+
 
     /// Construct a matrix of dimension \p size.
     SquareUT(size_t size) : data(size)
@@ -125,14 +135,14 @@ public:
                 data[i] = std::vector<T>(size - i);
         }
 
-    /// Construct a matrix of dimension \p size with \p val as all entries. 
+    /// Construct a matrix of dimension \p size with \p val as all entries.
     SquareUT(size_t size, T val) : data(size)
         {
             for (auto i = 0; i < size; ++i)
                 data[i] = std::vector<T>(size - i, val);
         }
 
-    /// Access entry by matrix subscripting. 
+    /// Access entry by matrix subscripting.
     T &operator()(size_t row, size_t column)
         {
             return data[row][column - row];
@@ -157,10 +167,10 @@ typedef std::pair<int, int> IntPair;
  * A Segment is defined in terms of some list of nodes, usually a tsp tour.
  * If \p tour is the nodelist, then a Segment `S` defined relative to tour
  * represents the nodes `tour[S.start], ..., tour[S.end]`. Thus a Segment
- * is meaningless without a tour from which to be dereferenced. 
+ * is meaningless without a tour from which to be dereferenced.
  * @remark Representation of nodes as a segment of a tour is a common theme
- * in tsp computation, and for primal cutting plane tsp computation in 
- * particular. This class is open for inheritance to define subtour cuts 
+ * in tsp computation, and for primal cutting plane tsp computation in
+ * particular. This class is open for inheritance to define subtour cuts
  * associated to segments, bodies of simple teeth, and simple teeth themselves
  * where the notion of size and containment is identical.
  */
@@ -172,7 +182,7 @@ struct Segment {
     Segment(int lo, int hi) : start(lo), end(hi) {}
 
     /** Size of the Segment.
-     * This is the number of the nodes in the closed interval from 
+     * This is the number of the nodes in the closed interval from
      * \p start to \p end.
      */
     int size() const { return end - start + 1; }
@@ -223,7 +233,7 @@ inline std::ostream &operator<<(std::ostream &os, const EndPts &e)
     os << "(" << e.end[0] << ", " << e.end[1] << ")";
     return os;
 }
-    
+
 }
 
 

@@ -114,7 +114,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
     try {
         piv = core_lp.primal_pivot();
-        Sep::ptr_reset(sep, core_edges, best_data, supp_data, karp_part, TG);
+        util::ptr_reset(sep, core_edges, best_data, supp_data, karp_part);
     } CMR_CATCH_PRINT_THROW("initializing pivot and separator", err);
 
     if (return_pivot(piv)) {
@@ -140,8 +140,8 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                 if (!core_lp.supp_data.connected || delta_ratio > Eps::SepRound)
                     return cut_and_piv(round, do_price);
 
-                Sep::ptr_reset(sep, core_edges, best_data, supp_data,
-                               karp_part, TG);
+                util::ptr_reset(sep, core_edges, best_data, supp_data,
+                               karp_part);
             }
         } CMR_CATCH_PRINT_THROW("calling pool sep", err);
 
@@ -160,8 +160,8 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
                 if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
                     return cut_and_piv(round, do_price);
-                Sep::ptr_reset(sep, core_edges, best_data, supp_data,
-                               karp_part, TG);
+                util::ptr_reset(sep, core_edges, best_data, supp_data,
+                               karp_part);
             }
         } CMR_CATCH_PRINT_THROW("calling segment sep", err);
 
@@ -180,8 +180,8 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                 if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
                     return cut_and_piv(round, do_price);
 
-                Sep::ptr_reset(sep, core_edges, best_data, supp_data,
-                               karp_part, TG);
+                util::ptr_reset(sep, core_edges, best_data, supp_data,
+                               karp_part);
             }
         } CMR_CATCH_PRINT_THROW("calling fast2m sep", err);
 
@@ -197,8 +197,8 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                 if (total_delta >= Eps::Zero)
                     return cut_and_piv(round, do_price);
 
-                Sep::ptr_reset(sep, core_edges, best_data, supp_data,
-                               karp_part, TG);
+                util::ptr_reset(sep, core_edges, best_data, supp_data,
+                               karp_part);
             }
         } CMR_CATCH_PRINT_THROW("calling exact 2m sep", err);
 
@@ -215,8 +215,8 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                     !supp_data.connected)
                     return cut_and_piv(round,  do_price);
 
-                Sep::ptr_reset(sep, core_edges, best_data, supp_data,
-                               karp_part, TG);
+                util::ptr_reset(sep, core_edges, best_data, supp_data,
+                               karp_part);
             }
         } CMR_CATCH_PRINT_THROW("calling blkcomb sep", err);
 
@@ -244,8 +244,8 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                                        tourlen, prev_val, total_delta,
                                        delta_ratio)) {
                         num_add += sep->connect_cuts_q().size();
-                        Sep::ptr_reset(sep, core_edges, best_data, supp_data,
-                                       karp_part, TG);
+                        util::ptr_reset(sep, core_edges, best_data, supp_data,
+                                       karp_part);
 
                     } else {
                         throw logic_error("Disconnected w no connect cuts??");
@@ -279,10 +279,9 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
         if (!do_price) {
             try {
                 vector<double> lp_x = core_lp.lp_vec();
-                gmi_sep = util::make_unique<Sep::SafeGomory>(core_lp,
-                                                             core_lp.tour_base
-                                                             .best_tour_edges,
-                                                             lp_x);
+                util::ptr_reset(gmi_sep, core_lp,
+                                core_lp.tour_base.best_tour_edges,
+                                lp_x);
 
                 if (call_separator([&gmi_sep]()
                                    { return gmi_sep->find_cuts(); },
