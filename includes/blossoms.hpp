@@ -1,12 +1,13 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** @file
- * @brief Exact primal blossom separation. 
+ * @brief Exact primal blossom separation.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_BLOSSOMS_H
 #define CMR_BLOSSOMS_H
 
+#include "active_tour.hpp"
 #include "cut_structs.hpp"
 #include "process_cuts.hpp"
 #include "datagroups.hpp"
@@ -19,17 +20,18 @@ namespace Sep {
 class ExBlossoms {
 public:
     ExBlossoms(const std::vector<Graph::Edge> &_edges,
-               Data::BestGroup &b_dat, Data::SupportGroup &s_dat,
+               const LP::ActiveTour &active_tour_,
+               Data::SupportGroup &s_dat,
                CutQueue<ex_blossom> &_blossom_q);
-    
+
     bool find_cuts();
-    
+
 private:
     const std::vector<Graph::Edge> &edges;
-    const Data::BestGroup &best_data;
+    const LP::ActiveTour &active_tour;
     Data::SupportGroup &supp_data;
     CutQueue<ex_blossom> &blossom_q;
-    
+
 };
 
 }

@@ -2,10 +2,11 @@
 
 #ifdef CMR_DO_TESTS
 
-#include "util.hpp"
+#include "active_tour.hpp"
 #include "datagroups.hpp"
 #include "cc_lpcuts.hpp"
 #include "cliq.hpp"
+#include "util.hpp"
 
 
 #include <algorithm>
@@ -40,6 +41,7 @@ static void make_tour_perm(vector<int> &tour, vector<int> &perm)
 
 SCENARIO ("Registering abstract cliques in a bank",
           "[Clique][CliqueBank]") {
+    using namespace CMR;
     vector<int> sizes{50, 250, 500, 1000};
     for (int sz : sizes) {
         GIVEN ("A " + std::to_string(sz) +
@@ -47,7 +49,7 @@ SCENARIO ("Registering abstract cliques in a bank",
             vector<int> tour(sz), perm(sz);
             make_tour_perm(tour, perm);
 
-            CMR::Sep::CliqueBank cbank(tour, perm);
+            Sep::CliqueBank cbank(tour, perm);
 
             int e1 = rand() % sz, e2 = rand() % sz;
             vector<int> nodes1;
@@ -103,7 +105,7 @@ SCENARIO ("Registering abstract cliques in a bank",
 
 SCENARIO ("Testing equality and hash values of cliques",
           "[.Clique][.hash][tiny]") {
-
+    using namespace CMR;
     GIVEN ("A tour and some nodes") {
         vector<int> tour(10);
         vector<int> perm(10);
@@ -113,18 +115,18 @@ SCENARIO ("Testing equality and hash values of cliques",
         vector<int> nodes{1,2,7};
 
         WHEN ("We construct two of the same clique") {
-            CMR::Sep::Clique clq1(nodes, perm), clq2(nodes, perm);
+            Sep::Clique clq1(nodes, perm), clq2(nodes, perm);
 
             THEN ("They are equal and hash equal") {
                 REQUIRE(clq1 == clq2);
-                std::size_t h1 = std::hash<CMR::Sep::Clique>{}(clq1);
-                std::size_t h2 = std::hash<CMR::Sep::Clique>{}(clq2);
+                std::size_t h1 = std::hash<Sep::Clique>{}(clq1);
+                std::size_t h2 = std::hash<Sep::Clique>{}(clq2);
                 REQUIRE(h1 == h2);
             }
 
             AND_WHEN ("We construct another clique from permuted nodes") {
                 vector<int> nodes3{2,7,1};
-                CMR::Sep::Clique clq3(nodes3, perm);
+                Sep::Clique clq3(nodes3, perm);
                 THEN ("It is equal to the others") {
                     REQUIRE(clq1 == clq3);
                 }
@@ -135,6 +137,7 @@ SCENARIO ("Testing equality and hash values of cliques",
 
 SCENARIO ("Generating cliques from Concorde cliques",
           "[Clique][Sep]") {
+    using namespace CMR;
     vector<string> probs{"pr76", "lin318", "d493", "pr1002"};
     for (string &fname : probs) {
         GIVEN("TSP instance " + fname) {
@@ -146,23 +149,23 @@ SCENARIO ("Generating cliques from Concorde cliques",
                     blossomfile = "test_data/blossom_lp/" + fname + ".2m.x",
                     subtourfile = "test_data/subtour_lp/" + fname + ".sub.x";
 
-                    CMR::Graph::CoreGraph core_graph;
-                    CMR::Data::BestGroup b_dat;
-                    CMR::Data::SupportGroup s_dat;
+                    Graph::CoreGraph core_graph;
+                    Data::BestGroup b_dat;
+                    Data::SupportGroup s_dat;
                     std::vector<double> lp_edges;
-                    CMR::Sep::LPcutList cutq;
-                    REQUIRE_NOTHROW(CMR::Data::make_cut_test(probfile, solfile,
+                    Sep::LPcutList cutq;
+                    REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile,
                                                              subtourfile,
                                                              core_graph, b_dat,
                                                              lp_edges, s_dat));
 
-
-                    CMR::Sep::TourGraph TG(b_dat.best_tour_edges,
-                                      core_graph.get_edges(),
-                                      b_dat.perm);
+                    LP::ActiveTour act_tour(core_graph, b_dat);
+                    Sep::TourGraph TG(act_tour.edges(),
+                                           core_graph.get_edges(),
+                                           b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
-                    CMR::Sep::FastBlossoms fb_sep(s_dat.support_elist,
+                    Sep::FastBlossoms fb_sep(s_dat.support_elist,
                                                   s_dat.support_ecap, TG, cutq);
                     REQUIRE(fb_sep.find_cuts());
 
@@ -174,7 +177,7 @@ SCENARIO ("Generating cliques from Concorde cliques",
                         for (int i = 0; i < cc_cut.cliquecount; ++i) {
                             CCtsp_lpclique &cc_clq = cc_cut.cliques[i];
 
-                            CMR::Sep::Clique clq(cc_clq, tour, perm, tour);
+                            Sep::Clique clq(cc_clq, tour, perm, tour);
 
                             vector<int> cmr_nodes = clq.node_list(tour);
                             int *ar;
@@ -204,6 +207,7 @@ SCENARIO ("Generating cliques from Concorde cliques",
 
 SCENARIO ("Abstract testing of tiny printed cliques",
           "[.Clique][.Sep][tiny]") {
+    using namespace CMR;
     vector<int> test_sizes{10, 12, 14, 16};
 
     for (int sz : test_sizes) {
@@ -240,8 +244,8 @@ SCENARIO ("Abstract testing of tiny printed cliques",
                         cout << "nodelist: ";
                         for(int i : vec) cout << i << ", ";
                         cout << "\n";
-                        CMR::Sep::Clique clq  = CMR::Sep::Clique(vec, perm);
-                        const CMR::Segment seg = clq.seg_list().front();
+                        Sep::Clique clq  = Sep::Clique(vec, perm);
+                        const Segment seg = clq.seg_list().front();
                         cout << "Represented as: " << seg.start << ", "
                              << seg.end << "\n";
 
@@ -278,7 +282,7 @@ SCENARIO ("Abstract testing of tiny printed cliques",
                         cout << "nodelist: ";
                         for(int i : vp.first) cout << i << ", "; cout << "\n";
 
-                        CMR::Sep::Clique clq = CMR::Sep::Clique(vp.first, perm);
+                        Sep::Clique clq = Sep::Clique(vp.first, perm);
                         CHECK(clq.seg_count() == expect_sz);
 
                         vector<int> from_clq = clq.node_list(tour);

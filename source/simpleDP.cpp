@@ -27,10 +27,10 @@ namespace CMR {
  * @param[in] _dp_q the CutQueue where all found cuts will be stored.
  */
 Sep::SimpleDP::SimpleDP(Data::KarpPartition &_kpart,
-                        Data::BestGroup &best_dat,
+                        const LP::ActiveTour &active_tour,
                         Data::SupportGroup &supp_dat,
                         Sep::CutQueue<dominoparity> &_dp_q) try :
-  candidates(best_dat, supp_dat), kpart(_kpart), dp_q(_dp_q)
+  candidates(active_tour, supp_dat), kpart(_kpart), dp_q(_dp_q)
 {} catch (const exception &e) {
     cerr << e.what() << " constructing SimpleDP.\n";
     throw runtime_error("SimpleDP constructor failed.");

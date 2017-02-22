@@ -161,7 +161,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                 cout << "\tTour optimal for edge set...";
                 try {
                     if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full) {
-                        core_lp.factor_basis();
+                        core_lp.pivot_back(false);
                         continue;
                     } else
                         break;
@@ -171,13 +171,16 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
         }
 
         if (piv == PivType::Tour) {
-            report_aug(true);
+            if (core_lp.active_tourlen() < best_data.min_tour_value) {
+                try { core_lp.active_tour.best_update(best_data); }
+                CMR_CATCH_PRINT_THROW("pivot updating best data", err);
+
+                report_aug(true);
+            }
 
             if (do_price) {
-                try {
-                    edge_pricer->gen_edges(piv);
-                    core_lp.factor_basis();
-                } CMR_CATCH_PRINT_THROW("adding edges to core", err);
+                try { edge_pricer->gen_edges(piv); }
+                CMR_CATCH_PRINT_THROW("adding edges to core", err);
             }
 
             continue;
@@ -188,8 +191,11 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
             try {
                 if (frac_recover() == PivType::Tour) {
                     piv = PivType::Tour;
-                    report_aug(false);
 
+                    if (core_lp.active_tourlen() < best_data.min_tour_value) {
+                        core_lp.active_tour.best_update(best_data);
+                        report_aug(false);
+                    }
                     continue;
                 }
             } CMR_CATCH_PRINT_THROW("trying to recover from frac tour", err);
@@ -237,11 +243,8 @@ PivType Solver::abc(bool do_price)
     abct.start();
 
     try {
-        brancher = util::make_unique<ABC::Brancher>(core_lp,
-                                                    core_graph,
-                                                    tour_basis(),
-                                                    best_data.min_tour_value,
-                                                    ABC::ContraStrat::Fix);
+        util::ptr_reset(brancher, core_lp, core_graph, best_data,
+                        active_tour(), ABC::ContraStrat::Fix);
     } CMR_CATCH_PRINT_THROW("allocating/instantiating Brancher", err);
 
     if (cut_sel.safeGMI) {

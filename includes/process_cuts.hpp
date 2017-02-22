@@ -126,14 +126,14 @@ double get_activity(const std::vector<number_type> &x,
 
 /// Gets the indices of the teeth for an ex_blossom \p B relative to \p edges.
 std::vector<int> teeth_inds(const ex_blossom &B,
-                            const std::vector<int> &tour_edges,
+                            const std::vector<double> &tour_edges,
                             const std::vector<double> &lp_vec,
                             const std::vector<Graph::Edge> &edges,
                             int ncount);
 
 /// Like the other version, but if we already have handle_delta.
 std::vector<int> teeth_inds(const ex_blossom &B,
-                            const std::vector<int> &tour_edges,
+                            const std::vector<double> &tour_edges,
                             const std::vector<double> &lp_vec,
                             const std::vector<Graph::Edge> &edges,
                             int ncount, const std::vector<int> &handle_delta);
@@ -141,7 +141,7 @@ std::vector<int> teeth_inds(const ex_blossom &B,
 
 /// Returns true if the blossom is invalid for some reason.
 bool bad_blossom(const ex_blossom &B,
-                 const std::vector<int> &tour_edges,
+                 const std::vector<double> &tour_edges,
                  const std::vector<double> &lp_vec,
                  const std::vector<Graph::Edge> &edges, int ncount);
 

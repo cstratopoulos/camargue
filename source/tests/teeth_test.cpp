@@ -54,16 +54,16 @@ TEST_CASE("New tiny candidate teeth with no elim",
             std::vector<double> lp_edges;
 
             REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile, subtourfile,
-                                                     core_graph, b_dat, lp_edges,
-                                                     s_dat));
+                                                core_graph, b_dat, lp_edges,
+                                                s_dat));
             int ncount = s_dat.supp_graph.node_count;
 
             cout << "Best tour:\n";
             for (int i : b_dat.best_tour_nodes) cout << " " << i << ", ";
             cout << "\n";
 
-
-            Sep::CandidateTeeth cands(b_dat, s_dat);
+            LP::ActiveTour act_tour(core_graph, b_dat);
+            Sep::CandidateTeeth cands(act_tour, s_dat);
             REQUIRE_NOTHROW(cands.get_light_teeth());
 
             int numfound = 0;
@@ -102,8 +102,8 @@ TEST_CASE("New candidate teeth with elim",
                                                 core_graph, b_dat, lp_edges,
                                                 s_dat));
             int ncount = s_dat.supp_graph.node_count;
-
-            Sep::CandidateTeeth cands(b_dat, s_dat);
+            LP::ActiveTour act_tour(core_graph, b_dat);
+            Sep::CandidateTeeth cands(act_tour, s_dat);
 
             cout << "Did adj zones preprocessing.\n";
 
@@ -184,7 +184,8 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
                                                 s_dat));
             Graph::AdjList &G_s = s_dat.supp_graph;
             int max_deg = 0;
-            Sep::CandidateTeeth cands(b_dat, s_dat);
+            LP::ActiveTour act_tour(core_graph, b_dat);
+            Sep::CandidateTeeth cands(act_tour, s_dat);
             int ncount = core_graph.node_count();
 
             if (ncount <= 20) {

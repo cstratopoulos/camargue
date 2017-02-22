@@ -114,7 +114,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
     try {
         piv = core_lp.primal_pivot();
-        util::ptr_reset(sep, core_edges, best_data, supp_data, karp_part);
+        util::ptr_reset(sep, core_edges, active_tour(), supp_data, karp_part);
     } CMR_CATCH_PRINT_THROW("initializing pivot and separator", err);
 
     if (return_pivot(piv)) {
@@ -125,11 +125,9 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
     if (cut_sel.cutpool && !core_lp.external_cuts().get_cutpool().empty())
         try {
-            pool_sep = util::make_unique<Sep::PoolCuts>(core_lp.ext_cuts,
-                                                        core_graph.get_edges(),
-                                                        tour_basis()
-                                                        .best_tour_edges,
-                                                        core_lp.supp_data);
+            util::ptr_reset(pool_sep, core_lp.ext_cuts, core_graph.get_edges(),
+                            active_tour().edges(), core_lp.supp_data);
+
             if (call_separator([&pool_sep]() { return pool_sep->find_cuts(); },
                                pool_sep->pool_q(), piv, core_lp, tourlen,
                                prev_val, total_delta, delta_ratio)) {
@@ -140,7 +138,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                 if (!core_lp.supp_data.connected || delta_ratio > Eps::SepRound)
                     return cut_and_piv(round, do_price);
 
-                util::ptr_reset(sep, core_edges, best_data, supp_data,
+                util::ptr_reset(sep, core_edges, active_tour(), supp_data,
                                karp_part);
             }
         } CMR_CATCH_PRINT_THROW("calling pool sep", err);
@@ -160,7 +158,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
                 if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
                     return cut_and_piv(round, do_price);
-                util::ptr_reset(sep, core_edges, best_data, supp_data,
+                util::ptr_reset(sep, core_edges, active_tour(), supp_data,
                                karp_part);
             }
         } CMR_CATCH_PRINT_THROW("calling segment sep", err);
@@ -180,7 +178,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                 if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
                     return cut_and_piv(round, do_price);
 
-                util::ptr_reset(sep, core_edges, best_data, supp_data,
+                util::ptr_reset(sep, core_edges, active_tour(), supp_data,
                                karp_part);
             }
         } CMR_CATCH_PRINT_THROW("calling fast2m sep", err);
@@ -197,7 +195,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                 if (total_delta >= Eps::Zero)
                     return cut_and_piv(round, do_price);
 
-                util::ptr_reset(sep, core_edges, best_data, supp_data,
+                util::ptr_reset(sep, core_edges, active_tour(), supp_data,
                                karp_part);
             }
         } CMR_CATCH_PRINT_THROW("calling exact 2m sep", err);
@@ -215,7 +213,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                     !supp_data.connected)
                     return cut_and_piv(round,  do_price);
 
-                util::ptr_reset(sep, core_edges, best_data, supp_data,
+                util::ptr_reset(sep, core_edges, active_tour(), supp_data,
                                karp_part);
             }
         } CMR_CATCH_PRINT_THROW("calling blkcomb sep", err);
@@ -244,7 +242,8 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                                        tourlen, prev_val, total_delta,
                                        delta_ratio)) {
                         num_add += sep->connect_cuts_q().size();
-                        util::ptr_reset(sep, core_edges, best_data, supp_data,
+                        util::ptr_reset(sep, core_edges, active_tour(),
+                                        supp_data,
                                        karp_part);
 
                     } else {
@@ -279,9 +278,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
         if (!do_price) {
             try {
                 vector<double> lp_x = core_lp.lp_vec();
-                util::ptr_reset(gmi_sep, core_lp,
-                                core_lp.tour_base.best_tour_edges,
-                                lp_x);
+                util::ptr_reset(gmi_sep, core_lp, active_tour().edges(), lp_x);
 
                 if (call_separator([&gmi_sep]()
                                    { return gmi_sep->find_cuts(); },
@@ -309,6 +306,9 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
 PivType Solver::abc_dfs(int depth, bool do_price)
 {
+    throw runtime_error("abc_dfs temporarily unimplemented.");
+
+
     using Problem = ABC::Problem;
     using Ptype = Problem::Type;
     using ProbArray = std::array<Problem, 2>;
@@ -316,7 +316,7 @@ PivType Solver::abc_dfs(int depth, bool do_price)
     runtime_error err("Prolem in Solver::abc_dfs");
 
     PivType piv = PivType::Frac;
-
+/*
     if (depth > 0)
         try {
             piv = cutting_loop(do_price, false, false);
@@ -333,7 +333,7 @@ PivType Solver::abc_dfs(int depth, bool do_price)
 
     ProbArray branch_probs = brancher->next_level();
     const double &tourlen = best_data.min_tour_value;
-    const vector<double> &tour_vec = tour_basis().best_tour_edges;
+    const vector<double> &tour_vec = active_tour().edges();
 
 
     for (Problem &P : branch_probs) {
@@ -376,6 +376,7 @@ PivType Solver::abc_dfs(int depth, bool do_price)
             brancher->undo_branch(P);
         } CMR_CATCH_PRINT_THROW("undoing branch", err);
     }
+*/
 
     return piv;
 }
@@ -403,7 +404,7 @@ PivType Solver::frac_recover()
         throw err;
     }
 
-    if (val >= best_data.min_tour_value)
+    if (val >= core_lp.active_tourlen())
         return PivType::Frac;
 
     vector<Graph::Edge> new_edges;
@@ -420,18 +421,14 @@ PivType Solver::frac_recover()
     }
 
     if (!new_edges.empty()) {
-        //int orig_rowcount = core_lp.num_rows();
         try {
             if (cut_sel.safeGMI)
                 core_lp.purge_gmi();
             core_lp.add_edges(new_edges);
         } CMR_CATCH_PRINT_THROW("adding edges not in tour", err);
-        //int new_rowcount = core_lp.num_rows();
-        // cout << "\tRecover tour contains " << new_edges.size() << " new edges, "
-        //      << (orig_rowcount - new_rowcount) << " gmi cuts purged.\n";
     }
 
-    try { core_lp.set_best_tour(cyc); }
+    try { core_lp.set_active_tour(std::move(cyc)); }
     CMR_CATCH_PRINT_THROW("passing recover tour to core_lp", err);
 
     return LP::PivType::Tour;

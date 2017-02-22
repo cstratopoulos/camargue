@@ -37,9 +37,9 @@ SCENARIO ("Tiny primal exact blossom separation",
                                 "test_data/subtour_lp/blossom6.sub.x",
                                 core_graph, b_dat, lp_edges, s_dat);
             Sep::CutQueue<Sep::ex_blossom> blossom_q;
-
+            LP::ActiveTour act_tour(core_graph, b_dat);
             Sep::ExBlossoms ex_b(core_graph.get_edges(),
-                                 b_dat, s_dat,
+                                 act_tour, s_dat,
                                  blossom_q);
             REQUIRE(ex_b.find_cuts());
         }
@@ -78,9 +78,9 @@ SCENARIO ("Primal exact blossom separation",
 
                 THEN ("No blossoms are found") {
                     Sep::CutQueue<Sep::ex_blossom> blossom_q;
-
+                    LP::ActiveTour act_tour(core_graph, b_dat);
                     Sep::ExBlossoms ex_b(core_graph.get_edges(),
-                                         b_dat, s_dat,
+                                         act_tour, s_dat,
                                          blossom_q);
 
                     REQUIRE_FALSE(ex_b.find_cuts());
@@ -93,16 +93,16 @@ SCENARIO ("Primal exact blossom separation",
 
                 THEN ("ExBlossoms succeeds when FastBlossoms does") {
                     Sep::CutQueue<Sep::ex_blossom> blossom_q;
-
+                    LP::ActiveTour act_tour(core_graph, b_dat);
                     Sep::ExBlossoms ex_b(core_graph.get_edges(),
-                                         b_dat, s_dat,
+                                         act_tour, s_dat,
                                          blossom_q);
 
                     int found_ex = ex_b.find_cuts();
 
                     Data::KarpPartition kpart;
 
-                    Sep::Separator sep(core_graph.get_edges(), b_dat, s_dat,
+                    Sep::Separator sep(core_graph.get_edges(), act_tour, s_dat,
                                        kpart);
 
                     int found_fast = sep.fast2m_sep();

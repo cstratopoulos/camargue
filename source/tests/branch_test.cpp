@@ -96,23 +96,21 @@ SCENARIO ("Instating a Brancher and getting problems",
                     const Graph::CoreGraph &cgraph = solver.graph_info();
                     const vector<Graph::Edge> &edges = cgraph.get_edges();
 
-                    const LP::TourBasis &tbase = solver.tour_basis();
+                    const LP::ActiveTour &act_tour = solver.active_tour();
 
                     const double tourlen = solver.best_info().min_tour_value;
                     vector<double> frac_vec = rel.lp_vec();
 
-                    REQUIRE_NOTHROW(branch =
-                                    util::make_unique<ABC::Brancher>(rel,
-                                                                     cgraph,
-                                                                     tbase,
-                                                                     tourlen,
-                                                                     ABC::ContraStrat::Fix));
+                    REQUIRE_NOTHROW(util::ptr_reset(branch, rel, cgraph,
+                                                    solver.best_info(),
+                                                    act_tour,
+                                                    ABC::ContraStrat::Fix));
 
                     auto obj = branch->next_branch_obj();
                     int ind = obj.index;
                     cout << "\tIndex " << ind << " should be next branch.\n";
 
-                    double tour_entry = tbase.best_tour_edges[ind];
+                    double tour_entry = act_tour.edges()[ind];
                     double lp_entry = frac_vec[ind];
 
                     cout << "\tLP " << lp_entry << "\tTour " << tour_entry
@@ -173,9 +171,9 @@ SCENARIO ("Computing branching edges",
                     vector<double> x = rel.lp_vec();
                     vector<int> colstat = rel.col_stat();
 
-                    vector<double> tour_edges = solver.tour_basis()
-                    .best_tour_edges;
-                    double tourval = solver.best_info().min_tour_value;
+                    const LP::ActiveTour &act_tour = solver.active_tour();
+                    vector<double> tour_edges = act_tour.edges();
+                    double tourval = solver.active_tour().length();
 
                     vector<int> lw_inds;
 
@@ -199,7 +197,7 @@ SCENARIO ("Computing branching edges",
                     // }
                     // cout << "\n";
 
-                    const LP::Basis &tbase = solver.tour_basis().base;
+                    const LP::Basis &tbase = act_tour.base();
                     const vector<int> &tourcol = tbase.colstat;
                     const vector<int> &tourrow = tbase.rowstat;
                     vector<LP::Basis> cbases;
@@ -269,8 +267,9 @@ SCENARIO ("Computing branching edges",
                     const Graph::CoreGraph &coregraph = solver.graph_info();
 
                     ABC::Brancher brancher(rel, coregraph,
-                                           solver.tour_basis(),
-                                           tourval, ABC::ContraStrat::Fix);
+                                           solver.best_info(),
+                                           solver.active_tour(),
+                                           ABC::ContraStrat::Fix);
 
                     using Estats = ABC::Brancher::EdgeStats;
                     auto &bstats =

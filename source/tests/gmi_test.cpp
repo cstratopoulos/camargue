@@ -68,7 +68,7 @@ SCENARIO ("Generating safe Gomory cuts",
 
                     const vector<double> x = core.lp_vec();
                     const vector<double> tour =
-                    solver.tour_basis().best_tour_edges;
+                    solver.active_tour().edges();
 
                     unique_ptr<Sep::SafeGomory> gmi;
 

@@ -32,7 +32,7 @@ class TourGraph {
 public:
     TourGraph() noexcept;
 
-    TourGraph(const std::vector<int> &tour_edges,
+    TourGraph(const std::vector<double> &tour_edges,
               const std::vector<Graph::Edge> &edges,
               const std::vector<int> &perm);
 

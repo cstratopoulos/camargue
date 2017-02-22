@@ -21,7 +21,7 @@ DPwitness::DPwitness(CandidateTeeth &cands,
                      const vector<int> &partition_nodes)
 try :
 light_teeth(vector<vector<SimpleTooth>>(cands.light_teeth.size())),
-supp_dat(cands.supp_dat), perm(cands.best_dat.perm), CC_gh_q(1000)
+supp_dat(cands.supp_dat), perm(cands.active_tour.tour_perm()), CC_gh_q(1000)
 {
     CCcut_GHtreeinit(&gh_tree);
 

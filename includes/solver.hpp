@@ -57,7 +57,7 @@ public:
 
     const Data::BestGroup &best_info() const{ return best_data; }
 
-    const LP::TourBasis &tour_basis() const { return core_lp.tour_base; }
+    const LP::ActiveTour &active_tour() const { return core_lp.active_tour; }
 
     const LP::CoreLP &get_core_lp() const { return core_lp; }
 

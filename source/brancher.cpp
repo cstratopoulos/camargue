@@ -32,10 +32,12 @@ using Strat = ContraStrat;
 
 Brancher::Brancher(LP::Relaxation &lp_rel,
                    const Graph::CoreGraph &coregraph,
-                   const LP::TourBasis &tbase,
-                   const double &tourlen, const ContraStrat strat) try
-    : lp_relax(lp_rel), core_graph(coregraph), tour_base(tbase),
-      tour_len(tourlen),
+                   const Data::BestGroup &bestdata,
+                   const LP::ActiveTour &activetour,
+                   const ContraStrat strat) try
+    : lp_relax(lp_rel),
+      core_graph(coregraph), best_data(bestdata),
+      active_tour(activetour),
       contra_strategy(strat),
       contra_enforce(enforcer(strat)), contra_undo(undoer(strat))
 {} catch (const exception &e) {
@@ -53,7 +55,7 @@ std::array<Problem, 2> Brancher::next_level()
     CMR_CATCH_PRINT_THROW("getting branching structure", err);
 
     int index = next_obj.index;
-    double tour_entry = tour_base.best_tour_edges[index];
+    double tour_entry = best_data.best_tour_edges[index];
 
     if (tour_entry == 0) {
         return std::array<Problem, 2>{Problem(index, next_obj.down_est),
@@ -83,10 +85,11 @@ ScoreTuple Brancher::next_branch_obj()
     vector<ScorePair> downobj;
     vector<ScorePair> upobj;
     vector<LP::Basis> cbases;
+    double tour_len = best_data.min_tour_value;
 
-    lp_relax.primal_strong_branch(tour_base.best_tour_edges,
-                                  tour_base.base.colstat,
-                                  tour_base.base.rowstat,
+    lp_relax.primal_strong_branch(active_tour.edges(),
+                                  active_tour.base().colstat,
+                                  active_tour.base().rowstat,
                                   sb1inds, downobj, upobj, cbases,
                                   SB1Lim, tour_len);
 
@@ -100,9 +103,9 @@ ScoreTuple Brancher::next_branch_obj()
         sb2bases.emplace_back(std::move(t.contra_base));
     }
 
-    lp_relax.primal_strong_branch(tour_base.best_tour_edges,
-                                  tour_base.base.colstat,
-                                  tour_base.base.rowstat,
+    lp_relax.primal_strong_branch(active_tour.edges(),
+                                  active_tour.base().colstat,
+                                  active_tour.base().rowstat,
                                   sb2inds, downobj, upobj, sb2bases,
                                   SB2Lim, tour_len);
 
@@ -111,7 +114,7 @@ ScoreTuple Brancher::next_branch_obj()
                                                StrongMult, tour_len, 1)[0]);
 
     cout << "\n\tWinner edge " << winner.index << ", tour entry "
-         << tour_base.best_tour_edges[winner.index] << "\n";
+         << best_data.best_tour_edges[winner.index] << "\n";
     cout << "\t\tDown priority " << winner.down_est.first << ", estimate "
          << winner.down_est.second << "\n"
          << "\t\tUp winner priority " << winner.up_est.first << ", estimate "
@@ -250,7 +253,7 @@ void Brancher::do_branch(Problem &prob)
     runtime_error err("Problem in Brancher::do_branch");
 
     int ind = prob.edge_ind;
-    double tour_entry = tour_base.best_tour_edges[ind];
+    double tour_entry = best_data.best_tour_edges[ind];
     Ptype ptype = prob.type;
 
     const vector<Graph::Edge> &core_edges = core_graph.get_edges();
@@ -287,7 +290,7 @@ void Brancher::undo_branch(Problem &prob)
     cout << "\tUndoing " << prob << ", ";
 
     int ind = prob.edge_ind;
-    double tour_entry = tour_base.best_tour_edges[ind];
+    double tour_entry = best_data.best_tour_edges[ind];
     Ptype ptype = prob.type;
 
     if (ptype == Ptype::Affirm) {

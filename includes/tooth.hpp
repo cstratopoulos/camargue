@@ -2,6 +2,7 @@
 #define CMR_TOOTH_HPP
 
 #include "graph.hpp"
+#include "active_tour.hpp"
 #include "datagroups.hpp"
 #include "cut_structs.hpp"
 #include "util.hpp"
@@ -21,7 +22,7 @@ enum class ListStat {None, Merge, Full};
 
 class CandidateTeeth {
 public:
-    CandidateTeeth(Data::BestGroup &_best_dat,
+    CandidateTeeth(const LP::ActiveTour &active_tour_,
                    Data::SupportGroup &_supp_dat);
 
     void get_light_teeth();
@@ -77,8 +78,8 @@ private:
                      &_ranges,
                      std::vector<std::array<int, 3>> &_list_sizes,
                      std::vector<bool> &_node_marks,
-                     std::vector<int> &_tour_nodes,
-                     std::vector<int> &_perm,
+                     const std::vector<int> &_tour_nodes,
+                     const std::vector<int> &_perm,
                      const Graph::AdjList &_G_s) :
             light_teeth(_light_teeth),
             adj_zones(_adj_zones), ranges(_ranges), list_sizes(_list_sizes),
@@ -94,8 +95,8 @@ private:
         std::vector<std::array<int, 3>> &list_sizes;
 
         std::vector<bool> &node_marks;
-        std::vector<int> &tour_nodes;
-        std::vector<int> &perm;
+        const std::vector<int> &tour_nodes;
+        const std::vector<int> &perm;
 
         const Graph::AdjList &G_s;
 
@@ -104,7 +105,7 @@ private:
         std::unordered_map<int, double> rb_sums;
     };
 
-    Data::BestGroup &best_dat;
+    const LP::ActiveTour &active_tour;
     Data::SupportGroup &supp_dat;
 
     CMR::Timer t_all;

@@ -8,6 +8,7 @@
 #define CMR_CORE_LP_H
 
 #include "lp_interface.hpp"
+#include "active_tour.hpp"
 #include "cc_lpcuts.hpp"
 #include "process_cuts.hpp"
 #include "datagroups.hpp"
@@ -24,18 +25,6 @@ class Solver;
 
 namespace LP {
 
-struct TourBasis {
-    TourBasis() = default;
-
-    /// Construct a starting basis using the Padberg-Hong approach.
-    TourBasis(const Graph::CoreGraph &graph,
-              const Data::BestGroup &best_data);
-
-    std::vector<double> best_tour_edges;
-
-    Basis base;
-};
-
 
 /** Class for storing the core lp associated to a TSP instance and pivoting.
  * This class contains the edges and constraints currently under consideration
@@ -44,12 +33,12 @@ struct TourBasis {
 class CoreLP : public Relaxation {
 public:
     CoreLP(Graph::CoreGraph &core_graph_,
-           Data::BestGroup &best_data_);
+           Data::BestGroup &best_data);
 
-    /// Compute a primal non-degenerate pivot from the current tour.
+    /// Compute a primal non-degenerate pivot from the active_tour.
     LP::PivType primal_pivot();
 
-    void pivot_back(bool prune_slacks); //!< Pivot back to the current tour.
+    void pivot_back(bool prune_slacks); //!< Pivot back to active_tour.
 
     void add_cuts(Sep::LPcutList &cutq);
     void add_cuts(Sep::CutQueue<Sep::dominoparity> &dp_q);
@@ -66,20 +55,19 @@ public:
 
     const LP::CutMonitor &cut_monitor() const { return cut_mon; }
 
+    const LP::ActiveTour &get_active_tour() const { return active_tour; }
+
     /// Average number of iterations per primal_pivot.
     int avg_itcount() const { return sum_it_count / num_nd_pivots; }
 
-    double best_tourlen() const { return best_data.min_tour_value; }
+    double active_tourlen() const { return active_tour.length(); }
+
 
     friend class CMR::Solver;
 
 private:
-    void handle_aug_pivot(const std::vector<int> &tour_nodes);
-    void set_best_tour(const std::vector<int> &tour_nodes);
-
-    //// TODO make this a bestgroup method that takes tour nodes, edges,
-    /// and coregraph edges
-    void update_best_data();
+    void handle_aug_pivot(std::vector<int> tour_nodes, Basis aug_base);
+    void set_active_tour(std::vector<int> tour_nodes);
 
     void prune_slacks();
 
@@ -88,14 +76,13 @@ private:
     void purge_gmi();
 
     Graph::CoreGraph &core_graph;
-    Data::BestGroup &best_data;
     Data::SupportGroup supp_data;
 
     Sep::ExternalCuts ext_cuts;
 
     LP::CutMonitor cut_mon;
 
-    TourBasis tour_base;
+    ActiveTour active_tour;
 
     std::vector<double> lp_edges;
     std::vector<double> pi_vals;

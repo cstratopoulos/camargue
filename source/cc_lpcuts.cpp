@@ -19,9 +19,10 @@ namespace Sep {
 
 TourGraph::TourGraph() noexcept { CCtsp_init_lpgraph_struct(&L); }
 
-TourGraph::TourGraph(const vector<int> &tour_edges,
-		     const vector<Graph::Edge> &edges, const vector<int> &perm)
-try
+TourGraph::TourGraph(const vector<double> &tour_edges,
+		     const vector<Graph::Edge> &edges,
+                     const vector<int> &perm) try
+    : d_tour(tour_edges)
 {
     vector<int> elist;
     int ncount = perm.size();
@@ -31,9 +32,6 @@ try
         elist.push_back(perm[e.end[0]]);
         elist.push_back(perm[e.end[1]]);
     }
-
-  for (int i : tour_edges)
-      d_tour.push_back(i);
 
   CCtsp_init_lpgraph_struct(&L);
 

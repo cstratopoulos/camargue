@@ -42,14 +42,15 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
                                                         b_dat, lp_edges,
                                                         s_dat));
 
-
-                    Sep::TourGraph TG(b_dat.best_tour_edges,
-                                        core_graph.get_edges(),
-                                        b_dat.perm);
+                    vector<double> d_tour_edges(b_dat.best_tour_edges.begin(),
+                                                b_dat.best_tour_edges.end());
+                    Sep::TourGraph TG(d_tour_edges,
+                                      core_graph.get_edges(),
+                                      b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
                     Sep::FastBlossoms fb_sep(s_dat.support_elist,
-                                                  s_dat.support_ecap, TG, cutq);
+                                             s_dat.support_ecap, TG, cutq);
                     REQUIRE(fb_sep.find_cuts());
 
                     vector<int> &perm = b_dat.perm;
@@ -70,9 +71,11 @@ SCENARIO("Primal blossom separation by fast standard heuristics",
                                                         blossomfile,
                                                         core_graph, b_dat,
                                                         lp_edges, s_dat));
+                    vector<double> d_tour_edges(b_dat.best_tour_edges.begin(),
+                                                b_dat.best_tour_edges.end());
 
-                    Sep::TourGraph TG(b_dat.best_tour_edges,
-                                             core_graph.get_edges(), b_dat.perm);
+                    Sep::TourGraph TG(d_tour_edges,
+                                      core_graph.get_edges(), b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
                     Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
@@ -108,9 +111,11 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
                                                         subtourfile, core_graph,
                                                         b_dat, lp_edges,
                                                         s_dat));
+                    vector<double> d_tour_edges(b_dat.best_tour_edges.begin(),
+                                                b_dat.best_tour_edges.end());
 
-                    Sep::TourGraph TG(b_dat.best_tour_edges,core_graph.get_edges(),
-                                             b_dat.perm);
+                    Sep::TourGraph TG(d_tour_edges, core_graph.get_edges(),
+                                      b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
                     Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
@@ -138,8 +143,11 @@ SCENARIO("Primal heuristic fast blossom sep in tiny instances",
                                                         b_dat, lp_edges,
                                                         s_dat));
 
-                    Sep::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
-                                             b_dat.perm);
+                    vector<double> d_tour_edges(b_dat.best_tour_edges.begin(),
+                                                b_dat.best_tour_edges.end());
+
+                    Sep::TourGraph TG(d_tour_edges, core_graph.get_edges(),
+                                      b_dat.perm);
                     for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
                     Sep::FastBlossoms fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);

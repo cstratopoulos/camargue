@@ -58,13 +58,13 @@ static void tlist_sort(ToothList &T)
 vector<vector<int>> CandidateTeeth::adj_zones;
 vector<IteratorMat> CandidateTeeth::seen_ranges;
 
-CandidateTeeth::CandidateTeeth(Data::BestGroup &_best_dat,
+CandidateTeeth::CandidateTeeth(const LP::ActiveTour &active_tour_,
 			       Data::SupportGroup &_supp_dat) :
     light_teeth(std::vector<ToothList>(_supp_dat.supp_graph.node_count)),
     list_sizes(_supp_dat.supp_graph.node_count, {{0, 0, 0}}),
     stats(_supp_dat.supp_graph.node_count, ListStat::None),
     endmark(_supp_dat.supp_graph.node_count, CC_LINSUB_BOTH_END),
-    best_dat(_best_dat),
+    active_tour(active_tour_),
     supp_dat(_supp_dat),
     t_all("Candidate Teeth"),
     t_zones("Adj zones", &t_all),
@@ -75,8 +75,8 @@ CandidateTeeth::CandidateTeeth(Data::BestGroup &_best_dat,
     t_zones.start();
     Graph::AdjList &G_s = supp_dat.supp_graph;
     int ncount = G_s.node_count;
-    vector<int> &perm = best_dat.perm;
-    vector<int> &tour = best_dat.best_tour_nodes;
+    const vector<int> &perm = active_tour.tour_perm();
+    const vector<int> &tour = active_tour.nodes();
 
     seen_ranges.resize(ncount);
     adj_zones.resize(ncount);
@@ -125,6 +125,9 @@ void CandidateTeeth::get_light_teeth()
     Graph::AdjList &supp_graph = supp_dat.supp_graph;
     vector<bool> node_marks(supp_graph.node_count, false);
 
+    const vector<int> &tour_nodes = active_tour.nodes();
+    const vector<int> &perm = active_tour.tour_perm();
+
 
     try {
         cb_data =
@@ -132,12 +135,12 @@ void CandidateTeeth::get_light_teeth()
                                         adj_zones, seen_ranges,
                                         list_sizes,
                                         node_marks,
-                                        best_dat.best_tour_nodes,
-                                        best_dat.perm, supp_graph);
+                                        tour_nodes, perm,
+                                        supp_graph);
     } CMR_CATCH_PRINT_THROW("allocating LinsubCBData.", err);
 
     if (CCcut_linsub_allcuts(supp_graph.node_count, supp_graph.edge_count,
-                             &best_dat.best_tour_nodes[0], &endmark[0],
+                             const_cast<int *>(&tour_nodes[0]), &endmark[0],
                              &supp_dat.support_elist[0],
                              &supp_dat.support_ecap[0],
                              3.0 - Epsilon::Cut,
@@ -240,8 +243,8 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
         return 0;
 
     vector<bool> &marks = arg->node_marks;
-    vector<int> &tour = arg->tour_nodes;
-    vector<int> &perm = arg->perm;
+    const vector<int> &tour = arg->tour_nodes;
+    const vector<int> &perm = arg->perm;
 
     const Graph::AdjList &G = arg->G_s;
     int ncount = G.node_count;
@@ -362,7 +365,7 @@ string CandidateTeeth::print_label(const SimpleTooth &T)
 
 void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full)
 {
-    print_tooth(T, full, best_dat.best_tour_nodes);
+    print_tooth(T, full, active_tour.nodes());
 }
 
 void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full,

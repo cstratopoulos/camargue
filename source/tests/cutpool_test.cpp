@@ -49,8 +49,8 @@ SCENARIO ("Experimenting with CutMonitor metrics",
         LP::CoreLP &core =
         const_cast<LP::CoreLP &>(solver.get_core_lp());
 
-        Sep::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
-                            b_dat.perm);
+        Sep::TourGraph TG(solver.active_tour().edges(), core_graph.get_edges(),
+                          b_dat.perm);
         int ncount = core_graph.node_count();
 
         WHEN ("We pivot and add duplicate cuts") {
@@ -181,8 +181,6 @@ SCENARIO ("Pricing cuts from a cutpool",
                 Graph::CoreGraph &G =
                 const_cast<Graph::CoreGraph &>(solver.graph_info());
 
-                const LP::TourBasis &tbase = solver.tour_basis();
-
                 LP::CoreLP &core =
                 const_cast<LP::CoreLP &>(solver.get_core_lp());
 
@@ -218,18 +216,8 @@ SCENARIO ("Pricing cuts from a cutpool",
                 vector<int> island;
 
                 Data::SupportGroup s_dat(edges, lp_vec, island, G.node_count());
-                Sep::PoolCuts pool_sep(EC, edges, tbase.best_tour_edges, s_dat);
-                bool found_dis = false;
-
-                for (int i = 0; i < tbase.best_tour_edges.size(); ++i)
-                    if (fabs(tbase.best_tour_edges[i] -
-                             solver.best_info().best_tour_edges[i]) >= 0.00001)
-                    {
-                        found_dis = true;
-                        break;
-                    }
-
-                REQUIRE_FALSE(found_dis);
+                Sep::PoolCuts pool_sep(EC, edges, solver.active_tour().edges(),
+                                       s_dat);
 
                 bool found_pool = false;
                 double pt = util::zeit();
@@ -257,8 +245,8 @@ SCENARIO ("Pricing cuts from a cutpool",
                     H.get_coeffs(edges, R.rmatind, R.rmatval);
 
                     double lp_activity = Sep::get_activity(s_dat.lp_vec, R);
-                    double tour_activity = Sep::get_activity(tbase.
-                                                             best_tour_edges,
+                    double tour_activity = Sep::get_activity(solver.best_info()
+                                                             .best_tour_edges,
                                                              R);
                     double manual_lp_slack;
                     double manual_tour_slack;

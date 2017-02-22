@@ -115,7 +115,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
     double penalty = 0.0;
 
-    double upper_bound = core_lp.best_tourlen();
+    double upper_bound = core_lp.active_tourlen();
     //double lower_bound = core_lp.get_objval();
 
     vector<d_PrEdge> price_elist;

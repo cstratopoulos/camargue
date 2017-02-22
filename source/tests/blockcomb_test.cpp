@@ -42,9 +42,10 @@ SCENARIO("Primal comb separation by standard block comb heuristics",
                                               subtourfile, core_graph, b_dat,
                                               lp_edges, s_dat));
 
-
-	  Sep::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
-			     b_dat.perm);
+          vector<double> d_tour_edges(b_dat.best_tour_edges.begin(),
+                                      b_dat.best_tour_edges.end());
+	  Sep::TourGraph TG(d_tour_edges, core_graph.get_edges(),
+                            b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
 	  Sep::BlockCombs bc_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
@@ -76,10 +77,14 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
       WHEN("The tour is good") {
 	THEN("Primal block combs are found") {
 	  REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile,
-						  subtourfile, core_graph, b_dat,
-						  lp_edges, s_dat));
+                                              subtourfile, core_graph,
+                                              b_dat,
+                                              lp_edges, s_dat));
 
-	  Sep::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
+          vector<double> d_tour_edges(b_dat.best_tour_edges.begin(),
+                                      b_dat.best_tour_edges.end());
+
+	  Sep::TourGraph TG(d_tour_edges, core_graph.get_edges(),
 			     b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
@@ -95,11 +100,15 @@ SCENARIO("Primal heuristic block comb sep in tiny instances",
 						   core_graph, b_dat, lp_edges,
 						   s_dat));
 
-	  Sep::TourGraph TG(b_dat.best_tour_edges, core_graph.get_edges(),
+          vector<double> d_tour_edges(b_dat.best_tour_edges.begin(),
+                                      b_dat.best_tour_edges.end());
+
+	  Sep::TourGraph TG(d_tour_edges, core_graph.get_edges(),
 			    b_dat.perm);
 	  for (int &i : s_dat.support_elist) i = b_dat.perm[i];
 
-	  Sep::BlockCombs fb_sep(s_dat.support_elist, s_dat.support_ecap, TG, cutq);
+	  Sep::BlockCombs fb_sep(s_dat.support_elist, s_dat.support_ecap, TG,
+                                 cutq);
 
 	  REQUIRE_FALSE(fb_sep.find_cuts());
 	}

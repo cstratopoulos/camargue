@@ -4,6 +4,7 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include "active_tour.hpp"
 #include "witness.hpp"
 #include "tooth.hpp"
 #include "datagroups.hpp"
@@ -20,7 +21,7 @@ class SimpleDP {
 public:
     /// Construct a separator to separate over partitioned DPwitness graphs.
     SimpleDP(Data::KarpPartition &_kpart,
-             Data::BestGroup &best_dat,
+             const LP::ActiveTour &active_tour,
              Data::SupportGroup &supp_dat,
              Sep::CutQueue<dominoparity> &_dp_q);
 

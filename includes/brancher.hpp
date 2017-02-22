@@ -8,6 +8,7 @@
 #ifndef CMR_BRANCHER_H
 #define CMR_BRANCHER_H
 
+#include "active_tour.hpp"
 #include "datagroups.hpp"
 #include "core_lp.hpp"
 #include "graph.hpp"
@@ -25,8 +26,10 @@ namespace ABC {
 /// Generation and dispensing of branching subproblems.
 class Brancher {
 public:
-    Brancher(LP::Relaxation &lp_rel, const Graph::CoreGraph &coregraph,
-             const LP::TourBasis &tbase, const double &tourlen,
+    Brancher(LP::Relaxation &lp_rel,
+             const Graph::CoreGraph &coregraph,
+             const Data::BestGroup &bestdata,
+             const LP::ActiveTour &activetour,
              ContraStrat strat);
 
     std::array<Problem, 2> next_level(); //!< Go a level deeper in search tree.
@@ -48,8 +51,8 @@ public:
 private:
     LP::Relaxation &lp_relax;
     const Graph::CoreGraph &core_graph;
-    const LP::TourBasis &tour_base;
-    const double &tour_len;
+    const Data::BestGroup &best_data;
+    const LP::ActiveTour &active_tour;
 
     const ContraStrat contra_strategy;
     const std::function<void(LP::Relaxation&, int, double)> contra_enforce;

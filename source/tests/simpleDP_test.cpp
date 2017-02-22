@@ -63,8 +63,8 @@ SCENARIO("Separating simple DP inequalities in small instances",
 
                 REQUIRE_NOTHROW(kpart = Data::KarpPartition(inst));
                 Sep::CutQueue<Sep::dominoparity> dp_q(100);
-
-                Sep::SimpleDP sDP(kpart, b_dat, s_dat, dp_q);
+                LP::ActiveTour act_tour(core_graph, b_dat);
+                Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
 
                 REQUIRE(sDP.find_cuts());
                 cout << "Cut queue now has size: " << dp_q.size() << "\n";
@@ -145,8 +145,8 @@ SCENARIO("Separating simple DP inequalities in medium instances",
 
                 REQUIRE_NOTHROW(kpart = Data::KarpPartition(inst));
                 Sep::CutQueue<Sep::dominoparity> dp_q(1000);
-
-                Sep::SimpleDP sDP(kpart, b_dat, s_dat, dp_q);
+                LP::ActiveTour act_tour(core_graph, b_dat);
+                Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
 
                 REQUIRE(sDP.find_cuts());
                 cout << "Cut queue now has size: " << dp_q.size() << "\n";
@@ -233,8 +233,8 @@ SCENARIO("Separating simple DP inequalities in large instances",
 
                 REQUIRE_NOTHROW(kpart = Data::KarpPartition(inst));
                 Sep::CutQueue<Sep::dominoparity> dp_q(1000);
-
-                Sep::SimpleDP sDP(kpart, b_dat, s_dat, dp_q);
+                LP::ActiveTour act_tour(core_graph, b_dat);
+                Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
 
                 REQUIRE(sDP.find_cuts());
                 cout << "Cut queue now has size: " << dp_q.size() << "\n";

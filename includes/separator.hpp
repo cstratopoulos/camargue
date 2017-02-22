@@ -1,6 +1,7 @@
 #ifndef CMR_CUTCONTROL_H
 #define CMR_CUTCONTROL_H
 
+#include "active_tour.hpp"
 #include "process_cuts.hpp"
 #include "datagroups.hpp"
 #include "karp.hpp"
@@ -24,7 +25,7 @@ public:
 
     /// Construct a Separator using problem data.
     Separator(const std::vector<Graph::Edge> &core_edges_,
-              Data::BestGroup &bestdata,
+              const LP::ActiveTour &active_tour_,
               Data::SupportGroup &suppdata,
               Data::KarpPartition &kpart);
 
@@ -47,8 +48,10 @@ public:
     LPcutList &connect_cuts_q()  { return connect_q; }
 
 private:
+    void set_TG(); //!< Construct the TourGraph TG.
+
     const std::vector<Graph::Edge> &core_edges;
-    Data::BestGroup &best_data;
+    const LP::ActiveTour &active_tour;
     Data::SupportGroup &supp_data;
     Data::KarpPartition &karp_part;
 

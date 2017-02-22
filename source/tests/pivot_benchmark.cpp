@@ -36,8 +36,8 @@ using Triple = std::array<T, 3>;
 static void core_nd(CMR::LP::CoreLP &core) { core.primal_pivot(); }
 static void core_itlim(CMR::LP::CoreLP &core)
 {
-    double objval = core.best_tourlen();
-    while (objval >= core.best_tourlen()) {
+    double objval = core.active_tourlen();
+    while (objval >= core.active_tourlen()) {
         core.one_primal_pivot();
         objval = core.get_objval();
     }
@@ -121,7 +121,7 @@ SCENARIO ("Comparing pivot protocols with round of cuts",
                     Data::KarpPartition kpart;
 
                     Sep::Separator sep(core_graph.get_edges(),
-                                       b_dat, s_dat, kpart);
+                                       core.get_active_tour(), s_dat, kpart);
 
                     core.pivot_back(false);
 

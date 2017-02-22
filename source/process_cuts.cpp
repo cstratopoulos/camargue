@@ -232,7 +232,7 @@ SparseRow get_row(const vector<int> &handle_delta,
  * returns \f[ e \cup \delta(H)\cap E^1 \f] if \f$ e \in E^0 \f$, and
  * \f[ \delta(H)\cap E^1 \setminus e \f] if \f$ e \in E^1 \f$.
  */
-vector<int> teeth_inds(const ex_blossom &B, const vector<int> &tour_edges,
+vector<int> teeth_inds(const ex_blossom &B, const vector<double> &tour_edges,
                        const vector<double> &lp_vec,
                        const vector<Graph::Edge> &edges, int ncount,
                        const vector<int> &handle_delta)
@@ -249,7 +249,7 @@ vector<int> teeth_inds(const ex_blossom &B, const vector<int> &tour_edges,
                                 [&lp_vec, &tour_edges](int ind)
                                 {
                                     return (lp_vec[ind] < Eps::Zero ||
-                                            tour_edges[ind] == 0);
+                                            tour_edges[ind] < Eps::Zero);
                                 }),
                  result.end());
 
@@ -257,12 +257,12 @@ vector<int> teeth_inds(const ex_blossom &B, const vector<int> &tour_edges,
 
     int cut_ind = B.cut_edge;
     auto it = std::find(result.begin(), result.end(), cut_ind);
-    int tour_entry = tour_edges[cut_ind];
+    double tour_entry = tour_edges[cut_ind];
 
-    if (tour_entry == 0) { // then we add the cut edge
+    if (tour_entry < Eps::Zero) { // then we add the cut edge
         if (it == result.end())
             result.push_back(cut_ind);
-    } else if (tour_entry == 1) { // then we remove it
+    } else if (tour_entry > 1 - Eps::Zero) { // then we remove it
         if (it != result.end())
             result.erase(it);
     } else
@@ -273,7 +273,7 @@ vector<int> teeth_inds(const ex_blossom &B, const vector<int> &tour_edges,
 
 
 /// As above, but without precomputed handle_
-vector<int> teeth_inds(const ex_blossom &B, const vector<int> &tour_edges,
+vector<int> teeth_inds(const ex_blossom &B, const vector<double> &tour_edges,
                        const vector<double> &lp_vec,
                        const vector<Graph::Edge> &edges, int ncount)
 {
@@ -289,7 +289,7 @@ vector<int> teeth_inds(const ex_blossom &B, const vector<int> &tour_edges,
  * or too big, if there are an even number of teeth returned by teeth_inds,
  * or if the teeth intersect.
  */
-bool bad_blossom(const ex_blossom &B, const vector<int> &tour_edges,
+bool bad_blossom(const ex_blossom &B, const vector<double> &tour_edges,
                  const vector<double> &lp_vec,
                  const vector<Graph::Edge> &edges, int ncount)
 {

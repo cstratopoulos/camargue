@@ -118,7 +118,8 @@ SCENARIO ("Comparing HyperGraph edge coeffs to comb/domino sparse rows",
 
 
             kpart = Data::KarpPartition(inst);
-            Sep::Separator sep(core_graph.get_edges(), b_dat, s_dat, kpart);
+            LP::ActiveTour act_tour(core_graph, b_dat);
+            Sep::Separator sep(core_graph.get_edges(), act_tour, s_dat, kpart);
 
 
             Sep::CliqueBank cbank(b_dat.best_tour_nodes,

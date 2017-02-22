@@ -51,7 +51,8 @@ SCENARIO ("Pivoting and adding cuts",
                                              inst.node_count());
 
                     Sep::Separator control(core_graph.get_edges(),
-                                           b_dat, s_dat, kpart);
+                                           core.get_active_tour(), s_dat,
+                                           kpart);
 
                     bool fast2m = control.fast2m_sep();
                     bool blkcomb = control.blkcomb_sep();

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <utility>
 #include <stdexcept>
+#include <string>
 
 #include <cmath>
 
@@ -139,6 +140,14 @@ ActiveTour::ActiveTour(vector<int> tour_nodes_, vector<double> lp_edges,
     throw runtime_error("ActiveTour augmenting pivot constructor failed.");
 }
 
+/**
+ * Construct an ActiveTour from scratch, using pure combinatorial data, and
+ * then instate it in an LP::Relxation.
+ * @param tour_nodes_ the sequence of nodes defining the tour.
+ * @param relax the LP::Relaxation in which to instate the tour.
+ * @param graph the CoreGraph describing the edge set of \p relax.
+ * @remark \p tour_nodes_ is moved from.
+ */
 ActiveTour::ActiveTour(std::vector<int> tour_nodes_,
                        LP::Relaxation &relax,
                        const Graph::CoreGraph &graph) try
@@ -205,9 +214,16 @@ ActiveTour &ActiveTour::operator=(ActiveTour &&T) noexcept
     return *this;
 }
 
+/**
+ * Instate this ActiveTour in \p relax by constructing a new basis for it and
+ * setting said basis (along with this tour) as the starting solution.
+ */
 void ActiveTour::reset_instate(Relaxation &relax)
 {
     runtime_error err("Problem in ActiveTour::reset_instate");
+
+    if (relax.num_cols() > tour_edges.size())
+        tour_edges.resize(relax.num_cols(), 0.0);
 
     try {
         relax.copy_start(tour_edges);
@@ -225,6 +241,12 @@ void ActiveTour::reset_instate(Relaxation &relax)
     CMR_CATCH_PRINT_THROW("getting the basis", err);
 }
 
+/**
+ * This function will try to instate this tour in \p relax, first by copying
+ * the tour edges and basic statuses, and then by generating a new basis
+ * if that fails.
+ * @post the tour is instated.
+ */
 void ActiveTour::instate(Relaxation &relax)
 {
     runtime_error err("Problem in ActiveTour::instate");
@@ -240,6 +262,40 @@ void ActiveTour::instate(Relaxation &relax)
 
     try { reset_instate(relax); }
     CMR_CATCH_PRINT_THROW("doing reset after full copy_start failed", err);
+}
+
+/**
+ * This method will update the BestGroup \p best_data with the stored
+ * information in this ActiveTour. This method will verify that the tour
+ * is indeed an improvement on the one currently in \p best_data, throwing
+ * an exception if it is worse or if the edge vector is generated incorrectly.
+ */
+void ActiveTour::best_update(Data::BestGroup &best_data) const
+{
+    if (tour_len > best_data.min_tour_value)
+        throw runtime_error("Tried AciveTour::best_update with worse tour!!");
+
+    runtime_error err("Problem in ActiveTour::best_update");
+
+    best_data.min_tour_value = tour_len;
+    try {
+        best_data.best_tour_nodes = tour_nodes;
+        best_data.perm = perm;
+
+        best_data.best_tour_edges = vector<int>(tour_edges.begin(),
+                                                tour_edges.end());
+    } CMR_CATCH_PRINT_THROW("copying vectors", err);
+
+    int onecount = std::count(best_data.best_tour_edges.begin(),
+                              best_data.best_tour_edges.end(), 1);
+    int ncount = tour_nodes.size();
+
+    if (ncount != onecount) {
+        std::string mismatch(std::to_string(ncount) + " nodes but "
+                             + std::to_string(onecount) +
+                             " edges equal one in ActiveTour::best_update");
+        throw runtime_error(mismatch);
+    }
 }
 
 }

@@ -66,7 +66,8 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
                 REQUIRE_NOTHROW(kpart = Data::KarpPartition(inst));
 
                 double tt = util::zeit();
-                Sep::CandidateTeeth cands(b_dat, s_dat);
+                LP::ActiveTour act_tour(core_graph, b_dat);
+                Sep::CandidateTeeth cands(act_tour, s_dat);
                 REQUIRE_NOTHROW(cands.get_light_teeth());
                 cands.sort_by_root();
                 tt = util::zeit() - tt;

@@ -51,11 +51,13 @@ public:
 
     void set_basis(Basis new_base) { tour_base = std::move(new_base); }
 
-    /// Instate this tour in \p relax.
-    void instate(Relaxation &relax);
+    void instate(Relaxation &relax); //!< Instate this tour in \p relax.
 
     /// Get a new basis for this tour from \p relax, instating it.
     void reset_instate(Relaxation &relax);
+
+    /// Update \p best_data with the this tour.
+    void best_update(Data::BestGroup &best_data) const;
 
     double length() const { return tour_len; }
 

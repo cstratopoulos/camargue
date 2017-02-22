@@ -25,10 +25,11 @@ namespace Eps = Epsilon;
 namespace Sep {
 
 ExBlossoms::ExBlossoms(const vector<Graph::Edge> &_edges,
-                       Data::BestGroup &b_dat, Data::SupportGroup &s_dat,
+                       const LP::ActiveTour &active_tour_,
+                       Data::SupportGroup &s_dat,
                        CutQueue<ex_blossom> &_blossom_q) :
     edges(_edges),
-    best_data(b_dat), supp_data(s_dat), blossom_q(_blossom_q) {}
+    active_tour(active_tour_), supp_data(s_dat), blossom_q(_blossom_q) {}
 
 
 #ifndef CMR_USE_OMP
@@ -39,8 +40,8 @@ bool ExBlossoms::find_cuts() {
     vector<int> &sup_inds = supp_data.support_indices;
     vector<double> &sup_ecap = supp_data.support_ecap;
     vector<int> &sup_elist = supp_data.support_elist;
-    const vector<int> &tour_edges = best_data.best_tour_edges;
-    
+    const vector<double> &tour_edges = active_tour.edges();
+
     vector<double> cut_ecap;
 
     try { cut_ecap = sup_ecap; }
@@ -48,12 +49,12 @@ bool ExBlossoms::find_cuts() {
 
     for (auto i = 0; i < sup_inds.size(); ++i) {
         int index = sup_inds[i];
-        if (tour_edges[index] == 1)
+        if (tour_edges[index] > 1 - Eps::Zero)
             cut_ecap[i] = 1 - sup_ecap[i];
     }
 
     vector<ex_blossom> intermediate_cuts;
-    int ncount = best_data.best_tour_nodes.size();
+    int ncount = active_tour.nodes().size();
 
     for (auto i = 0; i < sup_inds.size(); ++i) {
         int cut_ind = sup_inds[i];
@@ -93,9 +94,9 @@ bool ExBlossoms::find_cuts() {
 
         if (cut_val >= 1.0 - Eps::Cut || cut_count < 3)
             continue;
-        
+
         vector<int> handle;
-        
+
         try {
             for (int j = 0; j < cut_count; ++j)
                 handle.push_back(cut_nodes[j]);
@@ -130,7 +131,7 @@ bool ExBlossoms::find_cuts() {
         // cout << "\n|||Cuts were found but had to be cleaned up|||\n\n";
         return false;
     }
-    
+
     std::sort(intermediate_cuts.begin(), intermediate_cuts.end(),
               [](const ex_blossom &B, const ex_blossom &C)
               { return B.cut_val < C.cut_val; });
@@ -151,8 +152,8 @@ bool ExBlossoms::find_cuts() {
     vector<int> &sup_inds = supp_data.support_indices;
     vector<double> &sup_ecap = supp_data.support_ecap;
     vector<int> &sup_elist = supp_data.support_elist;
-    const vector<int> &tour_edges = best_data.best_tour_edges;
-    
+    const vector<double> &tour_edges = active_tour.edges();
+
     vector<double> cut_ecap;
 
     try { cut_ecap = sup_ecap; }
@@ -160,12 +161,12 @@ bool ExBlossoms::find_cuts() {
 
     for (auto i = 0; i < sup_inds.size(); ++i) {
         int index = sup_inds[i];
-        if (tour_edges[index] == 1)
+        if (tour_edges[index] > 1 - Eps::Zero)
             cut_ecap[i] = 1 - sup_ecap[i];
     }
 
     vector<ex_blossom> intermediate_cuts;
-    int ncount = best_data.best_tour_nodes.size();
+    int ncount = active_tour.nodes().size();
 
     int flag_rval = 0;
 
@@ -173,7 +174,7 @@ bool ExBlossoms::find_cuts() {
     for (auto i = 0; i < sup_inds.size(); ++i) {
         if (flag_rval)
             continue;
-        
+
         int cut_ind = sup_inds[i];
         int tour_entry = tour_edges[cut_ind];
         EndPts e(sup_elist[2 * i], sup_elist[(2 * i) + 1]);
@@ -218,9 +219,9 @@ bool ExBlossoms::find_cuts() {
 
         if (cut_val >= 1.0 - Eps::Cut || cut_count < 3)
             continue;
-        
+
         vector<int> handle;
-        
+
         try {
             for (int j = 0; j < cut_count; ++j)
                 handle.push_back(cut_nodes[j]);
@@ -238,7 +239,7 @@ bool ExBlossoms::find_cuts() {
             #pragma omp critical
             {
                 intermediate_cuts.emplace_back(handle, cut_ind, cut_val);
-            }            
+            }
         } catch (const exception &e) {
             #pragma omp critical
             {
@@ -280,7 +281,7 @@ bool ExBlossoms::find_cuts() {
         // cout << "\n|||Cuts were found but had to be cleaned up|||\n\n";
         return false;
     }
-    
+
     std::sort(intermediate_cuts.begin(), intermediate_cuts.end(),
               [](const ex_blossom &B, const ex_blossom &C)
               { return B.cut_val < C.cut_val; });
