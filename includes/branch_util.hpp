@@ -33,9 +33,7 @@ constexpr int SB1Lim = 100; //!< 1st round strong branch iteration limit.
 
 constexpr int SB2Lim = 500; //!< 2nd round strong branch iteration limit.
 
-
-constexpr int one_factor = 5; //!< Magnitude factor for fixing var to one.
-constexpr int zero_factor = 10; //!< Magnitude factor for fixing var to zero.
+constexpr int Int32Max = 2147483647;
 
 /// Alias declaration for integer ranking and objective value estimate.
 /// Higher is better for both entries, to be sorted lexicographically.
@@ -109,6 +107,9 @@ std::vector<ScoreTuple> ranked_cands(const std::vector<int> &cand_inds,
                                      std::vector<LP::Basis> &contra_bases,
                                      const double mult,
                                      const double ub, const int num_return);
+
+/// Return a "large" edge length relative to the capacities in \p ecap.
+int large_len(int ncount, const std::vector<int> &ecap);
 
 }
 }

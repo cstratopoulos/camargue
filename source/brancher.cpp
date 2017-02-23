@@ -148,6 +148,7 @@ vector<int> Brancher::branch_tour(const Data::Instance &inst,
     cout << "\n\t" << fixcount << " fixed to 1, " << avoid_edges.size()
          << " to avoid." << endl;
 
+    int ncount = inst.node_count();
     vector<Graph::Edge> edges_copy;
 
     try {
@@ -157,9 +158,7 @@ vector<int> Brancher::branch_tour(const Data::Instance &inst,
         edges_copy = core_graph.get_edges();
         Graph::get_elist(edges_copy, elist, ecap);
 
-        Data::Instance tmp_spinst("", inst.seed(), inst.node_count(), elist,
-                                  ecap);
-        double default_len = tmp_spinst.ptr()->default_len;
+        int default_len = large_len(ncount, ecap);
 
         for (int i = 0; i < fixcount; ++i) {
             int ind = core_graph.find_edge_ind(fixed_edges[2 * i],
@@ -197,7 +196,6 @@ vector<int> Brancher::branch_tour(const Data::Instance &inst,
     CCrandstate rstate;
     CCutil_sprand(inst.seed(), &rstate);
 
-    int ncount = inst.node_count();
     double val = 0;
     int kicks = (ncount > 1000 ? 500 : ncount / 2);
 

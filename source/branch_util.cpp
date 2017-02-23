@@ -150,6 +150,26 @@ vector<ScoreTuple> ranked_cands(const vector<int> &cand_inds,
     }
 }
 
+/**
+ * The intended use is that the negative return value of this function should
+ * be assigned as the edge weight to fix edges in a branching tour.
+ * @returns a large edge length for an instance with \p ncount nodes and edge
+ * weights \p ecap.
+ * @remark this is a re-write of a subroutine from build_sparse_dat in
+ * getdata.c from Concorde.
+ */
+int large_len(int ncount, const vector<int> &ecap)
+{
+    int max_len = *std::max_element(ecap.begin(), ecap.end());
+    double v = max_len + 1;
+    v *= ncount;
+
+    if (256 * v > Int32Max)
+        return Int32Max / 256;
+    else
+        return (max_len + 1) * ncount;
+}
+
 ostream &operator<<(ostream &os, Ptype type)
 {
     switch (type) {
