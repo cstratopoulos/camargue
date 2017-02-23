@@ -1,4 +1,7 @@
 #include "config.hpp"
+
+#ifdef CMR_DO_TESTS
+
 #include "cc_lpcuts.hpp"
 #include "datagroups.hpp"
 
@@ -12,8 +15,6 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
-
-#ifdef CMR_DO_TESTS
 
 SCENARIO("Exact primal separation of subtours",
 	 "[segments]") {

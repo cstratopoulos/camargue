@@ -1,4 +1,7 @@
 #include "config.hpp"
+
+#ifdef CMR_DO_TESTS
+
 #include "tooth.hpp"
 #include "datagroups.hpp"
 #include "timer.hpp"
@@ -26,7 +29,6 @@ using std::string;
 using std::pair;
 
 using CMR::IntPair;
-#ifdef CMR_DO_TESTS
 
 static int dump_segment(double cut_val, int cut_start, int cut_end,
 			void *u_data)

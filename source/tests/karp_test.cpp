@@ -1,6 +1,7 @@
-#include <catch.hpp>
-
 #include "config.hpp"
+
+#ifdef CMR_DO_TESTS
+
 #include "datagroups.hpp"
 #include "karp.hpp"
 #include "tooth.hpp"
@@ -15,8 +16,7 @@ extern "C" {
 #include <concorde/INCLUDE/util.h>
 }
 
-
-
+#include <catch.hpp>
 
 using std::cout;
 using std::vector;
@@ -24,7 +24,6 @@ using std::unique_ptr;
 using std::string;
 using std::pair;
 
-#ifdef CMR_DO_TESTS
 
 SCENARIO("Karp partition constructor tests",
 	 "[.karp][valgrind]") {
@@ -64,7 +63,7 @@ SCENARIO("Karp partitions for too small instances",
                                                  subtourfile, core_graph, b_dat,
                                                  lp_edges, s_dat, inst));
         int ncount = core_graph.node_count();
-	  
+
         REQUIRE_NOTHROW(kpart = CMR::Data::KarpPartition(inst));
         REQUIRE(kpart.num_parts() == 1);
       }
