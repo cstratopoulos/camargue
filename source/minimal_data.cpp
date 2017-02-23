@@ -70,7 +70,7 @@ void make_cut_test(const string &tsp_fname,
 
     try {
         core_graph = Graph::CoreGraph(best_data.best_tour_nodes,
-                                           inst.edgelen_func());
+                                      inst.edgelen_func());
 
         best_tour_edges.resize(core_graph.edge_count(), 1);
         lp_edges.resize(core_graph.edge_count(), 0);
@@ -96,6 +96,19 @@ void make_cut_test(const string &tsp_fname,
         }
 
         lp_edges[find_ind] = sup_ecap[i];
+    }
+
+    int e0 = best_data.best_tour_nodes[0];
+    int e1 = best_data.best_tour_nodes[ncount - 2];
+    int bas_ind = core_graph.find_edge_ind(e0, e1);
+    if (bas_ind == -1) {
+        try {
+            core_graph.add_edge(e0, e1, inst.edgelen(e0, e1));
+            bas_ind = core_graph.find_edge_ind(e0, e1);
+
+            best_tour_edges.push_back(0);
+            lp_edges.push_back(0);
+        } CMR_CATCH_PRINT_THROW("pushing back basis edge", err);
     }
 
     vector<int> island;
