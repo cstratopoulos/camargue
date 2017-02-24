@@ -3,7 +3,7 @@
  * @brief Configuration macros.
  *
  * This header file contains macro definitions that are used to conditionally
- * compile sections of the code based on presence or absence of certain 
+ * compile sections of the code based on presence or absence of certain
  * external dependences.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -12,7 +12,7 @@
 #define CMR_CONFIG_H
 
 /** @name Existence macros
- * These govern indicate certain features are downloaded or supported by the 
+ * These govern indicate certain features are downloaded or supported by the
  * compiler. See @ref extdeps for info on all of them.
  */
 ///@{
@@ -44,6 +44,9 @@
 
 #if CMR_HAVE_CATCH
 
+/// Catch configuration macro to help comile times.
+#define CATCH_CONFIG_FAST_COMPILE
+
 /// Define if you want to compile tests and invoke them from the command line.
 #undef CMR_DO_TESTS
 
@@ -54,7 +57,7 @@
 #ifndef CMR_DO_TESTS
 #ifdef CMR_HAVE_OPENMP
 
-/// Define if OMP parallelism will actually be used in the code. 
+/// Define if OMP parallelism will actually be used in the code.
 #define CMR_USE_OMP
 
 #endif //CMR_HAVE_OPENMP
