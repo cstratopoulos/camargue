@@ -208,17 +208,11 @@ static int ndpiv_cb(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
         return 0;
 
     int basis_freq = handle.basis_freq;
-    bool getbase = false;
 
-    if (basis_freq < 0)
-        throw logic_error("Negative basis_freq in ndpiv_cb");
+    if (basis_freq <= 0)
+        throw logic_error("Non-positive basis_freq in ndpiv_cb");
 
-    if (basis_freq == 0)
-        getbase = (pfeas_ic == 1);
-    else
-        getbase = ((pfeas_ic % basis_freq) == 0);
-
-    if (getbase)
+    if ((pfeas_ic % basis_freq) == 0)
         handle.tour_base = handle.rel.basis_obj();
 
     return 0;
@@ -660,9 +654,15 @@ void Relaxation::dual_opt()
         throw cpx_err(rval, "CPXdualopt");
 }
 
+/**
+ * This function computes a primal non-degenerate pivot by setting an objective
+ * value lower limit.
+ * @param upper_bound the objective value of the solution to be pivoted from;
+ * should be the objective value of the resident solution.
+ */
 void Relaxation::nondegen_pivot(double upper_bound)
 {
-    runtime_error err("Problem in Relaxation::nondegen_pivot.");
+    runtime_error err("Problem in Relaxation::nondegen_pivot");
 
     double lowlimit = upper_bound - Eps::Zero;
     CPXdblParamGuard obj_ll(CPX_PARAM_OBJLLIM, lowlimit, simpl_p->env,
@@ -678,7 +678,8 @@ void Relaxation::nondegen_pivot(double upper_bound)
 
     if (solstat != CPX_STAT_OPTIMAL &&
         solstat != CPX_STAT_OPTIMAL_INFEAS &&
-        solstat != CPX_STAT_ABORT_OBJ_LIM ) {
+        solstat != CPX_STAT_ABORT_OBJ_LIM &&
+        solstat != CPX_STAT_ABORT_USER) {
         cerr << "Solstat: " << solstat << "\n";
         throw err;
     }
@@ -688,23 +689,30 @@ void Relaxation::nondegen_pivot(double upper_bound)
 void Relaxation::cb_nondegen_pivot(double upper_bound, Basis &base,
                                    int bas_freq)
 {
-    runtime_error err("Problem in Relaxation::nondegen_pivot.");
+    runtime_error err("Problem in Relaxation::cb_nondegen_pivot.");
 
     double lowlimit = upper_bound - Eps::Zero;
     CPXdblParamGuard obj_ll(CPX_PARAM_OBJLLIM, lowlimit, simpl_p->env,
                             "nondegen_pivot obj limit");
 
+    int rval = 0;
     NDpivotHandle piv_handle(*this, upper_bound, bas_freq);
 
-    int rval = CPXsetlpcallbackfunc(simpl_p->env, ndpiv_cb, &piv_handle);
-    if (rval)
-        throw cpx_err(rval, "Setting nondegen_pivot callback");
+    base = basis_obj();
+
+    if (bas_freq > 0) {
+        rval = CPXsetlpcallbackfunc(simpl_p->env, ndpiv_cb, &piv_handle);
+        if (rval)
+            throw cpx_err(rval, "Setting nondegen_pivot callback");
+    }
 
     primal_opt();
 
-    rval = CPXsetlpcallbackfunc(simpl_p->env, NULL, NULL);
-    if (rval)
-        throw cpx_err(rval, "Removing nondegen_pivot callback ");
+    if (bas_freq > 0) {
+        rval = CPXsetlpcallbackfunc(simpl_p->env, NULL, NULL);
+        if (rval)
+            throw cpx_err(rval, "Removing nondegen_pivot callback ");
+    }
 
     int solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
     if (solstat == CPX_STAT_INFEASIBLE) {
