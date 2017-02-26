@@ -158,7 +158,7 @@ Instance& Instance::operator=(Instance &&I) noexcept
 
 Instance::~Instance() { CCutil_freedatagroup(&dat); }
 
-double Instance::tour_length(const vector<int> &tour_nodes)
+double Instance::tour_length(const vector<int> &tour_nodes) const
 {
     if (tour_nodes.size() != nodecount) {
         cerr << "Tour vector size " << tour_nodes.size() << " with nodecount "

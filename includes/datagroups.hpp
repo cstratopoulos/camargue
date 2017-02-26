@@ -69,7 +69,7 @@ public:
     int seed() const { return random_seed; } //!< Random seed used.
 
     /// Get the length of the tour in \p tour_nodes.
-    double tour_length(const std::vector<int> &tour_nodes);
+    double tour_length(const std::vector<int> &tour_nodes) const;
 
     /// The TSPLIB instance name or the random problem dimensions.
     const std::string &problem_name() const { return pname; }
