@@ -158,6 +158,22 @@ Instance& Instance::operator=(Instance &&I) noexcept
 
 Instance::~Instance() { CCutil_freedatagroup(&dat); }
 
+double Instance::tour_length(const vector<int> &tour_nodes)
+{
+    if (tour_nodes.size() != nodecount) {
+        cerr << "Tour vector size " << tour_nodes.size() << " with nodecount "
+             << nodecount << endl;
+        throw runtime_error("Size mismatch in Instance::tour_length");
+    }
+
+    double result = 0.0;
+
+    for (int i = 0; i < nodecount; ++i)
+        result += edgelen(tour_nodes[i], tour_nodes[(i + 1) % nodecount]);
+
+    return result;
+}
+
 }
 
 namespace Graph {
