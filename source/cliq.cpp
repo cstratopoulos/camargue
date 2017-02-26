@@ -139,27 +139,31 @@ Clique::Clique(int start, int end,
  * @param[in] perm the clique will be built using indices from perm, hence
  * implicitly reprsented in terms of the tour corresponding to \p perm.
  */
-Clique::Clique(std::vector<int> &nodes, const std::vector<int> &perm)
+Clique::Clique(const std::vector<int> &nodes, const std::vector<int> &perm,
+               bool preserve_order)
 try
 {
     if (nodes.empty())
         throw logic_error("Tried to construct empty clique.");
 
-    std::sort(nodes.begin(), nodes.end(),
-              [&perm](int n1, int n2) -> bool {
-                  return perm[n1] < perm[n2];
-              });
+    vector<int> target_nodes = nodes;
+
+    if (!preserve_order)
+        std::sort(target_nodes.begin(), target_nodes.end(),
+                  [&perm](int n1, int n2) -> bool {
+                      return perm[n1] < perm[n2];
+                  });
 
     int i = 0;
 
-    while (i < nodes.size()) {
-        int low = perm[nodes[i]];
+    while (i < target_nodes.size()) {
+        int low = perm[target_nodes[i]];
 
-        while ((i < (nodes.size() - 1)) &&
-               (perm[nodes[i + 1]] == (perm[nodes[i]] + 1)))
+        while ((i < (target_nodes.size() - 1)) &&
+               (perm[target_nodes[i + 1]] == (perm[target_nodes[i]] + 1)))
             ++i;
 
-        seglist.push_back(CMR::Segment(low, perm[nodes[i++]]));
+        seglist.push_back(CMR::Segment(low, perm[target_nodes[i++]]));
     }
 
     std::sort(seglist.begin(), seglist.end(), std::greater<CMR::Segment>());
@@ -246,9 +250,14 @@ Clique::Ptr CliqueBank::add_clique(int start, int end, const vector<int> &tour)
  * @warning The elements of \p nodes are sorted by this function, but
  * unchanged otherwise.
  */
-Clique::Ptr CliqueBank::add_clique(vector<int> &nodes)
+Clique::Ptr CliqueBank::add_clique(const vector<int> &nodes)
 {
-    return add_clique(Clique(nodes, saved_perm));
+    return add_clique(Clique(nodes, saved_perm, false));
+}
+
+Clique::Ptr CliqueBank::add_tour_clique(const vector<int> &tour_nodes)
+{
+    return add_clique(Clique(tour_nodes, saved_perm, true));
 }
 
 /**
