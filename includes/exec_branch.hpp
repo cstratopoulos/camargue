@@ -27,19 +27,39 @@ struct BranchNode {
         Up = 1
     };
 
+    enum class Status {
+        NeedsCut,
+        NeedsBranch,
+        Pruned,
+        Done,
+    };
+
     BranchNode(); //!< Construct a root node.
 
     /// Construct a child node.
     BranchNode(EndPts ends_, Dir direction_, const BranchNode &parent_,
-               Sep::Clique::Ptr tour_clq_, int tourlen_);
+               Sep::Clique::Ptr tour_clq_, double tourlen_);
+
+    BranchNode(BranchNode &&B) noexcept;
+    BranchNode &operator=(BranchNode &&B) noexcept;
+
+    /// Alias declaration for returning two split child problems.
+    using Split = std::array<BranchNode, 2>;
 
     EndPts ends;
     Dir direction;
 
+    Status stat;
+
     const BranchNode *parent;
 
     Sep::Clique::Ptr tour_clq;
-    int tourlen;
+    double tourlen;
+
+    bool is_root() const { return parent == nullptr; }
+
+    bool visited() const
+        { return stat == Status::Pruned || stat == Status::Done; }
 };
 
 /// Turn a 0-1 value \p entry into a BranchNode::Dir.
@@ -52,29 +72,26 @@ public:
              const Data::BestGroup &bestdata,
              const Graph::CoreGraph &coregraph, LP::CoreLP &core);
 
-    /// Alias declaration for returning a pair of split child problems.
-    using SplitPair = std::array<BranchNode, 2>;
-
     /// Alias declaration for EndPts and branching direction.
     using EndsDir = std::pair<EndPts, BranchNode::Dir>;
 
     ScoreTuple branch_edge(); //!< Get the next edge to branch on.
 
     /// Create the children nodes of \p parent for branching on \p branch_edge.
-    SplitPair split_problem(const ScoreTuple &branch_edge,
-                            const BranchNode &parent);
+    BranchNode::Split split_problem(const ScoreTuple &branch_tuple,
+                                    BranchNode &parent);
 
-    /// Get a tour satisfying the branchiing in \p edge_stats.
+    /// Get a tour satisfying the branching in \p edge_stats.
     void branch_tour(const std::vector<EndsDir> &edge_stats,
                      const std::vector<int> &start_tour_nodes,
-                     std::vector<int> &tour,
-                     double &tour_val);
+                     bool &found_tour, bool &feas,
+                     std::vector<int> &tour, double &tour_val);
 
     /// Compress \p tour into a Clique reference.
     Sep::Clique::Ptr compress_tour(const std::vector<int> &tour);
 
     /// Expand a compressed representation computed by compress_tour.
-    std::vector<int> expand_tour(Sep::Clique::Ptr &tour_clique);
+    std::vector<int> expand_tour(const Sep::Clique::Ptr &tour_clique);
 
     /// Clamp a variable as indicated by \p current_node.
     void clamp(const BranchNode &current_node);
@@ -95,6 +112,18 @@ private:
     /// `inds_table(i, j)` being 'A' if the edge is to be avoided, 'W' if
     /// the edge is wanted (fixed to one), and '\0' otherwise.
     util::SquareUT<char> inds_table;
+
+    /// Used by branch_tour to track fixed edges.
+    /// An `instance.node_count()` length array initialized to all zero, and
+    /// incremented for the ends of every BranchNode::Dir::Up edge in
+    /// edge_stats. No tour can exist if any entry is greater than two.
+    std::vector<int> fix_degrees;
+
+    /// Used by branch_tour to track avoided edges.
+    /// Like fix_degrees, but for track BranchNode::Dir::Down edges in
+    /// edge_stats. Initialized to all `instance.node_count() - 1`, and
+    /// decremented. No tour can exist if an entry is less than two.
+    std::vector<int> avail_degrees;
 
     /// Used to compress the tours returned by branch_tour.
     /// This CliqueBank shall represent Cliques in terms of whatever was the

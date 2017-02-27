@@ -23,14 +23,42 @@ using std::exception;
 namespace CMR {
 namespace ABC {
 
-BranchNode::BranchNode() : parent(nullptr), tour_clq(nullptr), tourlen(IntMax)
+BranchNode::BranchNode() : stat(Status::NeedsBranch), parent(nullptr),
+                           tour_clq(nullptr), tourlen(IntMax)
 {}
 
 BranchNode::BranchNode(EndPts ends_, Dir direction_,
                        const BranchNode &parent_, Sep::Clique::Ptr tour_clq_,
-                       int tourlen_)
-    : ends(ends_), direction(direction_), parent(&parent_),
+                       double tourlen_)
+    : ends(ends_), direction(direction_), stat(Status::NeedsCut),
+      parent(&parent_),
       tour_clq(tour_clq_), tourlen(tourlen_){}
+
+BranchNode::BranchNode(BranchNode &&B) noexcept
+    : ends(std::move(B.ends)), direction(B.direction), stat(B.stat),
+      parent(B.parent), tour_clq(std::move(B.tour_clq)),
+      tourlen(B.tourlen)
+{
+    B.stat = Status::Done;
+    B.parent = nullptr;
+    B.tourlen = IntMax;
+}
+
+BranchNode &BranchNode::operator=(BranchNode &&B) noexcept
+{
+    ends = std::move(B.ends);
+    direction = B.direction;
+    stat = B.stat;
+    parent = B.parent;
+    tour_clq = std::move(B.tour_clq);
+    tourlen = B.tourlen;
+
+    B.stat = Status::Done;
+    B.parent = nullptr;
+    B.tourlen = IntMax;
+
+    return *this;
+}
 
 BranchNode::Dir dir_from_int(int entry)
 {
@@ -52,6 +80,7 @@ Executor::Executor(const Data::Instance &inst,
     : instance(inst), active_tour(activetour), best_data(bestdata),
       core_graph(coregraph), core_lp(core),
       inds_table(inst.node_count()),
+      fix_degrees(inst.node_count()), avail_degrees(inst.node_count()),
       tour_cliques(bestdata.best_tour_nodes, bestdata.perm)
 {} catch (const exception &e) {
     cerr << e.what() << endl;
@@ -143,11 +172,66 @@ ScoreTuple Executor::branch_edge()
     return winner;
 }
 
+BranchNode::Split Executor::split_problem(const ScoreTuple &branch_tuple,
+                                          BranchNode &parent)
+{
+    runtime_error err("Problem in Executor::split_problem");
+    const EndPts &branch_edge = branch_tuple.ends;
+    vector<EndsDir> edge_stats;
+
+    const BranchNode *iter = &parent;
+
+    try {
+        while(!iter->is_root()) {
+            if (iter->ends == branch_edge)
+                throw runtime_error("Trying to split already-branched edge.");
+            edge_stats.push_back(EndsDir(iter->ends, iter->direction));
+            iter = iter->parent;
+        }
+        edge_stats.reserve(edge_stats.size() + 1);
+    } CMR_CATCH_PRINT_THROW("building edge_stats", err);
+
+    BranchNode::Split result;
+    const vector<int> &start_nodes = active_tour.nodes();
+
+    for (int i : {0, 1}) {
+        edge_stats.emplace_back(EndsDir(branch_edge, dir_from_int(i)));
+
+        bool found_tour = true;
+        bool feas = true;
+        double tour_val = 0.0;
+        vector<int> btour;
+        Sep::Clique::Ptr tcliq(nullptr);
+
+        try {
+            branch_tour(edge_stats, start_nodes,
+                        found_tour, feas,
+                        btour, tour_val);
+            if (found_tour)
+                tcliq = compress_tour(btour);
+        } CMR_CATCH_PRINT_THROW("computing/compressing branch tour", err);
+
+        result[i] = BranchNode(branch_edge, dir_from_int(i), parent,
+                               tcliq, tour_val);
+        if (!feas)
+            result[i].stat = BranchNode::Status::Pruned;
+
+        edge_stats.pop_back();
+    }
+
+    parent.stat = BranchNode::Status::Done;
+
+    return result;
+}
+
 /**
  * @param[in] edge_stats a vector of edges being branched upon, together with
  * the value they are clamped to.
  * @param[in] start_tour_nodes the tour being used as the starting cycle for
  * computing \p tour.
+ * @param[out] found_tour set to true iff a compliant tour was found.
+ * @param[out] feas set to false iff the branch instructions were proven
+ * infeasible.
  * @param[out] tour the branching tour.
  * @param[out] tour_val the length of \p tour.
  * @result Uses a short run of chained Lin-Kernighan to compute a tour which
@@ -155,15 +239,32 @@ ScoreTuple Executor::branch_edge()
  * \p start_tour_nodes as the starting cycle for the LK run. The resulting
  * tour can be used as a starting basis for cutting and pivoting on a branching
  * problem which complies with \p edge_stats. The computed tour will be
- * verified for compliance before it is returned, throwing an exception ifd
- * it does not in fact comply with \p edge_stats.
+ * verified for compliance before it is returned. If no compliant tour is found,
+ * \p found_tour will be set to false. If it is proved that \p edge_stats make
+ * it impossible for any tour to be found, \p feas will be set to false, as
+ * will \p found_tour. If either \p feas or \p found_tour is set to false,
+ * \p tour will be cleared and \p tour_val will be set to a large positive
+ * value.
  */
 void Executor::branch_tour(const vector<EndsDir> &edge_stats,
                            const vector<int> &start_tour_nodes,
-                           vector<int> &tour,
-                           double &tour_val)
+                           bool &found_tour, bool &feas,
+                           vector<int> &tour, double &tour_val)
 {
     runtime_error err("Problem in Executor::branch_tour");
+
+    found_tour = true;
+    feas = true;
+
+    auto tour_guard = util::make_guard([&found_tour, &feas,
+                                        &tour, &tour_val]() -> void
+                                       {
+                                           if (!found_tour || !feas) {
+                                               found_tour = false;
+                                               tour.clear();
+                                               tour_val = IntMax;
+                                           }
+                                       });
 
     int ncount = core_graph.node_count();
 
@@ -171,6 +272,9 @@ void Executor::branch_tour(const vector<EndsDir> &edge_stats,
 
     vector<int> want_inds;
     vector<int> avoid_inds;
+
+    std::fill(fix_degrees.begin(), fix_degrees.end(), 0);
+    std::fill(avail_degrees.begin(), avail_degrees.end(), ncount - 1);
 
     inds_table.fill('\0');
 
@@ -190,9 +294,30 @@ void Executor::branch_tour(const vector<EndsDir> &edge_stats,
             if (target_entry == 0) {
                 inds_table(e.end[0], e.end[1]) = 'A';
                 avoid_inds.push_back(ind);
+
+                for (int pt : e.end) {
+                    --avail_degrees[pt];
+                    if (avail_degrees[pt] < 2) {
+                        cout << pt
+                             << "has degree less than 2 in branch graph, "
+                             << "tour infeasible branch." << endl;
+                        feas = false;
+                        return;
+                    }
+                }
             } else {
                 inds_table(e.end[0], e.end[1]) = 'W';
                 want_inds.push_back(ind);
+
+                for (int pt : e.end) {
+                    ++fix_degrees[pt];
+                    if (fix_degrees[pt] > 2) {
+                        cout << fix_degrees[pt] << " fixed vxs incident with "
+                             << pt << ", tour infeasible branch." << endl;
+                        feas = false;
+                        return;
+                    }
+                }
             }
         }
     } CMR_CATCH_PRINT_THROW("categorizing edges", err);
@@ -203,7 +328,8 @@ void Executor::branch_tour(const vector<EndsDir> &edge_stats,
                  << endl;
             tour = best_data.best_tour_nodes;
             tour_val = best_data.min_tour_value;
-        } CMR_CATCH_PRINT_THROW("getting clique for best tour", err);
+        } CMR_CATCH_PRINT_THROW("copying best tour", err);
+
         return;
     }
 
@@ -267,18 +393,20 @@ void Executor::branch_tour(const vector<EndsDir> &edge_stats,
 
         char stat = inds_table(e.end[0], e.end[1]);
         if (stat == 'A') {
-            cerr << "Avoided edge " << e << " is in tour" << endl;
-            cerr << "Sparse tour has length " << val << endl;
-            throw err;
+            cout << "Avoided edge " << e << " in tour, sparse dummy length "
+                 << val << endl;
+            found_tour = false;
+            return;
         } else if (stat == 'W') {
             ++fixed_found;
         }
     }
 
     if (fixed_found != want_inds.size()) {
-        cerr << "Found " << fixed_found << " fixed edges, expected "
+        cout << "Found " << fixed_found << " fixed edges, expected "
              << want_inds.size() << endl;
-        throw err;
+        found_tour = false;
+        return;
     }
 
     cout << "\n\tComputed genuine branch tour of length "
@@ -292,7 +420,7 @@ Sep::Clique::Ptr Executor::compress_tour(const vector<int> &tour)
     return tour_cliques.add_tour_clique(tour);
 }
 
-vector<int> Executor::expand_tour(Sep::Clique::Ptr &tour_clique)
+vector<int> Executor::expand_tour(const Sep::Clique::Ptr &tour_clique)
 {
     return tour_clique->node_list(tour_cliques.ref_tour());
 }
