@@ -57,6 +57,8 @@ public:
 
     const LP::ActiveTour &get_active_tour() const { return active_tour; }
 
+    void set_active_tour(std::vector<int> tour_nodes);
+
     /// Average number of iterations per primal_pivot.
     int avg_itcount() const { return sum_it_count / num_nd_pivots; }
 
@@ -67,7 +69,6 @@ public:
 
 private:
     void handle_aug_pivot(std::vector<int> tour_nodes, Basis aug_base);
-    void set_active_tour(std::vector<int> tour_nodes);
 
     void prune_slacks();
 
