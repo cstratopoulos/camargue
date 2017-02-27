@@ -166,7 +166,8 @@ try
         seglist.push_back(CMR::Segment(low, perm[target_nodes[i++]]));
     }
 
-    std::sort(seglist.begin(), seglist.end(), std::greater<CMR::Segment>());
+    if (!preserve_order)
+        std::sort(seglist.begin(), seglist.end(), std::greater<CMR::Segment>());
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Clique nodelist constructor failed.");

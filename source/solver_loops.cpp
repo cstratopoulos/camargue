@@ -6,7 +6,6 @@
 #include "config.hpp"
 #include "solver.hpp"
 #include "separator.hpp"
-#include "brancher.hpp"
 
 #if CMR_HAVE_SAFEGMI
 #include "safeGMI.hpp"
@@ -309,13 +308,13 @@ PivType Solver::abc_dfs(int depth, bool do_price)
     throw runtime_error("abc_dfs temporarily unimplemented.");
 
 
-    using Problem = ABC::Problem;
-    using Ptype = Problem::Type;
-    using ProbArray = std::array<Problem, 2>;
+    // using Problem = ABC::Problem;
+    // using Ptype = Problem::Type;
+    // using ProbArray = std::array<Problem, 2>;
 
-    runtime_error err("Prolem in Solver::abc_dfs");
+    // runtime_error err("Prolem in Solver::abc_dfs");
 
-    PivType piv = PivType::Frac;
+    // PivType piv = PivType::Frac;
 /*
     if (depth > 0)
         try {
@@ -376,9 +375,10 @@ PivType Solver::abc_dfs(int depth, bool do_price)
             brancher->undo_branch(P);
         } CMR_CATCH_PRINT_THROW("undoing branch", err);
     }
-*/
+
 
     return piv;
+*/
 }
 
 PivType Solver::frac_recover()

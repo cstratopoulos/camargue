@@ -195,6 +195,9 @@ CoreGraph::CoreGraph(const Data::Instance &inst) try
     plan.linkern.greedy_start = 0;
     plan.linkern.nkicks = (ncount / 100) + 1;
 
+    if (ncount < 100) // to prevent small edge counts on tiny instances
+        plan.quadnearest = 1;
+
     int *elist = (int *) NULL;
 
     if(CCedgegen_edges(&plan, ncount, inst.ptr(), NULL,

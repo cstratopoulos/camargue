@@ -1,5 +1,4 @@
 #include "branch_util.hpp"
-#include "graph.hpp"
 #include "util.hpp"
 
 #include <algorithm>
@@ -14,21 +13,6 @@ using std::cerr;
 
 namespace CMR {
 namespace ABC {
-
-using Ptype = Problem::Type;
-
-Problem::Problem(int ind, ScorePair r)
-    : edge_ind(ind), type(Ptype::Affirm), rank(r), contra_base(nullptr)
-{}
-
-Problem::Problem(int ind, ScorePair r, LP::Basis cbase)
-try
-    : edge_ind(ind), type(Ptype::Contra), rank(r),
-      contra_base(util::make_unique<LP::Basis>(std::move(cbase)))
-{} catch (const std::exception &e) {
-    cerr << e.what() << "\n";
-    throw std::runtime_error("Problem constructor failed.");
-}
 
 /**
  * For some estimation metric, evaluate a priority score for branching on a
@@ -53,17 +37,29 @@ double var_score(double mult, double v0, double v1)
     return num / denom;
 }
 
-ScoreTuple::ScoreTuple(int ind, ScorePair down, ScorePair up,
-                       LP::Basis &&cbase, double mult, double ub)
-    : index(ind), score_priority(std::max(down.first, up.first)),
-      down_est(down), up_est(up), contra_base(std::move(cbase)),
-      score(var_score(mult, down_est.second, up_est.second))
-{}
+constexpr int Int32Max = 2147483647;
 
-bool operator>(const ScoreTuple &s, const ScoreTuple &t)
+/**
+ * The intended use is that the negative return value of this function should
+ * be assigned as the edge weight to fix edges in a branching tour.
+ * @returns a large edge length for an instance with \p ncount nodes and edge
+ * weights \p ecap.
+ * @remark this is a re-write of a subroutine from build_sparse_dat in
+ * getdata.c from Concorde.
+ */
+int large_len(int ncount, const vector<Graph::Edge> &edges)
 {
-    return
-    std::tie(s.score_priority, s.score) > std::tie(t.score_priority, t.score);
+    int max_len = std::max_element(edges.begin(), edges.end(),
+                                   [](const Graph::Edge &e,
+                                      const Graph::Edge &f)
+                                   { return e.len < f.len; })->len;
+    double v = max_len + 1;
+    v *= ncount;
+
+    if (256 * v > Int32Max)
+        return Int32Max / 256;
+    else
+        return (max_len + 1) * ncount;
 }
 
 /**
@@ -112,6 +108,12 @@ vector<int> length_weighted_cands(const vector<Graph::Edge> &edges,
         return vector<int>(result.begin(), result.begin() + num_return);
 }
 
+ScoreTuple::ScoreTuple(EndPts e, LP::InfeasObj down, LP::InfeasObj up,
+                       LP::Basis base, double mult, double ub)
+    : ends(e), down_est(down), up_est(up),
+      score(var_score(mult, down_est.second, up_est.second)),
+      contra_base(std::move(base))
+{}
 
 /**
  * @param[in] cand_inds the candidate indices to be ranked.
@@ -128,19 +130,21 @@ vector<int> length_weighted_cands(const vector<Graph::Edge> &edges,
  * score.
  */
 vector<ScoreTuple> ranked_cands(const vector<int> &cand_inds,
-                                const vector<ScorePair> &down_est,
-                                const vector<ScorePair> &up_est,
+                                const vector<LP::InfeasObj> &down_est,
+                                const vector<LP::InfeasObj> &up_est,
+                                const vector<Graph::Edge> &edges,
                                 vector<LP::Basis> &contra_bases,
-                                const double mult, const double ub,
-                                const int num_return)
+                                double mult, double ub, int num_return)
 {
     vector<ScoreTuple> result;
 
     for (int i = 0; i < cand_inds.size(); ++i)
-        result.emplace_back(cand_inds[i], down_est[i], up_est[i],
+        result.emplace_back(edges[cand_inds[i]], down_est[i], up_est[i],
                             std::move(contra_bases[i]), mult, ub);
 
-    std::sort(result.begin(), result.end(), std::greater<ScoreTuple>());
+    std::sort(result.begin(), result.end(),
+              [](const ScoreTuple &a, const ScoreTuple &b)
+              { return a.score > b.score; });
 
     if (result.size() <= num_return)
         return result;
@@ -149,61 +153,6 @@ vector<ScoreTuple> ranked_cands(const vector<int> &cand_inds,
         return result;
     }
 }
-
-/**
- * The intended use is that the negative return value of this function should
- * be assigned as the edge weight to fix edges in a branching tour.
- * @returns a large edge length for an instance with \p ncount nodes and edge
- * weights \p ecap.
- * @remark this is a re-write of a subroutine from build_sparse_dat in
- * getdata.c from Concorde.
- */
-int large_len(int ncount, const vector<int> &ecap)
-{
-    int max_len = *std::max_element(ecap.begin(), ecap.end());
-    double v = max_len + 1;
-    v *= ncount;
-
-    if (256 * v > Int32Max)
-        return Int32Max / 256;
-    else
-        return (max_len + 1) * ncount;
-}
-
-ostream &operator<<(ostream &os, Ptype type)
-{
-    switch (type) {
-    case Ptype::Root:
-        os << "Root";
-        break;
-    case Ptype::Affirm:
-        os << "Affirm";
-        break;
-    case Ptype::Contra:
-        os << "Contra";
-        break;
-    }
-
-    return os;
-}
-
-ostream &operator<<(ostream &os, const Problem &prob)
-{
-    os << prob.type << " branch on edge "
-       << prob.edge_ind;
-    return os;
-}
-
-/**
- * @param[in] zero_coeff the coefficient used to fix variables to zero
- * @param[in] one_coeff the coefficient used to fix variables to one
- * @param[in] branch_objval the objective value of a solution in the branch
- * tree.
- * @param[in] zero_count the number of variables being fixed to zero.
- * @param[in] one_count the number of variables being fixed to one.
- * @returns True iff \p branch_objval implies that variables are being fixed
- * to their desired values, false otherwise.
- */
 
 }
 }

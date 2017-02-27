@@ -221,52 +221,52 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
 
 PivType Solver::abc(bool do_price)
 {
-    runtime_error err("Problem in Solver::abc");
+    // runtime_error err("Problem in Solver::abc");
 
-    PivType piv = PivType::Frac;
+    // PivType piv = PivType::Frac;
 
-    try { piv = cutting_loop(do_price, true, true); }
-    CMR_CATCH_PRINT_THROW("running cutting_loop", err);
+    // try { piv = cutting_loop(do_price, true, true); }
+    // CMR_CATCH_PRINT_THROW("running cutting_loop", err);
 
-    if (piv != PivType::Frac) {
-        if (piv == PivType::FathomedTour) {
-            return piv;
-        }
-        else {
-            cerr << "Pivot status " << piv << " in abc.\n";
-            throw logic_error("Invalid pivot type for running Solver::abc.");
-        }
-    }
+    // if (piv != PivType::Frac) {
+    //     if (piv == PivType::FathomedTour) {
+    //         return piv;
+    //     }
+    //     else {
+    //         cerr << "Pivot status " << piv << " in abc.\n";
+    //         throw logic_error("Invalid pivot type for running Solver::abc.");
+    //     }
+    // }
 
-    cout << "\tCommencing ABC search....\n";
-    Timer abct(tsp_instance.problem_name() + " ABC search");
-    abct.start();
+    // cout << "\tCommencing ABC search....\n";
+    // Timer abct(tsp_instance.problem_name() + " ABC search");
+    // abct.start();
 
-    try {
-        util::ptr_reset(brancher, core_lp, core_graph, best_data,
-                        active_tour(), ABC::ContraStrat::Fix);
-    } CMR_CATCH_PRINT_THROW("allocating/instantiating Brancher", err);
+    // try {
+    //     util::ptr_reset(brancher, core_lp, core_graph, best_data,
+    //                     active_tour(), ABC::ContraStrat::Fix);
+    // } CMR_CATCH_PRINT_THROW("allocating/instantiating Brancher", err);
 
-    if (cut_sel.safeGMI) {
-        cout << "(Disabling GMI and purging cuts for branching.....)\n";
-        cut_sel.safeGMI = false;
-        try { core_lp.purge_gmi(); }
-        CMR_CATCH_PRINT_THROW("dumping gmi cuts before abc", err);
-    }
+    // if (cut_sel.safeGMI) {
+    //     cout << "(Disabling GMI and purging cuts for branching.....)\n";
+    //     cut_sel.safeGMI = false;
+    //     try { core_lp.purge_gmi(); }
+    //     CMR_CATCH_PRINT_THROW("dumping gmi cuts before abc", err);
+    // }
 
-    try { piv = abc_dfs(0, do_price); }
-    CMR_CATCH_PRINT_THROW("running abc_dfs", err);
+    // try { piv = abc_dfs(0, do_price); }
+    // CMR_CATCH_PRINT_THROW("running abc_dfs", err);
 
-    abct.stop();
+    // abct.stop();
 
-    cout << "\n\tABC search completed, optimal tour has length "
-         << best_data.min_tour_value << endl;
-    report_cuts();
+    // cout << "\n\tABC search completed, optimal tour has length "
+    //      << best_data.min_tour_value << endl;
+    // report_cuts();
 
-    abct.report(true);
+    // abct.report(true);
 
 
-    return piv;
+    // return piv;
 }
 
 }

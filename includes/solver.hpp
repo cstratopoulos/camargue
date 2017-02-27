@@ -21,7 +21,6 @@
 #endif
 
 #include "pricer.hpp"
-#include "brancher.hpp"
 #include "util.hpp"
 
 #include <memory>
@@ -106,7 +105,6 @@ private:
 #endif
 
     std::unique_ptr<Price::Pricer> edge_pricer;
-    std::unique_ptr<ABC::Brancher> brancher;
 
     OutPrefs output_prefs;
 
