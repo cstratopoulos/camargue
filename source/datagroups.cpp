@@ -264,6 +264,14 @@ int CoreGraph::find_edge_ind(int end0, int end1) const
     const AdjObj *adj_ptr = adj_list.find_edge(end0, end1);
     if (adj_ptr == nullptr)
         return -1;
+    int result = adj_ptr->edge_index;
+
+    if (result > edge_count()) {
+        cerr << end0 << ", " << end1 << " found with index "
+             << result << " but " << edge_count() << " edges" << endl;
+        throw logic_error("Result out of bounds in CoreGraph::find_edge_ind");
+    }
+
     return adj_ptr->edge_index;
 }
 
