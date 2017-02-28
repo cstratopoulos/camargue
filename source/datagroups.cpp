@@ -296,6 +296,15 @@ void CoreGraph::add_edge(const Edge &e)
     adj_list.add_edge(e.end[0], e.end[1], new_ind, e.len);
 }
 
+void CoreGraph::remove_edges()
+{
+    edges.erase(std::remove_if(edges.begin(), edges.end(),
+                               [](const Edge &e) { return e.removable; }),
+                edges.end());
+
+    adj_list = AdjList(node_count(), edges);
+}
+
 }
 
 namespace Data {

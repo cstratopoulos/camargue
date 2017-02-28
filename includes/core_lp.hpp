@@ -49,6 +49,8 @@ public:
     void add_edges(const std::vector<Graph::Edge> &add_batch,
                    bool reinstate);
 
+    void remove_edges(std::vector<int> edge_delstat);
+
     /// Get a const reference to the SupportGroup for the most recent pivot.
     const Data::SupportGroup &support_data() const { return supp_data; }
 

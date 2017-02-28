@@ -116,6 +116,8 @@ public:
     void add_edge(int end0, int end1, int len);
     void add_edge(const Edge &e);
 
+    void remove_edges();
+
 private:
     std::vector<Edge> edges;
     AdjList adj_list;

@@ -541,6 +541,13 @@ void Relaxation::add_col(const double objval, const vector<int> &indices,
         throw cpx_err(rval, "CPXaddcols");
 }
 
+void Relaxation::del_set_cols(std::vector<int> &delstat)
+{
+    int rval = CPXdelsetcols(simpl_p->env, simpl_p->lp, &delstat[0]);
+    if (rval)
+        throw cpx_err(rval, "CPXdelsetcols");
+}
+
 void Relaxation::get_base(vector<int> &colstat,
                           vector<int> &rowstat) const
 {

@@ -155,13 +155,16 @@ public:
                   const std::vector<int> &rmatind,
                   const std::vector<double> &rmatval); //!< Add constraint rows.
 
-    /// Delete a not-necessarily-continuous set of rows.
+    /// Delete a not-necessarily-contiguous set of rows.
     void del_set_rows(std::vector<int> &delstat);
 
     void add_col(const double objval,
                  const std::vector<int> &indices,
                  const std::vector<double> &coeffs,
                  const double lb, const double ub); //!< Add a column.
+
+    /// Delete a not-necessarily-contiguous set of columns.
+    void del_set_cols(std::vector<int> &delstat);
 
     ///@}
 
