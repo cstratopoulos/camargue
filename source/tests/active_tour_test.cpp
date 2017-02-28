@@ -108,7 +108,7 @@ SCENARIO ("Constructing ActiveTours",
                     }
 
                     if (!missing_edges.empty())
-                        REQUIRE_NOTHROW(core.add_edges(missing_edges));
+                        REQUIRE_NOTHROW(core.add_edges(missing_edges, true));
 
                     cout <<"\tLoaded tour of length " << newval
                          << ", added " << missing_edges.size()

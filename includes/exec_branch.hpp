@@ -15,6 +15,9 @@
 #include "branch_util.hpp"
 
 #include <array>
+#include <iostream>
+#include <list>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -52,9 +55,12 @@ struct BranchNode {
     Status stat;
 
     const BranchNode *parent;
+    int depth;
 
     Sep::Clique::Ptr tour_clq;
     double tourlen;
+
+    bool maybe_infeas;
 
     bool is_root() const { return parent == nullptr; }
 
@@ -64,6 +70,14 @@ struct BranchNode {
 
 /// Turn a 0-1 value \p entry into a BranchNode::Dir.
 BranchNode::Dir dir_from_int(int entry);
+
+std::string bnode_brief(const BranchNode &B);
+std::ostream &operator<<(std::ostream &os, const BranchNode::Dir &dir);
+std::ostream &operator<<(std::ostream &os, const BranchNode &B);
+
+using BranchHistory = std::list<BranchNode>;
+using SplitIter = std::array<BranchHistory::iterator, 2>;
+
 
 class Executor {
 public:

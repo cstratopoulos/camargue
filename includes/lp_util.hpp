@@ -32,7 +32,7 @@ inline bool is_tour_piv(PivType P)
 }
 
 /// Alias declaration for branching estimates.
-/// First element: is the problem in feasible.
+/// First element: is the problem infeasible.
 /// Second element: the objective value estimate.
 using InfeasObj = std::pair<bool, double>;
 

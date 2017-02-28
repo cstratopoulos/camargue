@@ -1,8 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** @file
  * @brief TSP Solver class header.
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ */
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_SOLVER_H
 #define CMR_SOLVER_H
@@ -13,6 +13,7 @@
 #include "datagroups.hpp"
 #include "separator.hpp"
 #include "pool_sep.hpp"
+#include "dfs_brancher.hpp"
 
 #if CMR_HAVE_SAFEGMI
 
@@ -105,6 +106,8 @@ private:
 #endif
 
     std::unique_ptr<Price::Pricer> edge_pricer;
+
+    std::unique_ptr<ABC::DFSbrancher> dfs_brancher;
 
     OutPrefs output_prefs;
 

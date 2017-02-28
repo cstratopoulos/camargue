@@ -173,7 +173,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                 std::sort(edge_q.begin(), edge_q.end());
                 try {
                     vector<Graph::Edge> add_batch = pool_chunk(edge_q);
-                    core_lp.add_edges(add_batch);
+                    core_lp.add_edges(add_batch, true);
                 } CMR_CATCH_PRINT_THROW("adding edges for aug tour", err);
 
                 return ScanStat::Partial;
@@ -202,7 +202,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
                 num_added = add_batch.size();
                 total_added += num_added;
-                core_lp.add_edges(add_batch);
+                core_lp.add_edges(add_batch, true);
                 core_lp.primal_opt();
                 new_objval = core_lp.get_objval();
             } CMR_CATCH_PRINT_THROW("adding edges to lp and optimizing", err);

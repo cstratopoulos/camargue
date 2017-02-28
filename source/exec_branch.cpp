@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 
 extern "C" {
@@ -15,6 +16,7 @@ using std::vector;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::ostream;
 
 using std::runtime_error;
 using std::logic_error;
@@ -24,24 +26,33 @@ namespace CMR {
 namespace ABC {
 
 BranchNode::BranchNode() : stat(Status::NeedsBranch), parent(nullptr),
-                           tour_clq(nullptr), tourlen(IntMax)
+                           depth(0),
+                           tour_clq(nullptr), tourlen(IntMax),
+                           maybe_infeas(false)
 {}
 
 BranchNode::BranchNode(EndPts ends_, Dir direction_,
                        const BranchNode &parent_, Sep::Clique::Ptr tour_clq_,
                        double tourlen_)
     : ends(ends_), direction(direction_), stat(Status::NeedsCut),
-      parent(&parent_),
-      tour_clq(tour_clq_), tourlen(tourlen_){}
+      parent(&parent_), depth(1 + parent_.depth),
+      tour_clq(tour_clq_), tourlen(tourlen_), maybe_infeas(false) {}
 
 BranchNode::BranchNode(BranchNode &&B) noexcept
-    : ends(std::move(B.ends)), direction(B.direction), stat(B.stat),
-      parent(B.parent), tour_clq(std::move(B.tour_clq)),
-      tourlen(B.tourlen)
+    : ends(std::move(B.ends)),
+      direction(B.direction),
+      stat(B.stat),
+      parent(B.parent),
+      depth(B.depth),
+      tour_clq(std::move(B.tour_clq)),
+      tourlen(B.tourlen),
+      maybe_infeas(B.maybe_infeas)
 {
     B.stat = Status::Done;
     B.parent = nullptr;
+    B.depth = 0;
     B.tourlen = IntMax;
+    B.maybe_infeas = false;
 }
 
 BranchNode &BranchNode::operator=(BranchNode &&B) noexcept
@@ -50,12 +61,15 @@ BranchNode &BranchNode::operator=(BranchNode &&B) noexcept
     direction = B.direction;
     stat = B.stat;
     parent = B.parent;
+    depth = B.depth;
     tour_clq = std::move(B.tour_clq);
     tourlen = B.tourlen;
+    maybe_infeas = B.maybe_infeas;
 
     B.stat = Status::Done;
     B.parent = nullptr;
     B.tourlen = IntMax;
+    B.maybe_infeas = false;
 
     return *this;
 }
@@ -70,6 +84,38 @@ BranchNode::Dir dir_from_int(int entry)
     default:
         throw runtime_error("Tried to get BranchNode::Dir w non-binary int");
     }
+}
+
+std::string bnode_brief(const BranchNode &B)
+{
+    std::stringstream result;
+
+    if (B.is_root())
+        result << "[root]";
+    else {
+        result << "[" << B.ends << " = " << B.direction << "]";
+    }
+
+    return result.str();
+}
+
+ostream &operator<<(ostream &os, const BranchNode::Dir &dir)
+{
+    os << static_cast<int>(dir);
+    return os;
+}
+ostream &operator<<(ostream &os, const BranchNode &B)
+{
+    os << bnode_brief(B) << ", ";
+
+    if (B.is_root()) {
+        os << "depth 0";
+    } else {
+        os << "depth " << B.depth << ", tourlen " << B.tourlen
+           << ", parent "
+           << bnode_brief(*(B.parent));
+    }
+    return os;
 }
 
 Executor::Executor(const Data::Instance &inst,
@@ -168,6 +214,13 @@ ScoreTuple Executor::branch_edge()
     cout << "\n\t" << winner << endl;
     cout << "\t\t Tour entry " << best_data.best_tour_edges[winner_ind]
          << endl;
+    if (best_data.best_tour_edges[winner_ind] > 1) {
+        cout << "tour edges size "
+             << best_data.best_tour_edges.size() << endl;
+        cout << "core ecount " << core_graph.edge_count() << endl;
+        cout << "winner ind " << winner_ind << endl;
+        throw logic_error("winner ind out of range or nb tour entry?????");
+    }
 
     return winner;
 }
@@ -180,9 +233,13 @@ BranchNode::Split Executor::split_problem(const ScoreTuple &branch_tuple,
     vector<EndsDir> edge_stats;
 
     const BranchNode *iter = &parent;
+    cout << "Building edge stats starting from parent...." << endl;
 
     try {
         while(!iter->is_root()) {
+
+            cout << bnode_brief(*iter) << ", ";
+
             if (iter->ends == branch_edge)
                 throw runtime_error("Trying to split already-branched edge.");
             edge_stats.push_back(EndsDir(iter->ends, iter->direction));
@@ -191,10 +248,15 @@ BranchNode::Split Executor::split_problem(const ScoreTuple &branch_tuple,
         edge_stats.reserve(edge_stats.size() + 1);
     } CMR_CATCH_PRINT_THROW("building edge_stats", err);
 
+    cout << endl;
+
     BranchNode::Split result;
     const vector<int> &start_nodes = active_tour.nodes();
 
     for (int i : {0, 1}) {
+        cout << "Adding " << branch_edge << " = " << i << ", "
+             << "getting tour..." << endl;
+
         edge_stats.emplace_back(EndsDir(branch_edge, dir_from_int(i)));
 
         bool found_tour = true;
@@ -213,11 +275,23 @@ BranchNode::Split Executor::split_problem(const ScoreTuple &branch_tuple,
 
         result[i] = BranchNode(branch_edge, dir_from_int(i), parent,
                                tcliq, tour_val);
+
         if (!feas)
             result[i].stat = BranchNode::Status::Pruned;
 
         edge_stats.pop_back();
     }
+
+    bool down_infeas{branch_tuple.down_est.first};
+    bool up_infeas{branch_tuple.up_est.first};
+
+    if (down_infeas && up_infeas) {
+        cerr << "Both subproblems infeasible" << endl;
+        throw err;
+    }
+
+    result[0].maybe_infeas = down_infeas;
+    result[1].maybe_infeas = up_infeas;
 
     parent.stat = BranchNode::Status::Done;
 
@@ -324,7 +398,7 @@ void Executor::branch_tour(const vector<EndsDir> &edge_stats,
 
     if (!found_contra) {
         try {
-            cout << "\n\tFixed edges affirm best tour, returning best tour."
+            cout << "\tFixed edges affirm best tour, returning best tour."
                  << endl;
             tour = best_data.best_tour_nodes;
             tour_val = best_data.min_tour_value;
@@ -333,7 +407,7 @@ void Executor::branch_tour(const vector<EndsDir> &edge_stats,
         return;
     }
 
-    cout << "\n\t" << want_inds.size() << " fixed to 1, "
+    cout << "\t" << want_inds.size() << " fixed to 1, "
          << avoid_inds.size() << " to avoid." << endl;
 
     vector<Graph::Edge> edges_copy;
@@ -374,7 +448,6 @@ void Executor::branch_tour(const vector<EndsDir> &edge_stats,
 
     try { tour.resize(ncount); } CMR_CATCH_PRINT_THROW("allocating cyc", err);
 
-    cout << "\tCalling linkern tour...." << endl;
     if (CClinkern_tour(ncount, sparse_inst.ptr(),
                        ecap.size(), &elist[0],
                        stallcount, kicks,
@@ -409,7 +482,7 @@ void Executor::branch_tour(const vector<EndsDir> &edge_stats,
         return;
     }
 
-    cout << "\n\tComputed genuine branch tour of length "
+    cout << "\tComputed genuine branch tour of length "
          << tour_val << "\n\t"
          << "branch tour: best_tour\t"
          << (tour_val / best_data.min_tour_value) << endl;
@@ -433,7 +506,7 @@ void Executor::clamp(const BranchNode &current_node)
         throw runtime_error("Tried to clamp edge not in graph.");
 
     double clamp_bd = static_cast<int>(current_node.direction);
-    double clamp_sense;
+    double clamp_sense = '\0';
 
     if (clamp_bd == 0.0)
         clamp_sense = 'U';

@@ -1,9 +1,8 @@
 #include "config.hpp"
 
-#ifdef CMR_DO_TESTS_DISABLED
+#ifdef CMR_DO_TESTS
 
 #include "lp_interface.hpp"
-#include "brancher.hpp"
 #include "branch_util.hpp"
 #include "solver.hpp"
 #include "util.hpp"
@@ -38,14 +37,14 @@ using std::to_string;
 using std::cout;
 
 SCENARIO ("Running a Solver with contra Fix Brancher",
-          "[ABC][Brancher][ContraStrat][Fix]") {
+          "[ABC][DFSbrancher]") {
     using namespace CMR;
     vector<string> probs{
         "dantzig42",
         //"pr76",
         "a280",
         "lin318",
-        "p654",
+        // "p654",
         };
 
     for (string &prob : probs) {
@@ -63,6 +62,7 @@ SCENARIO ("Running a Solver with contra Fix Brancher",
 
 }
 
+/*
 SCENARIO ("Instating a Brancher and getting problems",
           "[ABC][Brancher]") {
     vector<string> probs{
@@ -320,5 +320,6 @@ SCENARIO ("Computing branching edges",
         }
     }
 }
+*/
 
 #endif //CMR_DO_TESTS
