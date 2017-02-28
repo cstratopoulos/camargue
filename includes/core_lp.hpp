@@ -46,7 +46,8 @@ public:
     void add_cuts(Sep::CutQueue<Sep::ex_blossom> &ex2m_q);
     void add_cuts(Sep::CutQueue<Sep::HyperGraph> &pool_q);
 
-    void add_edges(const std::vector<Graph::Edge> &add_batch);
+    void add_edges(const std::vector<Graph::Edge> &add_batch,
+                   bool reinstate);
 
     /// Get a const reference to the SupportGroup for the most recent pivot.
     const Data::SupportGroup &support_data() const { return supp_data; }

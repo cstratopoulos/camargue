@@ -377,7 +377,7 @@ void CoreLP::add_cuts(Sep::CutQueue<Sep::HyperGraph> &pool_q)
     } CMR_CATCH_PRINT_THROW("processing/adding cuts", err);
 }
 
-void CoreLP::add_edges(const vector<Graph::Edge> &batch)
+void CoreLP::add_edges(const vector<Graph::Edge> &batch, bool reinstate)
 {
     runtime_error err("Problem in CoreLP::add_edges");
 
@@ -405,8 +405,10 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch)
         best_data.best_tour_edges.resize(new_ecount, 0);
     } CMR_CATCH_PRINT_THROW("adding edges to core lp/resizing", err);
 
-    try { active_tour.reset_instate(*this); }
-    CMR_CATCH_PRINT_THROW("resetting active tour", err)
+    if (reinstate) {
+        try { active_tour.reset_instate(*this); }
+        CMR_CATCH_PRINT_THROW("resetting active tour", err);
+    }
 }
 
 void CoreLP::purge_gmi()
