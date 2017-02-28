@@ -90,6 +90,18 @@ SCENARIO ("Splitting root problems",
 
             REQUIRE(bnode.tour_clq);
             REQUIRE_NOTHROW(btour = exec.expand_tour(bnode.tour_clq));
+            if (btour != best_dat.best_tour_nodes) {
+                vector<Graph::Edge> missing_edges;
+                for (int i = 0; i < ncount; ++i) {
+                    int e0 = btour[i];
+                    int e1 = btour[(i + 1) % ncount];
+                    int t_ind = cgraph.find_edge_ind(e0, e1);
+                    if (t_ind == -1)
+                        missing_edges.emplace_back(e0, e1,
+                                                   inst.edgelen(e0, e1));
+                }
+                core.add_edges(missing_edges, false);
+            }
             REQUIRE_NOTHROW(exec.clamp(bnode));
             REQUIRE_NOTHROW(core.set_active_tour(btour));
 
