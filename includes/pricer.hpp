@@ -29,25 +29,25 @@ namespace Price {
 /// Get reduced costs for edges not in the core lp.
 class Pricer {
 public:
-
+    /// Construct a Pricer using data from an ongoing solution process.
     Pricer(LP::CoreLP &core, const Data::Instance &_inst,
-           Graph::CoreGraph &core_graph_); //!< Construct a Pricer.
-
-    Pricer(const Pricer &P) = delete;
-    Pricer &operator=(const Pricer &P) = delete;
+           Graph::CoreGraph &core_graph_);
 
     ~Pricer(); //!< Destruct and free resource handles.
 
     ScanStat gen_edges(LP::PivType piv_stat,
                        bool try_elim); //!< Generate/add edges to core.
 
+    /// Compute a lower bound in Fixed64 arithmetic.
+    util::Fixed64 exact_lb(bool full);
+
+    /// As above, but return the reduced costs of the edges scanned.
     util::Fixed64 exact_lb(bool full,
                            std::vector<PrEdge<util::Fixed64>> &priced_edges);
 
-    util::Fixed64 exact_lb(bool full);
-
     void elim_edges(bool make_opt); //!< Eliminate edges from the core.
 
+    /// Compute reduced costs for a set of edges.
     template <typename numtype>
     void price_edges(std::vector<PrEdge<numtype>> &target_edges,
                      std::unique_ptr<LP::DualGroup<numtype>> &duals);

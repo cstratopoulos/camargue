@@ -36,7 +36,7 @@ using std::string;
 using std::to_string;
 using std::cout;
 
-SCENARIO ("Running a Solver with contra Fix Brancher",
+SCENARIO ("Running a Solver with a  DFSbrancher",
           "[ABC][DFSbrancher]") {
     using namespace CMR;
     vector<string> probs{
