@@ -239,6 +239,7 @@ PivType Solver::abc(bool do_price)
     }
 
     cout << "\tCommencing ABC search....\n";
+    cout << "Avg piv itcount " << core_lp.avg_itcount() << endl;
     Timer abct(tsp_instance.problem_name() + " ABC search");
     abct.start();
 

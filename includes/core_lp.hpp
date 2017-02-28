@@ -65,6 +65,8 @@ public:
 
     double active_tourlen() const { return active_tour.length(); }
 
+    double global_ub() const { return best_data.min_tour_value; }
+
 
     friend class CMR::Solver;
 
