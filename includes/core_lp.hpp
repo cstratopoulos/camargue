@@ -1,8 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** @file
  * @brief Managing Core LP relaxations of TSP instances.
- *
-\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ */
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_CORE_LP_H
 #define CMR_CORE_LP_H
@@ -33,7 +33,7 @@ namespace LP {
 class CoreLP : public Relaxation {
 public:
     CoreLP(Graph::CoreGraph &core_graph_,
-           Data::BestGroup &best_data);
+           Data::BestGroup &best_data_);
 
     /// Compute a primal non-degenerate pivot from the active_tour.
     LP::PivType primal_pivot();
@@ -77,6 +77,7 @@ private:
     void purge_gmi();
 
     Graph::CoreGraph &core_graph;
+    Data::BestGroup &best_data;
     Data::SupportGroup supp_data;
 
     Sep::ExternalCuts ext_cuts;

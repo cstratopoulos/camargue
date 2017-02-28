@@ -35,8 +35,8 @@ namespace Eps = CMR::Epsilon;
 namespace LP {
 
 CoreLP::CoreLP(Graph::CoreGraph &core_graph_,
-               Data::BestGroup &best_data) try :
-    core_graph(core_graph_),
+               Data::BestGroup &best_data_) try :
+    core_graph(core_graph_), best_data(best_data_),
     ext_cuts(best_data.best_tour_nodes, best_data.perm),
     active_tour(core_graph_, best_data),
     prev_numrows(core_graph_.node_count())
@@ -402,6 +402,7 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch)
             add_col(objval, cmatind, cmatval, lb, ub);
         }
         lp_edges.resize(new_ecount, 0.0);
+        best_data.best_tour_edges.resize(new_ecount, 0);
     } CMR_CATCH_PRINT_THROW("adding edges to core lp/resizing", err);
 
     try { active_tour.reset_instate(*this); }
