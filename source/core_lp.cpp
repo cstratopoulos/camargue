@@ -298,7 +298,8 @@ void CoreLP::set_active_tour(std::vector<int> tour_nodes)
                      << tnodes_uniq.front() << "/"
                      << tnodes_uniq.back() << endl;
                 tnodes_uniq.erase(std::unique(tnodes_uniq.begin(),
-                                              tnodes_uniq.end()));
+                                              tnodes_uniq.end()),
+                                  tnodes_uniq.end());
                 cout << "Size of uniq'd tnodes: "
                      << tnodes_uniq.size() << endl;
             }
