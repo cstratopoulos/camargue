@@ -70,8 +70,13 @@ public:
 
     SparseRow get_row(int row) const;
 
-    /// Feasibility status of a given solution.
+    /// Feasibility status of a given solution with respect to rows.
     void get_row_infeas(const std::vector<double> &x,
+                        std::vector<double> &feas_stat, int begin,
+                        int end) const;
+
+    /// Feasibility status of a given solution with respect to column bounds.
+    void get_col_infeas(const std::vector<double> &x,
                         std::vector<double> &feas_stat, int begin,
                         int end) const;
 
