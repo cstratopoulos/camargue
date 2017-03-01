@@ -250,7 +250,21 @@ void CoreLP::handle_aug_pivot(vector<int> tour_nodes, Basis aug_base)
         active_tour = ActiveTour(std::move(tour_nodes),
                                  lp_vec(), std::move(aug_base),
                                  get_objval(), core_graph);
-    } CMR_CATCH_PRINT_THROW("updating active_tour", err);
+    } catch (const exception &e) {
+        cerr << e.what() << " constructing active tour from pivot" << endl;
+
+        try {
+            vector<double> x = lp_vec();
+            bool augpiv_feas = check_feas(x);
+            bool best_feas = check_feas(best_data.best_tour_edges);
+            cout << "Augmenting lp vec feasible: " << augpiv_feas << "\n"
+                 << "Best tour vector feasible: " << best_feas << endl;
+        } catch (const exception &e) {
+            cerr << e.what() << " trying to check feasibility" << endl;
+            throw err;
+        }
+        throw err;
+    }
 
     try { prune_slacks(); } CMR_CATCH_PRINT_THROW("pruning slacks", err);
 }
@@ -258,11 +272,31 @@ void CoreLP::handle_aug_pivot(vector<int> tour_nodes, Basis aug_base)
 void CoreLP::set_active_tour(std::vector<int> tour_nodes)
 {
     runtime_error err("Problem in CoreLP::set_active_tour");
+    vector<int> tnodes_copy;
 
     try {
+        tnodes_copy = tour_nodes;
         active_tour = ActiveTour(std::move(tour_nodes), *this,
                                  core_graph);
-    } CMR_CATCH_PRINT_THROW("updating active_tour", err);
+    } catch (const exception &e) {
+        cerr << e.what() << " constructing active tour from nodes" << endl;
+
+        try {
+            vector<int> set_edges;
+            double _tval;
+
+            core_graph.tour_edge_vec(tnodes_copy, set_edges, _tval);
+
+            bool best_feas = check_feas(best_data.best_tour_edges);
+            bool set_feas = check_feas(set_edges);
+            cout << "Would-be tour vector feasible: " << set_feas << "\n"
+                 << "Best tour vector feasible: " << best_feas << endl;
+        } catch (const exception &e) {
+            cerr << e.what() << " trying to check feasibility" << endl;
+            throw err;
+        }
+        throw err;
+    }
 
     try { prune_slacks(); } CMR_CATCH_PRINT_THROW("pruning slacks", err);
 }
