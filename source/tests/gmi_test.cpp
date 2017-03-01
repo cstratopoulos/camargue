@@ -44,13 +44,17 @@ SCENARIO ("Generating safe Gomory cuts",
         // "d493",
         // "pr1002",
         // "rl1304",
-        "d2103",
-        "u2319",
+        // "d2103",
+        // "u2319",
         "pcb3038",
+        "fl3795",
         "fnl4461",
         "rl5915",
         "rl5934",
         "pla7397",
+        "rl11849",
+        "usa13509",
+        "brd14051",
     };
 
     for (string &prob : probs) {
@@ -58,8 +62,8 @@ SCENARIO ("Generating safe Gomory cuts",
             THEN ("We can generate safe GMI cuts if cutting_loop fails.") {
                 OutPrefs prefs;
                 Solver solver("problems/" + prob + ".tsp",
-                                   //"test_data/tours/" + prob + ".sol",
-                                   999, prefs);
+                              "test_data/tours/" + prob + ".sol",
+                              999, prefs);
                 LP::PivType piv = solver.cutting_loop(false, true, true);
 
                 if (piv == LP::PivType::Frac) {
@@ -74,11 +78,8 @@ SCENARIO ("Generating safe Gomory cuts",
 
                     Timer t("Safe GMI sep for " + prob);
                     t.start();
-                    REQUIRE_NOTHROW(gmi =
-                                    util::make_unique<Sep::SafeGomory>(core,
-                                                                       tour,
-                                                                       x)
-                        );
+                    REQUIRE_NOTHROW(util::ptr_reset(gmi, core, tour, x));
+                    gmi->silent = false;
 
                     bool result;
                     REQUIRE_NOTHROW(result = gmi->find_cuts());

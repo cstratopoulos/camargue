@@ -137,9 +137,7 @@ bool SafeGomory::find_cuts()
 
         double slack = tour_act - rhs;
 
-        if (slack == 0.0 && lp_viol >= Epsilon::Cut && tour_act >= rhs
-            // tour_act == rhs && lp_viol >= Epsilon::Cut
-            ) {
+        if (slack == 0.0 && lp_viol >= Epsilon::Cut && tour_act >= rhs) {
             SparseRow primal_row;
             // cout << "\tFound GMI cut with viol " << lp_viol << ", "
             //      << nz << " nonzeros, density "
@@ -175,19 +173,16 @@ bool SafeGomory::find_cuts()
         }
     }
 
-    if (p_found > 0) {
-        // cout << "\t" << p_found << " primal Gomory cuts found, avg density "
-        //      << (p_dense / p_found) << "...";
-    // cout << "\t" << std_found << " non-primal viol cuts found, avg density "
-    //      << (std_dense / std_found) << "\n";
-    // cout << "\tTightest non-tight cut: " << std::setprecision(10)
-    //      << std_min_slack << "\n\tmax: "
-    //      << std_max_slack << std::setprecision(6) << ", avg slack: "
-    //      << (std_avg_slack / (double) std_found) << "\n";
+    if (!silent) {
+        cout << "\t" << p_found << " primal gmi cuts\t"
+             << "avg density " << (p_dense / p_found) << "\n";
+        cout << "\t" << std_found << " non-primal gmi cuts\t"
+             << "avg density " << (std_dense / std_found) << "\n";
     }
 
     if (primal_found.empty()) {
-        //cout << "\tFound safe Gomory cuts but none were tight.\n";
+        if (!silent)
+            cout << "\tFound safe Gomory cuts but none were tight.\n";
         return false;
     }
 
@@ -212,7 +207,8 @@ bool SafeGomory::find_cuts()
             gmi_q.push_back(std::move(a));
     } CMR_CATCH_PRINT_THROW("putting found cuts in cut q", err);
 
-    // cout << "Enqueued " << gmi_q.size() << ".\n\n";
+    if (!silent)
+        cout << "Enqueued " << gmi_q.size() << ".\n\n";
 
     return true;
 }
