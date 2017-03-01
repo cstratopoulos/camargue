@@ -291,6 +291,17 @@ void CoreLP::set_active_tour(std::vector<int> tour_nodes)
             bool set_feas = check_feas(set_edges);
             cout << "Would-be tour vector feasible: " << set_feas << "\n"
                  << "Best tour vector feasible: " << best_feas << endl;
+            if (!set_feas) {
+                vector<int> tnodes_uniq = tnodes_copy;
+                std::sort(tnodes_uniq.begin(), tnodes_uniq.end());
+                cout << "Smallest/largest from sorted tnodes: "
+                     << tnodes_uniq.front() << "/"
+                     << tnodes_uniq.back() << endl;
+                tnodes_uniq.erase(std::unique(tnodes_uniq.begin(),
+                                              tnodes_uniq.end()));
+                cout << "Size of uniq'd tnodes: "
+                     << tnodes_uniq.size() << endl;
+            }
         } catch (const exception &e) {
             cerr << e.what() << " trying to check feasibility" << endl;
             throw err;
