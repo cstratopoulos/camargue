@@ -27,7 +27,7 @@ using std::string;
 using std::cout;
 
 SCENARIO ("Comparing HyperGraph edge coeffs to CPLEX coefs",
-          "[HyperGraph][get_coeff][Sep][LP]")
+          "[HyperGraph][get_coeffs][get_col][Sep][LP]")
 {
     using namespace CMR;
     vector<string> probs {
@@ -37,52 +37,69 @@ SCENARIO ("Comparing HyperGraph edge coeffs to CPLEX coefs",
         "rat99",
         "lin318",
         "d493",
-        "p654",
+        "att532",
         "u724",
         "dsj1000",
+        "rl1304",
         "pr1002",
         "d2103",
         };
 
     for (string &fname : probs) {
         GIVEN ("A priceless cutting_loop run on " + fname) {
-            WHEN ("We get coefficients of individual edges") {
-                THEN ("They agree with those from CPLEX") {
-                    string probfile = "problems/" + fname + ".tsp";
+         WHEN ("We get coefficients of individual edges/rows") {
+         THEN ("They agree with those from CPLEX") {
+             string probfile = "problems/" + fname + ".tsp";
 
-                    OutPrefs outprefs;
-                    Solver solver(probfile, 99, outprefs);
+             OutPrefs outprefs;
+             Solver solver(probfile, 1488409694, outprefs);
 
-                    solver.cutting_loop(false, false, true);
+             solver.cutting_loop(false, true, true);
 
-                    const Graph::CoreGraph &core_graph = solver.graph_info();
-                    const LP::CoreLP &core_lp = solver.get_core_lp();
+             const Graph::CoreGraph &core_graph = solver.graph_info();
+             const LP::CoreLP &core_lp = solver.get_core_lp();
 
-                    const vector<Graph::Edge> &edges = core_graph.get_edges();
+             const vector<Graph::Edge> &edges = core_graph.get_edges();
 
-                    int ncount = core_graph.node_count();
-                    int numrows = core_lp.num_rows();
+             int ncount = core_graph.node_count();
+             int numrows = core_lp.num_rows();
 
-                    for (int i = 0; i < edges.size(); ++i) {
-                        vector<int> ex_cmatind;
-                        vector<double> ex_cmatval;
-                        vector<int> cpx_cmatind;
-                        vector<double> cpx_cmatval;
+             for (int i = 0; i < edges.size(); ++i) {
+                 vector<int> ex_cmatind;
+                 vector<double> ex_cmatval;
+                 vector<int> cpx_cmatind;
+                 vector<double> cpx_cmatval;
 
-                        REQUIRE_NOTHROW(core_lp.external_cuts()
-                                        .get_col(edges[i].end[0],
-                                                 edges[i].end[1],
-                                                 ex_cmatind,
-                                                 ex_cmatval));
-                        REQUIRE_NOTHROW(core_lp.get_col(i, cpx_cmatind,
-                                                        cpx_cmatval));
+                 REQUIRE_NOTHROW(core_lp.external_cuts()
+                                 .get_col(edges[i].end[0],
+                                          edges[i].end[1],
+                                          ex_cmatind,
+                                          ex_cmatval));
+                 REQUIRE_NOTHROW(core_lp.get_col(i, cpx_cmatind,
+                                                 cpx_cmatval));
 
-                        REQUIRE(ex_cmatind.size() == cpx_cmatind.size());
-                        REQUIRE(ex_cmatind == cpx_cmatind);
-                        REQUIRE(ex_cmatval == cpx_cmatval);
-                    }
-                }
-            }
+                 REQUIRE(ex_cmatind.size() == cpx_cmatind.size());
+                 REQUIRE(ex_cmatind == cpx_cmatind);
+                 REQUIRE(ex_cmatval == cpx_cmatval);
+             }
+
+             for (int i = core_graph.node_count(); i < numrows; ++i) {
+                 vector<int> hg_rmatind;
+                 vector<double> hg_rmatval;
+                 LP::SparseRow rel_row;
+                 const auto &cut = core_lp.external_cuts().get_cut(i);
+                 INFO("Testing cut " << cut.cut_type());
+
+                 REQUIRE_NOTHROW(cut.get_coeffs(core_graph.get_edges(),
+                                                hg_rmatind, hg_rmatval));
+                 REQUIRE_NOTHROW(rel_row = core_lp.get_row(i));
+
+                 REQUIRE(rel_row.rmatind.size() == hg_rmatind.size());
+                 REQUIRE(rel_row.rmatind == hg_rmatind);
+                 REQUIRE(rel_row.rmatval == hg_rmatval);
+             }
+         }
+         }
         }
     }
 }
