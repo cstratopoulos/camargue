@@ -49,7 +49,7 @@ bool Sep::SimpleDP::find_cuts()
     } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
 
     for (int i = 0; i < kpart.num_parts(); ++i) {
-        CutQueue<dominoparity> mini_q(25);
+        CutQueue<dominoparity> mini_q;
 
         try {
             DPwitness cutgraph(candidates, kpart[i]);
@@ -82,7 +82,7 @@ bool Sep::SimpleDP::find_cuts()
     for (int i = 0; i < kpart.num_parts(); ++i) {
         if(at_capacity || caught_exception)
             continue;
-        CutQueue<dominoparity> mini_q(25);
+        CutQueue<dominoparity> mini_q;
 
         try {
             DPwitness cutgraph(candidates, kpart[i]);
