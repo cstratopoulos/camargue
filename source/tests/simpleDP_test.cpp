@@ -32,17 +32,15 @@ using TimeCuts = std::pair<double, int>;
 using ProbTuple = std::tuple<string, TimeCuts, TimeCuts>;
 
 static vector<ProbTuple> bench_probs {
-    ProbTuple("pr1002",  TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("dsj1000", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    // ProbTuple("pcb3038", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    // ProbTuple("fl3795", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    // ProbTuple("fnl4461", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    // ProbTuple("rl5915", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    // ProbTuple("rl5934", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    // ProbTuple("pla7397", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    // ProbTuple("rl11849", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    // ProbTuple("usa13509", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    // ProbTuple("brd14051", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("pcb3038", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("fl3795", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("fnl4461", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("rl5915", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("rl5934", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("pla7397", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("rl11849", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("usa13509", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("brd14051", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
     };
 
 
@@ -89,6 +87,8 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
 
             double tour_activity =
             Sep::get_activity(b_dat.best_tour_edges, R);
+
+            REQUIRE(tour_activity <= R.rhs);
 
             double lp_activity =
             Sep::get_activity(lp_edges, R);
