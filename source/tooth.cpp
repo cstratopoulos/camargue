@@ -62,7 +62,6 @@ CandidateTeeth::CandidateTeeth(const LP::ActiveTour &active_tour_,
 			       Data::SupportGroup &_supp_dat) :
     light_teeth(std::vector<ToothList>(_supp_dat.supp_graph.node_count)),
     list_sizes(_supp_dat.supp_graph.node_count, {{0, 0, 0}}),
-    stats(_supp_dat.supp_graph.node_count, ListStat::None),
     endmark(_supp_dat.supp_graph.node_count, CC_LINSUB_BOTH_END),
     active_tour(active_tour_),
     supp_dat(_supp_dat),
@@ -81,10 +80,8 @@ CandidateTeeth::CandidateTeeth(const LP::ActiveTour &active_tour_,
     seen_ranges.resize(ncount);
     adj_zones.resize(ncount, vector<int>(ncount, 0));
 
-    double fillt = util::zeit();
     std::fill(adj_zones.begin(), adj_zones.end(),
               vector<int>(ncount, 0));
-    cout << "Filled adj zones in " << (util::zeit() - fillt) << "s" << endl;
 
 #ifdef CMR_USE_OMP
 #pragma omp parallel for
@@ -171,11 +168,6 @@ void CandidateTeeth::sort_by_root()
 
         if (do_sort)
             tlist_sort(teeth);
-
-        if (have_dist) {
-            stats[root] = ListStat::Full;
-        } else if (have_right && have_dist)
-            stats[root] = ListStat::Merge;
     }
 
     t_sort.stop();

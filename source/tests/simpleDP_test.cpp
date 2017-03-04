@@ -41,6 +41,10 @@ static vector<ProbTuple> bench_probs {
     ProbTuple("rl11849", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
     ProbTuple("usa13509", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
     ProbTuple("brd14051", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("d15112", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("d18512", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("pla33810", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    // ProbTuple("pla85900",  TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
     };
 
 
@@ -53,7 +57,7 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
         string solfile = "test_data/tours/" + prob + ".sol";
         string subtourfile = "test_data/subtour_lp/" + prob + ".sub.x";
     for (int i : {0, 1}) {
-    GIVEN ("Data for " + prob + ", dummy part: " + std::to_string(i)) {
+    GIVEN ("Data for " + prob + ", dummy part: " + std::to_string(i == 0)) {
         TimeCuts &target = (i == 0 ? std::get<1>(pt) : std::get<2>(pt));
         Graph::CoreGraph core_graph;
         Data::BestGroup b_dat;
@@ -68,11 +72,10 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
         Sep::CutQueue<Sep::dominoparity> dp_q;
         LP::ActiveTour act_tour(core_graph, b_dat);
         kpart = Data::KarpPartition(inst, (i == 0), false);
+        
         Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
         double ft = util::zeit();
-
         REQUIRE(sDP.find_cuts());
-        ft = util::zeit() - ft;
         target.first = ft;
 
         double pfound = 0;
