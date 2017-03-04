@@ -7,6 +7,7 @@
 #include "simpleDP.hpp"
 #include "process_cuts.hpp"
 #include "io_util.hpp"
+#include "timer.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -47,6 +48,75 @@ static vector<ProbTuple> bench_probs {
     // ProbTuple("pla85900",  TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
     };
 
+// this test is meant to be run once normally and once by overriding the
+// CMR_USE_OMP compilation guard. To do so, go into config.hpp, and change
+// "ifndef CMR_DO_TESTS" to "ifndef CMR_DO_TESTSfjdlksafl" or something like
+// that, then recompile.
+SCENARIO ("pla85900 paritioned simple DP sep case study",
+          "[.SimpleDP][.sdp-pla85]") {
+    using namespace CMR;
+    string probfile = "problems/pla85900.tsp";
+    string solfile = "test_data/tours/pla85900.sol";
+    string subtourfile = "test_data/subtour_lp/pla85900.sub.x";
+
+    GIVEN ("Data for pla85900") {
+        Graph::CoreGraph core_graph;
+        Data::BestGroup b_dat;
+        Data::SupportGroup s_dat;
+        vector<double> lp_edges;
+        Data::Instance inst;
+        Data::KarpPartition kpart;
+        REQUIRE_NOTHROW(Data::make_cut_test(probfile, solfile, subtourfile,
+                                            core_graph, b_dat, lp_edges,
+                                            s_dat, inst));
+        int ncount = core_graph.node_count();
+        Sep::CutQueue<Sep::dominoparity> dp_q;
+        LP::ActiveTour act_tour(core_graph, b_dat);
+        kpart = Data::KarpPartition(inst, false, false);
+
+    THEN ("We can bench mark tooth separation/zone allocation/dp sep") {
+        Timer sdp_con("Full CandidateTeeth ctor (including allocs)");
+        sdp_con.start();
+        Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
+        sdp_con.stop();
+        sdp_con.report(true);
+
+        sDP.silent = false;
+
+        REQUIRE(sDP.find_cuts());
+
+        cout << "Cut queue initial size: " << dp_q.size() << "\n"
+             << "primal violated count.....";
+        double pfound = 0;
+
+        while (!dp_q.empty()) {
+            LP::SparseRow R;
+
+            const Sep::dominoparity &dp_cut = dp_q.peek_front();
+            vector<int> &bt = b_dat.best_tour_nodes;
+
+            REQUIRE_NOTHROW(R = Sep::get_row(dp_cut, bt, core_graph));
+
+            double tour_activity =
+            Sep::get_activity(b_dat.best_tour_edges, R);
+
+            REQUIRE(tour_activity <= R.rhs);
+
+            double lp_activity =
+            Sep::get_activity(lp_edges, R);
+
+            vector<int> print_elist;
+            vector<double> print_ecap;
+            if (tour_activity == R.rhs && lp_activity > R.rhs)
+                ++pfound;
+
+            dp_q.pop_front();
+        }
+        cout << pfound << endl;
+    }
+    }
+}
+
 
 SCENARIO ("Benchmarking karp partitioned simple DP sep",
           "[SimpleDP][figure][table][sdp-table][sdp-graph-cpu-cuts]") {
@@ -72,7 +142,7 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
         Sep::CutQueue<Sep::dominoparity> dp_q;
         LP::ActiveTour act_tour(core_graph, b_dat);
         kpart = Data::KarpPartition(inst, (i == 0), false);
-        
+
         Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
         double ft = util::zeit();
         REQUIRE(sDP.find_cuts());
