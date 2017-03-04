@@ -9,10 +9,6 @@
 
 #include "datagroups.hpp"
 
-extern "C" {
-#include <concorde/INCLUDE/util.h>
-}
-
 #include <vector>
 
 namespace CMR {
@@ -34,8 +30,13 @@ class KarpPartition {
 public:
     KarpPartition() = default; //!< Default construct an empty partition.
 
+    KarpPartition(const Data::Instance &inst, bool make_dummy,
+                  bool save_part);
+
     /// Construct a partition from an Instance \p inst.
-    KarpPartition(const Data::Instance &inst);
+    KarpPartition(const Data::Instance &inst)
+        : KarpPartition(inst, false, false) {}
+
 
     /// The number of sub-regions into which the data has been partitioned.
     int num_parts() const { return part_list.size(); }
