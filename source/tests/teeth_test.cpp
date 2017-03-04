@@ -69,8 +69,11 @@ TEST_CASE("New tiny candidate teeth with no elim",
             REQUIRE_NOTHROW(cands.get_light_teeth());
 
             int numfound = 0;
-            for (auto &v : cands.light_teeth)
+            for (auto &v : cands.light_teeth) {
                 numfound += v.size();
+                for (auto &t : v)
+                    cands.print_tooth(*t, true);
+            }
             cout << "\t" << numfound << " teeth found.\n";
 
             cout << "\n\n";
