@@ -49,7 +49,7 @@ static vector<ProbTuple> bench_probs {
 
 
 SCENARIO ("Benchmarking karp partitioned simple DP sep",
-          "[SimpleDP][figure][table]") {
+          "[SimpleDP][figure][table][sdp-table][sdp-graph-cpu-cuts]") {
     using namespace CMR;
     for (auto &pt : bench_probs) {
         string prob = std::get<0>(pt);
