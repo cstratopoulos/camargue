@@ -392,7 +392,7 @@ void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full,
 void CandidateTeeth::profile()
 {
     t_zones.report(true);
-    t_find.report(false);
+    t_find.report(true);
     t_sort.report(true);
     t_all.report(true);
 }

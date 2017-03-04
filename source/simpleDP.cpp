@@ -1,6 +1,7 @@
 #include "simpleDP.hpp"
 #include "util.hpp"
 #include "err_util.hpp"
+#include "timer.hpp"
 #include "config.hpp"
 
 #include <iostream>
@@ -43,13 +44,24 @@ bool Sep::SimpleDP::find_cuts()
 
     runtime_error err("Problem in SimpleDP::find_cuts.");
 
+    Timer find_total("Serial simple DP sep");
+    Timer find_cands("Finding candidate teeth", &find_total);
+
+    find_total.start();
+    find_cands.start()
+
     try {
         candidates.get_light_teeth();
         candidates.sort_by_root();
     } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
 
+    find_cands.stop();
+
+    Timer search_wit("Building/searching witness graph(s)");
+    search_wit.start();
     for (int i = 0; i < kpart.num_parts(); ++i) {
         CutQueue<dominoparity> mini_q;
+
 
         try {
             DPwitness cutgraph(candidates, kpart[i]);
@@ -59,6 +71,17 @@ bool Sep::SimpleDP::find_cuts()
         dp_q.splice(mini_q);
         // if(dp_q.size() >= 8)
         //     break;
+    }
+
+    search_wit.stop();
+    find_total.stop();
+
+    if (!silent) {
+        candidates.profile();
+        cout << "Times (not including adj zones)" << endl;
+        find_cands.report(false);
+        search_wit.report(false);
+        find_total.report(false);
     }
 
     return(!dp_q.empty());
@@ -73,11 +96,20 @@ bool Sep::SimpleDP::find_cuts()
     bool at_capacity = false;
     bool caught_exception = false;
 
+    Timer find_total("Parallel simple DP sep");
+    Timer find_cands("finding candidate teeth", &find_total);
+
+    find_total.start();
+    find_cands.start();
     try {
         candidates.get_light_teeth();
         candidates.sort_by_root();
     } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
+    find_cands.stop();
 
+
+    Timer search_wit("Building/searching witness graph(s)");
+    search_wit.start();
     #pragma omp parallel for
     for (int i = 0; i < kpart.num_parts(); ++i) {
         if(at_capacity || caught_exception)
@@ -107,9 +139,20 @@ bool Sep::SimpleDP::find_cuts()
         }
     }
 
+    search_wit.stop();
+    find_total.stop();
+
     if (caught_exception) {
         cerr << "OMP simple DP sep reported exception.\n";
         throw err;
+    }
+
+    if (!silent) {
+        candidates.profile();
+        cout << "Times (not including adj zones)" << endl;
+        find_cands.report(true);
+        search_wit.report(true);
+        find_total.report(true);
     }
 
     return (!dp_q.empty());

@@ -27,6 +27,8 @@ public:
 
     bool find_cuts(); //!< Separator invocation, returns true iff cuts found.
 
+    bool silent = true;
+
 private:
     CandidateTeeth candidates;
     Data::KarpPartition &kpart;
