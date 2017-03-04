@@ -4,6 +4,8 @@ brd14051
 d2103
 d493
 d657
+d15112
+d18512
 dantzig42
 dsj1000
 eil51
@@ -21,6 +23,8 @@ pa561
 pcb3038
 pcb442
 pla7397
+pla33810
+pla85900
 pr2392
 pr76
 rat99

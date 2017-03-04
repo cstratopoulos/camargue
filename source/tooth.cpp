@@ -79,12 +79,12 @@ CandidateTeeth::CandidateTeeth(const LP::ActiveTour &active_tour_,
     const vector<int> &tour = active_tour.nodes();
 
     seen_ranges.resize(ncount);
-    adj_zones.resize(ncount);
-    for (vector<int> &vec : adj_zones) {
-        vec.resize(ncount);
-        for (int &i : vec)
-            i = 0;
-    }
+    adj_zones.resize(ncount, vector<int>(ncount, 0));
+
+    double fillt = util::zeit();
+    std::fill(adj_zones.begin(), adj_zones.end(),
+              vector<int>(ncount, 0));
+    cout << "Filled adj zones in " << (util::zeit() - fillt) << "s" << endl;
 
 #ifdef CMR_USE_OMP
 #pragma omp parallel for
