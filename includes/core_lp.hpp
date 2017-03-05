@@ -14,8 +14,11 @@
 #include "datagroups.hpp"
 #include "hypergraph.hpp"
 #include "cutmon.hpp"
+#include "err_util.hpp"
 #include "util.hpp"
 
+#include <algorithm>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -51,6 +54,11 @@ public:
 
     void remove_edges(std::vector<int> edge_delstat);
 
+
+    /// Returns true iff x_vec satisfies all constraints and column bounds.
+    template<typename numtype>
+    bool check_feas(const std::vector<numtype> &x_vec);
+
     /// Get a const reference to the SupportGroup for the most recent pivot.
     const Data::SupportGroup &support_data() const { return supp_data; }
 
@@ -73,6 +81,12 @@ public:
     friend class CMR::Solver;
 
 private:
+    /// Instate active_tour, checking feasibility if it throws.
+    void instate_active();
+
+    /// As above but with a reset instate.
+    void reset_instate_active();
+
     void handle_aug_pivot(std::vector<int> tour_nodes, Basis aug_base);
 
     void prune_slacks();
@@ -100,6 +114,59 @@ private:
 
     int prev_numrows;
 };
+
+//////////////////// TEMPLATE METHOD IMPLEMENTATIONS //////////////////////////
+
+template<typename numtype>
+bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
+{
+    using std::cout;
+    using std::endl;
+    using std::runtime_error;
+    using std::vector;
+    namespace Eps = Epsilon;
+
+    runtime_error err("Problem in CoreLP::check_feas");
+    bool result = true;
+
+    int numrows = num_rows();
+    int numcols = num_cols();
+
+    vector<double> dbl_x;
+    vector<double> row_feas;
+    vector<double> col_feas;
+
+    try {
+        dbl_x = vector<double>(x_vec.begin(), x_vec.end());
+        get_row_infeas(dbl_x, row_feas, 0, numrows - 1);
+        get_col_infeas(dbl_x, col_feas, 0, numcols - 1);
+    } CMR_CATCH_PRINT_THROW("making solver queries", err);
+
+    int ncount = core_graph.node_count();
+
+    for (int i = 0; i < numrows; ++i) {
+        double rowfeas = row_feas[i];
+        if (rowfeas != 0.0) {
+            result = false;
+            cout << "Found infeas of " << rowfeas << " on ";
+            if (i < ncount)
+                cout << "degree equation" << endl;
+            else
+                cout << ext_cuts.get_cut(i).cut_type() << endl;
+        }
+    }
+
+    for (int i = 0; i < numcols; ++i) {
+        double colfeas = col_feas[i];
+        if (colfeas != 0.0) {
+            result = false;
+            cout << "Found infeas of " << colfeas << " on edge "
+                 << core_graph.get_edge(i) << endl;
+        }
+    }
+
+    return result;
+}
 
 
 }

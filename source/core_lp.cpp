@@ -60,7 +60,7 @@ CoreLP::CoreLP(Graph::CoreGraph &core_graph_,
         add_col(objval, ends, col_coeffs, lb, ub);
     }
 
-    active_tour.instate(*this);
+    instate_active();
 
     get_x(lp_edges);
 
@@ -179,14 +179,66 @@ void CoreLP::pivot_back(bool prune_slacks)
         try {
             del_set_rows(delset);
             ext_cuts.del_cuts(delset, false);
-            active_tour.reset_instate(*this);
+            reset_instate_active();
             // cout << "Deleted " << delct << " / "
             //      << (numrows - prev_numrows) << " basic slack cuts" << endl;
         } CMR_CATCH_PRINT_THROW("deleting cuts/instating tour", err);
     } else {
         try {
-            active_tour.instate(*this);
+            instate_active();
         } CMR_CATCH_PRINT_THROW("instating tour", err);
+    }
+}
+
+void CoreLP::instate_active()
+{
+    runtime_error err("CoreLP::instate_active failed");
+
+    try {
+        active_tour.instate(*this);
+    } catch (const exception &e) {
+        cerr << e.what() << " instating active tour" << endl;
+
+        bool active_feas;
+        bool best_feas;
+
+        try {
+            active_feas = check_feas(active_tour.edges());
+            best_feas = check_feas(best_data.best_tour_edges);
+        } catch (const exception &e) {
+            cerr << e.what() << " getting feas stats" << endl;
+            throw err;
+        }
+
+        cout << "Active tour vector feasible: " << active_feas << "\n"
+             << "Best tour vector feasible: " << best_feas << endl;
+        throw err;
+    }
+}
+
+void CoreLP::reset_instate_active()
+{
+    runtime_error err("CoreLP::reset_instate_active failed");
+
+    try {
+        active_tour.reset_instate(*this);
+    } catch (const exception &e) {
+        cerr << e.what() << " reset instating active tour" << endl;
+
+        bool active_feas;
+        bool best_feas;
+
+        try {
+            active_feas = check_feas(active_tour.edges());
+            best_feas = check_feas(best_data.best_tour_edges);
+        } catch (const exception &e) {
+            cerr << e.what() << " getting feas stats" << endl;
+            throw err;
+        }
+
+        cout << "Active tour vector feasible: " << active_feas << "\n"
+             << "Best tour vector feasible: " << best_feas << endl;
+        throw err;
     }
 }
 
@@ -198,7 +250,21 @@ void CoreLP::handle_aug_pivot(vector<int> tour_nodes, Basis aug_base)
         active_tour = ActiveTour(std::move(tour_nodes),
                                  lp_vec(), std::move(aug_base),
                                  get_objval(), core_graph);
-    } CMR_CATCH_PRINT_THROW("updating active_tour", err);
+    } catch (const exception &e) {
+        cerr << e.what() << " constructing active tour from pivot" << endl;
+
+        try {
+            vector<double> x = lp_vec();
+            bool augpiv_feas = check_feas(x);
+            bool best_feas = check_feas(best_data.best_tour_edges);
+            cout << "Augmenting lp vec feasible: " << augpiv_feas << "\n"
+                 << "Best tour vector feasible: " << best_feas << endl;
+        } catch (const exception &e) {
+            cerr << e.what() << " trying to check feasibility" << endl;
+            throw err;
+        }
+        throw err;
+    }
 
     try { prune_slacks(); } CMR_CATCH_PRINT_THROW("pruning slacks", err);
 }
@@ -206,11 +272,43 @@ void CoreLP::handle_aug_pivot(vector<int> tour_nodes, Basis aug_base)
 void CoreLP::set_active_tour(std::vector<int> tour_nodes)
 {
     runtime_error err("Problem in CoreLP::set_active_tour");
+    vector<int> tnodes_copy;
 
     try {
+        tnodes_copy = tour_nodes;
         active_tour = ActiveTour(std::move(tour_nodes), *this,
                                  core_graph);
-    } CMR_CATCH_PRINT_THROW("updating active_tour", err);
+    } catch (const exception &e) {
+        cerr << e.what() << " constructing active tour from nodes" << endl;
+
+        try {
+            vector<int> set_edges;
+            double _tval;
+
+            core_graph.tour_edge_vec(tnodes_copy, set_edges, _tval);
+
+            bool best_feas = check_feas(best_data.best_tour_edges);
+            bool set_feas = check_feas(set_edges);
+            cout << "Would-be tour vector feasible: " << set_feas << "\n"
+                 << "Best tour vector feasible: " << best_feas << endl;
+            if (!set_feas) {
+                vector<int> tnodes_uniq = tnodes_copy;
+                std::sort(tnodes_uniq.begin(), tnodes_uniq.end());
+                cout << "Smallest/largest from sorted tnodes: "
+                     << tnodes_uniq.front() << "/"
+                     << tnodes_uniq.back() << endl;
+                tnodes_uniq.erase(std::unique(tnodes_uniq.begin(),
+                                              tnodes_uniq.end()),
+                                  tnodes_uniq.end());
+                cout << "Size of uniq'd tnodes: "
+                     << tnodes_uniq.size() << endl;
+            }
+        } catch (const exception &e) {
+            cerr << e.what() << " trying to check feasibility" << endl;
+            throw err;
+        }
+        throw err;
+    }
 
     try { prune_slacks(); } CMR_CATCH_PRINT_THROW("pruning slacks", err);
 }
@@ -243,29 +341,6 @@ void CoreLP::prune_slacks()
     ext_cuts.del_cuts(delrows, true);
     factor_basis();
 }
-/*
-void CoreLP::check_tour_feas()
-{
-    vector<double> feas_stat;
-
-    get_row_infeas(active_tour.edges(), feas_stat, 0, num_rows() - 1);
-
-    int ncount = core_graph.node_count();
-
-    for (int i = 0; i < feas_stat.size(); ++i) {
-        if (std::abs(feas_stat[i] >= Eps::Zero)) {
-            if (i < ncount)
-                cout << "Found nonzero infeas on degree eqn\n";
-            else {
-                cout << "Found nonzero infeas on cut, type: "
-                     << ext_cuts.get_cut(i).cut_type() << "\n";
-            }
-
-            throw runtime_error("tour is now infeasible.");
-        }
-    }
-}
-*/
 
 void CoreLP::add_cuts(Sep::LPcutList &cutq)
 {
@@ -406,7 +481,7 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch, bool reinstate)
     } CMR_CATCH_PRINT_THROW("adding edges to core lp/resizing", err);
 
     if (reinstate) {
-        try { active_tour.reset_instate(*this); }
+        try { reset_instate_active(); }
         CMR_CATCH_PRINT_THROW("resetting active tour", err);
     }
 }
@@ -469,7 +544,7 @@ void CoreLP::purge_gmi()
     if (delcount > 0) {
         del_set_rows(delrows);
         ext_cuts.del_cuts(delrows, false);
-        active_tour.reset_instate(*this);
+        reset_instate_active();
     }
 }
 

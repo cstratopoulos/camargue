@@ -63,6 +63,26 @@ struct Basis {
     using Ptr = std::unique_ptr<Basis>;
 };
 
+/// Struct for storing info from branching estimates.
+struct Estimate {
+    Estimate() = default;
+
+    /// Solution statuses from strong branch pivoting.
+    enum class Stat {
+        Abort, //!< Reached iteration limit.
+        Infeas, //!< LP proved infeasible.
+        Prune //!< LP optimal with objval that implies pruning.
+    } sol_stat;
+
+    double value; //!< The objective value estimate.
+
+    /// The basis from the strong branch search.
+    /// If sol_stat is abort, this is null or the first primal feasible basis
+    /// encountered. Otherwise, it is the basis that certifies either of the
+    /// other two Stat values.
+    Basis::Ptr sb_base;
+};
+
 /// Simple struct representing sparse matrix row for passing to LP solver.
 struct SparseRow {
     std::vector<int> rmatind; //!< Indices of nonzero entries.

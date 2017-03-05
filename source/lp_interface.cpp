@@ -527,6 +527,19 @@ void Relaxation::get_row_infeas(const std::vector<double> &x,
         throw cpx_err(rval, "CPXgetrowinfeas");
 }
 
+void Relaxation::get_col_infeas(const std::vector<double> &x,
+                                std::vector<double> &feas_stat, int begin,
+                                int end) const
+{
+    feas_stat.resize(end - begin + 1);
+
+    int rval = CPXgetcolinfeas(simpl_p->env, simpl_p->lp, &x[0], &feas_stat[0],
+                               begin, end);
+
+    if (rval)
+        throw cpx_err(rval, "CPXgetcolinfeas");
+}
+
 void Relaxation::add_col(const double objval, const vector<int> &indices,
                          const vector<double> &coeffs, const double lb,
                          const double ub)
