@@ -31,6 +31,11 @@ inline bool is_tour_piv(PivType P)
     return P == PivType::Tour || P == PivType::FathomedTour;
 }
 
+/// Alias declaration for branching estimates.
+/// First element: is the problem infeasible.
+/// Second element: the objective value estimate.
+using InfeasObj = std::pair<bool, double>;
+
 enum BStat {
     AtLower = 0,
     Basic = 1,

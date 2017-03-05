@@ -68,6 +68,9 @@ public:
     int node_count() const { return nodecount; } //!< Number of nodes.
     int seed() const { return random_seed; } //!< Random seed used.
 
+    /// Get the length of the tour in \p tour_nodes.
+    double tour_length(const std::vector<int> &tour_nodes) const;
+
     /// The TSPLIB instance name or the random problem dimensions.
     const std::string &problem_name() const { return pname; }
 
@@ -112,6 +115,8 @@ public:
 
     void add_edge(int end0, int end1, int len);
     void add_edge(const Edge &e);
+
+    void remove_edges();
 
 private:
     std::vector<Edge> edges;

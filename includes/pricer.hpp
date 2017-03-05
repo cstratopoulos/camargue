@@ -38,9 +38,15 @@ public:
 
     ~Pricer(); //!< Destruct and free resource handles.
 
-    ScanStat gen_edges(LP::PivType piv_stat); //!< Generate/add edges to core.
+    ScanStat gen_edges(LP::PivType piv_stat,
+                       bool try_elim); //!< Generate/add edges to core.
+
+    util::Fixed64 exact_lb(bool full,
+                           std::vector<PrEdge<util::Fixed64>> &priced_edges);
 
     util::Fixed64 exact_lb(bool full);
+
+    void elim_edges(bool make_opt); //!< Eliminate edges from the core.
 
     template <typename numtype>
     void price_edges(std::vector<PrEdge<numtype>> &target_edges,

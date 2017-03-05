@@ -1,8 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** @file
  * @brief Managing Core LP relaxations of TSP instances.
- *
-\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ */
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_CORE_LP_H
 #define CMR_CORE_LP_H
@@ -33,7 +33,7 @@ namespace LP {
 class CoreLP : public Relaxation {
 public:
     CoreLP(Graph::CoreGraph &core_graph_,
-           Data::BestGroup &best_data);
+           Data::BestGroup &best_data_);
 
     /// Compute a primal non-degenerate pivot from the active_tour.
     LP::PivType primal_pivot();
@@ -46,7 +46,10 @@ public:
     void add_cuts(Sep::CutQueue<Sep::ex_blossom> &ex2m_q);
     void add_cuts(Sep::CutQueue<Sep::HyperGraph> &pool_q);
 
-    void add_edges(const std::vector<Graph::Edge> &add_batch);
+    void add_edges(const std::vector<Graph::Edge> &add_batch,
+                   bool reinstate);
+
+    void remove_edges(std::vector<int> edge_delstat);
 
     /// Get a const reference to the SupportGroup for the most recent pivot.
     const Data::SupportGroup &support_data() const { return supp_data; }
@@ -57,17 +60,20 @@ public:
 
     const LP::ActiveTour &get_active_tour() const { return active_tour; }
 
+    void set_active_tour(std::vector<int> tour_nodes);
+
     /// Average number of iterations per primal_pivot.
     int avg_itcount() const { return sum_it_count / num_nd_pivots; }
 
     double active_tourlen() const { return active_tour.length(); }
+
+    double global_ub() const { return best_data.min_tour_value; }
 
 
     friend class CMR::Solver;
 
 private:
     void handle_aug_pivot(std::vector<int> tour_nodes, Basis aug_base);
-    void set_active_tour(std::vector<int> tour_nodes);
 
     void prune_slacks();
 
@@ -76,6 +82,7 @@ private:
     void purge_gmi();
 
     Graph::CoreGraph &core_graph;
+    Data::BestGroup &best_data;
     Data::SupportGroup supp_data;
 
     Sep::ExternalCuts ext_cuts;

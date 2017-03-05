@@ -35,8 +35,8 @@ namespace Eps = CMR::Epsilon;
 namespace LP {
 
 CoreLP::CoreLP(Graph::CoreGraph &core_graph_,
-               Data::BestGroup &best_data) try :
-    core_graph(core_graph_),
+               Data::BestGroup &best_data_) try :
+    core_graph(core_graph_), best_data(best_data_),
     ext_cuts(best_data.best_tour_nodes, best_data.perm),
     active_tour(core_graph_, best_data),
     prev_numrows(core_graph_.node_count())
@@ -111,7 +111,7 @@ PivType CoreLP::primal_pivot()
         }
     } else {
         if (dfeas) {
-            if (get_objval() >= active_tourlen() - 1.0 + Eps::Zero)
+            if (get_objval() >= global_ub() - 1.0 + Eps::Zero)
                 result = PivType::FathomedTour;
         } else
             result = PivType::Frac;
@@ -377,7 +377,7 @@ void CoreLP::add_cuts(Sep::CutQueue<Sep::HyperGraph> &pool_q)
     } CMR_CATCH_PRINT_THROW("processing/adding cuts", err);
 }
 
-void CoreLP::add_edges(const vector<Graph::Edge> &batch)
+void CoreLP::add_edges(const vector<Graph::Edge> &batch, bool reinstate)
 {
     runtime_error err("Problem in CoreLP::add_edges");
 
@@ -402,10 +402,53 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch)
             add_col(objval, cmatind, cmatval, lb, ub);
         }
         lp_edges.resize(new_ecount, 0.0);
+        best_data.best_tour_edges.resize(new_ecount, 0);
     } CMR_CATCH_PRINT_THROW("adding edges to core lp/resizing", err);
 
-    try { active_tour.reset_instate(*this); }
-    CMR_CATCH_PRINT_THROW("resetting active tour", err)
+    if (reinstate) {
+        try { active_tour.reset_instate(*this); }
+        CMR_CATCH_PRINT_THROW("resetting active tour", err);
+    }
+}
+
+void CoreLP::remove_edges(vector<int> edge_delstat)
+{
+    runtime_error err("Problem in CoreLP::add_edges");
+
+    int ecount = core_graph.edge_count();
+    if (edge_delstat.size() != ecount)
+        throw runtime_error("Size mismatch in remove_edges");
+
+    vector<Graph::Edge> &graph_edges = core_graph.get_edges();
+    vector<int> &delstat = edge_delstat;
+
+    for (int i = 0; i < ecount; ++i)
+        if (delstat[i] == 1)
+            graph_edges[i].removable = true;
+        else
+            graph_edges[i].removable = false;
+
+    try {
+        core_graph.remove_edges();
+    } CMR_CATCH_PRINT_THROW("removing edges from coregraph", err);
+
+    lp_edges.resize(core_graph.edge_count());
+
+    vector<int> &tour_edges = best_data.best_tour_edges;
+    for (int i = 0; i < delstat.size(); ++i)
+        if (delstat[i] == 1)
+            tour_edges[i] = -1;
+
+    tour_edges.erase(std::remove(tour_edges.begin(), tour_edges.end(), -1),
+                     tour_edges.end());
+
+    try {
+        del_set_cols(delstat);
+        active_tour = ActiveTour(best_data.best_tour_nodes, *this,
+                                 core_graph);
+    } CMR_CATCH_PRINT_THROW("deleting cols from LP/reinstating", err);
+
+
 }
 
 void CoreLP::purge_gmi()

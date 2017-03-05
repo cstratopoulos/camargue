@@ -158,6 +158,22 @@ Instance& Instance::operator=(Instance &&I) noexcept
 
 Instance::~Instance() { CCutil_freedatagroup(&dat); }
 
+double Instance::tour_length(const vector<int> &tour_nodes) const
+{
+    if (tour_nodes.size() != nodecount) {
+        cerr << "Tour vector size " << tour_nodes.size() << " with nodecount "
+             << nodecount << endl;
+        throw runtime_error("Size mismatch in Instance::tour_length");
+    }
+
+    double result = 0.0;
+
+    for (int i = 0; i < nodecount; ++i)
+        result += edgelen(tour_nodes[i], tour_nodes[(i + 1) % nodecount]);
+
+    return result;
+}
+
 }
 
 namespace Graph {
@@ -178,6 +194,9 @@ CoreGraph::CoreGraph(const Data::Instance &inst) try
     plan.linkern.quadnearest = 2;
     plan.linkern.greedy_start = 0;
     plan.linkern.nkicks = (ncount / 100) + 1;
+
+    if (ncount < 100) // to prevent small edge counts on tiny instances
+        plan.quadnearest = 1;
 
     int *elist = (int *) NULL;
 
@@ -245,6 +264,14 @@ int CoreGraph::find_edge_ind(int end0, int end1) const
     const AdjObj *adj_ptr = adj_list.find_edge(end0, end1);
     if (adj_ptr == nullptr)
         return -1;
+    int result = adj_ptr->edge_index;
+
+    if (result > edge_count()) {
+        cerr << end0 << ", " << end1 << " found with index "
+             << result << " but " << edge_count() << " edges" << endl;
+        throw logic_error("Result out of bounds in CoreGraph::find_edge_ind");
+    }
+
     return adj_ptr->edge_index;
 }
 
@@ -267,6 +294,15 @@ void CoreGraph::add_edge(const Edge &e)
     int new_ind = edge_count();
     edges.push_back(e);
     adj_list.add_edge(e.end[0], e.end[1], new_ind, e.len);
+}
+
+void CoreGraph::remove_edges()
+{
+    edges.erase(std::remove_if(edges.begin(), edges.end(),
+                               [](const Edge &e) { return e.removable; }),
+                edges.end());
+
+    adj_list = AdjList(node_count(), edges);
 }
 
 }

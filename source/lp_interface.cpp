@@ -541,6 +541,13 @@ void Relaxation::add_col(const double objval, const vector<int> &indices,
         throw cpx_err(rval, "CPXaddcols");
 }
 
+void Relaxation::del_set_cols(std::vector<int> &delstat)
+{
+    int rval = CPXdelsetcols(simpl_p->env, simpl_p->lp, &delstat[0]);
+    if (rval)
+        throw cpx_err(rval, "CPXdelsetcols");
+}
+
 void Relaxation::get_base(vector<int> &colstat,
                           vector<int> &rowstat) const
 {
@@ -888,13 +895,11 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                                       const vector<int> &colstat,
                                       const vector<int> &rowstat,
                                       const vector<int> &indices,
-                                      vector<std::pair<int, double>> &downobj,
-                                      vector<std::pair<int, double>> &upobj,
+                                      vector<InfeasObj> &downobj,
+                                      vector<InfeasObj> &upobj,
                                       vector<Basis> &contra_bases,
                                       int itlim, double upperbound)
 {
-    using ScorePair = std::pair<int, double>;
-
     CPXintParamGuard per_ind(CPX_PARAM_PERIND, 0, simpl_p->env,
                              "primal_strong_branch perturb");
 
@@ -918,7 +923,6 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
 
     for (int i = 0; i < indices.size(); ++i) {
         int ind = indices[i];
-        //cout << "----Index " << ind << "\n";
         for (ClampPair &cp : clamps) {
             char sense = cp.first;
             double clamp_bound = cp.second;
@@ -944,38 +948,32 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                     copy_base(contra_bases[i].colstat,
                               contra_bases[i].rowstat);
                     factor_basis();
-                    // cout << "Copied saved base, p feas "
-                    //      << primal_feas() << "\n";
                 }
             }
 
             CPXlongParamGuard it_lim(CPX_PARAM_ITLIM, itlim, simpl_p->env,
                                      "primal_strong_branch it lim");
 
-            // cout << "objval after tighten " << ((int) clamp_bound) << ": "
-            //      << get_objval() << "\n\n";
-
             primal_opt();
 
             int solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
             double objval = get_objval();
-            int rank = -1;
+            bool infeas = false;
 
-            if (solstat == CPX_STAT_ABORT_IT_LIM)
-                rank = 0;
-            else if (solstat == CPX_STAT_OPTIMAL ||
-                     solstat == CPX_STAT_OPTIMAL_INFEAS)
-                rank = 1;
-            else if (solstat == CPX_STAT_INFEASIBLE)
-                rank = 2;
-            else
+            if (solstat == CPX_STAT_INFEASIBLE) {
+                infeas = true;
+                objval = upperbound;
+            } else if (solstat != CPX_STAT_ABORT_IT_LIM &&
+                       solstat != CPX_STAT_OPTIMAL &&
+                       solstat != CPX_STAT_OPTIMAL_INFEAS) {
                 throw cpx_err(solstat,
                               clamp_bound == 0.0 ?
                               "CPXgetstat in down clamp" :
                               "CPXgetstat in up clamp");
+            }
 
-            vector<ScorePair> &objvec = clamp_bound == 0.0 ? downobj : upobj;
-            objvec.push_back(ScorePair(rank, objval));
+            vector<InfeasObj> &objvec = clamp_bound == 0.0 ? downobj : upobj;
+            objvec.push_back(InfeasObj(infeas, objval));
 
             tighten_bound(ind, sense, unclamp_bound);
         }

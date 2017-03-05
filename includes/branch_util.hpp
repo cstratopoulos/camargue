@@ -7,109 +7,102 @@
 #ifndef CMR_BRANCH_UTIL_H
 #define CMR_BRANCH_UTIL_H
 
+#include "graph.hpp"
 #include "lp_util.hpp"
+#include "util.hpp"
 
+#include <algorithm>
 #include <iostream>
+#include <string>
 #include <utility>
 #include <vector>
 
 namespace CMR {
 
-namespace Graph { struct Edge; }
-
 /// Augment-Branch-Cut solution.
 namespace ABC {
 
+/// Constants related to branch selection.
+namespace SB {
 
-constexpr double InitialMult = 10; //!< Scale factor for Driebeek penalties.
+constexpr double LongMult = 10;
+constexpr double StrongMult = 100;
 
-constexpr double StrongMult = 100; //!< Scale factor for strong branch scores.
+constexpr int Cands1 = 5;
+constexpr int Cands2 = 2;
 
-constexpr int SB1Cands = 5; //!< Number of 1st round strong branch candidates.
+constexpr int Lim1Min = 10;
+constexpr int Lim2Max = 500;
 
-constexpr int SB2Cands = 2; //!< Number of 2nd round strong branch candidates.
+inline int round1_limit(int avg_itcount)
+{
+    return std::max(Lim1Min, avg_itcount);
+}
 
-constexpr int SB1Lim = 100; //!< 1st round strong branch iteration limit.
+inline int round2_limit(int avg_itcount)
+{
+    return std::min(2 * avg_itcount, Lim2Max);
+}
 
-constexpr int SB2Lim = 500; //!< 2nd round strong branch iteration limit.
+}
 
-constexpr int Int32Max = 2147483647;
-
-/// Alias declaration for integer ranking and objective value estimate.
-/// Higher is better for both entries, to be sorted lexicographically.
-using ScorePair = std::pair<int, double>;
-
-/// A simple structure for recording the status of branching subproblems.
-struct Problem {
-    enum class Type {
-        Root, //!< The root lp.
-        Affirm, //!< Enforcing agreement with current tour.
-        Contra //!< Enforcing departure from current tour.
-    };
-
-    Problem() = default;
-
-    Problem(int ind, ScorePair r);
-
-    Problem(int ind, ScorePair r, LP::Basis cbase);
-
-    int edge_ind;
-    Type type;
-    ScorePair rank;
-    LP::Basis::Ptr contra_base;
-};
-
-std::ostream &operator<<(std::ostream &os, Problem::Type type);
-std::ostream &operator<<(std::ostream &os, const Problem &prob);
-
-/// Strategies for enforcing Problem::Type::Contra branches.
-enum class ContraStrat {
-    Fix, /// Change the bounds on an edge in the Relaxation.
-    Naive, /// Add a single branch constraint to the Relaxation.
-};
-
-
-/// A POD struct for ranking branching edges.
-struct ScoreTuple {
-    ScoreTuple() = default;
-
-    ScoreTuple(int ind, ScorePair down, ScorePair up, LP::Basis &&cbase,
-               double mult, double ub);
-
-    int index; //!< The index of the edge being scored.
-
-    /// How valuable is the estimate obtained. Higher is better.
-    int score_priority;
-
-    ScorePair down_est; //!< The estimate for clamping to zero.
-    ScorePair up_est; //!< The estimate for clamping to one.
-
-    LP::Basis contra_base;
-
-    double score; //!< The priority score formed from down_est and up_est.
-};
-
-bool operator>(const ScoreTuple &s, const ScoreTuple &t);
+/// Return a "large" edge length relative to the capacities in \p ecap.
+int large_len(int ncount, const std::vector<Graph::Edge> &edges);
 
 /// Rank a branching variable in terms of its down and up estimates.
 double var_score(double mult, double v0, double v1);
 
-/// Get a list of candidate branch edges using the J\"unger et al. metric.
+
+/// Get a list of candidate branch edges using fractional long edge branching.
 std::vector<int> length_weighted_cands(const std::vector<Graph::Edge> &edges,
                                        const std::vector<int> &indices,
                                        const std::vector<double> &x,
                                        const int num_return);
 
+
+struct ScoreTuple {
+    ScoreTuple() = default;
+
+    ScoreTuple(EndPts e, LP::InfeasObj down, LP::InfeasObj up,
+               LP::Basis base, double mult, double ub);
+
+    EndPts ends;
+
+    LP::InfeasObj down_est;
+    LP::InfeasObj up_est;
+
+    double score;
+
+    LP::Basis contra_base;
+};
+
+inline std::ostream &operator<<(std::ostream &os, const ScoreTuple &T)
+{
+    os << T.ends << ", down ";
+    if (T.down_est.first)
+        os << "infeas";
+    else
+        os << T.down_est.second;
+
+    os << ", up ";
+    if (T.up_est.first)
+        os << "infeas";
+    else
+        os << T.up_est.second;
+
+    os << ", score " << T.score;
+    return os;
+}
+
 /// Produce a list of fixed max size containing ranked scored branching edges.
 std::vector<ScoreTuple> ranked_cands(const std::vector<int> &cand_inds,
-                                     const std::vector<ScorePair> &down_est,
-                                     const std::vector<ScorePair> &up_est,
+                                     const std::vector<LP::InfeasObj> &down_est,
+                                     const std::vector<LP::InfeasObj> &up_est,
+                                     const std::vector<Graph::Edge> &edges,
                                      std::vector<LP::Basis> &contra_bases,
-                                     const double mult,
-                                     const double ub, const int num_return);
+                                     double mult, double ub, int num_return);
 
-/// Return a "large" edge length relative to the capacities in \p ecap.
-int large_len(int ncount, const std::vector<int> &ecap);
+
 
 }
 }
