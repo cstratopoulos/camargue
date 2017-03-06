@@ -79,7 +79,6 @@ bool Sep::SimpleDP::find_cuts()
 
     if (!silent) {
         candidates.profile();
-        cout << "Times (not including adj zones)" << endl;
         find_cands.report(true);
         search_wit.report(true);
         find_total.report(true);

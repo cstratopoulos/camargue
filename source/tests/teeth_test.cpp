@@ -149,19 +149,6 @@ TEST_CASE("New candidate teeth with elim",
             }
 
             cout << "Got collection of " << numfound << ".\n";
-
-
-            int f_count = 0;
-            int m_count = 0;
-            for (auto &stat : cands.stats)
-                if (stat == Sep::ListStat::Full)
-                    ++f_count;
-                else if (stat == Sep::ListStat::Merge)
-                    ++m_count;
-            cout << "Did " << f_count << " full sorts, " << m_count
-                 << " merge sorts ("
-                 << (ncount - (f_count + m_count)) << " untouched!)\n";
-
             cands.profile();
             cout << "\n";
         }

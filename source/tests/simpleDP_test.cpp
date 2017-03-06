@@ -45,7 +45,6 @@ static vector<ProbTuple> bench_probs {
     ProbTuple("d15112", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
     ProbTuple("d18512", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
     ProbTuple("pla33810", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    // ProbTuple("pla85900",  TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
     };
 
 // this test is meant to be run once normally and once by overriding the
@@ -143,10 +142,11 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
         LP::ActiveTour act_tour(core_graph, b_dat);
         kpart = Data::KarpPartition(inst, (i == 0), false);
 
-        Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
         double ft = util::zeit();
+        Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
+        sDP.silent = false;
         REQUIRE(sDP.find_cuts());
-        target.first = ft;
+        target.first = (util::zeit() - ft);
 
         double pfound = 0;
 

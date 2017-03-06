@@ -65,7 +65,7 @@ CandidateTeeth::CandidateTeeth(const LP::ActiveTour &active_tour_,
     active_tour(active_tour_),
     supp_dat(_supp_dat),
     t_all("Candidate Teeth"),
-    t_zones("Adj zones", &t_all),
+    t_pre("Sort adj/allocate", &t_all),
     t_find("Initial find", &t_all),
     t_sort("Sort by root", &t_all)
 {
@@ -75,7 +75,7 @@ CandidateTeeth::CandidateTeeth(const LP::ActiveTour &active_tour_,
     const vector<int> &tour = active_tour.nodes();
 
     t_all.start();
-    t_zones.start();
+    t_pre.start();
 
     seen_ranges.resize(ncount);
 
@@ -98,7 +98,7 @@ CandidateTeeth::CandidateTeeth(const LP::ActiveTour &active_tour_,
                                             light_teeth[root_ind].rend());
     }
 
-    t_zones.stop();
+    t_pre.stop();
 }
 
 void CandidateTeeth::get_light_teeth()
@@ -434,7 +434,7 @@ void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full,
 
 void CandidateTeeth::profile()
 {
-    t_zones.report(true);
+    t_pre.report(true);
     t_find.report(true);
     t_sort.report(true);
     t_all.report(true);

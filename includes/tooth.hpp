@@ -18,8 +18,6 @@
 namespace CMR {
 namespace Sep {
 
-enum class ListStat {None, Merge, Full};
-
 class CandidateTeeth {
 public:
     CandidateTeeth(const LP::ActiveTour &active_tour_,
@@ -55,7 +53,6 @@ public:
 
     static std::vector<IteratorMat> seen_ranges;
     std::vector<std::array<int, 3>> list_sizes;
-    std::vector<ListStat> stats;
 
 private:
     friend class DPwitness;
@@ -107,10 +104,10 @@ private:
     const LP::ActiveTour &active_tour;
     Data::SupportGroup &supp_dat;
 
-    CMR::Timer t_all;
-    CMR::Timer t_zones;
-    CMR::Timer t_find;
-    CMR::Timer t_sort;
+    Timer t_all;
+    Timer t_pre;
+    Timer t_find;
+    Timer t_sort;
 };
 
 }
