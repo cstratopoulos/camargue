@@ -214,12 +214,6 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
                     cout << "\n";
                 }
                 cout << "\n";
-
-                for (vector<int> &vec : cands.adj_zones) {
-                    for (int i : vec)
-                        cout << setw(2) << i << "  ";
-                    cout << "\n";
-                }
             }
 
             vector<Sep::ToothBody> seg_vec;
@@ -235,7 +229,6 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
                                                2.999, &seg_vec,
                                                dump_segment));
 
-            vector<vector<int>> &zones = cands.adj_zones;
             for (auto s1 = seg_vec.begin(); s1 != seg_vec.end() - 1; ++s1) {
                 for (auto s2 = s1 + 1; s2 != seg_vec.end(); ++s2) {
                     Sep::ToothBody seg1 = *s1, seg2 = *s2;
@@ -285,10 +278,13 @@ TEST_CASE("New tiny tooth constructor with brute force tests",
                             cout << "seg1 contains: "
                                  << seg1.contains(end1) << ", seg 2: "
                                  << seg2.contains(end1) << "\n";
-                            IntPair s1_range = cands.get_range(root, seg1,
-                                                               zones);
-                            IntPair s2_range = cands.get_range(root, seg2,
-                                                               zones);
+                            const auto &root_nbrs =
+                            G_s.nodelist[tour[root]].neighbors;
+
+                            IntPair s1_range = cands.get_range(seg1, perm,
+                                                               root_nbrs);
+                            IntPair s2_range = cands.get_range(seg2, perm,
+                                                               root_nbrs);
                             cout << "seg1 range: " << s1_range.first << ", "
                                  << s1_range.second << " seg2 range: "
                                  << s2_range.first << ", "
