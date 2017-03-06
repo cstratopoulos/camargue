@@ -182,34 +182,45 @@ IntPair CandidateTeeth::get_range(ToothBody s,
     int start = 0;
     int end = deg;
 
-    vector<Segment> adj_zones;
+    bool placed_end = false; // have we found a zone for the segment endpoint
 
-    adj_zones.reserve(deg);
+    Segment zone_0(0, perm[root_nbrs.front().other_end] - 1);
 
-    adj_zones.emplace_back(0, perm[root_nbrs.front().other_end] - 1);
-
-    for (int i = 0; i < deg - 1; ++i)
-        adj_zones.emplace_back(perm[root_nbrs[i].other_end],
-                               perm[root_nbrs[i + 1].other_end] - 1);
-
-    adj_zones.emplace_back(perm[root_nbrs.back().other_end], ncount - 1);
-
-    for (int i = 0; i < adj_zones.size(); ++i) {
-        if (adj_zones[i].contains(seg_start)) {
-            if (adj_zones[i].start == seg_start)
-                start = -i;
-            else
-                start = i;
-        }
-
-        if (adj_zones[i].contains(seg_end)) {
-            if (adj_zones[i].start == seg_end)
-                end = -i;
-            else
-                end = i;
-            break;
-        }
+    if (zone_0.contains(seg_end)) {
+        end = 0;
+        placed_end = true;
     }
+
+    if (!placed_end)
+        for (int i = 0; i < deg - 1; ++i) {
+            Segment zone_i(perm[root_nbrs[i].other_end],
+                           perm[root_nbrs[i + 1].other_end] -1);
+            if (zone_i.contains(seg_start)) {
+                if (seg_start == zone_i.start)
+                    start = -(i + 1);
+                else
+                    start = i + 1;
+            }
+
+            if (zone_i.contains(seg_end)) {
+                if (seg_end == zone_i.start)
+                    end = -(i + 1);
+                else
+                    end = i + 1;
+                break;
+            }
+        }
+
+    Segment zone_d(perm[root_nbrs.back().other_end], ncount - 1);
+    if (zone_d.contains(seg_start)){
+        if (seg_start == zone_d.start)
+            start = -deg;
+        else
+            start = deg;
+    }
+
+    if (seg_end == zone_d.start)
+        end = -deg;
 
     IntPair range(-1, -1);
 
