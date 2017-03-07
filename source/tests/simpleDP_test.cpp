@@ -33,23 +33,23 @@ using TimeCuts = std::pair<double, int>;
 using ProbTuple = std::tuple<string, TimeCuts, TimeCuts>;
 
 static vector<ProbTuple> bench_probs {
-    ProbTuple("pcb3038", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("fl3795", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("fnl4461", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("rl5915", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("rl5934", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("pla7397", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("rl11849", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("usa13509", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("brd14051", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("d15112", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("d18512", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("pla33810", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("pcb3038", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("fl3795", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("fnl4461", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("rl5915", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("rl5934", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("pla7397", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("rl11849", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("usa13509", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("brd14051", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("d15112", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("d18512", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("pla33810", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
     };
 
 // this test is meant to be run once normally and once by overriding the
 // CMR_USE_OMP compilation guard. To do so, go into config.hpp, and change
-// "ifndef CMR_DO_TESTS" to "ifndef CMR_DO_TESTSfjdlksafl" or something like
+// "ifndef CMR_DO_TESTS" to "ifndef CMR_DO_TESTS_disabled" or something like
 // that, then recompile.
 SCENARIO ("pla85900 paritioned simple DP sep case study",
           "[.SimpleDP][.sdp-pla85]") {
@@ -107,7 +107,7 @@ SCENARIO ("pla85900 paritioned simple DP sep case study",
 
             dp_q.pop_front();
         }
-        cout << pfound << endl;
+        cout << pfound << " cuts found" << endl;
     }
     }
 }
@@ -121,8 +121,12 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
         string probfile = "problems/" + prob + ".tsp";
         string solfile = "test_data/tours/" + prob + ".sol";
         string subtourfile = "test_data/subtour_lp/" + prob + ".sub.x";
+    for (int trial : {1, 2, 3, 4, 5}) {
     for (int i : {0, 1}) {
-    GIVEN ("Data for " + prob + ", dummy part: " + std::to_string(i == 0)) {
+    GIVEN ("Data for " + prob + ", dummy part: " + std::to_string(i == 0) +
+           ", trial " + std::to_string(trial)) {
+        cout << prob << (i == 0 ? "dummy" : "part") << ", trial "
+             << trial << endl;
         TimeCuts &target = (i == 0 ? std::get<1>(pt) : std::get<2>(pt));
         Graph::CoreGraph core_graph;
         Data::BestGroup b_dat;
@@ -142,7 +146,7 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
         Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
         sDP.silent = false;
         REQUIRE(sDP.find_cuts());
-        target.first = (util::zeit() - ft);
+        target.first *= (util::zeit() - ft);
 
         double pfound = 0;
 
@@ -173,6 +177,7 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
             dp_q.pop_front();
         }
         target.second = pfound;
+    }
     }
     }
     }
