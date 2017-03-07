@@ -160,8 +160,8 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
 
                 try {
                     get_row(i);
-                    get_coeffs(core_graph.get_edges(), hg_row.rmatind,
-                               hg_row.rmatval);
+                    H.get_coeffs(core_graph.get_edges(), hg_row.rmatind,
+                                 hg_row.rmatval);
                 } CMR_CATCH_PRINT_THROW("getting SparseRows", err);
                 cout << "HG row act: " << Sep::get_activity(dbl_x, hg_row)
                      << ", rel row act: " << Sep::get_activity(dbl_x, rel_row)
@@ -171,7 +171,7 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
 
                 cout << "Checking HG row for zeros or fracs...." << endl;
                 for (int i = 0; i < hg_row.rmatind.size(); ++i) {
-                    ind ind = hg_row.rmatind[i];
+                    int ind = hg_row.rmatind[i];
                     double val = hg_row.rmatval[i];
 
                     if (val == 0 || val != static_cast<int>(val))
@@ -181,7 +181,7 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
 
                 cout << "Checking rel row for zeros or fracs...." << endl;
                 for (int i = 0; i < rel_row.rmatind.size(); ++i) {
-                    ind ind = rel_row.rmatind[i];
+                    int ind = rel_row.rmatind[i];
                     double val = rel_row.rmatval[i];
 
                     if (val == 0 || val != static_cast<int>(val))
