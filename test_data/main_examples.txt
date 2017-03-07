@@ -23,6 +23,7 @@ gr24
 hk48
 lin105
 lin318
+nrw1379
 p654
 pa561
 pcb3038
@@ -30,10 +31,13 @@ pcb442
 pla7397
 pla33810
 pla85900
+pr1002
 pr2392
 pr76
 pr152
 rat99
+rl1304
+rl1323
 rl11849
 rl5915
 rl5934
