@@ -6,7 +6,6 @@
 #include "config.hpp"
 #include "solver.hpp"
 #include "separator.hpp"
-#include "brancher.hpp"
 
 #if CMR_HAVE_SAFEGMI
 #include "safeGMI.hpp"
@@ -306,17 +305,13 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
 PivType Solver::abc_dfs(int depth, bool do_price)
 {
-    throw runtime_error("abc_dfs temporarily unimplemented.");
-
-
-    using Problem = ABC::Problem;
-    using Ptype = Problem::Type;
-    using ProbArray = std::array<Problem, 2>;
+    using SplitIter = ABC::SplitIter;
+    using NodeIter = ABC::BranchHistory::iterator;
 
     runtime_error err("Prolem in Solver::abc_dfs");
 
     PivType piv = PivType::Frac;
-/*
+
     if (depth > 0)
         try {
             piv = cutting_loop(do_price, false, false);
@@ -331,52 +326,37 @@ PivType Solver::abc_dfs(int depth, bool do_price)
         }
     }
 
-    ProbArray branch_probs = brancher->next_level();
-    const double &tourlen = best_data.min_tour_value;
-    const vector<double> &tour_vec = active_tour().edges();
+    SplitIter branch_probs;
 
+    try {
+        branch_probs = dfs_brancher->next_level();
+    } CMR_CATCH_PRINT_THROW("getting next level", err);
 
-    for (Problem &P : branch_probs) {
+    for (NodeIter &P : branch_probs) {
+        if (P == dfs_brancher->get_history().end())
+            continue;
+
         try {
-            cout << "\tSearch depth " << depth << "\n";
-            brancher->do_branch(P);
-            if (P.type == Ptype::Affirm)
-                core_lp.copy_start(tour_vec);
-            else {
-                core_lp.copy_base(*P.contra_base);
-                brancher->branch_tour(tsp_instance, best_data.best_tour_nodes);
-            }
+            dfs_brancher->do_branch(*P);
+        } CMR_CATCH_PRINT_THROW("doing branch", err);
 
-            core_lp.factor_basis();
-        }
-        CMR_CATCH_PRINT_THROW("doing branch", err);
-
-        double score = P.rank.first;
-        double estimate = P.rank.second;
         bool call_again = true;
 
-        if (score == 2) {
+        if (P->maybe_infeas) {
+            cout << "P->maybe_infeas: " << P->maybe_infeas << " for problem "
+                 << *P << endl;
             cout << "\tProblem appears infeasible.\n";
-            cout << "\tVerification should go here!!!\n";
+            cout << "\tActual verification should happen here!!" << endl;
             call_again = false;
-        } else if (score == 1) {
-            if (estimate >= tourlen - 0.9) {
-                if (!do_price) {
-                    cout << "\tRunning sparse, prune search by bound.\n";
-                    call_again = false;
-                }
-            }
         }
 
         if (call_again)
             piv = abc_dfs(++depth, do_price);
 
         try {
-            cout << "\n\tSearch depth " << depth << "\n";
-            brancher->undo_branch(P);
+            dfs_brancher->do_unbranch(*P);
         } CMR_CATCH_PRINT_THROW("undoing branch", err);
     }
-*/
 
     return piv;
 }
@@ -424,7 +404,7 @@ PivType Solver::frac_recover()
         try {
             if (cut_sel.safeGMI)
                 core_lp.purge_gmi();
-            core_lp.add_edges(new_edges);
+            core_lp.add_edges(new_edges, false);
         } CMR_CATCH_PRINT_THROW("adding edges not in tour", err);
     }
 

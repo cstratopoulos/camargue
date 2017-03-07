@@ -8,11 +8,15 @@
 #define CMR_DATAGROUP_H
 
 #include "util.hpp"
+#include "err_util.hpp"
 #include "graph.hpp"
 
+#include <algorithm>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <string>
+#include <stdexcept>
 #include <vector>
 
 #include <cmath>
@@ -68,6 +72,9 @@ public:
     int node_count() const { return nodecount; } //!< Number of nodes.
     int seed() const { return random_seed; } //!< Random seed used.
 
+    /// Get the length of the tour in \p tour_nodes.
+    double tour_length(const std::vector<int> &tour_nodes) const;
+
     /// The TSPLIB instance name or the random problem dimensions.
     const std::string &problem_name() const { return pname; }
 
@@ -101,6 +108,7 @@ public:
     int node_count() const { return nodecount; }
     int edge_count() const { return edges.size(); }
 
+    /// Find the index of an edge by its endpoints, returning -1 if not found.
     int find_edge_ind(int end0, int end1) const;
 
     Edge get_edge(int index) const { return edges[index]; }
@@ -112,6 +120,13 @@ public:
 
     void add_edge(int end0, int end1, int len);
     void add_edge(const Edge &e);
+
+    void remove_edges();
+
+    template<typename numtype>
+    void tour_edge_vec(const std::vector<int> &tour_nodes,
+                       std::vector<numtype> &tour_edges,
+                       double &tour_val) const;
 
 private:
     std::vector<Edge> edges;
@@ -192,6 +207,40 @@ void make_cut_test(const std::string &tsp_fname,
 		   std::vector<double> &lp_edges,
 		   Data::SupportGroup &supp_data,
 		   Data::Instance &inst);
+
+}
+
+/////////////////////// TEMPLATE METHOD IMPLEMENTATIONS //////////////////////
+
+namespace Graph {
+
+template<typename numtype>
+void CoreGraph::tour_edge_vec(const std::vector<int> &tour_nodes,
+                              std::vector<numtype> &tour_edges,
+                              double &tour_val) const
+{
+    using std::cerr;
+    using std::endl;
+    using std::runtime_error;
+    using std::vector;
+
+    tour_edges.resize(edges.size());
+    std::fill(tour_edges.begin(), tour_edges.end(), 0);
+    tour_val = 0.0;
+
+    int ncount = nodecount;
+
+    for (int i = 0; i < ncount; ++i) {
+        EndPts e(tour_nodes[i], tour_nodes[(i + 1) % ncount]);
+        int ind = find_edge_ind(e.end[0], e.end[1]);
+        if (ind == -1) {
+            cerr << e << " not in CoreGraph" << endl;
+            throw runtime_error("Missing tour edge in CoreGraph");
+        }
+        tour_edges[ind] = 1;
+        tour_val += edges[ind].len;
+    }
+}
 
 }
 }

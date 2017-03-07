@@ -6,6 +6,7 @@
 using std::vector;
 using std::cout;
 using std::cerr;
+using std::endl;
 
 using std::runtime_error;
 using std::logic_error;
@@ -126,8 +127,11 @@ AdjList::AdjList(int  ncount,
     : node_count(ncount), edge_count(keep_indices.size()),
       nodelist(vector<Node>(node_count))
 {
-    if (edge_caps.size() != ref_elist.size())
-        throw logic_error("Size mismatch in support graph AdjList constructor");
+    if (edge_caps.size() != ref_elist.size()) {
+        cerr << "Edge caps size " << edge_caps.size() << " vs ref elist size "
+             << ref_elist.size() << endl;
+        throw logic_error("Mismatch in support graph AdjList constructor");
+    }
 
     for (int index : keep_indices) {
         const Edge &e = ref_elist[index];

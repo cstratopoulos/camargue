@@ -48,7 +48,8 @@ public:
            const std::vector<int> & current_tour);
 
     /// Construct a Clique from a list of literal nodes.
-    Clique(std::vector<int> &nodes, const std::vector<int> &perm);
+    Clique(const std::vector<int> &nodes, const std::vector<int> &perm,
+           bool peserve_order);
 
     using Ptr = std::shared_ptr<Clique>; //!< shared_ptr alias declaration.
 
@@ -173,14 +174,17 @@ public:
 
     /// Construct a Clique in place, add it, and get a reference to it.
     Clique::Ptr add_clique(const CCtsp_lpclique &cc_cliq,
-                                const std::vector<int> &tour);
+                           const std::vector<int> &tour);
 
     /// Construct/add/get a reference to the Clique from endpoints.
     Clique::Ptr add_clique(int start, int end,
-                                const std::vector<int> &tour);
+                           const std::vector<int> &tour);
 
     /// Construct/add/get a reference to a Clique from a node list.
-    Clique::Ptr add_clique(std::vector<int> &nodes);
+    Clique::Ptr add_clique(const std::vector<int> &nodes);
+
+    /// Add a Clique corresponding to an ordered sequence of nodes.
+    Clique::Ptr add_tour_clique(const std::vector<int> &tour_nodes);
 
     /// Put the pointed Clique in this bank.
     void steal_clique(Clique::Ptr &clq_ptr, CliqueBank &from_bank);

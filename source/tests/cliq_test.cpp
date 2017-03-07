@@ -115,7 +115,7 @@ SCENARIO ("Testing equality and hash values of cliques",
         vector<int> nodes{1,2,7};
 
         WHEN ("We construct two of the same clique") {
-            Sep::Clique clq1(nodes, perm), clq2(nodes, perm);
+            Sep::Clique clq1(nodes, perm, false), clq2(nodes, perm, false);
 
             THEN ("They are equal and hash equal") {
                 REQUIRE(clq1 == clq2);
@@ -126,7 +126,7 @@ SCENARIO ("Testing equality and hash values of cliques",
 
             AND_WHEN ("We construct another clique from permuted nodes") {
                 vector<int> nodes3{2,7,1};
-                Sep::Clique clq3(nodes3, perm);
+                Sep::Clique clq3(nodes3, perm, false);
                 THEN ("It is equal to the others") {
                     REQUIRE(clq1 == clq3);
                 }
@@ -244,7 +244,7 @@ SCENARIO ("Abstract testing of tiny printed cliques",
                         cout << "nodelist: ";
                         for(int i : vec) cout << i << ", ";
                         cout << "\n";
-                        Sep::Clique clq  = Sep::Clique(vec, perm);
+                        Sep::Clique clq  = Sep::Clique(vec, perm, false);
                         const Segment seg = clq.seg_list().front();
                         cout << "Represented as: " << seg.start << ", "
                              << seg.end << "\n";
@@ -282,7 +282,7 @@ SCENARIO ("Abstract testing of tiny printed cliques",
                         cout << "nodelist: ";
                         for(int i : vp.first) cout << i << ", "; cout << "\n";
 
-                        Sep::Clique clq = Sep::Clique(vp.first, perm);
+                        Sep::Clique clq = Sep::Clique(vp.first, perm, false);
                         CHECK(clq.seg_count() == expect_sz);
 
                         vector<int> from_clq = clq.node_list(tour);

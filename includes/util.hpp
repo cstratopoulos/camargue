@@ -148,6 +148,13 @@ public:
             return data[row][column - row];
         }
 
+    /// Fill all entries of this matrix with \p val.
+    void fill(const T &val)
+        {
+            for (std::vector<T> &vec : data)
+                std::fill(vec.begin(), vec.end(), val);
+        }
+
 private:
     /// The entries of the matrix, stored as a ragged vector of vectors.
     std::vector<std::vector<T>> data;

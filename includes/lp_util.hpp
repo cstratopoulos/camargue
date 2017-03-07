@@ -31,6 +31,11 @@ inline bool is_tour_piv(PivType P)
     return P == PivType::Tour || P == PivType::FathomedTour;
 }
 
+/// Alias declaration for branching estimates.
+/// First element: is the problem infeasible.
+/// Second element: the objective value estimate.
+using InfeasObj = std::pair<bool, double>;
+
 enum BStat {
     AtLower = 0,
     Basic = 1,
@@ -56,6 +61,26 @@ struct Basis {
     std::vector<int> rowstat;
 
     using Ptr = std::unique_ptr<Basis>;
+};
+
+/// Struct for storing info from branching estimates.
+struct Estimate {
+    Estimate() = default;
+
+    /// Solution statuses from strong branch pivoting.
+    enum class Stat {
+        Abort, //!< Reached iteration limit.
+        Infeas, //!< LP proved infeasible.
+        Prune //!< LP optimal with objval that implies pruning.
+    } sol_stat;
+
+    double value; //!< The objective value estimate.
+
+    /// The basis from the strong branch search.
+    /// If sol_stat is abort, this is null or the first primal feasible basis
+    /// encountered. Otherwise, it is the basis that certifies either of the
+    /// other two Stat values.
+    Basis::Ptr sb_base;
 };
 
 /// Simple struct representing sparse matrix row for passing to LP solver.
