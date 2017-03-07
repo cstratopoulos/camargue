@@ -136,6 +136,9 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
     vector<double> row_feas;
     vector<double> col_feas;
 
+    cout << "Reporting if solution is feasible, " << numrows << " rows and "
+         << numcols << " cols in the LP" << endl;
+
     try {
         dbl_x = vector<double>(x_vec.begin(), x_vec.end());
         get_row_infeas(dbl_x, row_feas, 0, numrows - 1);
@@ -148,18 +151,18 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
         double rowfeas = row_feas[i];
         if (rowfeas != 0.0) {
             result = false;
-            cout << "Found infeas of " << rowfeas << " on ";
+            cout << "\nRow " << i << " has infeas of "  << rowfeas << " on ";
             if (i < ncount)
-                cout << "degree equation for node " << i << endl;
+                cout << "degree equation" << endl;
             else {
                 const Sep::HyperGraph &H = ext_cuts.get_cut(i);
-                cout << "Row " << i << H.cut_type() << ", sense "
+                cout << H.cut_type() << ", sense "
                      << H.get_sense() << ", rhs " << H.get_rhs() << endl;
                 LP::SparseRow rel_row;
                 LP::SparseRow hg_row;
 
                 try {
-                    get_row(i);
+                    rel_row = get_row(i);
                     H.get_coeffs(core_graph.get_edges(), hg_row.rmatind,
                                  hg_row.rmatval);
                 } CMR_CATCH_PRINT_THROW("getting SparseRows", err);
@@ -203,6 +206,7 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
         }
     }
 
+    cout << "Report completed with result " << result << endl;
     return result;
 }
 
