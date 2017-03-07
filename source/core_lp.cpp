@@ -362,8 +362,13 @@ void CoreLP::add_cuts(Sep::CutQueue<Sep::dominoparity> &dpq)
         while(!dpq.empty()) {
             const Sep::dominoparity &dp_cut = dpq.peek_front();
             SparseRow R = Sep::get_row(dp_cut, tour_nodes, core_graph);
-            add_cut(R);
-            ext_cuts.add_cut(dp_cut, R.rhs, tour_nodes);
+
+            // This should be investigated later but sometimes extremely
+            // dense cuts are returned, so this is a bad hacky workaround.
+            if (R.rmatind.size() < core_graph.edge_count() / 4) {
+                add_cut(R);
+                ext_cuts.add_cut(dp_cut, R.rhs, tour_nodes);
+            }
             dpq.pop_front();
         }
     } CMR_CATCH_PRINT_THROW("processing/adding cut", err);
