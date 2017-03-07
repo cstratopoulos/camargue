@@ -150,10 +150,10 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
             result = false;
             cout << "Found infeas of " << rowfeas << " on ";
             if (i < ncount)
-                cout << "degree equation" << endl;
+                cout << "degree equation for node " << i << endl;
             else {
                 const Sep::HyperGraph &H = ext_cuts.get_cut(i);
-                cout << H.cut_type() << ", sense "
+                cout << "Row " << i << H.cut_type() << ", sense "
                      << H.get_sense() << ", rhs " << H.get_rhs() << endl;
                 LP::SparseRow rel_row;
                 LP::SparseRow hg_row;
