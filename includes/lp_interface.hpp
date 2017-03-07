@@ -70,8 +70,13 @@ public:
 
     SparseRow get_row(int row) const;
 
-    /// Feasibility status of a given solution.
+    /// Feasibility status of a given solution with respect to rows.
     void get_row_infeas(const std::vector<double> &x,
+                        std::vector<double> &feas_stat, int begin,
+                        int end) const;
+
+    /// Feasibility status of a given solution with respect to column bounds.
+    void get_col_infeas(const std::vector<double> &x,
                         std::vector<double> &feas_stat, int begin,
                         int end) const;
 
@@ -120,8 +125,8 @@ public:
                               const std::vector<int> &colstat,
                               const std::vector<int> &rowstat,
                               const std::vector<int> &indices,
-                              std::vector<std::pair<int, double>> &downobj,
-                              std::vector<std::pair<int, double>> &upobj,
+                              std::vector<InfeasObj> &downobj,
+                              std::vector<InfeasObj> &upobj,
                               std::vector<Basis> &contra_bases,
                               int itlim, double upperbound);
 
@@ -155,13 +160,16 @@ public:
                   const std::vector<int> &rmatind,
                   const std::vector<double> &rmatval); //!< Add constraint rows.
 
-    /// Delete a not-necessarily-continuous set of rows.
+    /// Delete a not-necessarily-contiguous set of rows.
     void del_set_rows(std::vector<int> &delstat);
 
     void add_col(const double objval,
                  const std::vector<int> &indices,
                  const std::vector<double> &coeffs,
                  const double lb, const double ub); //!< Add a column.
+
+    /// Delete a not-necessarily-contiguous set of columns.
+    void del_set_cols(std::vector<int> &delstat);
 
     ///@}
 

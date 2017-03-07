@@ -154,26 +154,12 @@ ActiveTour::ActiveTour(std::vector<int> tour_nodes_,
     : tour_len(0.0), tour_nodes(std::move(tour_nodes_))
 {
     int ncount = graph.node_count();
-    int ecount = graph.edge_count();
 
     perm.resize(ncount);
     for (int i = 0; i < ncount; ++i)
         perm[tour_nodes[i]] = i;
 
-    tour_edges.resize(ecount);
-    std::fill(tour_edges.begin(), tour_edges.end(), 0.0);
-
-    for (int i = 0; i < ncount; ++i) {
-        EndPts e(tour_nodes[i], tour_nodes[(i + 1) % ncount]);
-        int ind = graph.find_edge_ind(e.end[0], e.end[1]);
-        if (ind == -1) {
-
-            cerr << e << " not in CoreGraph" << endl;
-            throw runtime_error("Missing tour edge in CoreGraph");
-        }
-        tour_edges[ind] = 1.0;
-        tour_len += graph.get_edge(ind).len;
-    }
+    graph.tour_edge_vec(tour_nodes, tour_edges, tour_len);
 
     relax.copy_start(tour_edges);
     relax.factor_basis();

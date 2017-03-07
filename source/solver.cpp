@@ -141,6 +141,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
     PivType piv = PivType::Frac;
     int round = 0;
     int auground = 0;
+    bool elim_during = true;
 
     CMR::Timer timer(tsp_instance.problem_name() + " pure cut");
 
@@ -160,7 +161,9 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
             if (do_price) {
                 cout << "\tTour optimal for edge set...";
                 try {
-                    if (edge_pricer->gen_edges(piv) == Price::ScanStat::Full) {
+                    if (edge_pricer->gen_edges(piv,
+                                               elim_during && pure_cut) ==
+                        Price::ScanStat::Full) {
                         core_lp.pivot_back(false);
                         continue;
                     } else
@@ -179,7 +182,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
             }
 
             if (do_price) {
-                try { edge_pricer->gen_edges(piv); }
+                try { edge_pricer->gen_edges(piv, false); }
                 CMR_CATCH_PRINT_THROW("adding edges to core", err);
             }
 
@@ -238,13 +241,21 @@ PivType Solver::abc(bool do_price)
         }
     }
 
+    if (do_price) {
+        cout << "\tTesting elim in ABC...\n";
+        edge_pricer->elim_edges(true);
+        throw runtime_error("Just testin!!!!");
+    }
+
+
     cout << "\tCommencing ABC search....\n";
+    cout << "Avg piv itcount " << core_lp.avg_itcount() << endl;
     Timer abct(tsp_instance.problem_name() + " ABC search");
     abct.start();
 
     try {
-        util::ptr_reset(brancher, core_lp, core_graph, best_data,
-                        active_tour(), ABC::ContraStrat::Fix);
+        util::ptr_reset(dfs_brancher, tsp_instance, active_tour(),
+                        best_info(), graph_info(), core_lp);
     } CMR_CATCH_PRINT_THROW("allocating/instantiating Brancher", err);
 
     if (cut_sel.safeGMI) {
@@ -261,7 +272,14 @@ PivType Solver::abc(bool do_price)
 
     cout << "\n\tABC search completed, optimal tour has length "
          << best_data.min_tour_value << endl;
+
+    const ABC::BranchHistory &BH = dfs_brancher->get_history();
+    cout << "\t" << BH.size() << " branch nodes, max depth "
+         << BH.front().depth << endl;
+
     report_cuts();
+
+
 
     abct.report(true);
 

@@ -9,6 +9,7 @@ using std::vector;
 
 using std::cout;
 using std::cerr;
+using std::endl;
 
 using std::exception;
 using std::runtime_error;
@@ -72,7 +73,7 @@ Pricer::~Pricer()
  * if a partial scan finds no edges to add.
  * @returns a ScanStat indicating the outcome of the pricing scan.
  */
-ScanStat Pricer::gen_edges(LP::PivType piv_stat)
+ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
 {
     runtime_error err("Problem in Pricer::gen_edges");
     ScanStat result =
@@ -115,7 +116,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
     double penalty = 0.0;
 
-    double upper_bound = core_lp.active_tourlen();
+    double upper_bound = core_lp.global_ub();
     //double lower_bound = core_lp.get_objval();
 
     vector<d_PrEdge> price_elist;
@@ -173,7 +174,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
                 std::sort(edge_q.begin(), edge_q.end());
                 try {
                     vector<Graph::Edge> add_batch = pool_chunk(edge_q);
-                    core_lp.add_edges(add_batch);
+                    core_lp.add_edges(add_batch, true);
                 } CMR_CATCH_PRINT_THROW("adding edges for aug tour", err);
 
                 return ScanStat::Partial;
@@ -202,7 +203,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
 
                 num_added = add_batch.size();
                 total_added += num_added;
-                core_lp.add_edges(add_batch);
+                core_lp.add_edges(add_batch, true);
                 core_lp.primal_opt();
                 new_objval = core_lp.get_objval();
             } CMR_CATCH_PRINT_THROW("adding edges to lp and optimizing", err);
@@ -260,11 +261,27 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat)
         }
     }
 
-    cout << "added " << total_added << " edges, " << result << "\n";
+    cout << "added " << total_added << " edges, " << result << "\n\t"
+         << "objval " << core_lp.get_objval() << ", dual feas "
+         << core_lp.dual_feas() << ", col count "
+         << core_lp.num_cols() << endl;
+
+    if (try_elim && result != ScanStat::FullOpt && core_lp.dual_feas()) {
+        try { elim_edges(false); }
+        CMR_CATCH_PRINT_THROW("eliminating after gen", err);
+    }
+
     return result;
 }
 
 f64 Pricer::exact_lb(bool full)
+{
+    vector<PrEdge<f64>> priced_edges;
+    return exact_lb(full, priced_edges);
+}
+
+f64 Pricer::exact_lb(bool full,
+                     vector<PrEdge<f64>> &priced_edges)
 {
     for (const Sep::HyperGraph &H : ext_cuts.get_cuts())
         if (H.cut_type() == CutType::Non)
@@ -276,6 +293,8 @@ f64 Pricer::exact_lb(bool full)
         ex_duals = util::make_unique<LP::DualGroup<f64>>(true, core_lp,
                                                          ext_cuts);
     } CMR_CATCH_PRINT_THROW("constructing exact DualGroup", err);
+
+    priced_edges.clear();
 
     vector<double> d_pi;
     vector<char> senses;
@@ -331,6 +350,8 @@ f64 Pricer::exact_lb(bool full)
 
     f64 bound = pi_sum - rc_sum;
 
+    priced_edges = std::move(target_edges);
+
     return bound;
 
     // vector<PrEdge<f64>> gen_edges;
@@ -352,6 +373,75 @@ f64 Pricer::exact_lb(bool full)
     // }
 
     // return bound;
+}
+
+void Pricer::elim_edges(bool make_opt)
+{
+    runtime_error err("Problem in Pricer::elim_edges.");
+    bool silent = true;
+
+    if (make_opt) {
+        double ot = util::zeit();
+        cout << "Optimizing before elimination...";
+        try { core_lp.primal_opt(); } CMR_CATCH_PRINT_THROW("optimizing", err);
+        cout << "obj val " << core_lp.get_objval() << " in "
+             << (util::zeit() - ot) << "s" << endl;
+    }
+
+    f64 tourlen{core_lp.global_ub()};
+    f64 lower_bd{0.0};
+    vector<PrEdge<f64>> graph_edges;
+
+    try {
+        lower_bd = exact_lb(false, graph_edges);
+    } CMR_CATCH_PRINT_THROW("getting exact lb", err);
+
+    f64 gap{tourlen - lower_bd};
+    f64 cutoff{gap - 1};
+
+    if (cutoff < 0) {
+        if (!silent)
+            cout << "Negative cutoff, do not elim." << endl;
+        return;
+    }
+
+    if (!silent)
+        cout << "\tElimination cutoff " << cutoff << endl;
+
+    try {
+        util::ptr_reset(ex_duals, true, core_lp, core_lp.external_cuts());
+    } CMR_CATCH_PRINT_THROW("getting exact duals", err);
+
+    vector<int> col_delset;
+    int ecount = core_graph.edge_count();
+
+    try {
+        col_delset.resize(ecount, 0);
+    } CMR_CATCH_PRINT_THROW("reserving/prepping vectors", err);
+
+    const vector<int> &tour_colstat = core_lp.get_active_tour().base().colstat;
+    const vector<double> &tour_edges = core_lp.get_active_tour().edges();
+
+    int elimct = 0;
+
+    for (int i = 0; i < ecount; ++i) {
+        const PrEdge<f64> &e = graph_edges[i];
+        if (tour_edges[i] != 0.0 || tour_colstat[i] != 0)
+            continue;
+
+        if (e.redcost > cutoff) {
+            col_delset[i] = 1;
+            ++elimct;
+        }
+    }
+
+    cout << "\t\t" << elimct << " edges can be eliminated\n" << endl;
+    if (elimct == 0)
+        return;
+
+    try {
+        core_lp.remove_edges(std::move(col_delset));
+    } CMR_CATCH_PRINT_THROW("adjusting CoreLP/CoreGraph stuff", err);
 }
 
 
