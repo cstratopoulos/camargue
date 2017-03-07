@@ -151,8 +151,44 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
             cout << "Found infeas of " << rowfeas << " on ";
             if (i < ncount)
                 cout << "degree equation" << endl;
-            else
-                cout << ext_cuts.get_cut(i).cut_type() << endl;
+            else {
+                const Sep::HyperGraph &H = ext_cuts.get_cut(i);
+                cout << H.cut_type() << ", sense "
+                     << H.get_sense() << ", rhs " << H.get_rhs() << endl;
+                LP::SparseRow rel_row;
+                LP::SparseRow hg_row;
+
+                try {
+                    get_row(i);
+                    get_coeffs(core_graph.get_edges(), hg_row.rmatind,
+                               hg_row.rmatval);
+                } CMR_CATCH_PRINT_THROW("getting SparseRows", err);
+                cout << "HG row act: " << Sep::get_activity(dbl_x, hg_row)
+                     << ", rel row act: " << Sep::get_activity(dbl_x, rel_row)
+                     << endl;
+                cout << "HG row size " << hg_row.rmatind.size() << ", rel "
+                     << rel_row.rmatind.size() << endl;
+
+                cout << "Checking HG row for zeros or fracs...." << endl;
+                for (int i = 0; i < hg_row.rmatind.size(); ++i) {
+                    ind ind = hg_row.rmatind[i];
+                    double val = hg_row.rmatval[i];
+
+                    if (val == 0 || val != static_cast<int>(val))
+                        cout << "Index " << ind << " has val " << val << "\n";
+
+                }
+
+                cout << "Checking rel row for zeros or fracs...." << endl;
+                for (int i = 0; i < rel_row.rmatind.size(); ++i) {
+                    ind ind = rel_row.rmatind[i];
+                    double val = rel_row.rmatval[i];
+
+                    if (val == 0 || val != static_cast<int>(val))
+                        cout << "Index " << ind << " has val " << val << "\n";
+
+                }
+            }
         }
     }
 
