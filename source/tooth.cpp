@@ -58,7 +58,7 @@ static void tlist_sort(ToothList &T)
 vector<IteratorMat> CandidateTeeth::seen_ranges;
 
 CandidateTeeth::CandidateTeeth(const LP::ActiveTour &active_tour_,
-			       Data::SupportGroup &_supp_dat) :
+			       Data::SupportGroup &_supp_dat) try :
     light_teeth(std::vector<ToothList>(_supp_dat.supp_graph.node_count)),
     list_sizes(_supp_dat.supp_graph.node_count, {{0, 0, 0}}),
     endmark(_supp_dat.supp_graph.node_count, CC_LINSUB_BOTH_END),
@@ -99,6 +99,9 @@ CandidateTeeth::CandidateTeeth(const LP::ActiveTour &active_tour_,
     }
 
     t_pre.stop();
+} catch (const exception &e) {
+    cerr << e.what() << endl;
+    throw runtime_error("Problem in CandidateTeeth constructor.");
 }
 
 void CandidateTeeth::get_light_teeth()
