@@ -40,8 +40,8 @@ CFLAGS      := -Wall -O3 -pedantic $(FOMP) \
 -Wno-variadic-macros\
 -std=c++11
 LIB         := $(CPX_LIB) $(CC_LIB) -lm -lpthread $(FOMP) $(QSOPT)
-INC         := -I$(INCDIR)  -I$(CPXDIR) -I$(EXTINCDIR)
-INCDEP      := -I$(INCDIR)  -I$(CPXDIR) -I$(EXTINCDIR)
+INC         := -I$(INCDIR)  -I$(CPXDIR) -isystem$(EXTINCDIR)
+INCDEP      := -I$(INCDIR)  -I$(CPXDIR) -isystem$(EXTINCDIR)
 
 #-------------------------------------------------------------------------------
 #DO NOT EDIT BELOW THIS LINE
