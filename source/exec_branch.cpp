@@ -23,6 +23,9 @@ using std::logic_error;
 using std::exception;
 
 namespace CMR {
+
+constexpr int IntMax = std::numeric_limits<int>::max();
+
 namespace ABC {
 
 BranchNode::BranchNode() : stat(Status::NeedsBranch), parent(nullptr),

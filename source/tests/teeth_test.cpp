@@ -28,7 +28,7 @@ using std::vector;
 using std::string;
 using std::pair;
 
-using CMR::IntPair;
+using IntPair = pair<int, int>;
 
 static int dump_segment(double cut_val, int cut_start, int cut_end,
 			void *u_data)

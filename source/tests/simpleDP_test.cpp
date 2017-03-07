@@ -27,7 +27,7 @@ using std::vector;
 using std::string;
 using std::pair;
 
-using CMR::IntPair;
+using IntPair = pair<int, int>;
 
 using TimeCuts = std::pair<double, int>;
 using ProbTuple = std::tuple<string, TimeCuts, TimeCuts>;
@@ -183,6 +183,7 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
     }
 
     THEN ("Report the data") {
+        cout << "Reporting product of CPU times for five trials" << endl;
         for (const auto &pt : bench_probs) {
             cout << std::get<0>(pt) << "\n";
             TimeCuts nopart = std::get<1>(pt);

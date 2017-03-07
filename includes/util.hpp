@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <array>
 #include <iostream>
-#include <limits>
 #include <memory>
 #include <string>
 #include <utility>
@@ -161,14 +160,6 @@ private:
 };
 
 }
-
-constexpr int IntMax = std::numeric_limits<int>::max();
-constexpr int IntMin = std::numeric_limits<int>::min();
-
-constexpr double DoubleMax = std::numeric_limits<double>::max();
-constexpr double DoubleMin = std::numeric_limits<double>::min();
-
-typedef std::pair<int, int> IntPair;
 
 /** Simple utility struct for storing an interval of nodes.
  * A Segment is defined in terms of some list of nodes, usually a tsp tour.

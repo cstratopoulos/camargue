@@ -31,6 +31,9 @@ using std::runtime_error;
 using std::exception;
 
 namespace CMR {
+
+using IntPair = std::pair<int, int>;
+
 namespace Sep {
 
 using ToothList = CandidateTeeth::ToothList;

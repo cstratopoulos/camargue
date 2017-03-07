@@ -12,6 +12,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <limits>
 #include <memory>
 #include <utility>
 
@@ -178,7 +179,7 @@ SCENARIO ("Detecting infeasible branches",
             REQUIRE_FALSE(feas);
             REQUIRE_FALSE(found_tour);
             REQUIRE(_tour.empty());
-            REQUIRE(_val == IntMax);
+            REQUIRE(_val == std::numeric_limits<int>::max());
         }
 
     }

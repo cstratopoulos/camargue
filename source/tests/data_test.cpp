@@ -20,7 +20,8 @@ using std::vector;
 using std::unique_ptr;
 using std::string;
 using std::pair;
-using CMR::IntPair;
+
+using IntPair = pair<int, int>;
 
 
 
@@ -36,7 +37,7 @@ SCENARIO ("Consructing a GraphGroup and BestGroup",
             CMR::Data::Instance inst(probfile, 99);
             CMR::Graph::CoreGraph core_graph(inst);
             CMR::Data::BestGroup b_dat;
-            
+
             WHEN ("An LK BestGroup is constructed") {
                 THEN ("Its constructor does not throw") {
                     REQUIRE_NOTHROW(b_dat = CMR::Data::BestGroup(inst, core_graph));
@@ -81,7 +82,7 @@ SCENARIO ("Verifying a BestGroup with a GraphGroup",
                             edge_val += core_graph.get_edges()[i].len;
 
                     bool failed_lookup = false;
-                    
+
                     for (int i = 0; i < tour_nodes.size(); ++i) {
                         int e0 = tour_nodes[i];
                         int e1 = tour_nodes[(i + 1) % ncount];
@@ -116,7 +117,7 @@ SCENARIO ("Verifying a BestGroup with a GraphGroup",
                             edge_val += core_graph.get_edge(i).len;
 
                     bool failed_lookup = false;
-                    
+
                     for (int i = 0; i < tour_nodes.size(); ++i) {
                         int e0 = tour_nodes[i];
                         int e1 = tour_nodes[(i + 1) % ncount];

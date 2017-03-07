@@ -2,6 +2,8 @@
 #define CMR_CUT_STRUCTS_H
 
 #include "util.hpp"
+
+#include <utility>
 #include <vector>
 
 namespace CMR {
@@ -81,7 +83,7 @@ struct dominoparity {
     dominoparity() = default;
     dominoparity(std::vector<SimpleTooth> &_used_teeth,
                  std::vector<int> &_degree_nodes,
-                 std::vector<IntPair> &_nonneg_edges) :
+                 std::vector<std::pair<int, int>> &_nonneg_edges) :
         used_teeth(_used_teeth), degree_nodes(_degree_nodes),
         nonneg_edges(_nonneg_edges) {}
 
@@ -92,7 +94,7 @@ struct dominoparity {
     std::vector<int> degree_nodes;
 
     /** Edges \f$ e \f$ for which \f$ x_e \ge 0 \f$ is used. */
-    std::vector<IntPair> nonneg_edges;
+    std::vector<std::pair<int, int>> nonneg_edges;
 };
 
 }

@@ -15,6 +15,7 @@
 
 #include <array>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <functional>
 #include <vector>
@@ -371,7 +372,7 @@ PivType Solver::frac_recover()
 
     try { cyc.resize(ncount); } CMR_CATCH_PRINT_THROW("allocating cyc", err);
 
-    double val = DoubleMax;
+    double val = std::numeric_limits<double>::max();
     CCrandstate rstate;
     CCutil_sprand(tsp_instance.seed(), &rstate);
 

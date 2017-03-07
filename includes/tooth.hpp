@@ -26,9 +26,10 @@ public:
     void get_light_teeth();
 
     /// Get the range of adjacency zones for a tooth body wrt a given root.
-    static IntPair get_range(ToothBody s,
-                             const std::vector<int> &perm,
-                             const std::vector<Graph::AdjObj> &root_nbrs);
+    static std::pair<int, int> get_range(ToothBody s,
+                                         const std::vector<int> &perm,
+                                         const std::vector<Graph::AdjObj>
+                                         &root_nbrs);
 
     static bool root_equivalent(int root, ToothBody s1, ToothBody s2,
                                 const std::vector<int> &tour,
