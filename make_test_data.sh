@@ -17,7 +17,7 @@ for f in $(cat test_data/main_examples.txt); do
 	problem=problems/"$f".tsp
 	sub_fname="$f".sub.x
 	sol_fname="$f".sol
-	"$CC_TSP"/concorde -IxX test_data/subtour_lp/"$sub_fname" "$problem"
+	"$CC_TSP"/concorde -s99 -IxX test_data/subtour_lp/"$sub_fname" "$problem"
 	mv "$sol_fname" test_data/tours/"$sol_fname"
 	if [ "$?" -ne 0 ]; then
 	    echo "Couldn't get subtour_lp/tour for " "$f"
@@ -35,7 +35,7 @@ for f in $(cat test_data/blossom_examples.txt); do
     if [ "$have_f" -eq 0 ]; then
 	problem=problems/"$f".tsp
 	blos_fname="$f".sub.x
-	"$CC_TSP"/concorde -ixX test_data/blossom_lp/"$blos_fname" "$problem"
+	"$CC_TSP"/concorde -s99 -ixX test_data/blossom_lp/"$blos_fname" "$problem"
 	rm "$f".sol
 	if [ "$?" -ne 0 ]; then
 	    echo "Couldn't get blossom_lp for " "$f"
