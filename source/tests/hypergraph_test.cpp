@@ -80,9 +80,9 @@ SCENARIO ("Comparing HyperGraph coeffs to CPLEX coefs",
                  REQUIRE_NOTHROW(core_lp.get_col(i, cpx_cmatind,
                                                  cpx_cmatval));
 
-                 REQUIRE(ex_cmatind.size() == cpx_cmatind.size());
-                 REQUIRE(ex_cmatind == cpx_cmatind);
-                 REQUIRE(ex_cmatval == cpx_cmatval);
+                 CHECK(ex_cmatind.size() == cpx_cmatind.size());
+                 CHECK(ex_cmatind == cpx_cmatind);
+                 CHECK(ex_cmatval == cpx_cmatval);
              }
 
          AND_WHEN("We get row coeffs") {
