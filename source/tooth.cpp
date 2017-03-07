@@ -2,10 +2,6 @@
 #include "config.hpp"
 #include "err_util.hpp"
 
-#if CMR_HAVE_TIMSORT
-#include <timsort.hpp>
-#endif
-
 extern "C" {
 #include <concorde/INCLUDE/cut.h>
 }
@@ -51,11 +47,7 @@ static inline bool elim_less_tie(const SimpleTooth::Ptr &S,
 
 static void tlist_sort(ToothList &T)
 {
-#if CMR_HAVE_TIMSORT
-    gfx::timsort(T.begin(), T.end(), ptr_cmp);
-#else
     std::sort(T.begin(), T.end(), ptr_cmp);
-#endif
 }
 
 vector<IteratorMat> CandidateTeeth::seen_ranges;

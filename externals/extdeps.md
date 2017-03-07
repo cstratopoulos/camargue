@@ -27,7 +27,7 @@ on sparse instances. In these cases, though, their effect on the
 solution process is quite dramatic. For an idea of how they are called
 in Camargue, see the documentation for CMR::Sep::SafeGomory.
 
-Safe Gomory cuts are implemented 
+Safe Gomory cuts are implemented
 using the code of William Cook, Sanjeeb Dash, Ricardo Fukasawa, and
 Marcos Goycoolea, provided as a supplement to their paper "Numerically
 Safe Gomory Mixed-Integer Cuts" in the Informs Journal of
@@ -50,14 +50,14 @@ folder. So `safemir` must be the name of the file containing the
 folder `src`. If you already had the code downloaded, you will still
 need to make the automated changes just described. Running
 `./cmr_install.sh -s` should do these, but you can also call
-`scripts/edit_safemir.sh` from the camargue directory. 
+`scripts/edit_safemir.sh` from the camargue directory.
 
 Catch Unit Tests
 ----------------
 
 This section just describes installation of the Catch unit testing
 framework. For info on running the tests, and suggested usage, see
-@ref unittests. 
+@ref unittests.
 
 The current version of Camargue has been developed in a test driven
 fashion with the help of the unit testing framework
@@ -111,12 +111,12 @@ inequalities. The instances `fleisA9` and `fleisB9` are an attempt to
 recreate Figures 2 and 5 from Fleischer et al.'s 2006 paper on simple
 DP inequalities. These TSP instances have been placed in the
 `test_data` directory, with tours and LP solutions in subdirectories
-as appropriate. 
+as appropriate.
 
 If you want to develop or modify tests, repeatedly calling `make test`
 will cause slower compile times, so it would be better to manually
 change the `CMR_DO_TESTS` line in config.hpp and change it back when
-you are done. 
+you are done.
 
 
 OpenMP Parallelism
@@ -130,7 +130,7 @@ download. Rather, the `configure.sh` script will try to test if your
 compiler supports OpenMP (OMP), and edit the `Makefile`
 accordingly. Unlike the other examples, there is no script that will
 download anything: if your compiler doesn't support OMP it is probably
-not worth it to download and install a new one just for that. 
+not worth it to download and install a new one just for that.
 
 In "Primal Separation Algorithms", Letchford and Lodi observe that the
 minimum cut computations in their blossom separation algorithm are
@@ -145,28 +145,4 @@ The OMP standard dictates that if the compiler does not support
 OMP `#pragma`s, they are simply ignored and the result is still valid
 code. However in my implementations there is a bit of added overhead
 for memory management or error checking, so the result is not as clean
-as the implementation that could be used in the serial case.  
-
-Sorting with Timsort
----------------------
-
-Timsort is an enhancement applied during candidate tooth
-generation. In my thesis I show that the subroutine I use finds lists
-of teeth that are often already sorted, or consist of a few sorted
-subsequences. Compared with quicksort, Timsort is an algorithm that
-performs much better on already-sorted or partially-sorted data. But
-again, the sorting accounts for an extremely small portion of the
-computation in finding candidate teeth.
-
-I have chosen to invoke Timsort using the implementation by Fuji Goro,
-available [here](https://github.com/gfx/cpp-TimSort). To use it, just
-put the
-[header](https://raw.githubusercontent.com/gfx/cpp-TimSort/master/timsort.hpp), 
-or a symlink to it, in the `externals` folder. The command
-
-    ./cmr_install.sh -t
-
-will place the header there directly. If `configure.sh` detects that
-it is not present, the code will just use the C++ STL
-`std::sort`. This is a simple dependency to install, but realistically
-it is also the least important. 
+as the implementation that could be used in the serial case.

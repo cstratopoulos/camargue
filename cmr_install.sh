@@ -14,7 +14,6 @@ If you specified neither -B nor -F, use one or more of the options below to
 select externals individually.
 -s Safe MIR: the Cook, Dash, Fukasawa, Goycoolea safe Gomory code.
 -c catch.hpp: the header for Catch unit tests
--t timsort.hpp: the header for sorting candidate teeth with Timsort
 '
 
 if [ "$#" -eq 0 ]; then
@@ -27,7 +26,6 @@ bare=0
 full=0
 safegmi=0
 catch=0
-tim=0
 
 while getopts BFsct option
 do
@@ -37,7 +35,6 @@ do
 	F) full=1;;
 	s) safegmi=1;;
 	c) catch=1;;
-	t) tim=1;;
 	*) (>&2 echo "$usage")
 	    exit 1;;
     esac
@@ -50,7 +47,7 @@ if [ \( "$bare" -eq 1 \) -a \( "$full" -eq 1 \) ]; then
 fi
 
 if [ \( "$bare" -eq 1 \) -o \( "$full" -eq 1 \) ]; then
-    if [ \( "$safegmi" -eq 1 \) -o \( "$catch" -eq 1 \) -o \( "$tim" -eq 1 \) ]
+    if [ \( "$safegmi" -eq 1 \) -o \( "$catch" -eq 1 \) ]
     then
 	(>&2 echo "Error: cannot specify catch-all flag with individual flags")
 	(>&2 echo "$usage")
@@ -58,14 +55,12 @@ if [ \( "$bare" -eq 1 \) -o \( "$full" -eq 1 \) ]; then
     fi
 fi
 
-tim_url=https://raw.githubusercontent.com/gfx/cpp-TimSort/master/timsort.hpp
 catch_url=https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp
 gmi_url=https://www.informs.org/content/download/257165/2428239/file/safemir090309.tar.gz
 
 if [ "$full" -eq 1 ]; then
     safegmi=1
     catch=1
-    tim=1
 elif [ "$bare" -eq 1 ]; then
     echo "Doing bare install with no externals."
 fi
@@ -84,23 +79,6 @@ if [ "$catch" -eq 1 ]; then
 	fi
     fi
 fi
-
-if [ "$tim" -eq 1 ]; then
-    echo "Installing with Timsort...."
-    if [ -e externals/timsort.hpp ]; then
-	echo "Looks like Timsort is already installed."
-    else
-	curl -# -o "externals/timsort.hpp" "$tim_url"
-	if [ "$?" -eq 0 ]; then
-	    echo "Downloaded timsort.hpp"
-	else
-	    (>&2 echo "Error downloading timsort.hpp")
-	    exit 1
-	fi
-    fi
-fi
-
-
 
 if [ "$safegmi" -eq 1 ]; then
     echo "Installing with Safe GMI code...."

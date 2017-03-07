@@ -2,7 +2,6 @@
 # The script in this file will test for the presence of the following external
 # includes:
 # - Catch
-# - Timsort
 # - safeGMI
 # - OpenMP
 # For each of these, it will modify camargue/includes/config.hpp to add or
@@ -21,7 +20,7 @@
 #
 # For compatibility with the Mac version of sed, this script makes the changes
 # one at a time by making a duplicate and renaming, rather than in place. This
-# is slightly inefficient but not a huge deal realistically. 
+# is slightly inefficient but not a huge deal realistically.
 
 target=includes/config.hpp
 
@@ -49,31 +48,6 @@ else
     (>&2 echo "Error modifying for Catch")
     exit 1
 fi
-
-
-########################## Timsort Implementation #############################
-
-printf 'Checking for Timsort....'
-if [ -f externals/timsort.hpp ]
-then
-    printf 'yes\n'
-    sed 's/#undef CMR_HAVE_TIMSORT/#define CMR_HAVE_TIMSORT 1/' "$target" \
-	> includes/cfg_tim
-else
-    printf 'no\n'
-    sed 's/#define CMR_HAVE_TIMSORT 1/#undef CMR_HAVE_TIMSORT/' "$target" \
-	> includes/cfg_tim
-fi
-
-if [ "$?" -eq 0 ]
-then
-    mv includes/cfg_tim "$target"
-else
-    test -e includes/cfg_tim && rm cfg_tim
-    (>&2 echo "Error modifying for Timsort")
-    exit 1
-fi
-
 
 ############################## Safe MIR ########################################
 
@@ -173,7 +147,6 @@ if [ "$?" -ne 0 ]; then
 fi
 
 printf 'done\n'
-    
+
 
 exit 0
-

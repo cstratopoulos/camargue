@@ -20,10 +20,6 @@
 /// Define if you have downloaded the header file for Catch unit testing.
 #undef CMR_HAVE_CATCH
 
-
-/// Define if you have downloaded the header for Timsort implementation.
-#undef CMR_HAVE_TIMSORT
-
 /// Define if your compiler supports OpenMP.
 #undef CMR_HAVE_OPENMP
 
@@ -35,8 +31,7 @@
 
 
 /** @name Usage macros
- * Timsort is always used if it is present, but more care is required with OMP
- * and Catch: Catch is not threadsafe, so running Catch tests with OMP enabled
+ * Catch is not threadsafe, so running Catch tests with OMP enabled
  * can cause memory leaks with thread creation/destruction. Thus, OMP is used
  * iff the compiler supports it and tests are not being ran.
  */
