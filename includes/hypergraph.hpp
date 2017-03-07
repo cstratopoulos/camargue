@@ -13,6 +13,7 @@
 #include "price_util.hpp"
 #include "err_util.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <stdexcept>
@@ -192,7 +193,7 @@ void HyperGraph::get_coeffs(const std::vector<EndPt_type> &edges,
     const vector<int> &def_tour = source_bank->ref_tour();
     int ncount = def_tour.size();
 
-    std::map<int, double> coeff_map;
+    std::map<int, int> coeff_map;
     vector<bool> node_marks(ncount, false);
 
     if (cut_type() != Type::Domino) {
@@ -205,9 +206,9 @@ void HyperGraph::get_coeffs(const std::vector<EndPt_type> &edges,
                 if (node_marks[edges[i].end[0]] !=
                     node_marks[edges[i].end[1]]) {
                     if (coeff_map.count(i))
-                        coeff_map[i] += 1.0;
+                        coeff_map[i] += 1;
                     else
-                        coeff_map[i] = 1.0;
+                        coeff_map[i] = 1;
                 }
             }
 
@@ -217,7 +218,7 @@ void HyperGraph::get_coeffs(const std::vector<EndPt_type> &edges,
         rmatind.reserve(coeff_map.size());
         rmatval.reserve(coeff_map.size());
 
-        for (std::pair<const int, double> &kv : coeff_map) {
+        for (std::pair<const int, int> &kv : coeff_map) {
             rmatind.push_back(kv.first);
             rmatval.push_back(kv.second);
         }
@@ -235,11 +236,15 @@ void HyperGraph::get_coeffs(const std::vector<EndPt_type> &edges,
         bool e1 = node_marks[edges[i].end[1]];
 
         if (e0 && e1) {
-            if (coeff_map.count(i)) coeff_map[i] += 2.0;
-            else coeff_map[i] = 2.0;
+            if (coeff_map.count(i))
+                coeff_map[i] += 2;
+            else
+                coeff_map[i] = 2;
         } else if (e0 != e1) {
-            if (coeff_map.count(i)) coeff_map[i] += 1.0;
-            else coeff_map[i] = 1.0;
+            if (coeff_map.count(i))
+                coeff_map[i] += 1;
+            else
+                coeff_map[i] = 1;
         }
     }
 
@@ -263,41 +268,49 @@ void HyperGraph::get_coeffs(const std::vector<EndPt_type> &edges,
             bool bod_e1 = node_marks[e1];
 
             if (bod_e0 && bod_e1) {
-                if (coeff_map.count(i)) coeff_map[i] += 2.0;
-                else coeff_map[i] = 2.0;
+                if (coeff_map.count(i))
+                    coeff_map[i] += 2;
+                else
+                    coeff_map[i] = 2;
             } else if (bod_e0 != bod_e1) {
                 if (bod_e0) {
                     if (root_clq.contains(tooth_perm[e1])) {
-                        if (coeff_map.count(i)) coeff_map[i] += 1.0;
-                        else coeff_map[i] = 1.0;
+                        if (coeff_map.count(i))
+                            coeff_map[i] += 1;
+                        else coeff_map[i] = 1;
                     }
                 } else { //bod_e1
                     if (root_clq.contains(tooth_perm[e0])) {
-                        if (coeff_map.count(i)) coeff_map[i] += 1.0;
-                        else coeff_map[i] = 1.0;
+                        if (coeff_map.count(i))
+                            coeff_map[i] += 1;
+                        else coeff_map[i] = 1;
                     }
                 }
             }
         }
 
-        node_marks = vector<bool>(ncount, false);
+        std::fill(node_marks.begin(), node_marks.end(), false);
     }
 
-    rmatind.reserve(coeff_map.size());
-    rmatval.reserve(coeff_map.size());
+    int coeff_size = 0;
 
-    for (std::pair<const int, double> &kv : coeff_map) {
-        rmatind.push_back(kv.first);
-        rmatval.push_back(kv.second);
-    }
+    for (std::pair<const int, int> &kv : coeff_map)
+        if (kv.second % 2 == 0)
+            ++coeff_size;
 
-    for (double &coeff : rmatval)
+    rmatind.reserve(coeff_size);
+    rmatval.reserve(coeff_size);
+
+    for (std::pair<const int, int> &kv : coeff_map) {
+        int ind = kv.first;
+        double coeff = kv.second;
+        coeff /= 2;
+        coeff = floor(coeff);
         if (fabs(coeff) >= Epsilon::Zero) {
-            coeff /= 2;
-            coeff = floor(coeff);
+            rmatind.push_back(ind);
+            rmatval.push_back(coeff);
         }
-
-
+    }
 }
 
 }
