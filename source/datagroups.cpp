@@ -4,9 +4,10 @@
 #include "err_util.hpp"
 
 #include <algorithm>
-#include <unordered_map>
+
 #include <iostream>
 #include <iomanip>
+#include <limits>
 #include <utility>
 #include <vector>
 #include <stdexcept>
@@ -40,6 +41,7 @@ using std::logic_error;
 namespace CMR {
 
 namespace Eps = Epsilon;
+constexpr double DoubleMax = std::numeric_limits<double>::max();
 
 namespace Data {
 

@@ -27,24 +27,24 @@ using std::vector;
 using std::string;
 using std::pair;
 
-using CMR::IntPair;
+using IntPair = pair<int, int>;
 
 using TimeCuts = std::pair<double, int>;
 using ProbTuple = std::tuple<string, TimeCuts, TimeCuts>;
 
 static vector<ProbTuple> bench_probs {
-    ProbTuple("pcb3038", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("fl3795", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("fnl4461", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("rl5915", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("rl5934", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("pla7397", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("rl11849", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("usa13509", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("brd14051", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("d15112", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("d18512", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    ProbTuple("pla33810", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
+    ProbTuple("pcb3038", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("fl3795", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("fnl4461", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("rl5915", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("rl5934", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("pla7397", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("rl11849", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("usa13509", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("brd14051", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("d15112", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("d18512", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
+    ProbTuple("pla33810", TimeCuts(1.0, 0), TimeCuts(1.0, 0)),
     };
 
 // this test is meant to be run once normally and once by overriding the
@@ -142,7 +142,7 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
         Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
         sDP.silent = false;
         REQUIRE(sDP.find_cuts());
-        target.first = (util::zeit() - ft);
+        target.first *= (util::zeit() - ft);
 
         double pfound = 0;
 
@@ -178,6 +178,7 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
     }
 
     THEN ("Report the data") {
+        cout << "Reporting product of CPU times for five trials" << endl;
         for (const auto &pt : bench_probs) {
             cout << std::get<0>(pt) << "\n";
             TimeCuts nopart = std::get<1>(pt);

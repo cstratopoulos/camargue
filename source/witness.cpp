@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 using std::vector;
 
@@ -15,6 +16,9 @@ using std::runtime_error;
 using std::logic_error;
 
 namespace CMR {
+
+using IntPair = std::pair<int, int>;
+
 namespace Sep {
 
 DPwitness::DPwitness(CandidateTeeth &cands,

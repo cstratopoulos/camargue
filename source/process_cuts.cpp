@@ -138,7 +138,7 @@ SparseRow get_row(const dominoparity &dp_cut,
         node_marks[tour_nodes[T.root]] = 0;
     }
 
-    for (const IntPair &ends : dp_cut.nonneg_edges) {
+    for (const std::pair<int, int> &ends : dp_cut.nonneg_edges) {
         int e0 = tour_nodes[ends.first];
         int e1 = tour_nodes[ends.second];
 
