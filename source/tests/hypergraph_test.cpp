@@ -80,6 +80,7 @@ SCENARIO ("Comparing HyperGraph coeffs to CPLEX coefs",
                  REQUIRE_NOTHROW(core_lp.get_col(i, cpx_cmatind,
                                                  cpx_cmatval));
 
+                 INFO ("Column " << i);
                  CHECK(ex_cmatind.size() == cpx_cmatind.size());
                  CHECK(ex_cmatind == cpx_cmatind);
                  CHECK(ex_cmatval == cpx_cmatval);
@@ -99,7 +100,7 @@ SCENARIO ("Comparing HyperGraph coeffs to CPLEX coefs",
                                                 hg_row.rmatval));
                  REQUIRE_NOTHROW(rel_row = core_lp.get_row(i));
 
-                 INFO("best tour activity HyperGraph:"
+                 INFO("Row " << i << "best tour activity HyperGraph:"
                       << Sep::get_activity(tour_edges, hg_row)
                       << "\tRelaxation:"
                       << Sep::get_activity(tour_edges, rel_row));
