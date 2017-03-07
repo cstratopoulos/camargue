@@ -137,7 +137,8 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
     vector<double> col_feas;
 
     cout << "Reporting if solution is feasible, " << numrows << " rows and "
-         << numcols << " cols in the LP" << endl;
+         << numcols << " cols in the LP\n" << ext_cuts.get_cuts().size()
+         << " external cuts" << endl;
 
     try {
         dbl_x = vector<double>(x_vec.begin(), x_vec.end());
