@@ -57,14 +57,17 @@ public:
 
     double get_coeff(int row, int col) const; //!< Get constraint matrix entry.
 
+    /// Get a ranged vector of righthand sides.
     void get_rhs(std::vector<double> &rhs, int begin, int end) const;
 
     /// Get the senses of a range of constraints.
     std::vector<char> senses(int begin, int end) const;
 
+    /// Get a sparse coefficient column.
     void get_col(int col, std::vector<int> &cmatind,
                  std::vector<double> &cmatval) const;
 
+    /// Get a sparse coefficient row.
     void get_row(int row, std::vector<int> &rmatind,
                  std::vector<double> &rmatval) const;
 

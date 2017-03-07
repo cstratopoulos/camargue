@@ -168,6 +168,8 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
                      << endl;
                 cout << "HG row size " << hg_row.rmatind.size() << ", rel "
                      << rel_row.rmatind.size() << endl;
+                cout << "Rel row sense " << rel_row.sense << ", rhs "
+                     << rel_row.rhs << endl;
 
                 cout << "Checking HG row for zeros or fracs...." << endl;
                 for (int i = 0; i < hg_row.rmatind.size(); ++i) {

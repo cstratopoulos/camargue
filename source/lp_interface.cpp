@@ -419,7 +419,7 @@ void Relaxation::get_col(const int col, vector<int> &cmatind,
 }
 
 void Relaxation::get_row(const int row, vector<int> &rmatind,
-                           vector<double> &rmatval) const
+                         vector<double> &rmatval) const
 {
     int surplus = 0;
     int rmatbeg = 0;
@@ -451,7 +451,15 @@ void Relaxation::get_row(const int row, vector<int> &rmatind,
 SparseRow Relaxation::get_row(int row) const
 {
     SparseRow R;
+    vector<double> rhs;
+
     get_row(row, R.rmatind, R.rmatval);
+    get_rhs(rhs, row, row);
+    R.rhs = rhs.front();
+
+    vector<char> sense = senses(row, row);
+    R.sense = sense.front();
+
     return R;
 }
 
