@@ -10,6 +10,7 @@
 
 using std::cout;
 using std::cerr;
+using std::endl;
 
 using std::unique_ptr;
 
@@ -45,10 +46,10 @@ bool Sep::SimpleDP::find_cuts()
     runtime_error err("Problem in SimpleDP::find_cuts.");
 
     Timer find_total("Serial simple DP sep");
-    Timer find_cands("Finding candidate teeth", &find_total);
+    Timer find_cands("Finding cand teeth", &find_total);
 
     find_total.start();
-    find_cands.start()
+    find_cands.start();
 
     try {
         candidates.get_light_teeth();
@@ -57,7 +58,7 @@ bool Sep::SimpleDP::find_cuts()
 
     find_cands.stop();
 
-    Timer search_wit("Building/searching witness graph(s)");
+    Timer search_wit("Make/search witness", &find_total);
     search_wit.start();
     for (int i = 0; i < kpart.num_parts(); ++i) {
         CutQueue<dominoparity> mini_q;
@@ -78,10 +79,9 @@ bool Sep::SimpleDP::find_cuts()
 
     if (!silent) {
         candidates.profile();
-        cout << "Times (not including adj zones)" << endl;
-        find_cands.report(false);
-        search_wit.report(false);
-        find_total.report(false);
+        find_cands.report(true);
+        search_wit.report(true);
+        find_total.report(true);
     }
 
     return(!dp_q.empty());
@@ -97,7 +97,7 @@ bool Sep::SimpleDP::find_cuts()
     bool caught_exception = false;
 
     Timer find_total("Parallel simple DP sep");
-    Timer find_cands("finding candidate teeth", &find_total);
+    Timer find_cands("finding candid teeth", &find_total);
 
     find_total.start();
     find_cands.start();
@@ -108,7 +108,7 @@ bool Sep::SimpleDP::find_cuts()
     find_cands.stop();
 
 
-    Timer search_wit("Building/searching witness graph(s)");
+    Timer search_wit("make/search witness", &find_total);
     search_wit.start();
     #pragma omp parallel for
     for (int i = 0; i < kpart.num_parts(); ++i) {
@@ -134,8 +134,12 @@ bool Sep::SimpleDP::find_cuts()
         #pragma omp critical
         {
             dp_q.splice(mini_q);
-            // if(dp_q.size() >= 25)
+            // if(dp_q.size() >= 500 && !at_capacity) {
+            //     cout << "DP q has size " << dp_q.size() << ", "
+            //          << "terminating on part number "
+            //          << i << endl;
             //     at_capacity = true;
+            // }
         }
     }
 

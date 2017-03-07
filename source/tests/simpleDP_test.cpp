@@ -45,7 +45,6 @@ static vector<ProbTuple> bench_probs {
     ProbTuple("d15112", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
     ProbTuple("d18512", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
     ProbTuple("pla33810", TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
-    // ProbTuple("pla85900",  TimeCuts(0.0, 0), TimeCuts(0.0, 0)),
     };
 
 // this test is meant to be run once normally and once by overriding the
@@ -76,11 +75,7 @@ SCENARIO ("pla85900 paritioned simple DP sep case study",
 
     THEN ("We can bench mark tooth separation/zone allocation/dp sep") {
         Timer sdp_con("Full CandidateTeeth ctor (including allocs)");
-        sdp_con.start();
         Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
-        sdp_con.stop();
-        sdp_con.report(true);
-
         sDP.silent = false;
 
         REQUIRE(sDP.find_cuts());
@@ -119,7 +114,7 @@ SCENARIO ("pla85900 paritioned simple DP sep case study",
 
 
 SCENARIO ("Benchmarking karp partitioned simple DP sep",
-          "[SimpleDP][figure][table][sdp-table][sdp-graph-cpu-cuts]") {
+          "[.SimpleDP][.figure][.table][.sdp-table][.sdp-graph-cpu-cuts]") {
     using namespace CMR;
     for (auto &pt : bench_probs) {
         string prob = std::get<0>(pt);
@@ -143,10 +138,11 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
         LP::ActiveTour act_tour(core_graph, b_dat);
         kpart = Data::KarpPartition(inst, (i == 0), false);
 
-        Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
         double ft = util::zeit();
+        Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
+        sDP.silent = false;
         REQUIRE(sDP.find_cuts());
-        target.first = ft;
+        target.first = (util::zeit() - ft);
 
         double pfound = 0;
 
@@ -195,7 +191,7 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
 }
 
 SCENARIO("Generating cut figures",
-         "[SimpleDP][DPwitness][figure][sdp-used-edges][sdp-used-edges-part]") {
+         "[.SimpleDP][.DPwitness][.figure][.sdp-used-edges][.sdp-used-edges-part]") {
     using namespace CMR;
     vector<string> probs{
         "dsj1000",
@@ -223,6 +219,7 @@ SCENARIO("Generating cut figures",
         LP::ActiveTour act_tour(core_graph, b_dat);
         kpart = Data::KarpPartition(inst, false, true);
         Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
+        sDP.silent = false;
 
         REQUIRE(sDP.find_cuts());
 
@@ -270,10 +267,10 @@ SCENARIO("Generating cut figures",
             }
 
         cout << "\t" << cutnum << " cuts recorded" << endl;
-        // util::write_xy_coords(inst.ptr()->x, inst.ptr()->y, inst.node_count(),
-        //                        prob + ".xy");
-        // util::write_lp_edges(print_elist, print_ecap, inst.node_count(),
-        //                      prob + "-dpcuts.x");
+        util::write_xy_coords(inst.ptr()->x, inst.ptr()->y, inst.node_count(),
+                                prob + ".xy");
+        util::write_lp_edges(print_elist, print_ecap, inst.node_count(),
+                             prob + "-dpcuts.x");
     }
     }
     }
@@ -466,6 +463,7 @@ SCENARIO("Separating simple DP inequalities in medium instances",
                 Sep::CutQueue<Sep::dominoparity> dp_q(1000);
                 LP::ActiveTour act_tour(core_graph, b_dat);
                 Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
+                sDP.silent = false;
 
                 REQUIRE(sDP.find_cuts());
                 cout << "Cut queue now has size: " << dp_q.size() << "\n";
@@ -554,6 +552,7 @@ SCENARIO("Separating simple DP inequalities in large instances",
                 Sep::CutQueue<Sep::dominoparity> dp_q(1000);
                 LP::ActiveTour act_tour(core_graph, b_dat);
                 Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
+                sDP.silent = false;
 
                 REQUIRE(sDP.find_cuts());
                 cout << "Cut queue now has size: " << dp_q.size() << "\n";

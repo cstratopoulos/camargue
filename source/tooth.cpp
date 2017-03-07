@@ -55,7 +55,6 @@ static void tlist_sort(ToothList &T)
 #endif
 }
 
-vector<vector<int>> CandidateTeeth::adj_zones;
 vector<IteratorMat> CandidateTeeth::seen_ranges;
 
 CandidateTeeth::CandidateTeeth(const LP::ActiveTour &active_tour_,
@@ -66,52 +65,40 @@ CandidateTeeth::CandidateTeeth(const LP::ActiveTour &active_tour_,
     active_tour(active_tour_),
     supp_dat(_supp_dat),
     t_all("Candidate Teeth"),
-    t_zones("Adj zones", &t_all),
+    t_pre("Sort adj/allocate", &t_all),
     t_find("Initial find", &t_all),
     t_sort("Sort by root", &t_all)
 {
-    t_all.start();
-    t_zones.start();
     Graph::AdjList &G_s = supp_dat.supp_graph;
     int ncount = G_s.node_count;
     const vector<int> &perm = active_tour.tour_perm();
     const vector<int> &tour = active_tour.nodes();
 
+    t_all.start();
+    t_pre.start();
+
     seen_ranges.resize(ncount);
-    adj_zones.resize(ncount, vector<int>(ncount, 0));
 
-    std::fill(adj_zones.begin(), adj_zones.end(),
-              vector<int>(ncount, 0));
-
-#ifdef CMR_USE_OMP
-#pragma omp parallel for
-#endif
     for (int root_ind = 0; root_ind < ncount; ++root_ind) {
         int actual_vx = tour[root_ind];
-        const Graph::Node &x = G_s.nodelist[actual_vx];
+        Graph::Node &x = G_s.nodelist[actual_vx];
+        vector<Graph::AdjObj> &nbrs = x.neighbors;
 
         // this needs to be done for iterator validity
         light_teeth[root_ind].reserve(2 * (x.degree() - 1));
 
-        for (const Graph::AdjObj &a : x.neighbors) {
-            int end_ind = perm[a.other_end];
-            adj_zones[root_ind][end_ind] = 1;
-        }
+        std::sort(nbrs.begin(), nbrs.end(),
+                  [&perm](const Graph::AdjObj &a, const Graph::AdjObj &b)
+                  {
+                      return perm[a.other_end] < perm[b.other_end];
+                  });
 
-        int label = 0;
-        for (int &i : adj_zones[root_ind]) {
-            if (i == 1) {
-                ++label;
-                i = -1 * label;
-            } else
-                i = label;
-        }
 
-        seen_ranges[root_ind] = IteratorMat(label + 1,
+        seen_ranges[root_ind] = IteratorMat(x.degree() + 1,
                                             light_teeth[root_ind].rend());
     }
 
-    t_zones.stop();
+    t_pre.stop();
 }
 
 void CandidateTeeth::get_light_teeth()
@@ -129,7 +116,7 @@ void CandidateTeeth::get_light_teeth()
     try {
         cb_data =
         util::make_unique<LinsubCBData>(light_teeth,
-                                        adj_zones, seen_ranges,
+                                        seen_ranges,
                                         list_sizes,
                                         node_marks,
                                         tour_nodes, perm,
@@ -174,11 +161,68 @@ void CandidateTeeth::sort_by_root()
     t_all.stop();
 }
 
-IntPair CandidateTeeth::get_range(const int root, const ToothBody &s,
-                                  const vector<vector<int>> &zones)
+/**
+ * @param root the root of the tooth being considered.
+ * @param s the body of the tooth being considered.
+ * @param root_nbrs if `nodelist` is the Node vector for a support graph in
+ * AdjList format, and `tour` is the resident tour, this should be the vector
+ * `nodelist[tour[root]].neighbors`.
+ * @returns an IntPair indicating the adjacency zone range of \p s.
+ */
+IntPair CandidateTeeth::get_range(ToothBody s,
+                                  const vector<int> &perm,
+                                  const vector<Graph::AdjObj> &root_nbrs)
 {
-    IntPair range = IntPair(-1, -1);
-    int start = zones[root][s.start], end = zones[root][s.end];
+    int deg = root_nbrs.size();
+    int ncount = perm.size();
+
+    int seg_start = s.start;
+    int seg_end = s.end;
+
+    int start = 0;
+    int end = deg;
+
+    bool placed_end = false; // have we found a zone for the segment endpoint
+
+    Segment zone_0(0, perm[root_nbrs.front().other_end] - 1);
+
+    if (zone_0.contains(seg_end)) {
+        end = 0;
+        placed_end = true;
+    }
+
+    if (!placed_end)
+        for (int i = 0; i < deg - 1; ++i) {
+            Segment zone_i(perm[root_nbrs[i].other_end],
+                           perm[root_nbrs[i + 1].other_end] -1);
+            if (zone_i.contains(seg_start)) {
+                if (seg_start == zone_i.start)
+                    start = -(i + 1);
+                else
+                    start = i + 1;
+            }
+
+            if (zone_i.contains(seg_end)) {
+                if (seg_end == zone_i.start)
+                    end = -(i + 1);
+                else
+                    end = i + 1;
+                break;
+            }
+        }
+
+    Segment zone_d(perm[root_nbrs.back().other_end], ncount - 1);
+    if (zone_d.contains(seg_start)){
+        if (seg_start == zone_d.start)
+            start = -deg;
+        else
+            start = deg;
+    }
+
+    if (seg_end == zone_d.start)
+        end = -deg;
+
+    IntPair range(-1, -1);
 
     if (start == end) {//if same endpoints
         if (start < 0) {//singleton
@@ -200,26 +244,31 @@ IntPair CandidateTeeth::get_range(const int root, const ToothBody &s,
         if (start == -end)
             range.first = start; //start is itself
         else
-            range.first = start + 1;// fmin(start + 1, -end) start is at most end
+            range.first = start + 1;// min(start + 1, -end), start <= end
         return range;
     }
 
     //now diff endpoints, both >= 0
-    range = IntPair(start + 1, end);// fmax(start + 1, end - 1));
+    range = IntPair(start + 1, end);// max(start + 1, end - 1));
     return range;
 }
 
-bool CandidateTeeth::root_equivalent(const int root, const ToothBody &s1,
-				     const ToothBody &s2,
-				     const vector<vector<int>> &zones)
+bool CandidateTeeth::root_equivalent(int root, ToothBody s1, ToothBody s2,
+                                     const vector<int> &tour,
+                                     const vector<int> &perm,
+                                     const vector<Graph::Node> &nodelist)
 {
-    return get_range(root, s1, zones) == get_range(root, s2, zones);
+    const vector<Graph::AdjObj> &root_nbrs = nodelist[tour[root]].neighbors;
+
+    return get_range(s1, perm, root_nbrs) == get_range(s2, perm, root_nbrs);
 }
 
-bool CandidateTeeth::root_equivalent(const int root, const ToothBody &s1,
-				     const ToothBody &s2) const
+bool CandidateTeeth::root_equivalent(int root, ToothBody s1,
+                                     ToothBody s2) const
 {
-    return root_equivalent(root, s1, s2, adj_zones);
+    return root_equivalent(root, s1, s2, active_tour.nodes(),
+                           active_tour.tour_perm(),
+                           supp_dat.supp_graph.nodelist);
 }
 
 int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
@@ -245,7 +294,6 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
     double rb_lower = cut_val - (1.5 - Epsilon::Cut);
 
     ToothBody &old_seg = arg->old_seg;
-    vector<vector<int>> &zones = arg->adj_zones;
     vector<IteratorMat> &ranges = arg->ranges;
 
     //distant add
@@ -284,7 +332,8 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
     for (auto &kv : rb_sums) {
         int root = kv.first;
         double rb_sum = kv.second;
-        if ((cut_start == cut_end) && (root > cut_end) && (root != (ncount - 1)))
+        if ((cut_start == cut_end) && (root > cut_end) &&
+            (root != (ncount - 1)))
             continue;
         if (((cut_end - cut_start + 1) == (ncount - 2)) && (root > cut_end))
             continue;
@@ -295,8 +344,9 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
             double new_slack = (abs_slack < Epsilon::Zero) ? 0 : abs_slack;
 
             try {
-                add_tooth(teeth, zones, ranges, arg->list_sizes[root],
-                          root, cut_start, cut_end, new_slack);
+                add_tooth(teeth, ranges, arg->list_sizes[root],
+                          root, cut_start, cut_end, new_slack, tour, perm,
+                          G.nodelist);
             } catch (const exception &e) {
                 cerr << e.what() << " pushing back tooth in teeth_cb.\n";
                 rval = 1;
@@ -310,15 +360,19 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
 }
 
 inline void CandidateTeeth::add_tooth(ToothList &teeth,
-                                      const vector<vector<int>> &zones,
                                       vector<IteratorMat> &ranges,
                                       array<int, 3> &sizes,
-                                      const int root, const int body_start,
-                                      const int body_end, const double slack)
+                                      int root, int body_start,
+                                      int body_end, double slack,
+                                      const vector<int> &tour,
+                                      const vector<int> &perm,
+                                      const vector<Graph::Node> &nodelist)
 {
     bool elim = false;
     ToothBody body(body_start, body_end);
-    IntPair range = get_range(root, body, zones);
+
+    const vector<Graph::AdjObj> &root_nbrs = nodelist[tour[root]].neighbors;
+    IntPair range = get_range(body, perm, root_nbrs);
 
     if (!teeth.empty()) {
         ToothList::reverse_iterator &rit = ranges[root](range.first,
@@ -391,7 +445,7 @@ void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full,
 
 void CandidateTeeth::profile()
 {
-    t_zones.report(true);
+    t_pre.report(true);
     t_find.report(true);
     t_sort.report(true);
     t_all.report(true);
