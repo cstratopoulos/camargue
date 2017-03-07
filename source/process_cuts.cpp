@@ -82,9 +82,9 @@ SparseRow get_row(const dominoparity &dp_cut,
     runtime_error err("Problem in get_row dp cut.");
 
     SparseRow result;
-    vector<double> coeff_buff;
+    vector<int> coeff_buff;
 
-    vector<int> node_marks(core_graph.node_count(), 0);
+    vector<int> node_marks;
 
     result.sense = 'L';
     vector<int> &rmatind = result.rmatind;
@@ -94,7 +94,8 @@ SparseRow get_row(const dominoparity &dp_cut,
     const vector<Graph::Edge> &edges = core_graph.get_edges();
 
     try {
-        coeff_buff.resize(edges.size(), 0.0);
+        coeff_buff.resize(edges.size(), 0);
+        node_marks.resize(core_graph.node_count(), 0);
     } CMR_CATCH_PRINT_THROW("allocating coeff buffer", err);
 
     for (const int node : dp_cut.degree_nodes)
@@ -148,27 +149,24 @@ SparseRow get_row(const dominoparity &dp_cut,
             throw err;
         }
 
-        coeff_buff[find_ind] -= 1.0;
+        coeff_buff[find_ind] -= 1;
     }
 
 
     try {
-        for (int i = 0; i < coeff_buff.size(); ++i)
-            if (coeff_buff[i] != 0.0) {
-                rmatind.push_back(i);
-                rmatval.push_back(coeff_buff[i]);
+        for (int ind = 0; ind < coeff_buff.size(); ++ind) {
+            double coeff = coeff_buff[ind];
+            coeff /= 2;
+            coeff = floor(coeff);
+            if (fabs(coeff) >= Epsilon::Zero) {
+                rmatind.push_back(ind);
+                rmatval.push_back(coeff);
             }
+        }
     } CMR_CATCH_PRINT_THROW("getting sparse row from buffer", err);
 
     rhs /= 2;
     rhs = floor(rhs);
-
-    for (double &coeff : rmatval) {
-        if (fabs(coeff >= Epsilon::Zero)) {
-            coeff /= 2;
-            coeff = floor(coeff);
-        }
-    }
 
     return result;
 }
