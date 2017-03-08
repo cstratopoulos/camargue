@@ -71,7 +71,13 @@ CoreLP::CoreLP(Graph::CoreGraph &core_graph_,
     throw runtime_error("Problem in CoreLP constructor.");
 }
 
-
+/**
+ * This method is responsible for computing and reporting information about
+ * a non-degenerate primal pivot, invoking methods to update bounds, prune cuts,
+ * etc., if necessary.
+ * @returns a PivType corresponding to the vector obtained from the
+ * non-degenerate primal pivot.
+ */
 PivType CoreLP::primal_pivot()
 {
     runtime_error err("Problem in CoreLP::primal_pivot");
@@ -242,6 +248,12 @@ void CoreLP::reset_instate_active()
     }
 }
 
+/**
+ * @param tour_nodes the sequence of tour nodes giving a tour which augments
+ * active_tour. Should be obtained from the depth-first search that was used
+ * to establish connectivity of supp_data.
+ * @param aug_base the basis for the augmenting pivot.
+ */
 void CoreLP::handle_aug_pivot(vector<int> tour_nodes, Basis aug_base)
 {
     runtime_error err("Problem in CoreLP::handle_aug_pivot");
@@ -269,6 +281,11 @@ void CoreLP::handle_aug_pivot(vector<int> tour_nodes, Basis aug_base)
     try { prune_slacks(); } CMR_CATCH_PRINT_THROW("pruning slacks", err);
 }
 
+/**
+ * For setting active_tour by a sequence of tour nodes, presumably obtained
+ * from Solver::frac_recover. This function will generate an edge vector
+ * representation and a basis, instating the tour.
+ */
 void CoreLP::set_active_tour(std::vector<int> tour_nodes)
 {
     runtime_error err("Problem in CoreLP::set_active_tour");
@@ -452,6 +469,9 @@ void CoreLP::add_cuts(Sep::CutQueue<Sep::HyperGraph> &pool_q)
     } CMR_CATCH_PRINT_THROW("processing/adding cuts", err);
 }
 
+/**
+ * @param reinstate if true, method will attempt to reinstate the active_tour.
+ */
 void CoreLP::add_edges(const vector<Graph::Edge> &batch, bool reinstate)
 {
     runtime_error err("Problem in CoreLP::add_edges");
@@ -486,6 +506,11 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch, bool reinstate)
     }
 }
 
+/**
+ * @param edge_delstat a vector of length equal to `core_graph.edge_count()`,
+ * with `delstat[i]` equal to one if the corresponding edge is to be removed
+ * from the core_graph and the LP.
+ */
 void CoreLP::remove_edges(vector<int> edge_delstat)
 {
     runtime_error err("Problem in CoreLP::add_edges");
@@ -548,6 +573,14 @@ void CoreLP::purge_gmi()
     }
 }
 
+/**
+ * @tparam numtype the number type for the vector to check.
+ * @param x_vec the vector to examine.
+ * @returns true if \p x_vec satisfies all constraints and column bounds in the
+ * LP, false otherwise.
+ * @remarks Prints EXTREMELY verbose information if a row infeasibility is
+ * found.
+ */
 template<typename numtype>
 bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
 {

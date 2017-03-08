@@ -42,7 +42,7 @@ public:
     void pivot_back(bool prune_slacks); //!< Pivot back to active_tour.
 
     /**@name Cut addition routines.
-     * Pop cuts from a queue, adding them to the LP
+     * Pop cuts from a queue, adding them to the LP until none remain.
      */
     ///@{
 
