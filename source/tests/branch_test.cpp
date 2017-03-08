@@ -41,10 +41,11 @@ SCENARIO ("Running a Solver with a  DFSbrancher",
     using namespace CMR;
     vector<string> probs{
         "dantzig42",
-        //"pr76",
+        "pr76",
+        "rat99",
         "a280",
         "lin318",
-        // "p654",
+        "d493",
         };
 
     for (string &prob : probs) {

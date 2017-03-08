@@ -128,8 +128,8 @@ public:
                               const std::vector<int> &colstat,
                               const std::vector<int> &rowstat,
                               const std::vector<int> &indices,
-                              std::vector<InfeasObj> &downobj,
-                              std::vector<InfeasObj> &upobj,
+                              std::vector<Estimate> &down_est,
+                              std::vector<Estimate> &up_est,
                               std::vector<Basis> &contra_bases,
                               int itlim, double upperbound);
 

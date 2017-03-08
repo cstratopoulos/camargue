@@ -52,7 +52,7 @@ SCENARIO ("Comparing HyperGraph coeffs to CPLEX coefs with edge pricing",
              OutPrefs outprefs;
              Solver solver(probfile, 1488409694, outprefs);
 
-             solver.cutting_loop(true, true, true);
+             REQUIRE_NOTHROW(solver.cutting_loop(true, true, true));
 
              const Graph::CoreGraph &core_graph = solver.graph_info();
              const LP::CoreLP &core_lp = solver.get_core_lp();
@@ -145,7 +145,7 @@ SCENARIO ("Comparing priceless HyperGraph coeffs to CPLEX coefs",
              OutPrefs outprefs;
              Solver solver(probfile, 1488409694, outprefs);
 
-             solver.cutting_loop(false, true, true);
+             REQUIRE_NOTHROW(solver.cutting_loop(false, true, true));
 
              const Graph::CoreGraph &core_graph = solver.graph_info();
              const LP::CoreLP &core_lp = solver.get_core_lp();

@@ -345,6 +345,10 @@ void CoreLP::add_cuts(Sep::LPcutList &cutq)
             SparseRow R = Sep::get_row(*cur, perm, core_graph);
             add_cut(R);
             ext_cuts.add_cut(*cur, tour);
+            if (R.rhs != cur->rhs) {
+                cerr << R.rhs << " vs " << cur->rhs << endl;
+                throw runtime_error("RHS mismatch somehow");
+            }
         }
     } CMR_CATCH_PRINT_THROW("processing/adding cut", err);
 

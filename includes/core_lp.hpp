@@ -124,6 +124,7 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
     using std::endl;
     using std::runtime_error;
     using std::vector;
+    using DoublePair = std::pair<double, double>;
     namespace Eps = Epsilon;
 
     runtime_error err("Problem in CoreLP::check_feas");
@@ -157,8 +158,10 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
                 cout << "degree equation" << endl;
             else {
                 const Sep::HyperGraph &H = ext_cuts.get_cut(i);
-                cout << H.cut_type() << ", sense "
-                     << H.get_sense() << ", rhs " << H.get_rhs() << endl;
+                cout << H.cut_type() << "\n\tsense "
+                     << H.get_sense() << ", rhs " << H.get_rhs()
+                     << ", clq/tooth count " << H.get_cliques().size() << "/"
+                     << H.get_teeth().size() << endl;
                 LP::SparseRow rel_row;
                 LP::SparseRow hg_row;
 
@@ -175,25 +178,34 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
                 cout << "Rel row sense " << rel_row.sense << ", rhs "
                      << rel_row.rhs << endl;
 
-                cout << "Checking HG row for zeros or fracs...." << endl;
+                vector<int> coeff_compare(numcols, 1);
+                vector<DoublePair> hg_rel_coeffs(numcols,
+                                                 DoublePair(-1.0, -1.0));
+
                 for (int i = 0; i < hg_row.rmatind.size(); ++i) {
-                    int ind = hg_row.rmatind[i];
-                    double val = hg_row.rmatval[i];
-
-                    if (val == 0 || val != static_cast<int>(val))
-                        cout << "Index " << ind << " has val " << val << "\n";
-
+                    coeff_compare[hg_row.rmatind[i]] *= 2;
+                    hg_rel_coeffs[hg_row.rmatind[i]].first = hg_row.rmatval[i];
                 }
 
-                cout << "Checking rel row for zeros or fracs...." << endl;
                 for (int i = 0; i < rel_row.rmatind.size(); ++i) {
-                    int ind = rel_row.rmatind[i];
-                    double val = rel_row.rmatval[i];
-
-                    if (val == 0 || val != static_cast<int>(val))
-                        cout << "Index " << ind << " has val " << val << "\n";
-
+                    coeff_compare[rel_row.rmatind[i]] *= 3;
+                    hg_rel_coeffs[rel_row.rmatind[i]].second =
+                    rel_row.rmatval[i];
                 }
+
+                for (int i = 0; i < numcols; ++i) {
+                    double entry = coeff_compare[i];
+                    if (entry == 2)
+                        cout << "Coeff " << i << " only in HG with val "
+                             << static_cast<int>(hg_rel_coeffs[i].first)
+                             << "\n";
+                    else if (entry == 3)
+                        cout << "Coeff " << i << " only in rel with val "
+                             << static_cast<int>(hg_rel_coeffs[i].second)
+                             << "\n";
+                }
+
+
             }
         }
     }

@@ -30,16 +30,14 @@ namespace ABC {
 
 BranchNode::BranchNode() : stat(Status::NeedsBranch), parent(nullptr),
                            depth(0),
-                           tour_clq(nullptr), tourlen(IntMax),
-                           maybe_infeas(false)
-{}
+                           tour_clq(nullptr), tourlen(IntMax) {}
 
 BranchNode::BranchNode(EndPts ends_, Dir direction_,
                        const BranchNode &parent_, Sep::Clique::Ptr tour_clq_,
                        double tourlen_)
     : ends(ends_), direction(direction_), stat(Status::NeedsCut),
       parent(&parent_), depth(1 + parent_.depth),
-      tour_clq(tour_clq_), tourlen(tourlen_), maybe_infeas(false) {}
+      tour_clq(tour_clq_), tourlen(tourlen_) {}
 
 BranchNode::BranchNode(BranchNode &&B) noexcept
     : ends(std::move(B.ends)),
@@ -49,13 +47,12 @@ BranchNode::BranchNode(BranchNode &&B) noexcept
       depth(B.depth),
       tour_clq(std::move(B.tour_clq)),
       tourlen(B.tourlen),
-      maybe_infeas(B.maybe_infeas)
+      price_basis(std::move(B.price_basis))
 {
     B.stat = Status::Done;
     B.parent = nullptr;
     B.depth = 0;
     B.tourlen = IntMax;
-    B.maybe_infeas = false;
 }
 
 BranchNode &BranchNode::operator=(BranchNode &&B) noexcept
@@ -67,12 +64,11 @@ BranchNode &BranchNode::operator=(BranchNode &&B) noexcept
     depth = B.depth;
     tour_clq = std::move(B.tour_clq);
     tourlen = B.tourlen;
-    maybe_infeas = B.maybe_infeas;
+    price_basis = std::move(B.price_basis);
 
     B.stat = Status::Done;
     B.parent = nullptr;
     B.tourlen = IntMax;
-    B.maybe_infeas = false;
 
     return *this;
 }
@@ -139,7 +135,6 @@ Executor::Executor(const Data::Instance &inst,
 ScoreTuple Executor::branch_edge()
 {
     runtime_error err("Problem in Executor::branch_edge");
-    using LP::InfeasObj;
 
     vector<double> x = core_lp.lp_vec();
     vector<int> colstat = core_lp.col_stat();
@@ -159,17 +154,19 @@ ScoreTuple Executor::branch_edge()
         sb1inds = length_weighted_cands(core_edges, lw_inds, x, SB::Cands1);
     } CMR_CATCH_PRINT_THROW("getting longedge candidates", err);
 
-    vector<InfeasObj> downobj;
-    vector<InfeasObj> upobj;
+    vector<LP::Estimate> down_ests;
+    vector<LP::Estimate> up_ests;
     vector<LP::Basis> cbases;
     double upper_bound = best_data.min_tour_value;
     double avg_itcount = core_lp.avg_itcount();
+
+    cout << "\tPrimal sb round 1" << endl;
 
     try {
         core_lp.primal_strong_branch(active_tour.edges(),
                                      active_tour.base().colstat,
                                      active_tour.base().rowstat,
-                                     sb1inds, downobj, upobj, cbases,
+                                     sb1inds, down_ests, up_ests, cbases,
                                      SB::round1_limit(avg_itcount),
                                      upper_bound);
     } CMR_CATCH_PRINT_THROW("getting first round candidates", err);
@@ -178,8 +175,10 @@ ScoreTuple Executor::branch_edge()
     vector<int> sb2inds;
     vector<LP::Basis> sb2bases;
 
+    cout << "Primal sb round 2" << endl;
+
     try {
-        sb2cands = ranked_cands(sb1inds, downobj, upobj, core_edges, cbases,
+        sb2cands = ranked_cands(sb1inds, down_ests, up_ests, core_edges, cbases,
                                 SB::StrongMult, upper_bound, SB::Cands2);
     } CMR_CATCH_PRINT_THROW("ranking first round candidates", err);
 
@@ -196,7 +195,7 @@ ScoreTuple Executor::branch_edge()
         core_lp.primal_strong_branch(active_tour.edges(),
                                      active_tour.base().colstat,
                                      active_tour.base().rowstat,
-                                     sb2inds, downobj, upobj, sb2bases,
+                                     sb2inds, down_ests, up_ests, sb2bases,
                                      SB::round2_limit(avg_itcount),
                                      upper_bound);
     } CMR_CATCH_PRINT_THROW("getting round 2 cands", err);
@@ -204,7 +203,7 @@ ScoreTuple Executor::branch_edge()
     ScoreTuple winner;
 
     try {
-        winner = std::move(ranked_cands(sb2inds, downobj, upobj, core_edges,
+        winner = std::move(ranked_cands(sb2inds, down_ests, up_ests, core_edges,
                                         sb2bases, SB::StrongMult,
                                         upper_bound, 1)[0]);
     } CMR_CATCH_PRINT_THROW("getting winner", err);
@@ -216,21 +215,16 @@ ScoreTuple Executor::branch_edge()
 
     cout << "\n\t" << winner << endl;
     cout << "\t\t Tour entry " << best_data.best_tour_edges[winner_ind]
-         << endl;
-    if (best_data.best_tour_edges[winner_ind] > 1) {
-        cout << "tour edges size "
-             << best_data.best_tour_edges.size() << endl;
-        cout << "core ecount " << core_graph.edge_count() << endl;
-        cout << "winner ind " << winner_ind << endl;
-        throw logic_error("winner ind out of range or nb tour entry?????");
-    }
+         << "\n";
 
     return winner;
 }
 
-BranchNode::Split Executor::split_problem(const ScoreTuple &branch_tuple,
+BranchNode::Split Executor::split_problem(ScoreTuple &branch_tuple,
                                           BranchNode &parent)
 {
+    using EstStat = LP::Estimate::Stat;
+
     runtime_error err("Problem in Executor::split_problem");
     const EndPts &branch_edge = branch_tuple.ends;
     vector<EndsDir> edge_stats;
@@ -281,20 +275,22 @@ BranchNode::Split Executor::split_problem(const ScoreTuple &branch_tuple,
 
         if (!feas)
             result[i].stat = BranchNode::Status::Pruned;
-
+        else {
+            EstStat estat = (i == 0 ? branch_tuple.down_est.sol_stat :
+                             branch_tuple.up_est.sol_stat);
+            if (estat != EstStat::Abort) {
+                LP::Basis::Ptr &price_base = (i == 0 ?
+                                              branch_tuple.down_est.sb_base :
+                                              branch_tuple.up_est.sb_base);
+                result[i].price_basis = std::move(price_base);
+                if (estat == EstStat::Prune)
+                    result[i].stat = BranchNode::Status::NeedsPrice;
+                else if (estat == EstStat::Infeas)
+                    result[i].stat = BranchNode::Status::NeedsRecover;
+            }
+        }
         edge_stats.pop_back();
     }
-
-    bool down_infeas{branch_tuple.down_est.first};
-    bool up_infeas{branch_tuple.up_est.first};
-
-    if (down_infeas && up_infeas) {
-        cerr << "Both subproblems infeasible" << endl;
-        throw err;
-    }
-
-    result[0].maybe_infeas = down_infeas;
-    result[1].maybe_infeas = up_infeas;
 
     parent.stat = BranchNode::Status::Done;
 

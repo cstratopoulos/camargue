@@ -88,7 +88,6 @@ SCENARIO ("Generating safe Gomory cuts",
 
                     bool result;
                     REQUIRE_NOTHROW(result = gmi->find_cuts());
-                    CHECK(result);
                     t.stop();
                     t.report(false);
                     cout << "\n";

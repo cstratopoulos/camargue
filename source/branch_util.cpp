@@ -108,10 +108,10 @@ vector<int> length_weighted_cands(const vector<Graph::Edge> &edges,
         return vector<int>(result.begin(), result.begin() + num_return);
 }
 
-ScoreTuple::ScoreTuple(EndPts e, LP::InfeasObj down, LP::InfeasObj up,
+ScoreTuple::ScoreTuple(EndPts e, LP::Estimate down, LP::Estimate up,
                        LP::Basis base, double mult, double ub)
-    : ends(e), down_est(down), up_est(up),
-      score(var_score(mult, down_est.second, up_est.second)),
+    : ends(e), down_est(std::move(down)), up_est(std::move(up)),
+      score(var_score(mult, down_est.value, up_est.value)),
       contra_base(std::move(base))
 {}
 
@@ -130,8 +130,8 @@ ScoreTuple::ScoreTuple(EndPts e, LP::InfeasObj down, LP::InfeasObj up,
  * score.
  */
 vector<ScoreTuple> ranked_cands(const vector<int> &cand_inds,
-                                const vector<LP::InfeasObj> &down_est,
-                                const vector<LP::InfeasObj> &up_est,
+                                vector<LP::Estimate> &down_est,
+                                vector<LP::Estimate> &up_est,
                                 const vector<Graph::Edge> &edges,
                                 vector<LP::Basis> &contra_bases,
                                 double mult, double ub, int num_return)
@@ -139,7 +139,8 @@ vector<ScoreTuple> ranked_cands(const vector<int> &cand_inds,
     vector<ScoreTuple> result;
 
     for (int i = 0; i < cand_inds.size(); ++i)
-        result.emplace_back(edges[cand_inds[i]], down_est[i], up_est[i],
+        result.emplace_back(edges[cand_inds[i]], std::move(down_est[i]),
+                            std::move(up_est[i]),
                             std::move(contra_bases[i]), mult, ub);
 
     std::sort(result.begin(), result.end(),

@@ -33,6 +33,8 @@ struct BranchNode {
     enum class Status {
         NeedsCut,
         NeedsBranch,
+        NeedsPrice,
+        NeedsRecover,
         Pruned,
         Done,
     };
@@ -49,21 +51,24 @@ struct BranchNode {
     /// Alias declaration for returning two split child problems.
     using Split = std::array<BranchNode, 2>;
 
-    EndPts ends;
-    Dir direction;
+    EndPts ends; //!< The endpoints of the branch edge.
+    Dir direction; //!< Down branch or up branch.
 
-    Status stat;
+    Status stat; //!< The type of processing required by the node.
 
     const BranchNode *parent;
-    int depth;
+    int depth; //!< Search tree depth of this node.
 
-    Sep::Clique::Ptr tour_clq;
-    double tourlen;
+    Sep::Clique::Ptr tour_clq; //!< The tour to be instated at this node.
+    double tourlen; //!< The length of the tour in tour_clq.
 
-    bool maybe_infeas;
+    /// A starting basis for if Status is NeedsPrice or NeedsRecover.
+    LP::Basis::Ptr price_basis;
 
+    /// Is this the root problem.
     bool is_root() const { return parent == nullptr; }
 
+    /// Has the problem been processed.
     bool visited() const
         { return stat == Status::Pruned || stat == Status::Done; }
 };
@@ -71,7 +76,9 @@ struct BranchNode {
 /// Turn a 0-1 value \p entry into a BranchNode::Dir.
 BranchNode::Dir dir_from_int(int entry);
 
+/// A concise "label" for the BranchNode \p B.
 std::string bnode_brief(const BranchNode &B);
+
 std::ostream &operator<<(std::ostream &os, const BranchNode::Dir &dir);
 std::ostream &operator<<(std::ostream &os, const BranchNode &B);
 
@@ -92,7 +99,7 @@ public:
     ScoreTuple branch_edge(); //!< Get the next edge to branch on.
 
     /// Create the children nodes of \p parent for branching on \p branch_edge.
-    BranchNode::Split split_problem(const ScoreTuple &branch_tuple,
+    BranchNode::Split split_problem(ScoreTuple &branch_tuple,
                                     BranchNode &parent);
 
     /// Get a tour satisfying the branching in \p edge_stats.

@@ -32,16 +32,16 @@ constexpr int Cands1 = 5;
 constexpr int Cands2 = 2;
 
 constexpr int Lim1Min = 10;
-constexpr int Lim2Max = 500;
+constexpr int Lim2Max = 750;
 
 inline int round1_limit(int avg_itcount)
 {
-    return std::max(Lim1Min, avg_itcount);
+    return std::max(Lim1Min, 2 * avg_itcount);
 }
 
 inline int round2_limit(int avg_itcount)
 {
-    return std::min(2 * avg_itcount, Lim2Max);
+    return std::min(4 * avg_itcount, Lim2Max);
 }
 
 }
@@ -63,13 +63,13 @@ std::vector<int> length_weighted_cands(const std::vector<Graph::Edge> &edges,
 struct ScoreTuple {
     ScoreTuple() = default;
 
-    ScoreTuple(EndPts e, LP::InfeasObj down, LP::InfeasObj up,
+    ScoreTuple(EndPts e, LP::Estimate down, LP::Estimate up,
                LP::Basis base, double mult, double ub);
 
     EndPts ends;
 
-    LP::InfeasObj down_est;
-    LP::InfeasObj up_est;
+    LP::Estimate down_est;
+    LP::Estimate up_est;
 
     double score;
 
@@ -78,26 +78,17 @@ struct ScoreTuple {
 
 inline std::ostream &operator<<(std::ostream &os, const ScoreTuple &T)
 {
-    os << T.ends << ", down ";
-    if (T.down_est.first)
-        os << "infeas";
-    else
-        os << T.down_est.second;
-
-    os << ", up ";
-    if (T.up_est.first)
-        os << "infeas";
-    else
-        os << T.up_est.second;
-
-    os << ", score " << T.score;
+    os << T.ends << "\n\tdown looks " << T.down_est.sol_stat << ", val "
+       << T.down_est.value << "\n\t";
+    os << "up looks " << T.up_est.sol_stat << ", val " << T.up_est.value;
+    os << "\n\tscore " << T.score;
     return os;
 }
 
 /// Produce a list of fixed max size containing ranked scored branching edges.
 std::vector<ScoreTuple> ranked_cands(const std::vector<int> &cand_inds,
-                                     const std::vector<LP::InfeasObj> &down_est,
-                                     const std::vector<LP::InfeasObj> &up_est,
+                                     std::vector<LP::Estimate> &down_est,
+                                     std::vector<LP::Estimate> &up_est,
                                      const std::vector<Graph::Edge> &edges,
                                      std::vector<LP::Basis> &contra_bases,
                                      double mult, double ub, int num_return);

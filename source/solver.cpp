@@ -246,7 +246,7 @@ PivType Solver::abc(bool do_price)
         try {
             edge_pricer->elim_edges(true);
             core_lp.primal_opt();
-            cout << "New col count " << core_lp.num_cols()
+            cout << "\tcol count " << core_lp.num_cols()
                  << ", opt objval " << core_lp.get_objval() << endl;
         } CMR_CATCH_PRINT_THROW("eliminating and optimizing", err);
     }

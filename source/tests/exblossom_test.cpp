@@ -106,6 +106,8 @@ SCENARIO ("Primal exact blossom separation",
                                        kpart);
 
                     int found_fast = sep.fast2m_sep();
+                    INFO("Known issue: ExBlossoms misses some fast blossoms");
+                    INFO("Probably need to implement a work_blossom function");
                     CHECK(found_ex >= found_fast);
 
                     if (found_ex < found_fast) {

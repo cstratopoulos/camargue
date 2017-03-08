@@ -317,6 +317,7 @@ PivType Solver::abc_dfs(int depth, bool do_price)
 {
     using SplitIter = ABC::SplitIter;
     using NodeIter = ABC::BranchHistory::iterator;
+    using BranchStat = ABC::BranchNode::Status;
 
     if (depth > 10)
         throw runtime_error("Solver::abc_dfs hit artificial depth lim");
@@ -354,12 +355,37 @@ PivType Solver::abc_dfs(int depth, bool do_price)
 
         bool call_again = true;
 
-        if (P->maybe_infeas) {
-            cout << "P->maybe_infeas: " << P->maybe_infeas << " for problem "
-                 << *P << endl;
-            cout << "\tProblem appears infeasible.\n";
-            cout << "\tActual verification should happen here!!" << endl;
+        if (P->stat == BranchStat::NeedsRecover) {
+            cout << *P << " appears infeasible\n";
+            cout << "\tActual verification should go here!!!" << endl;
             call_again = false;
+            P->stat = BranchStat::Pruned;
+        } else if (P->stat == BranchStat::NeedsPrice) {
+            cout << *P << " looks optimal\n";
+            if (!do_price) {
+                cout << "Sparse edge set, problem can be pruned" << endl;
+                call_again = false;
+            } else {
+                if (!P->price_basis)
+                    throw runtime_error("No price basis for NeedsPrice node");
+                try {
+                    core_lp.copy_base(P->price_basis->colstat,
+                                      P->price_basis->rowstat);
+                    core_lp.primal_opt();
+                    cout << "\tOpt objval : " << core_lp.get_objval() << endl;
+
+                    Price::ScanStat price_stat =
+                    edge_pricer->gen_edges(LP::PivType::FathomedTour, false);
+
+                    if (price_stat == Price::ScanStat::FullOpt) {
+                        cout << "Branch problem can be pruned." << endl;
+                        P->stat = BranchStat::Pruned;
+                        call_again = false;
+                    } else {
+                        core_lp.pivot_back(false);
+                    }
+                } CMR_CATCH_PRINT_THROW("processing NeedsPrice problem", err);
+            }
         }
 
         if (call_again)

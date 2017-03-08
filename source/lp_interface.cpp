@@ -916,21 +916,23 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                                       const vector<int> &colstat,
                                       const vector<int> &rowstat,
                                       const vector<int> &indices,
-                                      vector<InfeasObj> &downobj,
-                                      vector<InfeasObj> &upobj,
+                                      vector<Estimate> &down_est,
+                                      vector<Estimate> &up_est,
                                       vector<Basis> &contra_bases,
                                       int itlim, double upperbound)
 {
+    using EstStat = Estimate::Stat;
+
     CPXintParamGuard per_ind(CPX_PARAM_PERIND, 0, simpl_p->env,
                              "primal_strong_branch perturb");
 
     CPXintParamGuard price_ind(CPX_PARAM_PPRIIND, CPX_PPRIIND_STEEP,
                                simpl_p->env, "primal_strong_branch pricing");
 
-    downobj.clear();
-    upobj.clear();
-    downobj.reserve(indices.size());
-    upobj.reserve(indices.size());
+    down_est.clear();
+    up_est.clear();
+    down_est.reserve(indices.size());
+    up_est.reserve(indices.size());
 
     bool have_bases = false;
     if (!contra_bases.empty())
@@ -979,11 +981,12 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
 
             int solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
             double objval = get_objval();
-            bool infeas = false;
+            Estimate est(objval);
 
             if (solstat == CPX_STAT_INFEASIBLE) {
-                infeas = true;
-                objval = upperbound;
+                est.sol_stat = EstStat::Infeas;
+                est.value = upperbound;
+                util::ptr_reset(est.sb_base, basis_obj());
             } else if (solstat != CPX_STAT_ABORT_IT_LIM &&
                        solstat != CPX_STAT_OPTIMAL &&
                        solstat != CPX_STAT_OPTIMAL_INFEAS) {
@@ -993,8 +996,15 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                               "CPXgetstat in up clamp");
             }
 
-            vector<InfeasObj> &objvec = clamp_bound == 0.0 ? downobj : upobj;
-            objvec.push_back(InfeasObj(infeas, objval));
+            if (solstat == CPX_STAT_OPTIMAL) {
+                if (upperbound  <= objval || (upperbound - objval) <= 0.9) {
+                    est.sol_stat = EstStat::Prune;
+                    util::ptr_reset(est.sb_base, basis_obj());
+                }
+            }
+
+            vector<Estimate> &est_vec = clamp_bound == 0.0 ? down_est : up_est;
+            est_vec.push_back(std::move(est));
 
             tighten_bound(ind, sense, unclamp_bound);
         }
