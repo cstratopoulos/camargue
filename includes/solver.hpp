@@ -24,6 +24,7 @@
 #include "pricer.hpp"
 #include "util.hpp"
 
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -74,22 +75,40 @@ public:
     } cut_sel;
 
 private:
+    /// Print info about \p piv and the size of the CoreLP.
     void report_lp(LP::PivType piv);
 
-    void report_cuts();
+    void report_cuts(); //!< Report the number and types of cuts in CoreLP.
 
     void report_aug(bool piv_aug); //!< Output info about a new tour found.
 
-    bool restart_loop(LP::PivType piv, Data::SupportGroup &supp_dat,
-                      double delta_metric);
+    /// Should cut_and_piv start again with the easier separation routines.
+    bool restart_loop(LP::PivType piv, double delta_metric);
 
+    /// Should cut_and_piv return \p piv for augmentation or pricing.
     bool return_pivot(LP::PivType piv);
 
-    LP::PivType cut_and_piv(int &round, bool do_price);
+    /// A loop of primal pivoting and cutting plane generation.
+    LP::PivType cut_and_piv(bool do_price);
 
     LP::PivType abc_dfs(int depth, bool do_price);
 
+    /// Attempt to recover from a fractional pivot with the x-tour heuristic.
     LP::PivType frac_recover();
+
+    void reset_separator(std::unique_ptr<Sep::Separator> &S);
+    void reset_separator(std::unique_ptr<Sep::PoolCuts> &PS);
+
+#if CMR_HAVE_SAFEGMI
+    void reset_separator(std::unique_ptr<Sep::SafeGomory> &GS);
+#endif
+
+    /// Method template for calling a separation routine in cut_and_piv.
+    template <typename Qtype>
+    bool call_separator(const std::function<bool()> &sepcall,
+                        Qtype &sep_q,
+                        LP::PivType &piv, double &prev_val,
+                        double &total_delta, double &delta_ratio);
 
     Data::Instance tsp_instance;
     Data::KarpPartition karp_part;
@@ -97,13 +116,6 @@ private:
     Data::BestGroup best_data;
 
     LP::CoreLP core_lp;
-
-    std::unique_ptr<Sep::Separator> separator;
-    std::unique_ptr<Sep::PoolCuts> pool_separator;
-
-#if CMR_HAVE_SAFEGMI
-    std::unique_ptr<Sep::SafeGomory> gmi_separator;
-#endif
 
     std::unique_ptr<Price::Pricer> edge_pricer;
 

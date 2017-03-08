@@ -44,6 +44,32 @@ using CutType = Sep::HyperGraph::Type;
 using PivType = LP::PivType;
 namespace Eps = Epsilon;
 
+void Solver::reset_separator(unique_ptr<Sep::Separator> &S)
+{
+    util::ptr_reset(S, core_graph.get_edges(), active_tour(),
+                    core_lp.supp_data, karp_part);
+    S->filter_primal = !branch_engaged;
+}
+
+void Solver::reset_separator(std::unique_ptr<Sep::PoolCuts> &PS)
+{
+    util::ptr_reset(PS, core_lp.ext_cuts,
+                    core_graph.get_edges(), active_tour().edges(),
+                    core_lp.supp_data);
+    PS->filter_primal = !branch_engaged;
+}
+
+#if CMR_HAVE_SAFEGMI
+
+void Solver::reset_separator(std::unique_ptr<Sep::SafeGomory> &GS)
+{
+    util::ptr_reset(GS, core_lp, active_tour().edges(),
+                    core_lp.lp_vec());
+    GS->filter_primal = !branch_engaged;
+}
+
+#endif
+
 /** Function template to pivot, find cuts, pivot back, add them, pivot again.
  * This function template is used to add one class of cuts at a time, attempt
  * to measure progress obtained, and return information on whether a further
@@ -53,8 +79,6 @@ namespace Eps = Epsilon;
  * case they are stored in \p sep_q.
  * @param[out] piv if cuts are found, this is the pivot type that occurred
  * after they were added.
- * @param[in] core_lp the LP relaxation for performing pivots and adding cuts.
- * @param[in] tourlen the length of the best known tour.
  * @param[in/out] prev_val the value of the last pivot computed; will be set to
  * a new value if cuts are found.
  * @param[in/out] total_delta the sum of changes in objective values attained
@@ -63,11 +87,10 @@ namespace Eps = Epsilon;
  * difference between the new pivot value and \p prev_val divided by
  * \p tourlen.
  */
-template<class Qtype>
-bool call_separator(const function<bool()> &sepcall, Qtype &sep_q,
-                    PivType &piv, LP::CoreLP &core_lp,
-                    const double tourlen, double &prev_val,
-                    double &total_delta, double &delta_ratio)
+template<typename Qtype>
+bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
+                            PivType &piv, double &prev_val,
+                            double &total_delta, double &delta_ratio)
 {
     bool result = sepcall();
     if (result) {
@@ -80,10 +103,24 @@ bool call_separator(const function<bool()> &sepcall, Qtype &sep_q,
         prev_val = new_val;
 
         total_delta += delta;
-        delta_ratio = (delta / tourlen);
+        delta_ratio = (delta / core_lp.active_tourlen());
     }
 
     return result;
+}
+
+/**
+ * @param piv the PivType of the last call to primal_pivot.
+ * @param delta_metric some measurement of the change obtained from the last
+ * round of cut generation.
+ * @returns true if cut_and_piv should start again with the easier separation
+ * routines, false if it should proceed to the next one or break off cut
+ * generation.
+ */
+bool Solver::restart_loop(LP::PivType piv, double delta_metric)
+{
+    return (piv == PivType::Subtour || !core_lp.supp_data.connected ||
+            delta_metric > Eps::SepRound);
 }
 
 inline bool Solver::return_pivot(LP::PivType piv)
@@ -91,225 +128,205 @@ inline bool Solver::return_pivot(LP::PivType piv)
     return piv == PivType::Tour || piv == PivType::FathomedTour;
 }
 
-PivType Solver::cut_and_piv(int &round, bool do_price)
+/**
+ * @param do_price is edge pricing being performed for this instance. Used to
+ * control Gomory cut separation.
+ * @returns a PivType corresponding to a non-degenerate pivot that was obtained
+ * from repeated rounds of cut generation and pivoting.
+ */
+PivType Solver::cut_and_piv(bool do_price)
 {
     runtime_error err("Problem in Solver::cut_and_piv");
+
     bool silent = true;
 
-    double tourlen = core_lp.get_objval();
-    double prev_val = tourlen;
-    double total_delta = 0.0;
-    double delta_ratio = 0.0;
-
-    PivType piv;
+    PivType piv = PivType::Frac;
+    int round = 0;
 
     Data::SupportGroup &supp_data = core_lp.supp_data;
-    unique_ptr<Sep::Separator> &sep = separator;
-    unique_ptr<Sep::PoolCuts> &pool_sep = pool_separator;
-    const std::vector<Graph::Edge> &core_edges = core_graph.get_edges();
 
-    ++round;
-    if (!silent)
-        cout << "\nRound " << round << "\n";
+    unique_ptr<Sep::Separator> sep;
+    unique_ptr<Sep::PoolCuts> pool_sep;
 
-    try {
-        piv = core_lp.primal_pivot();
-        util::ptr_reset(sep, core_edges, active_tour(), supp_data, karp_part);
-        sep->filter_primal = !branch_engaged;
-    } CMR_CATCH_PRINT_THROW("initializing pivot and separator", err);
 
-    if (return_pivot(piv)) {
-        return piv;
-    }
+    while (true) {
+        double prev_val = core_lp.active_tourlen();
+        double total_delta = 0.0;
+        double delta_ratio = 0.0;
 
-    bool found_primal = false;
+        ++round;
+        if (!silent)
+            cout << "\tCut and Piv round " << round << endl;
 
-    if (cut_sel.cutpool && !core_lp.external_cuts().get_cutpool().empty())
         try {
-            util::ptr_reset(pool_sep, core_lp.ext_cuts, core_graph.get_edges(),
-                            active_tour().edges(), core_lp.supp_data);
-            pool_sep->filter_primal = !branch_engaged;
+            piv = core_lp.primal_pivot();
+        } CMR_CATCH_PRINT_THROW("initializing pivot and separator", err);
 
-            if (call_separator([&pool_sep]() { return pool_sep->find_cuts(); },
-                               pool_sep->pool_q(), piv, core_lp, tourlen,
-                               prev_val, total_delta, delta_ratio)) {
-                found_primal = true;
-                if (return_pivot(piv))
-                    return piv;
+        if (return_pivot(piv))
+            return piv;
 
-                if (!core_lp.supp_data.connected || delta_ratio > Eps::SepRound)
-                    return cut_and_piv(round, do_price);
+        bool found_primal = false;
 
-                util::ptr_reset(sep, core_edges, active_tour(), supp_data,
-                               karp_part);
-                sep->filter_primal = !branch_engaged;
-            }
-        } CMR_CATCH_PRINT_THROW("calling pool sep", err);
-
-    bool found_seg = false;
-
-
-    if (cut_sel.segment)
-        try {
-            if (call_separator([&sep]() { return sep->segment_sep(); },
-                               sep->segment_q(), piv, core_lp,
-                               tourlen, prev_val, total_delta, delta_ratio)) {
-                found_primal = true;
-                found_seg = true;
-                if (return_pivot(piv))
-                    return piv;
-
-                if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
-                    return cut_and_piv(round, do_price);
-                util::ptr_reset(sep, core_edges, active_tour(), supp_data,
-                               karp_part);
-                sep->filter_primal = !branch_engaged;
-            }
-        } CMR_CATCH_PRINT_THROW("calling segment sep", err);
-
-    bool found_2m = false;
-
-    if (cut_sel.fast2m)
-        try {
-            if (call_separator([&sep]() { return sep->fast2m_sep(); },
-                               sep->fastblossom_q(), piv, core_lp,
-                               tourlen, prev_val, total_delta, delta_ratio)) {
-                found_2m = true;
-                found_primal = true;
-                if (return_pivot(piv))
-                    return piv;
-
-                if (piv == PivType::Subtour || delta_ratio > Eps::SepRound)
-                    return cut_and_piv(round, do_price);
-
-                util::ptr_reset(sep, core_edges, active_tour(), supp_data,
-                               karp_part);
-                sep->filter_primal = !branch_engaged;
-            }
-        } CMR_CATCH_PRINT_THROW("calling fast2m sep", err);
-
-    if (cut_sel.ex2m)
-        try {
-            if (!found_2m &&
-                call_separator([&sep]() { return sep->exact2m_sep(); },
-                               sep->exblossom_q(), piv, core_lp,
-                               tourlen, prev_val, total_delta, delta_ratio)) {
-                if (return_pivot(piv))
-                    return piv;
-
-                if (total_delta >= Eps::Zero)
-                    return cut_and_piv(round, do_price);
-
-                util::ptr_reset(sep, core_edges, active_tour(), supp_data,
-                               karp_part);
-                sep->filter_primal = !branch_engaged;
-            }
-        } CMR_CATCH_PRINT_THROW("calling exact 2m sep", err);
-
-    if (cut_sel.blkcomb)
-        try {
-            if (call_separator([&sep]() { return sep->blkcomb_sep(); },
-                               sep->blockcomb_q(), piv, core_lp,
-                               tourlen, prev_val, total_delta, delta_ratio)) {
-                found_primal = true;
-                if (return_pivot(piv))
-                    return piv;
-
-                if (piv == PivType::Subtour || found_seg ||
-                    !supp_data.connected)
-                    return cut_and_piv(round,  do_price);
-
-                util::ptr_reset(sep, core_edges, active_tour(), supp_data,
-                               karp_part);
-                sep->filter_primal = !branch_engaged;
-            }
-        } CMR_CATCH_PRINT_THROW("calling blkcomb sep", err);
-
-    if (cut_sel.simpleDP)
-        try {
-            if (!found_seg && supp_data.connected &&
-                call_separator([&sep]() { return sep->simpleDP_sep(); },
-                               sep->simpleDP_q(), piv, core_lp,
-                               tourlen, prev_val, total_delta, delta_ratio)) {
-                if (return_pivot(piv))
-                    return piv;
-
-                if (total_delta >= Eps::Zero)
-                    return cut_and_piv(round,  do_price);
-            }
-        } CMR_CATCH_PRINT_THROW("calling simpleDP sep", err);
-
-    if (cut_sel.connect) {
-        if (!found_primal && !supp_data.connected) {
-            int num_add = 0;
-            while (!supp_data.connected) {
-                try {
-                    if (call_separator([&sep]() { return sep->connect_sep(); },
-                                       sep->connect_cuts_q(), piv, core_lp,
-                                       tourlen, prev_val, total_delta,
-                                       delta_ratio)) {
-                        num_add += sep->connect_cuts_q().size();
-                        util::ptr_reset(sep, core_edges, active_tour(),
-                                        supp_data,
-                                       karp_part);
-                        sep->filter_primal = !branch_engaged;
-
-                    } else {
-                        throw logic_error("Disconnected w no connect cuts??");
-                    }
-                } CMR_CATCH_PRINT_THROW("doing connect cut loop", err);
-            }
-
-            if (return_pivot(piv)) {
-                return piv;
-            } else {
-                return cut_and_piv(round,  do_price);
-            }
-        } else if (!silent) {
-            cout << "\tcuts: " << found_primal << ",connected "
-                 << supp_data.connected << "\n";
-        }
-    }
-
-    if (total_delta < Eps::Zero)
-        found_primal = false;
-
-    if (found_primal) {
-        return cut_and_piv(round, do_price);
-    }
-
-#if CMR_HAVE_SAFEGMI
-
-    unique_ptr<Sep::SafeGomory> &gmi_sep = gmi_separator;
-
-    if (cut_sel.safeGMI)
-        if (!do_price) {
+        if (cut_sel.cutpool && !core_lp.external_cuts().get_cutpool().empty())
             try {
-                vector<double> lp_x = core_lp.lp_vec();
-                util::ptr_reset(gmi_sep, core_lp, active_tour().edges(), lp_x);
-                gmi_sep->filter_primal = !branch_engaged;
+                reset_separator(pool_sep);
+                if (call_separator([&pool_sep]()
+                                   { return pool_sep->find_cuts(); },
+                                   pool_sep->pool_q(), piv,
+                                   prev_val, total_delta, delta_ratio)) {
+                    found_primal = true;
 
-                if (call_separator([&gmi_sep]()
-                                   { return gmi_sep->find_cuts(); },
-                                   gmi_sep->gomory_q(), piv, core_lp,
-                                   tourlen, prev_val, total_delta,
+                    if (return_pivot(piv))
+                        return piv;
+
+                    if (restart_loop(piv, delta_ratio))
+                        continue;
+                }
+            } CMR_CATCH_PRINT_THROW("calling pool sep", err);
+
+        bool found_seg = false;
+
+        if (cut_sel.segment)
+            try {
+                reset_separator(sep);
+                if (call_separator([&sep]() { return sep->segment_sep(); },
+                                   sep->segment_q(), piv,
+                                   prev_val, total_delta,
+                                   delta_ratio)) {
+                    found_primal = true;
+                    found_seg = true;
+
+                    if (return_pivot(piv))
+                        return piv;
+
+                    if (restart_loop(piv, delta_ratio))
+                        continue;
+                }
+            } CMR_CATCH_PRINT_THROW("calling segment sep", err);
+
+        bool found_2m = false;
+
+        if (cut_sel.fast2m)
+            try {
+                reset_separator(sep);
+                if (call_separator([&sep]() { return sep->fast2m_sep(); },
+                                   sep->fastblossom_q(), piv,
+                                   prev_val, total_delta,
+                                   delta_ratio)) {
+                    found_2m = true;
+                    found_primal = true;
+
+                    if (return_pivot(piv))
+                        return piv;
+
+                    if (restart_loop(piv, delta_ratio))
+                        continue;
+                }
+            } CMR_CATCH_PRINT_THROW("calling fast2m sep", err);
+
+        if (cut_sel.blkcomb)
+            try {
+                reset_separator(sep);
+                if (call_separator([&sep]() { return sep->blkcomb_sep(); },
+                                   sep->blockcomb_q(), piv,
+                                   prev_val, total_delta,
+                                   delta_ratio)) {
+                    found_primal = true;
+                    if (return_pivot(piv))
+                        return piv;
+
+                    if (restart_loop(piv, total_delta))
+                        continue;
+                }
+            } CMR_CATCH_PRINT_THROW("calling blkcomb sep", err);
+
+        if (cut_sel.ex2m && !found_2m)
+            try {
+                reset_separator(sep);
+                if (call_separator([&sep]() { return sep->exact2m_sep(); },
+                                   sep->exblossom_q(), piv,
+                                   prev_val, total_delta,
+                                   delta_ratio)) {
+                    found_primal = true;
+                    if (return_pivot(piv))
+                        return piv;
+
+                    if (restart_loop(piv, total_delta))
+                        continue;
+                }
+            } CMR_CATCH_PRINT_THROW("calling exact 2m sep", err);
+
+        if (cut_sel.simpleDP && !found_seg && supp_data.connected)
+            try {
+                reset_separator(sep);
+                if (call_separator([&sep]() { return sep->simpleDP_sep(); },
+                                   sep->simpleDP_q(), piv,
+                                   prev_val, total_delta,
                                    delta_ratio)) {
                     if (return_pivot(piv))
                         return piv;
 
-                    if (total_delta > Eps::Zero || piv == PivType::Subtour)
-                        return cut_and_piv(round, do_price);
+                    if (restart_loop(piv, total_delta))
+                        continue;
+                }
+            } CMR_CATCH_PRINT_THROW("calling simpleDP sep", err);
 
+        if (cut_sel.connect && !supp_data.connected) {
+            while (!supp_data.connected) {
+                try {
+                    reset_separator(sep);
+                    bool found_con =
+                    call_separator([&sep]() { return sep->connect_sep(); },
+                                   sep->connect_cuts_q(), piv,
+                                   prev_val, total_delta,
+                                   delta_ratio);
+                    if (!found_con)
+                        throw logic_error("Disconnected w no connect cuts??");
+                } CMR_CATCH_PRINT_THROW("doing connect cut loop", err);
+            }
+
+            if (return_pivot(piv))
+                return piv;
+            else
+                continue;
+        }
+
+        if (total_delta < Eps::SepRound)
+            found_primal = false;
+
+        if (found_primal)
+            continue;
+
+#if CMR_HAVE_SAFEGMI
+
+        unique_ptr<Sep::SafeGomory> gmi_sep;
+
+        if (cut_sel.safeGMI && !do_price)
+            try {
+                reset_separator(gmi_sep);
+                if (call_separator([&gmi_sep]()
+                                   { return gmi_sep->find_cuts(); },
+                                   gmi_sep->gomory_q(), piv,
+                                   prev_val, total_delta,
+                                   delta_ratio)) {
+                    if (return_pivot(piv))
+                        return piv;
+
+                    if (restart_loop(piv, total_delta))
+                        continue;
                 }
             } CMR_CATCH_PRINT_THROW("doing safe GMI sep", err);
-        }
 
 #endif
 
+        if (!silent) {
+            cout << "Tried all routines, returning " << piv
+                 << " with total delta " << total_delta << endl;
+        }
 
-    if (!silent)
-        cout << "\tTried all routines, returning " << piv << ", "
-             << total_delta << " total delta\n";
+        break;
+    }
+
     return piv;
 }
 
@@ -318,9 +335,6 @@ PivType Solver::abc_dfs(int depth, bool do_price)
     using SplitIter = ABC::SplitIter;
     using NodeIter = ABC::BranchHistory::iterator;
     using BranchStat = ABC::BranchNode::Status;
-
-    if (depth > 10)
-        throw runtime_error("Solver::abc_dfs hit artificial depth lim");
 
     runtime_error err("Prolem in Solver::abc_dfs");
 

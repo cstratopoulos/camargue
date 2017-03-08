@@ -151,7 +151,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
         ++auground;
 
         try {
-            piv = cut_and_piv(round, do_price);
+            piv = cut_and_piv(do_price);//(round, do_price);
         } CMR_CATCH_PRINT_THROW("invoking cut and piv", err);
 
         if (piv == PivType::Subtour && cut_sel.connect)
