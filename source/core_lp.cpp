@@ -321,6 +321,9 @@ void CoreLP::set_active_tour(std::vector<int> tour_nodes)
 
 void CoreLP::prune_slacks()
 {
+    if (num_rows() == core_graph.node_count())
+        return;
+
     get_x(lp_edges);
 
     for (int i = 0; i < lp_edges.size(); ++i)
