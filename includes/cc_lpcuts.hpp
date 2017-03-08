@@ -109,6 +109,8 @@ public:
      */
     virtual bool find_cuts() = 0;
 
+    bool filter_primal = true; //!< Should only tight cuts be kept.
+
 protected:
     std::vector<int> &elist;
     std::vector<double> &ecap;
@@ -119,7 +121,7 @@ protected:
 };
 
 /** Exact separation of segment cut subtours. */
-class SegmentCuts : ConcordeSeparator {
+class SegmentCuts : public ConcordeSeparator {
 public:
     SegmentCuts(std::vector<int> &elist, std::vector<double> &ecap,
                 TourGraph &TG, Sep::LPcutList &cutq) :
@@ -130,7 +132,7 @@ public:
 };
 
 /** Standard separation of connect cuts. */
-class ConnectCuts : ConcordeSeparator {
+class ConnectCuts : public ConcordeSeparator {
 public:
     ConnectCuts(std::vector<int> &elist, std::vector<double> &ecap,
                 TourGraph &TG, Sep::LPcutList &cutq) :
@@ -141,7 +143,7 @@ public:
 };
 
 /** Primal separation of comb ineqalities via standard block comb heuristic. */
-class BlockCombs : ConcordeSeparator {
+class BlockCombs : public ConcordeSeparator {
 public:
     BlockCombs(std::vector<int> &elist, std::vector<double> &ecap,
                TourGraph &TG, Sep::LPcutList &cutq) :
@@ -152,7 +154,7 @@ public:
 };
 
 /** Primal separation of blossoms via standard fast blossom heuristics. */
-class FastBlossoms : ConcordeSeparator {
+class FastBlossoms : public ConcordeSeparator {
 public:
     FastBlossoms(std::vector<int> &elist, std::vector<double> &ecap,
                  TourGraph &TG, Sep::LPcutList &cutq) :

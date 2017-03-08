@@ -169,7 +169,9 @@ bool BlockCombs::find_cuts()
       return false;
 
   cutq = LPcutList(head, cutcount);
-  cutq.filter_primal(TG);
+
+  if (filter_primal)
+      cutq.filter_primal(TG);
 
   return(!cutq.empty());
 }
@@ -190,7 +192,8 @@ bool FastBlossoms::find_cuts()
   }
 
   cutq = LPcutList(head, cutcount);
-  cutq.filter_primal(TG);
+  if (filter_primal)
+      cutq.filter_primal(TG);
 
   if (!cutq.empty())
       return true;

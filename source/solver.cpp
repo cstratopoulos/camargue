@@ -243,8 +243,12 @@ PivType Solver::abc(bool do_price)
 
     if (do_price) {
         cout << "\tTesting elim in ABC...\n";
-        edge_pricer->elim_edges(true);
-        throw runtime_error("Just testin!!!!");
+        try {
+            edge_pricer->elim_edges(true);
+            core_lp.primal_opt();
+            cout << "New col count " << core_lp.num_cols()
+                 << ", opt objval " << core_lp.get_objval() << endl;
+        } CMR_CATCH_PRINT_THROW("eliminating and optimizing", err);
     }
 
 
@@ -257,6 +261,8 @@ PivType Solver::abc(bool do_price)
         util::ptr_reset(dfs_brancher, tsp_instance, active_tour(),
                         best_info(), graph_info(), core_lp);
     } CMR_CATCH_PRINT_THROW("allocating/instantiating Brancher", err);
+
+    branch_engaged = true;
 
     if (cut_sel.safeGMI) {
         cout << "(Disabling GMI and purging cuts for branching.....)\n";

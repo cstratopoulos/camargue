@@ -47,6 +47,9 @@ public:
 
     LPcutList &connect_cuts_q()  { return connect_q; }
 
+    /// The desired filter_primal value for ConcordeSeparator inheritors.
+    bool filter_primal = true;
+
 private:
     void set_TG(); //!< Construct the TourGraph TG.
 

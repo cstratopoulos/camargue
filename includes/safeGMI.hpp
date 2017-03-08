@@ -32,6 +32,7 @@ public:
     CutQueue<LP::SparseRow> &gomory_q() { return gmi_q; }
 
     bool silent = true;
+    bool filter_primal = true;
 
 private:
     LP::Relaxation &lp_relax;

@@ -37,6 +37,8 @@ public:
     const std::vector<double> &get_lp_slacks() const { return lp_slacks; }
     const std::vector<double> &get_tour_slacks() const { return tour_slacks; }
 
+    bool filter_primal = true; //!< Should only tight cuts be included.
+
 private:
     void price_cliques(); //!< Populate clique_vals.
 

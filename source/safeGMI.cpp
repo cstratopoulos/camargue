@@ -137,7 +137,8 @@ bool SafeGomory::find_cuts()
 
         double slack = tour_act - rhs;
 
-        if (slack == 0.0 && lp_viol >= Epsilon::Cut && tour_act >= rhs) {
+        if ((slack == 0.0 || filter_primal == false)
+            && lp_viol >= Epsilon::Cut && tour_act >= rhs) {
             SparseRow primal_row;
             // cout << "\tFound GMI cut with viol " << lp_viol << ", "
             //      << nz << " nonzeros, density "

@@ -62,6 +62,9 @@ bool Separator::fast2m_sep() try
 {
     set_TG();
     FastBlossoms fast2m(perm_elist, supp_data.support_ecap, TG, fast2m_q);
+
+    fast2m.filter_primal = filter_primal;
+
     bool result = fast2m.find_cuts();
 
     return result;
@@ -86,6 +89,7 @@ bool Separator::exact2m_sep() try
 {
     set_TG();
     ExBlossoms ex2m(core_edges, active_tour, supp_data, ex2m_q);
+
     bool result = ex2m.find_cuts();
 
     return result;

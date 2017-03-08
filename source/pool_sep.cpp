@@ -74,7 +74,8 @@ bool PoolCuts::find_cuts()
 
     try {
         for (int i = 0; i < cutpool.size(); ++i)
-            if (lp_slacks[i] <= -Eps::Cut && tour_slacks[i] == 0)
+            if (lp_slacks[i] <= -Eps::Cut &&
+                (tour_slacks[i] == 0 || filter_primal == false))
                 primal_cuts.push_back(ItrIdx(cutpool.begin() + i, i));
     } CMR_CATCH_PRINT_THROW("creating iterator vector", err);
 

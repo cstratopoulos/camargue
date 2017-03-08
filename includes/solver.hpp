@@ -109,6 +109,8 @@ private:
 
     std::unique_ptr<ABC::DFSbrancher> dfs_brancher;
 
+    bool branch_engaged = false; //!< Is an ABC search active.
+
     OutPrefs output_prefs;
 
     int num_augs = 0;

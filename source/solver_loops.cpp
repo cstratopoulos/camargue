@@ -115,6 +115,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
     try {
         piv = core_lp.primal_pivot();
         util::ptr_reset(sep, core_edges, active_tour(), supp_data, karp_part);
+        sep->filter_primal = !branch_engaged;
     } CMR_CATCH_PRINT_THROW("initializing pivot and separator", err);
 
     if (return_pivot(piv)) {
@@ -127,6 +128,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
         try {
             util::ptr_reset(pool_sep, core_lp.ext_cuts, core_graph.get_edges(),
                             active_tour().edges(), core_lp.supp_data);
+            pool_sep->filter_primal = !branch_engaged;
 
             if (call_separator([&pool_sep]() { return pool_sep->find_cuts(); },
                                pool_sep->pool_q(), piv, core_lp, tourlen,
@@ -140,6 +142,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
                 util::ptr_reset(sep, core_edges, active_tour(), supp_data,
                                karp_part);
+                sep->filter_primal = !branch_engaged;
             }
         } CMR_CATCH_PRINT_THROW("calling pool sep", err);
 
@@ -160,6 +163,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                     return cut_and_piv(round, do_price);
                 util::ptr_reset(sep, core_edges, active_tour(), supp_data,
                                karp_part);
+                sep->filter_primal = !branch_engaged;
             }
         } CMR_CATCH_PRINT_THROW("calling segment sep", err);
 
@@ -180,6 +184,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
                 util::ptr_reset(sep, core_edges, active_tour(), supp_data,
                                karp_part);
+                sep->filter_primal = !branch_engaged;
             }
         } CMR_CATCH_PRINT_THROW("calling fast2m sep", err);
 
@@ -197,6 +202,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
                 util::ptr_reset(sep, core_edges, active_tour(), supp_data,
                                karp_part);
+                sep->filter_primal = !branch_engaged;
             }
         } CMR_CATCH_PRINT_THROW("calling exact 2m sep", err);
 
@@ -215,6 +221,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
 
                 util::ptr_reset(sep, core_edges, active_tour(), supp_data,
                                karp_part);
+                sep->filter_primal = !branch_engaged;
             }
         } CMR_CATCH_PRINT_THROW("calling blkcomb sep", err);
 
@@ -245,6 +252,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
                         util::ptr_reset(sep, core_edges, active_tour(),
                                         supp_data,
                                        karp_part);
+                        sep->filter_primal = !branch_engaged;
 
                     } else {
                         throw logic_error("Disconnected w no connect cuts??");
@@ -279,6 +287,7 @@ PivType Solver::cut_and_piv(int &round, bool do_price)
             try {
                 vector<double> lp_x = core_lp.lp_vec();
                 util::ptr_reset(gmi_sep, core_lp, active_tour().edges(), lp_x);
+                gmi_sep->filter_primal = !branch_engaged;
 
                 if (call_separator([&gmi_sep]()
                                    { return gmi_sep->find_cuts(); },
@@ -309,14 +318,16 @@ PivType Solver::abc_dfs(int depth, bool do_price)
     using SplitIter = ABC::SplitIter;
     using NodeIter = ABC::BranchHistory::iterator;
 
+    if (depth > 10)
+        throw runtime_error("Solver::abc_dfs hit artificial depth lim");
+
     runtime_error err("Prolem in Solver::abc_dfs");
 
     PivType piv = PivType::Frac;
 
-    if (depth > 0)
-        try {
-            piv = cutting_loop(do_price, false, false);
-        } CMR_CATCH_PRINT_THROW("solving branch prob", err);
+    try {
+        piv = cutting_loop(do_price, false, false);
+    } CMR_CATCH_PRINT_THROW("solving branch prob", err);
 
     if (piv != PivType::Frac) {
         if (piv == PivType::FathomedTour)
