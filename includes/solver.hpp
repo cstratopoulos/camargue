@@ -96,12 +96,19 @@ private:
     /// Attempt to recover from a fractional pivot with the x-tour heuristic.
     LP::PivType frac_recover();
 
+    /**@name Separator resetting routines.
+     * These methods reset their argument with data about the current pivot.
+     */
+    ///@{
+
     void reset_separator(std::unique_ptr<Sep::Separator> &S);
     void reset_separator(std::unique_ptr<Sep::PoolCuts> &PS);
 
 #if CMR_HAVE_SAFEGMI
     void reset_separator(std::unique_ptr<Sep::SafeGomory> &GS);
 #endif
+
+    ///@}
 
     /// Method template for calling a separation routine in cut_and_piv.
     template <typename Qtype>

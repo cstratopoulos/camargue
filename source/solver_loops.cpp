@@ -79,9 +79,9 @@ void Solver::reset_separator(std::unique_ptr<Sep::SafeGomory> &GS)
  * case they are stored in \p sep_q.
  * @param[out] piv if cuts are found, this is the pivot type that occurred
  * after they were added.
- * @param[in/out] prev_val the value of the last pivot computed; will be set to
+ * @param[in,out] prev_val the value of the last pivot computed; will be set to
  * a new value if cuts are found.
- * @param[in/out] total_delta the sum of changes in objective values attained
+ * @param[in,out] total_delta the sum of changes in objective values attained
  * by separation routines called thus far.
  * @param[out] delta_ratio if cuts are found, this is the ratio of the
  * difference between the new pivot value and \p prev_val divided by
@@ -113,9 +113,6 @@ bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
  * @param piv the PivType of the last call to primal_pivot.
  * @param delta_metric some measurement of the change obtained from the last
  * round of cut generation.
- * @returns true if cut_and_piv should start again with the easier separation
- * routines, false if it should proceed to the next one or break off cut
- * generation.
  */
 bool Solver::restart_loop(LP::PivType piv, double delta_metric)
 {
@@ -131,8 +128,8 @@ inline bool Solver::return_pivot(LP::PivType piv)
 /**
  * @param do_price is edge pricing being performed for this instance. Used to
  * control Gomory cut separation.
- * @returns a PivType corresponding to a non-degenerate pivot that was obtained
- * from repeated rounds of cut generation and pivoting.
+ * @returns a LP::PivType corresponding to a non-degenerate pivot that was
+ * obtainedfrom repeated rounds of cut generation and pivoting.
  */
 PivType Solver::cut_and_piv(bool do_price)
 {
