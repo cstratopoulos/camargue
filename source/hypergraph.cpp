@@ -15,6 +15,7 @@ using std::pair;
 
 using std::cout;
 using std::cerr;
+using std::endl;
 
 using std::runtime_error;
 using std::logic_error;
@@ -43,7 +44,7 @@ HyperGraph::HyperGraph(CliqueBank &bank, const lpcut_in &cc_lpcut,
     }
 
 } catch (const exception &e) {
-    cerr << e.what() << "\n";
+    cerr << e.what() << endl;
     throw runtime_error("HyperGraph CC lpcut_in constructor failed.");
 }
 
@@ -68,7 +69,7 @@ HyperGraph::HyperGraph(CliqueBank &bank, ToothBank &tbank,
         teeth.push_back(source_toothbank->add_tooth(T, tour));
 
 } catch (const exception &e) {
-    cerr << e.what() << "\n";
+    cerr << e.what() << endl;
     throw runtime_error("HyperGraph dominoparity constructor failed.");
 }
 
@@ -92,7 +93,7 @@ HyperGraph::HyperGraph(CliqueBank &bank,
     for (vector<int> tooth_edge : tooth_edges)
         cliques.push_back(source_bank->add_clique(tooth_edge));
 } catch (const exception &e) {
-    cerr << e.what() << "\n";
+    cerr << e.what() << endl;
     throw runtime_error("HyperGraph ex_blossom constructor failed.");
 }
 
@@ -147,7 +148,7 @@ void HyperGraph::transfer_source(CliqueBank &new_source_bank) try
 
     source_bank = &new_source_bank;
 } catch (const exception &e) {
-    cerr << e.what() << "\n";
+    cerr << e.what() << endl;
     throw runtime_error("HyperGraph::transfer_source failed.");
 }
 
@@ -261,7 +262,7 @@ try : node_count(tour.size()), clique_bank(tour, perm), tooth_bank(tour, perm),
       pool_cliques(tour, perm)
 {
 } catch (const exception &e) {
-    cerr << e.what() << "\n";
+    cerr << e.what() << endl;
     throw runtime_error("ExternalCuts constructor failed.");
 }
 
@@ -327,6 +328,8 @@ void ExternalCuts::del_cuts(const vector<int> &delset, bool add_to_pool)
 {
     using CutType = HyperGraph::Type;
 
+    int poolcount = 0;
+
     for (int i = 0; i < cuts.size(); ++i) {
         HyperGraph &H = cuts[i];
         CutType Htype = H.cut_type();
@@ -335,6 +338,7 @@ void ExternalCuts::del_cuts(const vector<int> &delset, bool add_to_pool)
                 if (Htype == CutType::Comb || Htype == CutType::Domino) {
                     H.transfer_source(pool_cliques);
                     cut_pool.emplace_back(std::move(H));
+                    ++poolcount;
                 }
             H.rhs = '\0';
         }

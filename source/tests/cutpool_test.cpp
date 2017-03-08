@@ -23,7 +23,7 @@ using std::string;
 using std::vector;
 
 SCENARIO ("Experimenting with CutMonitor metrics",
-          "[Sep][LP][pivot_age]CutMonitor][experiment]") {
+          "[Sep][LP][pivot_age][CutMonitor][experiment]") {
     using namespace CMR;
     vector<string> probs{
         "swiss42",
@@ -208,7 +208,6 @@ SCENARIO ("Pricing cuts from a cutpool",
                 cout << "\tPool has " << pool.size() << " cuts" << endl;
                 cout << "\t" << numcomb << " combs, " << numdp << " dominos."
                      << endl;
-
 
                 vector<double> lp_vec = core.lp_vec();
 
