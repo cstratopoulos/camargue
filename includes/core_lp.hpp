@@ -14,11 +14,9 @@
 #include "datagroups.hpp"
 #include "hypergraph.hpp"
 #include "cutmon.hpp"
-#include "err_util.hpp"
 #include "util.hpp"
 
 #include <algorithm>
-#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -35,13 +33,18 @@ namespace LP {
  */
 class CoreLP : public Relaxation {
 public:
-    CoreLP(Graph::CoreGraph &core_graph_,
-           Data::BestGroup &best_data_);
+    /// Construct a CoreLP from combinatorial TSP instance + best tour data.
+    CoreLP(Graph::CoreGraph &core_graph_, Data::BestGroup &best_data_);
 
     /// Compute a primal non-degenerate pivot from the active_tour.
     LP::PivType primal_pivot();
 
     void pivot_back(bool prune_slacks); //!< Pivot back to active_tour.
+
+    /**@name Cut addition routines.
+     * Pop cuts from a queue, adding them to the LP
+     */
+    ///@{
 
     void add_cuts(Sep::LPcutList &cutq);
     void add_cuts(Sep::CutQueue<Sep::dominoparity> &dp_q);
@@ -49,9 +52,13 @@ public:
     void add_cuts(Sep::CutQueue<Sep::ex_blossom> &ex2m_q);
     void add_cuts(Sep::CutQueue<Sep::HyperGraph> &pool_q);
 
+    ///@}
+
+    /// Add the edges in \p add_batch to the LP, modifying the core_graph.
     void add_edges(const std::vector<Graph::Edge> &add_batch,
                    bool reinstate);
 
+    /// Remove edges indicated by \p edge_delstat from LP, modifying core_graph.
     void remove_edges(std::vector<int> edge_delstat);
 
 
@@ -59,15 +66,12 @@ public:
     template<typename numtype>
     bool check_feas(const std::vector<numtype> &x_vec);
 
-    /// Get a const reference to the SupportGroup for the most recent pivot.
     const Data::SupportGroup &support_data() const { return supp_data; }
-
     const Sep::ExternalCuts &external_cuts() const { return ext_cuts; }
-
     const LP::CutMonitor &cut_monitor() const { return cut_mon; }
-
     const LP::ActiveTour &get_active_tour() const { return active_tour; }
 
+    /// Set active_tour from a list of nodes.
     void set_active_tour(std::vector<int> tour_nodes);
 
     /// Average number of iterations per primal_pivot.
@@ -75,8 +79,8 @@ public:
 
     double active_tourlen() const { return active_tour.length(); }
 
+    /// The global upper bound for this instance.
     double global_ub() const { return best_data.min_tour_value; }
-
 
     friend class CMR::Solver;
 
@@ -87,13 +91,12 @@ private:
     /// As above but with a reset instate.
     void reset_instate_active();
 
+    /// Update active_tour via an augmenting pivot.
     void handle_aug_pivot(std::vector<int> tour_nodes, Basis aug_base);
 
-    void prune_slacks();
+    void prune_slacks(); //!< Prune cuts which are not tight at active_tour.
 
-    void rebuild_basis();
-
-    void purge_gmi();
+    void purge_gmi(); //!< Get rid of any GMI cuts in the LP.
 
     Graph::CoreGraph &core_graph;
     Data::BestGroup &best_data;
@@ -114,114 +117,6 @@ private:
 
     int prev_numrows;
 };
-
-//////////////////// TEMPLATE METHOD IMPLEMENTATIONS //////////////////////////
-
-template<typename numtype>
-bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
-{
-    using std::cout;
-    using std::endl;
-    using std::runtime_error;
-    using std::vector;
-    using DoublePair = std::pair<double, double>;
-    namespace Eps = Epsilon;
-
-    runtime_error err("Problem in CoreLP::check_feas");
-    bool result = true;
-
-    int numrows = num_rows();
-    int numcols = num_cols();
-
-    vector<double> dbl_x;
-    vector<double> row_feas;
-    vector<double> col_feas;
-
-    cout << "Reporting if solution is feasible, " << numrows << " rows and "
-         << numcols << " cols in the LP\n" << ext_cuts.get_cuts().size()
-         << " external cuts" << endl;
-
-    try {
-        dbl_x = vector<double>(x_vec.begin(), x_vec.end());
-        get_row_infeas(dbl_x, row_feas, 0, numrows - 1);
-        get_col_infeas(dbl_x, col_feas, 0, numcols - 1);
-    } CMR_CATCH_PRINT_THROW("making solver queries", err);
-
-    int ncount = core_graph.node_count();
-
-    for (int i = 0; i < numrows; ++i) {
-        double rowfeas = row_feas[i];
-        if (rowfeas != 0.0) {
-            result = false;
-            cout << "\nRow " << i << " has infeas of "  << rowfeas << " on ";
-            if (i < ncount)
-                cout << "degree equation" << endl;
-            else {
-                const Sep::HyperGraph &H = ext_cuts.get_cut(i);
-                cout << H.cut_type() << "\n\tsense "
-                     << H.get_sense() << ", rhs " << H.get_rhs()
-                     << ", clq/tooth count " << H.get_cliques().size() << "/"
-                     << H.get_teeth().size() << endl;
-                LP::SparseRow rel_row;
-                LP::SparseRow hg_row;
-
-                try {
-                    rel_row = get_row(i);
-                    H.get_coeffs(core_graph.get_edges(), hg_row.rmatind,
-                                 hg_row.rmatval);
-                } CMR_CATCH_PRINT_THROW("getting SparseRows", err);
-                cout << "HG row act: " << Sep::get_activity(dbl_x, hg_row)
-                     << ", rel row act: " << Sep::get_activity(dbl_x, rel_row)
-                     << endl;
-                cout << "HG row size " << hg_row.rmatind.size() << ", rel "
-                     << rel_row.rmatind.size() << endl;
-                cout << "Rel row sense " << rel_row.sense << ", rhs "
-                     << rel_row.rhs << endl;
-
-                vector<int> coeff_compare(numcols, 1);
-                vector<DoublePair> hg_rel_coeffs(numcols,
-                                                 DoublePair(-1.0, -1.0));
-
-                for (int i = 0; i < hg_row.rmatind.size(); ++i) {
-                    coeff_compare[hg_row.rmatind[i]] *= 2;
-                    hg_rel_coeffs[hg_row.rmatind[i]].first = hg_row.rmatval[i];
-                }
-
-                for (int i = 0; i < rel_row.rmatind.size(); ++i) {
-                    coeff_compare[rel_row.rmatind[i]] *= 3;
-                    hg_rel_coeffs[rel_row.rmatind[i]].second =
-                    rel_row.rmatval[i];
-                }
-
-                for (int i = 0; i < numcols; ++i) {
-                    double entry = coeff_compare[i];
-                    if (entry == 2)
-                        cout << "Coeff " << i << " only in HG with val "
-                             << static_cast<int>(hg_rel_coeffs[i].first)
-                             << "\n";
-                    else if (entry == 3)
-                        cout << "Coeff " << i << " only in rel with val "
-                             << static_cast<int>(hg_rel_coeffs[i].second)
-                             << "\n";
-                }
-
-
-            }
-        }
-    }
-
-    for (int i = 0; i < numcols; ++i) {
-        double colfeas = col_feas[i];
-        if (colfeas != 0.0) {
-            result = false;
-            cout << "Found infeas of " << colfeas << " on edge "
-                 << core_graph.get_edge(i) << endl;
-        }
-    }
-
-    cout << "Report completed with result " << result << endl;
-    return result;
-}
 
 
 }

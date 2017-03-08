@@ -180,8 +180,8 @@ void CoreLP::pivot_back(bool prune_slacks)
             del_set_rows(delset);
             ext_cuts.del_cuts(delset, false);
             reset_instate_active();
-            // cout << "Deleted " << delct << " / "
-            //      << (numrows - prev_numrows) << " basic slack cuts" << endl;
+            cout << "Deleted " << delct << " / "
+                 << (numrows - prev_numrows) << " basic slack cuts" << endl;
         } CMR_CATCH_PRINT_THROW("deleting cuts/instating tour", err);
     } else {
         try {
@@ -318,10 +318,13 @@ void CoreLP::prune_slacks()
     vector<int> delrows(orig_numrows, 0);
 
     int rownum = ncount;
+    int delcount = 0;
 
     for (double slack : slacks) {
-        if (slack)
+        if (slack) {
             delrows[rownum] = 1;
+            ++delcount;
+        }
         ++rownum;
     }
 
@@ -543,6 +546,107 @@ void CoreLP::purge_gmi()
         ext_cuts.del_cuts(delrows, false);
         reset_instate_active();
     }
+}
+
+template<typename numtype>
+bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
+{
+    using DoublePair = std::pair<double, double>;
+
+    runtime_error err("Problem in CoreLP::check_feas");
+    bool result = true;
+
+    int numrows = num_rows();
+    int numcols = num_cols();
+
+    vector<double> dbl_x;
+    vector<double> row_feas;
+    vector<double> col_feas;
+
+    cout << "Reporting if solution is feasible, " << numrows << " rows and "
+         << numcols << " cols in the LP\n" << ext_cuts.get_cuts().size()
+         << " external cuts" << endl;
+
+    try {
+        dbl_x = vector<double>(x_vec.begin(), x_vec.end());
+        get_row_infeas(dbl_x, row_feas, 0, numrows - 1);
+        get_col_infeas(dbl_x, col_feas, 0, numcols - 1);
+    } CMR_CATCH_PRINT_THROW("making solver queries", err);
+
+    int ncount = core_graph.node_count();
+
+    for (int i = 0; i < numrows; ++i) {
+        double rowfeas = row_feas[i];
+        if (rowfeas != 0.0) {
+            result = false;
+            cout << "\nRow " << i << " has infeas of "  << rowfeas << " on ";
+            if (i < ncount)
+                cout << "degree equation" << endl;
+            else {
+                const Sep::HyperGraph &H = ext_cuts.get_cut(i);
+                cout << H.cut_type() << "\n\tsense "
+                     << H.get_sense() << ", rhs " << H.get_rhs()
+                     << ", clq/tooth count " << H.get_cliques().size() << "/"
+                     << H.get_teeth().size() << endl;
+                LP::SparseRow rel_row;
+                LP::SparseRow hg_row;
+
+                try {
+                    rel_row = get_row(i);
+                    H.get_coeffs(core_graph.get_edges(), hg_row.rmatind,
+                                 hg_row.rmatval);
+                } CMR_CATCH_PRINT_THROW("getting SparseRows", err);
+                cout << "HG row act: " << Sep::get_activity(dbl_x, hg_row)
+                     << ", rel row act: " << Sep::get_activity(dbl_x, rel_row)
+                     << endl;
+                cout << "HG row size " << hg_row.rmatind.size() << ", rel "
+                     << rel_row.rmatind.size() << endl;
+                cout << "Rel row sense " << rel_row.sense << ", rhs "
+                     << rel_row.rhs << endl;
+
+                vector<int> coeff_compare(numcols, 1);
+                vector<DoublePair> hg_rel_coeffs(numcols,
+                                                 DoublePair(-1.0, -1.0));
+
+                for (int i = 0; i < hg_row.rmatind.size(); ++i) {
+                    coeff_compare[hg_row.rmatind[i]] *= 2;
+                    hg_rel_coeffs[hg_row.rmatind[i]].first = hg_row.rmatval[i];
+                }
+
+                for (int i = 0; i < rel_row.rmatind.size(); ++i) {
+                    coeff_compare[rel_row.rmatind[i]] *= 3;
+                    hg_rel_coeffs[rel_row.rmatind[i]].second =
+                    rel_row.rmatval[i];
+                }
+
+                for (int i = 0; i < numcols; ++i) {
+                    double entry = coeff_compare[i];
+                    if (entry == 2)
+                        cout << "Coeff " << i << " only in HG with val "
+                             << static_cast<int>(hg_rel_coeffs[i].first)
+                             << "\n";
+                    else if (entry == 3)
+                        cout << "Coeff " << i << " only in rel with val "
+                             << static_cast<int>(hg_rel_coeffs[i].second)
+                             << "\n";
+                }
+
+
+            }
+        }
+    }
+
+    for (int i = 0; i < numcols; ++i) {
+        double colfeas = col_feas[i];
+        if (colfeas != 0.0) {
+            result = false;
+            cout << "Found infeas of " << colfeas << " on edge "
+                 << core_graph.get_edge(i) << endl;
+        }
+    }
+
+    cout << "Report completed with result " << result << endl;
+    return result;
 }
 
 }
