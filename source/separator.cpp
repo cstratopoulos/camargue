@@ -119,7 +119,7 @@ bool Separator::exact2m_sep() try
 
     if (verbose) {
         cout << "\t" << ex2m_q.size() << " primal blossoms" << endl;
-#if CMR_USE_OMP
+#ifdef CMR_USE_OMP
         bool cpu = true;
 #else
         bool cpu = false;

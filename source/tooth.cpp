@@ -443,7 +443,7 @@ void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full,
 
 void CandidateTeeth::profile()
 {
-#if CMR_USE_OMP
+#ifdef CMR_USE_OMP
     bool cpu = true;
 #else
     bool cpu = false;

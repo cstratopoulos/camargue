@@ -152,7 +152,8 @@ bool Sep::SimpleDP::find_cuts()
         #pragma omp critical
         {
         if (verbose)
-            cout << "\t" mini_q.size() << " cuts from partition " << i << "\n";
+            cout << "\t" << mini_q.size() << " cuts from partition "
+                 << i << "\n";
 
             dp_q.splice(mini_q);
 
