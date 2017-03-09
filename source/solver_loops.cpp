@@ -129,20 +129,22 @@ PivType Solver::cut_and_piv(bool do_price)
 
 
     while (true) {
-        double prev_val = core_lp.active_tourlen();
-        double total_delta = 0.0;
-        double delta_ratio = 0.0;
-
-        ++round;
-        if (verbose)
-            cout << "Cut and Piv round " << round << endl;
-
         try {
             piv = core_lp.primal_pivot();
         } CMR_CATCH_PRINT_THROW("initializing pivot and separator", err);
 
+        double total_delta = 0.0;
+        double delta_ratio = 0.0;
+        double prev_val = core_lp.get_objval();
+
         if (return_pivot(piv))
             return piv;
+
+        ++round;
+        if (verbose)
+            cout << "Cut and Piv round " << round << ", initial pivot value "
+                 << prev_val << endl;
+
 
         bool found_primal = false;
 
