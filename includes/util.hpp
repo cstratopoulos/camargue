@@ -21,29 +21,31 @@
 /// The namespace for this project.
 namespace CMR {
 
-/** A POD struct for preferences related to tour file output.
- * This structure stores preferences about the types of files (if any) that
- * will be saved to disk during the solution process. Existing files will
- * be overwritten; it is the responsibility of the calling routine to make
- * sure that they are hopefully only overwritten by better tours than before!
- * @todo Add a make GIF type parameter.
- */
+/// Preferences related to tour file output and verbosity.
 struct OutPrefs {
-  OutPrefs() : save_tour(true),
-	       dump_xy(false),
-	       save_tour_edges(false),
-	       probname() {}
-  OutPrefs(const bool _save_tour, const bool _dump_xy,
-	   const bool _save_tour_edges) :
-    save_tour(_save_tour),
-    dump_xy(_dump_xy),
-    save_tour_edges(_save_tour_edges),
-    probname() {}
+    std::string probname; //!< The instance name.
 
-  bool save_tour, /**< Save tour nodes to `probname.sol`. */
-    dump_xy, /**< If possible, dump xy-coords to `probname.xy` */
-    save_tour_edges; /**< Save tour edges to `probname_tour.x`. */
-  std::string probname; /**< The name of the problem. */
+    /**@name Tour/instance file output.
+     * Each parameter if true determines frequency/style of file output.
+     * @see util::write_tour_nodes for method and style of tour node output.
+     * @see util::write_tour_edges for tour edge output.
+     */
+    ///@{
+
+    bool save_tour = true; //!< Save the latest, best tour to `probname.sol`.
+    bool dump_xy = false; //!< If possible, dump x-y coords to `probname.xy`
+    bool save_tour_edges = false; //!< Save save_tour edges to `probname_tour.x`
+
+    /// Record each augmenting tour as specified by save_tour/save_tour_edges.
+    /// If true, then for each file output will have an infix indicating what
+    /// number augmentation this is. For example if save_tour_edges is true
+    /// and this value is true, a sequence a files `probname_tour.0.x`,
+    /// `probname_tour.1.x`, etc. will be created.
+    bool gif_tour = false;
+
+    ///@}
+
+    bool verbose = false; //!< Verbose output from classes and subroutines.
 };
 
 

@@ -186,8 +186,8 @@ void CoreLP::pivot_back(bool prune_slacks)
             del_set_rows(delset);
             ext_cuts.del_cuts(delset, false);
             reset_instate_active();
-            cout << "Deleted " << delct << " / "
-                 << (numrows - prev_numrows) << " basic slack cuts" << endl;
+            // cout << "Deleted " << delct << " / "
+            //      << (numrows - prev_numrows) << " basic slack cuts" << endl;
         } CMR_CATCH_PRINT_THROW("deleting cuts/instating tour", err);
     } else {
         try {

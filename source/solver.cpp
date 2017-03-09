@@ -5,7 +5,7 @@
 
 #include "config.hpp"
 #include "solver.hpp"
-
+#include "io_util.hpp"
 #include "timer.hpp"
 #include "err_util.hpp"
 
@@ -47,7 +47,9 @@ try : tsp_instance(fname, make_seed(seed)),
       core_graph(tsp_instance), best_data(tsp_instance, core_graph),
       core_lp(core_graph, best_data),
       output_prefs(outprefs)
-{} catch (const exception &e) {
+{
+    initial_prints();
+} catch (const exception &e) {
     cerr << e.what() << endl;
     throw runtime_error("Solver TSPLIB constructor failed.");
 }
@@ -60,7 +62,9 @@ try : tsp_instance(fname, make_seed(seed)),
       best_data(tsp_instance, core_graph, tour_fname),
       core_lp(core_graph, best_data),
       output_prefs(outprefs)
-{} catch (const exception &e) {
+{
+    initial_prints();
+} catch (const exception &e) {
     cerr << e.what() << endl;
     throw runtime_error("Solver TSPLIB/tour constructor failed.");
 }
@@ -72,7 +76,9 @@ try : tsp_instance(make_seed(seed), node_count, gridsize),
       core_graph(tsp_instance), best_data(tsp_instance, core_graph),
       core_lp(core_graph, best_data),
       output_prefs(outprefs)
-{} catch (const exception &e) {
+{
+    initial_prints();
+} catch (const exception &e) {
     cerr << e.what() << endl;
     throw runtime_error("Solver random constructor failed.");
 }
@@ -97,6 +103,36 @@ void Solver::report_aug(bool piv_aug)
     cout << "\tTour " << ++num_augs << ": "
          << core_lp.get_objval() << ", augmented from "
          << (piv_aug ? "primal pivot" : "x-heuristic") << endl;
+
+    if (!output_prefs.save_tour_edges && !output_prefs.save_tour)
+        return;
+
+    string infix;
+    if (output_prefs.gif_tour == true)
+        infix = "." + std::to_string(num_augs) + ".";
+    else
+        infix = ".";
+
+    if (output_prefs.save_tour || output_prefs.save_tour_edges){
+        cout << "\tWrote tour ";
+        if (output_prefs.save_tour) {
+            string tour_fname = tsp_instance.problem_name() + infix + "sol";
+            util::write_tour_nodes(best_data.best_tour_nodes, tour_fname);
+            cout << "nodes to " << tour_fname;
+            if (output_prefs.save_tour_edges)
+                cout << ", ";
+        }
+
+        if (output_prefs.save_tour_edges) {
+            string edges_fname = tsp_instance.problem_name() + "_tour" + infix +
+            "x";
+            util::write_tour_edges(best_data.best_tour_edges,
+                                   core_graph.get_edges(),
+                                   core_graph.node_count(), edges_fname);
+            cout << "edges to " << edges_fname;
+        }
+        cout << endl;
+    }
 }
 
 void Solver::report_cuts()
@@ -126,6 +162,47 @@ void Solver::report_cuts()
     cout << endl;
 }
 
+void Solver::initial_prints()
+{
+    bool want_xy = output_prefs.dump_xy;
+    bool want_tour = output_prefs.save_tour;
+    bool want_edges = output_prefs.save_tour_edges;
+
+    bool gif_out = output_prefs.gif_tour;
+
+    string pname = tsp_instance.problem_name();
+
+    if (want_xy) {
+        if (tsp_instance.ptr()->x == NULL)
+            cerr << "Dumping XY coords incompatible with " << pname << endl;
+        else {
+            string xy_fname = pname + ".xy";
+            util::write_xy_coords(tsp_instance.ptr()->x,
+                                  tsp_instance.ptr()->y,
+                                  tsp_instance.node_count(),
+                                  xy_fname);
+            cout << "Wrote XY coords to " << xy_fname << endl;
+        }
+    }
+
+    string infix = gif_out ? ".0." : ".";
+
+    if (want_tour) {
+        string tour_fname = pname + infix + "sol";
+        util::write_tour_nodes(best_data.best_tour_nodes,
+                               tour_fname);
+        cout << "Wrote starting tour to " << tour_fname << endl;
+    }
+
+    if (want_edges) {
+        string edges_fname = pname + "_tour" + infix + "x";
+        util::write_tour_edges(best_data.best_tour_edges,
+                               core_graph.get_edges(),
+                               tsp_instance.node_count(), edges_fname);
+        cout << "Wrote starting tour edges to " << edges_fname << endl;
+    }
+}
+
 
 PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
 {
@@ -139,7 +216,6 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
         } CMR_CATCH_PRINT_THROW("instantiating/allocating Pricer", err);
 
     PivType piv = PivType::Frac;
-    int round = 0;
     int auground = 0;
     bool elim_during = true;
 

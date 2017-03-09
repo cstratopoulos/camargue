@@ -82,6 +82,8 @@ private:
 
     void report_aug(bool piv_aug); //!< Output info about a new tour found.
 
+    void initial_prints(); //!< Handles writing initial data to file.
+
     /// Should cut_and_piv start again with the easier separation routines.
     bool restart_loop(LP::PivType piv, double delta_metric);
 

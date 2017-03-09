@@ -42,7 +42,7 @@ int main(int argc, char** argv) try
 {
     string tsp_fname;
     string tour_fname;
-    
+
     int seed = 0;
 
     int rand_nodes = 0;
@@ -50,7 +50,7 @@ int main(int argc, char** argv) try
 
     bool sparse = false;
     bool branch = true;
-    
+
     CMR::OutPrefs outprefs;
 
     unique_ptr<CMR::Solver> tsp_solver;
@@ -84,7 +84,7 @@ int main(int argc, char** argv) try
     t.report(true);
 
     return 0;
-    
+
 } catch (const exception &e) {
     cerr << "Exception in Camargue main: " << e.what() << "\n";
     return 1;
@@ -97,7 +97,7 @@ static void initial_parse(int ac, char **av,
                           bool &branchflag)
 {
     bool randflag = false;
-    
+
     rgrid = 1000000;
 
     int c;
@@ -107,8 +107,14 @@ static void initial_parse(int ac, char **av,
         throw logic_error("No arguments specified");
     }
 
-    while ((c = getopt(ac, av, "aPRSn:g:s:t:")) != EOF) {
+    while ((c = getopt(ac, av, "aEGPRSVXn:g:s:t:")) != EOF) {
         switch (c) {
+        case 'E':
+            outprefs.save_tour_edges = true;
+            break;
+        case 'G':
+            outprefs.gif_tour = true;
+            break;
         case 'P':
             branchflag = false;
             break;
@@ -117,6 +123,12 @@ static void initial_parse(int ac, char **av,
             break;
         case 'S':
             sparseflag = true;
+            break;
+        case 'V':
+            outprefs.verbose = true;
+            break;
+        case 'X':
+            outprefs.dump_xy = true;
             break;
         case 'n':
             rnodes = atoi(optarg);
@@ -133,7 +145,7 @@ static void initial_parse(int ac, char **av,
         case '?':
         default:
             usage(av[0]);
-            throw logic_error("Erroneous argument");
+            throw logic_error("Bad argument");
         }
     }
 
@@ -166,12 +178,20 @@ static void usage(const std::string &fname)
 {
     cerr << "Usage: " << fname << " [-see below-] [-prob_file-]\n";
     cerr << "\t\t FLAG OPTIONS\n"
+         << "-E \t Write tour edges to file (in addition to nodes).\n"
+         << "-G \t GIF output: write each new tour to a distinct file.\n"
          << "-P \t Pure primal cutting plane solution: do not branch.\n"
          << "-R \t Generate random problem.\n"
          << "   \t Notes:\t Incompatible with -t flag and TSPLIB file\n"
          << "   \t       \t Must be set to specify -n, -g below\n"
          << "-S \t Sparse mode: solve over a sparse edge set, no pricing\n"
-         << "   \t Notes:\t Must be set for safe Gomory cuts to be used.\n\n";
+         << "   \t Notes:\t Must be set for safe Gomory cuts to be used.\n"
+         << "-V \t Verbose: print lots of messages.\n"
+         << "-X \t Dump XY: If applicable, write x-y coords to file.\n"
+         << "    \t Notes:\t Works for random instances and most TSPLIB "
+         << "instances,\n"
+         <<"\t\t except some with MATRIX or EXPLICIT coordinates.\n";
+    cerr << "\n";
     cerr << "\t\t PARAMETER OPTIONS (argument x)\n"
          << "-n \t random problem with x nodes\n"
          << "-g \t random problem gridsize x by x (1 million default)\n"
