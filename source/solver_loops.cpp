@@ -75,18 +75,24 @@ bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
 
         double new_val = core_lp.get_objval();
         double delta = std::abs(new_val - prev_val);
-
-        if (output_prefs.verbose)
-            cout << "\t^^Cuts objval change " << prev_val << " -> "
-                 << new_val << "\n";
-
-        prev_val = new_val;
+        double tourlen = core_lp.active_tourlen();
 
         total_delta += delta;
-        delta_ratio = (delta / core_lp.active_tourlen());
-        if (output_prefs.verbose)
+        delta_ratio = (delta / tourlen);
+
+        double ph_denom = std::max(std::abs(tourlen - prev_val),
+                                   std::abs(tourlen - new_val));
+
+        double ph_delta = std::abs((new_val - prev_val)/ph_denom);
+
+        if (output_prefs.verbose) {
+            cout << "\t^^Cuts objval change " << prev_val << " -> "
+                 << new_val << "\n";
             cout << "\tTotal delta " << total_delta << ", ratio "
-                 << delta_ratio << ", pivot " << piv << endl;
+                 << delta_ratio << ", pivot " << piv << "\n"
+                 << "\t\tPH delta " << ph_delta << endl;
+        }
+        prev_val = new_val;
     }
 
     return result;
@@ -189,6 +195,7 @@ PivType Solver::cut_and_piv(bool do_price)
             if (verbose)
                 cout << "\tAdding round of standard connect cuts...\n";
             int conrounds = 0;
+
             while (!supp_data.connected) {
                 ++conrounds;
                 try {
