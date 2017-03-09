@@ -44,31 +44,6 @@ using CutType = Sep::HyperGraph::Type;
 using PivType = LP::PivType;
 namespace Eps = Epsilon;
 
-void Solver::reset_separator(unique_ptr<Sep::Separator> &S)
-{
-    util::ptr_reset(S, core_graph.get_edges(), active_tour(),
-                    core_lp.supp_data, karp_part);
-    S->filter_primal = !branch_engaged;
-}
-
-void Solver::reset_separator(std::unique_ptr<Sep::PoolCuts> &PS)
-{
-    util::ptr_reset(PS, core_lp.ext_cuts,
-                    core_graph.get_edges(), active_tour().edges(),
-                    core_lp.supp_data);
-    PS->filter_primal = !branch_engaged;
-}
-
-#if CMR_HAVE_SAFEGMI
-
-void Solver::reset_separator(std::unique_ptr<Sep::SafeGomory> &GS)
-{
-    util::ptr_reset(GS, core_lp, active_tour().edges(),
-                    core_lp.lp_vec());
-    GS->filter_primal = !branch_engaged;
-}
-
-#endif
 
 /** Function template to pivot, find cuts, pivot back, add them, pivot again.
  * This function template is used to add one class of cuts at a time, attempt
@@ -100,10 +75,18 @@ bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
 
         double new_val = core_lp.get_objval();
         double delta = std::abs(new_val - prev_val);
+
+        if (output_prefs.verbose)
+            cout << "\t^^Cuts objval change " << prev_val << " -> "
+                 << new_val << "\n";
+
         prev_val = new_val;
 
         total_delta += delta;
         delta_ratio = (delta / core_lp.active_tourlen());
+        if (output_prefs.verbose)
+            cout << "\tTotal delta " << total_delta << ", ratio "
+                 << delta_ratio << ", pivot " << piv << endl;
     }
 
     return result;
@@ -135,10 +118,9 @@ PivType Solver::cut_and_piv(bool do_price)
 {
     runtime_error err("Problem in Solver::cut_and_piv");
 
-    bool silent = true;
-
     PivType piv = PivType::Frac;
     int round = 0;
+    bool verbose = output_prefs.verbose;
 
     Data::SupportGroup &supp_data = core_lp.supp_data;
 
@@ -152,8 +134,8 @@ PivType Solver::cut_and_piv(bool do_price)
         double delta_ratio = 0.0;
 
         ++round;
-        if (!silent)
-            cout << "\tCut and Piv round " << round << endl;
+        if (verbose)
+            cout << "Cut and Piv round " << round << endl;
 
         try {
             piv = core_lp.primal_pivot();
@@ -200,6 +182,38 @@ PivType Solver::cut_and_piv(bool do_price)
                         continue;
                 }
             } CMR_CATCH_PRINT_THROW("calling segment sep", err);
+
+        if (cut_sel.connect && !supp_data.connected) {
+            if (verbose)
+                cout << "\tAdding round of standard connect cuts...\n";
+            int conrounds = 0;
+            while (!supp_data.connected) {
+                ++conrounds;
+                try {
+                    reset_separator(sep);
+                    bool found_con =
+                    call_separator([&sep]() { return sep->connect_sep(); },
+                                   sep->connect_cuts_q(), piv,
+                                   prev_val, total_delta,
+                                   delta_ratio);
+                    if (!found_con)
+                        throw logic_error("Disconnected w no connect cuts??");
+                } CMR_CATCH_PRINT_THROW("doing connect cut loop", err);
+            }
+
+            if (return_pivot(piv)) {
+                if (verbose)
+                    cout << "\t...Tour pivot from "
+                         << conrounds << " rounds of connect cuts" << endl;
+                return piv;
+            } else {
+                if (verbose)
+                    cout << "\t...Cut and pivoted for "
+                         << conrounds << " rounds, solution now connected."
+                         << endl;
+                continue;
+            }
+        }
 
         bool found_2m = false;
 
@@ -268,26 +282,6 @@ PivType Solver::cut_and_piv(bool do_price)
                 }
             } CMR_CATCH_PRINT_THROW("calling simpleDP sep", err);
 
-        if (cut_sel.connect && !supp_data.connected) {
-            while (!supp_data.connected) {
-                try {
-                    reset_separator(sep);
-                    bool found_con =
-                    call_separator([&sep]() { return sep->connect_sep(); },
-                                   sep->connect_cuts_q(), piv,
-                                   prev_val, total_delta,
-                                   delta_ratio);
-                    if (!found_con)
-                        throw logic_error("Disconnected w no connect cuts??");
-                } CMR_CATCH_PRINT_THROW("doing connect cut loop", err);
-            }
-
-            if (return_pivot(piv))
-                return piv;
-            else
-                continue;
-        }
-
         if (total_delta < Eps::SepRound)
             found_primal = false;
 
@@ -316,7 +310,7 @@ PivType Solver::cut_and_piv(bool do_price)
 
 #endif
 
-        if (!silent) {
+        if (verbose) {
             cout << "Tried all routines, returning " << piv
                  << " with total delta " << total_delta << endl;
         }
@@ -457,10 +451,43 @@ PivType Solver::frac_recover()
         } CMR_CATCH_PRINT_THROW("adding edges not in tour", err);
     }
 
+    if (output_prefs.verbose)
+        cout << "Recovered to tour of length " << val << ", "
+             << new_edges.size() << " new edges added" << endl;
+
     try { core_lp.set_active_tour(std::move(cyc)); }
     CMR_CATCH_PRINT_THROW("passing recover tour to core_lp", err);
 
     return LP::PivType::Tour;
 }
+
+void Solver::reset_separator(unique_ptr<Sep::Separator> &S)
+{
+    util::ptr_reset(S, core_graph.get_edges(), active_tour(),
+                    core_lp.supp_data, karp_part);
+    S->filter_primal = !branch_engaged;
+    S->verbose = output_prefs.verbose;
+}
+
+void Solver::reset_separator(std::unique_ptr<Sep::PoolCuts> &PS)
+{
+    util::ptr_reset(PS, core_lp.ext_cuts,
+                    core_graph.get_edges(), active_tour().edges(),
+                    core_lp.supp_data);
+    PS->filter_primal = !branch_engaged;
+    PS->verbose = output_prefs.verbose;
+}
+
+#if CMR_HAVE_SAFEGMI
+
+void Solver::reset_separator(std::unique_ptr<Sep::SafeGomory> &GS)
+{
+    util::ptr_reset(GS, core_lp, active_tour().edges(),
+                    core_lp.lp_vec());
+    GS->filter_primal = !branch_engaged;
+    GS->verbose = output_prefs.verbose;
+}
+
+#endif
 
 }

@@ -443,10 +443,16 @@ void CandidateTeeth::print_tooth(const SimpleTooth &T, bool full,
 
 void CandidateTeeth::profile()
 {
-    t_pre.report(true);
-    t_find.report(true);
-    t_sort.report(true);
-    t_all.report(true);
+#if CMR_USE_OMP
+    bool cpu = true;
+#else
+    bool cpu = false;
+#endif
+
+    t_pre.report(cpu);
+    t_find.report(cpu);
+    t_sort.report(cpu);
+    t_all.report(cpu);
 }
 
 }

@@ -31,7 +31,7 @@ public:
     bool find_cuts();
     CutQueue<LP::SparseRow> &gomory_q() { return gmi_q; }
 
-    bool silent = true;
+    bool verbose = false;
     bool filter_primal = true;
 
 private:

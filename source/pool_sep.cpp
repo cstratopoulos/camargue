@@ -61,6 +61,9 @@ bool PoolCuts::find_cuts()
 {
     runtime_error err("Problem in PoolCuts::find_cuts");
 
+    if (verbose)
+        cout << "Cutpool sep, filter_primal " << filter_primal << endl;
+
     try {
         if (price_cuts() == false)
             return false;
@@ -93,6 +96,10 @@ bool PoolCuts::find_cuts()
         *(I.first) = HyperGraph();
     }
 
+    if (verbose)
+        cout << "\t" << hg_q.size() << " cuts removed from pool for addition."
+             << endl;
+
     cutpool.erase(std::remove_if(cutpool.begin(), cutpool.end(),
                                  [](const HyperGraph &H)
                                  { return H.cut_type() == CutType::Non; }),
@@ -103,7 +110,6 @@ bool PoolCuts::find_cuts()
 
 bool PoolCuts::price_cuts()
 {
-    bool report = false;
     Timer t("Price cuts");
     t.start();
 
@@ -117,6 +123,7 @@ bool PoolCuts::price_cuts()
 
     const vector<HyperGraph> &pool = EC.get_cutpool();
     bool result = false;
+    int numfound = 0;
 
     for (int i = 0; i < pool.size(); ++i) {
         const HyperGraph &H = pool[i];
@@ -158,13 +165,17 @@ bool PoolCuts::price_cuts()
 
         lp_slacks[i] = lp_slack;
         tour_slacks[i] = tour_slack;
-        if (lp_slack <= -Eps::Cut && tour_slack == 0.0)
+        if (lp_slack <= -Eps::Cut &&
+            (tour_slack == 0.0 || filter_primal == false)) {
             result = true;
+            ++numfound;
+        }
     }
 
     t.stop();
 
-    if (report) {
+    if (verbose) {
+        cout << "\tPriced cuts, found" << numfound << endl;
         pc.report(false);
         hgt.report(false);
         dpt.report(false);

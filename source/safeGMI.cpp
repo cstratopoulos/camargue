@@ -174,7 +174,7 @@ bool SafeGomory::find_cuts()
         }
     }
 
-    if (!silent) {
+    if (verbose) {
         cout << "\t" << p_found << " primal gmi cuts\t"
              << "avg density " << (p_dense / p_found) << "\n";
         cout << "\t" << std_found << " non-primal gmi cuts\t"
@@ -182,7 +182,7 @@ bool SafeGomory::find_cuts()
     }
 
     if (primal_found.empty()) {
-        if (!silent)
+        if (verbose)
             cout << "\tFound safe Gomory cuts but none were tight.\n";
         return false;
     }
@@ -208,7 +208,7 @@ bool SafeGomory::find_cuts()
             gmi_q.push_back(std::move(a));
     } CMR_CATCH_PRINT_THROW("putting found cuts in cut q", err);
 
-    if (!silent)
+    if (verbose)
         cout << "Enqueued " << gmi_q.size() << ".\n\n";
 
     return true;

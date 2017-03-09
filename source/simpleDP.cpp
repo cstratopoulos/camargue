@@ -51,9 +51,15 @@ bool Sep::SimpleDP::find_cuts()
     find_total.start();
     find_cands.start();
 
+    if (verbose)
+        cout << "\tSerial simple DP sep....\n";
+
     try {
         candidates.get_light_teeth();
         candidates.sort_by_root();
+        if (verbose)
+            cout << "\t\tGot " << candidates.light_teeth.size()
+                 << " light teeth" << endl;
     } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
 
     find_cands.stop();
@@ -69,19 +75,26 @@ bool Sep::SimpleDP::find_cuts()
             cutgraph.simple_DP_sep(mini_q);
         } CMR_CATCH_PRINT_THROW("making a mini cutgraph sep call", err);
 
+        if (verbose)
+            cout << "\t\t" << mini_q.size() << " cuts from partition "
+                 << i << "\n";
         dp_q.splice(mini_q);
-        // if(dp_q.size() >= 8)
-        //     break;
+        if(dp_q.size() >= 250) {
+            cout << "\t\tBreaking early.\n";
+            break;
+        }
     }
 
     search_wit.stop();
     find_total.stop();
 
-    if (!silent) {
+    if (verbose) {
+        cout << "\t" << dp_q.size() << " total simple DP cuts enqueued."
+             << endl;
         candidates.profile();
-        find_cands.report(true);
-        search_wit.report(true);
-        find_total.report(true);
+        find_cands.report(false);
+        search_wit.report(false);
+        find_total.report(false);
     }
 
     return(!dp_q.empty());
@@ -104,9 +117,14 @@ bool Sep::SimpleDP::find_cuts()
     try {
         candidates.get_light_teeth();
         candidates.sort_by_root();
+        if (verbose)
+            cout << "Got collection of " << candidates.light_teeth.size()
+                 << " light teeth" << endl;
     } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
     find_cands.stop();
 
+    if (verbose)
+        cout << "Parallel search over witness graphs" << endl;
 
     Timer search_wit("make/search witness", &find_total);
     search_wit.start();
@@ -133,13 +151,18 @@ bool Sep::SimpleDP::find_cuts()
 
         #pragma omp critical
         {
+        if (verbose)
+            cout << "\t" mini_q.size() << " cuts from partition " << i << "\n";
+
             dp_q.splice(mini_q);
-            // if(dp_q.size() >= 500 && !at_capacity) {
-            //     cout << "DP q has size " << dp_q.size() << ", "
-            //          << "terminating on part number "
-            //          << i << endl;
-            //     at_capacity = true;
-            // }
+
+            if(dp_q.size() >= 250 && !at_capacity) {
+                if (verbose)
+                    cout << "DP q has size " << dp_q.size() << ", "
+                         << "terminating on part number "
+                         << i << endl;
+                at_capacity = true;
+            }
         }
     }
 
@@ -151,9 +174,9 @@ bool Sep::SimpleDP::find_cuts()
         throw err;
     }
 
-    if (!silent) {
+    if (verbose) {
+        cout << dp_q.size() << " total simple DP cuts enqueued." << endl;
         candidates.profile();
-        cout << "Times (not including adj zones)" << endl;
         find_cands.report(true);
         search_wit.report(true);
         find_total.report(true);

@@ -213,18 +213,26 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
             edge_pricer = util::make_unique<Price::Pricer>(core_lp,
                                                            tsp_instance,
                                                            core_graph);
+            edge_pricer->verbose = output_prefs.verbose;
         } CMR_CATCH_PRINT_THROW("instantiating/allocating Pricer", err);
 
+    core_lp.verbose = output_prefs.verbose;
+
     PivType piv = PivType::Frac;
-    int auground = 0;
     bool elim_during = true;
+
+
 
     CMR::Timer timer(tsp_instance.problem_name() + " pure cut");
 
     timer.start();
 
+    int rounds = 0;
+
     while (true) {
-        ++auground;
+        ++rounds;
+        if (output_prefs.verbose)
+            cout << "|| Cutting loop pass " << rounds << endl;
 
         try {
             piv = cut_and_piv(do_price);//(round, do_price);
@@ -270,9 +278,9 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
             try {
                 if (frac_recover() == PivType::Tour) {
                     piv = PivType::Tour;
-
                     if (core_lp.active_tourlen() < best_data.min_tour_value) {
                         core_lp.active_tour.best_update(best_data);
+
                         report_aug(false);
                     }
                     continue;

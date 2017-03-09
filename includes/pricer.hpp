@@ -52,6 +52,8 @@ public:
     void price_edges(std::vector<PrEdge<numtype>> &target_edges,
                      std::unique_ptr<LP::DualGroup<numtype>> &duals);
 
+    bool verbose = false;
+
 private:
     std::vector<Graph::Edge> pool_chunk(std::vector<PrEdge<double>> &edge_q);
 

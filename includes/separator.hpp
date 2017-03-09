@@ -50,6 +50,8 @@ public:
     /// The desired filter_primal value for ConcordeSeparator inheritors.
     bool filter_primal = true;
 
+    bool verbose = false;
+
 private:
     void set_TG(); //!< Construct the TourGraph TG.
 

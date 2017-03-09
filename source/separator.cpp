@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include <iostream>
 
+#include <cstdio>
+
 using std::vector;
 
 using std::exception;
@@ -16,6 +18,7 @@ using std::logic_error;
 
 using std::cout;
 using std::cerr;
+using std::endl;
 
 
 namespace CMR {
@@ -50,7 +53,13 @@ bool Separator::segment_sep() try
 {
     set_TG();
     SegmentCuts segments(perm_elist, supp_data.support_ecap, TG, seg_q);
+
+    double st = util::zeit();
     bool result = segments.find_cuts();
+    st = util::zeit() - st;
+
+    if (verbose)
+        printf("\t%d segment cuts\t%.2fs\n", seg_q.size(), st);
 
     return result;
 } catch (const exception &e) {
@@ -65,7 +74,13 @@ bool Separator::fast2m_sep() try
 
     fast2m.filter_primal = filter_primal;
 
+    double f2mt = util::zeit();
     bool result = fast2m.find_cuts();
+    f2mt = util::zeit() - f2mt;
+
+    if (verbose)
+        printf("\t%d fast blossoms, primal %d\t%.2fs\n",
+               fast2m_q.size(), filter_primal, f2mt);
 
     return result;
 } catch (const exception &e) {
@@ -77,7 +92,14 @@ bool Separator::blkcomb_sep() try
 {
     set_TG();
     BlockCombs blkcomb(perm_elist, supp_data.support_ecap, TG, blkcomb_q);
+
+    double blkt = util::zeit();
     bool result = blkcomb.find_cuts();
+    blkt = util::zeit() - blkt;
+
+    if (verbose)
+        printf("\t%d block combs, primal %d\t%.2fs\n",
+               blkcomb_q.size(), filter_primal, blkt);
 
     return result;
 } catch (const exception &e) {
@@ -90,7 +112,20 @@ bool Separator::exact2m_sep() try
     set_TG();
     ExBlossoms ex2m(core_edges, active_tour, supp_data, ex2m_q);
 
+    Timer e2mt("Exact primal blossoms");
+    e2mt.start();
     bool result = ex2m.find_cuts();
+    e2mt.stop();
+
+    if (verbose) {
+        cout << "\t" << ex2m_q.size() << " primal blossoms" << endl;
+#if CMR_USE_OMP
+        bool cpu = true;
+#else
+        bool cpu = false;
+#endif
+        e2mt.report(cpu);
+    }
 
     return result;
 } catch (const exception &e) {
@@ -103,9 +138,9 @@ bool Separator::simpleDP_sep() try {
         if (supp_data.in_subtour_poly()) {
             SimpleDP dominos(karp_part, active_tour, supp_data,
                              dp_q);
-            if (dominos.find_cuts()) {
-                return true;
-            }
+            dominos.verbose = verbose;
+
+            return dominos.find_cuts();
         }
     return false;
 } catch (const exception &e) {
@@ -117,7 +152,12 @@ bool Separator::connect_sep() try
 {
     set_TG();
     ConnectCuts subtour(perm_elist, supp_data.support_ecap, TG, connect_q);
+    double cont = util::zeit();
     bool result = subtour.find_cuts();
+    cont = util::zeit() - cont;
+
+    if (verbose)
+        printf ("\t%d connect cuts\t%.2fs\n", connect_q.size(), cont);
 
     return result;
 } catch (const exception &e) {

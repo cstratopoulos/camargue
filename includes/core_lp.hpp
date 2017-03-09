@@ -82,6 +82,8 @@ public:
     /// The global upper bound for this instance.
     double global_ub() const { return best_data.min_tour_value; }
 
+    bool verbose = false;
+
     friend class CMR::Solver;
 
 private:
