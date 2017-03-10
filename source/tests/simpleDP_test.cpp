@@ -76,7 +76,7 @@ SCENARIO ("pla85900 paritioned simple DP sep case study",
     THEN ("We can bench mark tooth separation/zone allocation/dp sep") {
         Timer sdp_con("Full CandidateTeeth ctor (including allocs)");
         Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
-        sDP.silent = false;
+        sDP.verbose = true;
 
         REQUIRE(sDP.find_cuts());
 
@@ -144,7 +144,7 @@ SCENARIO ("Benchmarking karp partitioned simple DP sep",
 
         double ft = util::zeit();
         Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
-        sDP.silent = false;
+        sDP.verbose = false;
         REQUIRE(sDP.find_cuts());
         target.first *= (util::zeit() - ft);
 
@@ -225,7 +225,7 @@ SCENARIO("Generating cut figures",
         LP::ActiveTour act_tour(core_graph, b_dat);
         kpart = Data::KarpPartition(inst, false, true);
         Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
-        sDP.silent = false;
+        sDP.verbose = false;
 
         REQUIRE(sDP.find_cuts());
 
@@ -469,7 +469,7 @@ SCENARIO("Separating simple DP inequalities in medium instances",
                 Sep::CutQueue<Sep::dominoparity> dp_q(1000);
                 LP::ActiveTour act_tour(core_graph, b_dat);
                 Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
-                sDP.silent = false;
+                sDP.verbose = false;
 
                 REQUIRE(sDP.find_cuts());
                 cout << "Cut queue now has size: " << dp_q.size() << "\n";
@@ -558,7 +558,7 @@ SCENARIO("Separating simple DP inequalities in large instances",
                 Sep::CutQueue<Sep::dominoparity> dp_q(1000);
                 LP::ActiveTour act_tour(core_graph, b_dat);
                 Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
-                sDP.silent = false;
+                sDP.verbose = false;
 
                 REQUIRE(sDP.find_cuts());
                 cout << "Cut queue now has size: " << dp_q.size() << "\n";

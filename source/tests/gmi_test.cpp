@@ -39,16 +39,13 @@ SCENARIO ("Generating safe Gomory cuts",
           "[Sep][SafeGomory]") {
     using namespace CMR;
     vector<string> probs{
-        // "a280",
-        // "lin318",
-        // "d493",
         "dsj1000",
         "pr1002",
         "si1032",
         "rl1304",
         "rl1323",
-        // "d2103",
-        // "u2152",
+        "d2103",
+         "u2152",
         // "u2319",
         // "pr2392",
         // "pcb3038",
@@ -84,7 +81,7 @@ SCENARIO ("Generating safe Gomory cuts",
                     Timer t("Safe GMI sep for " + prob);
                     t.start();
                     REQUIRE_NOTHROW(util::ptr_reset(gmi, core, tour, x));
-                    gmi->silent = false;
+                    gmi->verbose = true;
 
                     bool result;
                     REQUIRE_NOTHROW(result = gmi->find_cuts());
