@@ -29,6 +29,10 @@ SCENARIO ("Reproducing results with the same random seed",
         "p654",
         };
 
+#ifdef CMR_USE_OMP
+    throw runtime_error("Testing random_seed with OMP enabled");
+#endif
+
     for (string &prob : probs) {
     GIVEN ("Two Solvers for " + prob + " with the same random seed") {
         OutPrefs prefs;
