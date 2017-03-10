@@ -59,7 +59,9 @@ constexpr double Zero = 0.000001; //!< Numbers less than this treated as zero.
 constexpr double Cut = 0.0001;
 
 /// Try another separation routine if pivot delta is less than this much.
-constexpr double SepRound = 0.0001;
+constexpr double SepRound = 0.001;
+
+constexpr double PHratio = 0.1; //!< A small value of the Padberg-Hong metric.
 
 }
 

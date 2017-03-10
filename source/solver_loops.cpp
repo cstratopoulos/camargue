@@ -78,19 +78,15 @@ bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
         double tourlen = core_lp.active_tourlen();
 
         total_delta += delta;
-        delta_ratio = (delta / tourlen);
 
-        double ph_denom = std::max(std::abs(tourlen - prev_val),
-                                   std::abs(tourlen - new_val));
-
-        double ph_delta = std::abs((new_val - prev_val)/ph_denom);
+        double ph_delta = std::abs((new_val - prev_val)/(tourlen - prev_val));
+        delta_ratio = ph_delta;
 
         if (output_prefs.verbose) {
             cout << "\t^^Cuts objval change " << prev_val << " -> "
                  << new_val << "\n";
             cout << "\tTotal delta " << total_delta << ", ratio "
-                 << delta_ratio << ", pivot " << piv << "\n"
-                 << "\t\tPH delta " << ph_delta << endl;
+                 << delta_ratio << ", pivot " << piv << endl;
         }
         prev_val = new_val;
     }
@@ -106,7 +102,7 @@ bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
 bool Solver::restart_loop(LP::PivType piv, double delta_metric)
 {
     return (piv == PivType::Subtour || !core_lp.supp_data.connected ||
-            delta_metric > Eps::SepRound);
+            delta_metric >= Eps::PHratio);
 }
 
 inline bool Solver::return_pivot(LP::PivType piv)
@@ -224,8 +220,6 @@ PivType Solver::cut_and_piv(bool do_price)
             }
         }
 
-        bool found_2m = false;
-
         if (cut_sel.fast2m)
             try {
                 reset_separator(sep);
@@ -233,7 +227,6 @@ PivType Solver::cut_and_piv(bool do_price)
                                    sep->fastblossom_q(), piv,
                                    prev_val, total_delta,
                                    delta_ratio)) {
-                    found_2m = true;
                     found_primal = true;
 
                     if (return_pivot(piv))
@@ -255,12 +248,12 @@ PivType Solver::cut_and_piv(bool do_price)
                     if (return_pivot(piv))
                         return piv;
 
-                    if (restart_loop(piv, total_delta))
+                    if (restart_loop(piv, delta_ratio))
                         continue;
                 }
             } CMR_CATCH_PRINT_THROW("calling blkcomb sep", err);
 
-        if (cut_sel.ex2m && !found_2m)
+        if (cut_sel.ex2m)
             try {
                 reset_separator(sep);
                 if (call_separator([&sep]() { return sep->exact2m_sep(); },
@@ -271,7 +264,7 @@ PivType Solver::cut_and_piv(bool do_price)
                     if (return_pivot(piv))
                         return piv;
 
-                    if (restart_loop(piv, total_delta))
+                    if (restart_loop(piv, delta_ratio))
                         continue;
                 }
             } CMR_CATCH_PRINT_THROW("calling exact 2m sep", err);
@@ -286,10 +279,14 @@ PivType Solver::cut_and_piv(bool do_price)
                     if (return_pivot(piv))
                         return piv;
 
-                    if (restart_loop(piv, total_delta))
+                    if (restart_loop(piv, delta_ratio))
                         continue;
                 }
             } CMR_CATCH_PRINT_THROW("calling simpleDP sep", err);
+
+        if (verbose && cut_sel.safeGMI)
+            cout << "\tBefore GMI, total_delta "
+                 << total_delta << ", last ratio " << delta_ratio << endl;
 
         if (total_delta < Eps::SepRound)
             found_primal = false;
@@ -312,7 +309,7 @@ PivType Solver::cut_and_piv(bool do_price)
                     if (return_pivot(piv))
                         return piv;
 
-                    if (restart_loop(piv, total_delta))
+                    if (restart_loop(piv, delta_ratio))
                         continue;
                 }
             } CMR_CATCH_PRINT_THROW("doing safe GMI sep", err);
