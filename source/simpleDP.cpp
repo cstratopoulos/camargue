@@ -57,9 +57,14 @@ bool Sep::SimpleDP::find_cuts()
     try {
         candidates.get_light_teeth();
         candidates.sort_by_root();
-        if (verbose)
-            cout << "\t\tGot " << candidates.light_teeth.size()
+        if (verbose) {
+            int numfound = 0;
+            for (const auto &v : candidates.light_teeth)
+                numfound += v.size();
+            cout << "\t\tGot " << numfound
                  << " light teeth" << endl;
+        }
+
     } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
 
     find_cands.stop();
@@ -117,9 +122,13 @@ bool Sep::SimpleDP::find_cuts()
     try {
         candidates.get_light_teeth();
         candidates.sort_by_root();
-        if (verbose)
-            cout << "Got collection of " << candidates.light_teeth.size()
+        if (verbose) {
+            int numfound = 0;
+            for (const auto &v : candidates.light_teeth)
+                numfound += v.size();
+            cout << "\t\tGot " << numfound
                  << " light teeth" << endl;
+        }
     } CMR_CATCH_PRINT_THROW("building and eliminating candidate teeth", err);
     find_cands.stop();
 
