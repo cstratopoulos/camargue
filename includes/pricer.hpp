@@ -5,6 +5,7 @@
 #include "dualgroup.hpp"
 #include "datagroups.hpp"
 #include "hypergraph.hpp"
+#include "lp_util.hpp"
 #include "util.hpp"
 #include "price_util.hpp"
 #include "err_util.hpp"

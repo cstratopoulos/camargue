@@ -123,7 +123,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
 
     while (!finished) {
         if (verbose)
-            cout << "\tEntering EG loop, pass " << ++outercount << "\n\t";
+            cout << "\tEntering EG loop, pass " << ++outercount << "....";
 
         int num_gen = 0;
 
@@ -147,8 +147,6 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
             }
         }
 
-        if (verbose)
-            cout << "\t Pricing candidates\n";
         price_edges(price_elist, reg_duals);
 
         for (const d_PrEdge &e : price_elist) {
@@ -162,11 +160,6 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
                 edge_hash.erase(e.end[0], e.end[1]);
             }
         }
-
-        if (verbose)
-            cout << "\t" << edge_q.size() << " edges in edge_q\n"
-                 << "\t" << penalty << " penalty accrued, finished: "
-                 << finished << "\n";
 
         if (piv_stat == PivType::Tour) {
             if (!edge_q.empty()) {
@@ -207,20 +200,10 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
                 new_objval = core_lp.get_objval();
             } CMR_CATCH_PRINT_THROW("adding edges to lp and optimizing", err);
 
-            if (verbose)
-                cout << "\t\tAdded " << num_added
-                     << " edges in opt solution.\n";
-
-            if (new_objval <= upper_bound - 1.0 + Eps::Zero) {
-                if (innercount == 1)
-                    if (verbose)
-                        cout << "\tTour no longer optimal after adding edges\n";
-                result = ScanStat::Full;
-            } else {
-                if (verbose)
-                    cout << "\t\tTour still optimal after adding edges.\n";
+            if (new_objval >= upper_bound - 0.9)
                 result = ScanStat::FullOpt;
-            }
+            else
+                result = ScanStat::Full;
 
             try {
                 reg_duals.reset();
@@ -252,11 +235,6 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
                 for (const d_PrEdge &e : edge_q)
                     edge_hash.add(e.end[0], e.end[1], 1);
             }
-
-            if (verbose)
-                cout << "\t\tInner penalty: "
-                     << penalty << ", new edge_q size "
-                     << edge_q.size() << ", finished: " << finished << "\n";
         }
     }
 

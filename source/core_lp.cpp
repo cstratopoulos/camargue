@@ -117,7 +117,7 @@ PivType CoreLP::primal_pivot()
         }
     } else {
         if (dfeas) {
-            if (get_objval() >= global_ub() - 1.0 + Eps::Zero)
+            if (get_objval() >= global_ub() - 0.9)
                 result = PivType::FathomedTour;
         } else
             result = PivType::Frac;
