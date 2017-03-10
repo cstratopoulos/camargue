@@ -7,6 +7,7 @@
 #include <catch.hpp>
 
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -30,7 +31,7 @@ SCENARIO ("Reproducing results with the same random seed",
         };
 
 #ifdef CMR_USE_OMP
-    throw runtime_error("Testing random_seed with OMP enabled");
+    throw std::runtime_error("Testing random_seed with OMP enabled");
 #endif
 
     for (string &prob : probs) {
