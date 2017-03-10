@@ -100,7 +100,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
         throw logic_error("Tried to run pricing on non tour.");
 
     if (CCtsp_reset_edgegenerator(current_eg,
-                                  &(reg_duals->node_pi_est[0]), !verbose)) {
+                                  &(reg_duals->node_pi_est[0]), 1)) {
         cerr << "CCtsp_reset_edgegenerator failed.\n";
         throw err;
     }
@@ -111,6 +111,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
 
     int finished = 0;
     int outercount = 0;
+    int inner_total = 0;
     int total_added = 0;
 
     double penalty = 0.0;
@@ -122,15 +123,14 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
     vector<d_PrEdge> edge_q;
 
     while (!finished) {
-        if (verbose)
-            cout << "\tEntering EG loop, pass " << ++outercount << "....";
+        ++outercount;
 
         int num_gen = 0;
 
         price_elist.clear();
 
         if (CCtsp_generate_edges(current_eg, gen_max, &num_gen, &gen_elist[0],
-                                 &gen_elen[0], &finished, !verbose, &rstate)) {
+                                 &gen_elen[0], &finished, 1, &rstate)) {
             cerr << "CCtsp_generate_edges failed.\n";
             throw err;
         }
@@ -181,13 +181,10 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
         //the loop if adding edges and optimizing takes us to a new lp solution
         double new_objval = 0.0;
         int num_added = 0;
-        int innercount = 0;
 
         while (((!finished && edge_q.size() >= PoolSize) ||
                 (finished && penalty < -MaxPenalty && !edge_q.empty()))) {
-            if (verbose)
-                cout << "\t\tOpt tour inner price loop, pass " << ++innercount
-                     << "\n";
+            ++inner_total;
             std::sort(edge_q.begin(), edge_q.end());
 
             try {
@@ -225,7 +222,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
             if (num_added > 0) {
                 if (CCtsp_reset_edgegenerator(current_eg,
                                               &(reg_duals->node_pi_est[0]),
-                                              !verbose)) {
+                                              1)) {
                     cerr << "CCtsp_reset_edgegenerator failed.\n";
                     throw err;
                 }
@@ -238,10 +235,11 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
         }
     }
 
-    cout << "added " << total_added << " edges, " << result << "\n\t"
-         << "objval " << core_lp.get_objval() << ", dual feas "
-         << core_lp.dual_feas() << ", col count "
-         << core_lp.num_cols() << endl;
+    cout << "Added " << total_added << " edges in "
+         << outercount << " passes, " << inner_total << " inner loops, "
+         << result << "\n\t"
+         << "Opt objval: " << core_lp.get_objval() << ", "
+         << core_lp.num_cols() << " columns" << endl;
 
     if (try_elim && result != ScanStat::FullOpt && core_lp.dual_feas()) {
         try { elim_edges(false); }

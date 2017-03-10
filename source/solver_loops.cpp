@@ -149,7 +149,7 @@ PivType Solver::cut_and_piv(bool do_price)
         ++round;
         if (verbose)
             cout << "Cut and Piv round " << round << ", initial pivot value "
-                 << prev_val << endl;
+                 << prev_val << ", " << piv << endl;
 
 
         bool found_primal = false;

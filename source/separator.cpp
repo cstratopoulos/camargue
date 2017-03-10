@@ -112,7 +112,7 @@ bool Separator::exact2m_sep() try
     set_TG();
     ExBlossoms ex2m(core_edges, active_tour, supp_data, ex2m_q);
 
-    Timer e2mt("Exact primal blossoms");
+    Timer e2mt("Primal blossoms");
     e2mt.start();
     bool result = ex2m.find_cuts();
     e2mt.stop();
