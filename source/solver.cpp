@@ -351,7 +351,7 @@ PivType Solver::abc(bool do_price)
     if (cut_sel.safeGMI) {
         cout << "(Disabling GMI and purging cuts for branching.....)\n";
         cut_sel.safeGMI = false;
-        try { core_lp.purge_gmi(); }
+        try { core_lp.purge_gmi(true); }
         CMR_CATCH_PRINT_THROW("dumping gmi cuts before abc", err);
     }
 

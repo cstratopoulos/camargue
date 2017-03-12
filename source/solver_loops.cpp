@@ -382,30 +382,43 @@ PivType Solver::abc_dfs(int depth, bool do_price)
             call_again = false;
             P->stat = BranchStat::Pruned;
         } else if (P->stat == BranchStat::NeedsPrice) {
-            cout << *P << " looks optimal\n";
+            cout << *P << " needs edge pricing\n";
             if (!do_price) {
                 cout << "Sparse edge set, problem can be pruned" << endl;
                 call_again = false;
             } else {
-                if (!P->price_basis)
-                    throw runtime_error("No price basis for NeedsPrice node");
                 try {
-                    core_lp.copy_base(P->price_basis->colstat,
-                                      P->price_basis->rowstat);
-                    core_lp.primal_opt();
-                    cout << "\tOpt objval : " << core_lp.get_objval() << endl;
-
-                    Price::ScanStat price_stat =
-                    edge_pricer->gen_edges(LP::PivType::FathomedTour, false);
-
-                    if (price_stat == Price::ScanStat::FullOpt) {
-                        cout << "Branch problem can be pruned." << endl;
-                        P->stat = BranchStat::Pruned;
-                        call_again = false;
+                    if (P->price_basis) {
+                        cout << "\tPricing based on opt basis, copying.\n";
+                        core_lp.copy_base(P->price_basis->colstat,
+                                          P->price_basis->rowstat);
                     } else {
-                        core_lp.pivot_back(false);
+                        cout << "\tPricing based on strong estimate.\n";
+                        core_lp.copy_start(core_lp.active_tour.edges());
                     }
-                } CMR_CATCH_PRINT_THROW("processing NeedsPrice problem", err);
+                    core_lp.primal_opt();
+                } CMR_CATCH_PRINT_THROW("optimizing for pricing", err);
+
+                double objval = core_lp.get_objval();
+                cout << "\tPrimal opt objval" << objval << endl;
+
+                Price::ScanStat price_stat = Price::ScanStat::Full;
+
+                if (objval >= core_lp.global_ub() - 0.9) {
+                    try {
+                        price_stat =
+                        edge_pricer->gen_edges(PivType::FathomedTour, false);
+                    } CMR_CATCH_PRINT_THROW("pricing edges", err);
+                }
+
+                if (price_stat == Price::ScanStat::FullOpt) {
+                    cout << "Branch problem can be pruned." << endl;
+                    P->stat = BranchStat::Pruned;
+                    call_again = false;
+                } else {
+                    try { core_lp.pivot_back(false); }
+                    CMR_CATCH_PRINT_THROW("pivoting back after pricing", err);
+                }
             }
         }
 

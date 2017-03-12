@@ -276,17 +276,20 @@ BranchNode::Split Executor::split_problem(ScoreTuple &branch_tuple,
         if (!feas)
             result[i].stat = BranchNode::Status::Pruned;
         else {
-            EstStat estat = (i == 0 ? branch_tuple.down_est.sol_stat :
-                             branch_tuple.up_est.sol_stat);
-            if (estat != EstStat::Abort) {
+            LP::Estimate &est = (i == 0 ? branch_tuple.down_est :
+                                 branch_tuple.up_est);
+            EstStat estat = est.sol_stat;
+            double estval = est.value;
+
+            if (estat != EstStat::Abort || estval > best_data.min_tour_value) {
                 LP::Basis::Ptr &price_base = (i == 0 ?
                                               branch_tuple.down_est.sb_base :
                                               branch_tuple.up_est.sb_base);
                 result[i].price_basis = std::move(price_base);
-                if (estat == EstStat::Prune)
-                    result[i].stat = BranchNode::Status::NeedsPrice;
-                else if (estat == EstStat::Infeas)
+                if (estat == EstStat::Infeas)
                     result[i].stat = BranchNode::Status::NeedsRecover;
+                else
+                    result[i].stat = BranchNode::Status::NeedsPrice;
             }
         }
         edge_stats.pop_back();
