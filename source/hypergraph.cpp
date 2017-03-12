@@ -398,16 +398,15 @@ void ExternalCuts::del_cuts(vector<int> &delset)
                 cut_pool.emplace_back(std::move(H));
                 ++poolcount;
             }
-
             delset[i + node_count] = 1;
         }
 
-        H.rhs = '\0';
+        H.sense = 'X';
     }
 
     cuts.erase(std::remove_if(cuts.begin(), cuts.end(),
                               [](const HyperGraph &H)
-                              { return H.rhs == '\0'; }),
+                              { return H.sense == 'X'; }),
                cuts.end());
 }
 
