@@ -294,9 +294,10 @@ PivType Solver::cut_and_piv(bool do_price)
                  << total_delta << ", last ratio " << delta_ratio << endl;
 
         if (total_delta < 0.001 * (core_lp.active_tourlen() - lowest_piv)) {
-            cout << "Total delta " << total_delta << ", active tourlen "
-                 << core_lp.active_tourlen() << ", lowest piv "
-                 << lowest_piv << ", setting found_primal false" << endl;
+            if (!found_primal && total_delta != 0.0)
+                cout << "Total delta " << total_delta << ", active tourlen "
+                     << core_lp.active_tourlen() << ", lowest piv "
+                     << lowest_piv << ", setting found_primal false" << endl;
             found_primal = false;
         }
 
@@ -498,7 +499,7 @@ void Solver::reset_separator(std::unique_ptr<Sep::PoolCuts> &PS)
 void Solver::reset_separator(std::unique_ptr<Sep::SafeGomory> &GS)
 {
     util::ptr_reset(GS, core_lp, active_tour().edges(),
-                    core_lp.lp_vec());
+                    core_lp.lp_edges);
     GS->filter_primal = !branch_engaged;
     GS->verbose = output_prefs.verbose;
 }
