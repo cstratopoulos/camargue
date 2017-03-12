@@ -461,8 +461,6 @@ PivType Solver::frac_recover()
 
     if (!new_edges.empty()) {
         try {
-            if (cut_sel.safeGMI)
-                core_lp.purge_gmi();
             core_lp.add_edges(new_edges, false);
         } CMR_CATCH_PRINT_THROW("adding edges not in tour", err);
     }
