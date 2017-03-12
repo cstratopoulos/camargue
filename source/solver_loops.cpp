@@ -150,7 +150,7 @@ PivType Solver::cut_and_piv(bool do_price)
 
         bool found_primal = false;
 
-        if (cut_sel.cutpool && !core_lp.external_cuts().get_cutpool().empty())
+        if (cut_sel.cutpool && core_lp.external_cuts().pool_count() != 0)
             try {
                 reset_separator(pool_sep);
                 if (call_separator([&pool_sep]()
@@ -288,7 +288,7 @@ PivType Solver::cut_and_piv(bool do_price)
             cout << "\tBefore GMI, total_delta "
                  << total_delta << ", last ratio " << delta_ratio << endl;
 
-        if (total_delta < Eps::SepRound)
+        if (total_delta < Eps::TotalDelta)
             found_primal = false;
 
         if (found_primal)

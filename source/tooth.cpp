@@ -125,7 +125,7 @@ void CandidateTeeth::get_light_teeth()
                              const_cast<int *>(&tour_nodes[0]), &endmark[0],
                              &supp_dat.support_elist[0],
                              &supp_dat.support_ecap[0],
-                             3.0 - Epsilon::Cut,
+                             3.0 - Epsilon::MinCut,
                              cb_data.get(), teeth_cb))
         throw err;
 
@@ -275,7 +275,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
 
     int rval = 0;
 
-    double slack = (cut_val - (2.0 - Epsilon::Cut)) / 2.0;
+    double slack = (cut_val - (2.0 - Epsilon::MinCut)) / 2.0;
 
     LinsubCBData *arg = (LinsubCBData *) u_data;
     if ((cut_end - cut_start + 1) > (arg->G_s.node_count - 2))
@@ -289,7 +289,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
     int ncount = G.node_count;
 
     std::unordered_map<int, double> &rb_sums = arg->rb_sums;
-    double rb_lower = cut_val - (1.5 - Epsilon::Cut);
+    double rb_lower = cut_val - (1.5 - Epsilon::MinCut);
 
     ToothBody &old_seg = arg->old_seg;
     vector<IteratorMat> &ranges = arg->ranges;

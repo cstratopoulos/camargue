@@ -49,17 +49,20 @@ struct OutPrefs {
 };
 
 
-/// Numerical tolerances used in this project.
+/// Numerical tolerances.
 namespace Epsilon {
 
 
 constexpr double Zero = 0.000001; //!< Numbers less than this treated as zero.
+constexpr double MinCut = 0.0001; //!< Tolerance for min cut computations.
 
-/// Cuts are not considered violated unless violated by at least this much.
-constexpr double Cut = 0.0001;
+/// Cuts are not considered violated unless by at least this much.
+constexpr double CutViol = 0.001;
 
-/// Try another separation routine if pivot delta is less than this much.
-constexpr double SepRound = 0.001;
+constexpr double DualDust = 0.001; //!< Small dual values.
+
+/// A round of cuts is a failure if the pivot deltas sum to less than this.
+constexpr double TotalDelta = 0.01;
 
 constexpr double PHratio = 0.1; //!< A small value of the Padberg-Hong metric.
 

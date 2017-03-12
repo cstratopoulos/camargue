@@ -92,7 +92,7 @@ bool ExBlossoms::find_cuts() {
         //frees cut nodes when it goes out of scope
         util::c_array_ptr<int> cnodes_ptr(cut_nodes);
 
-        if (cut_val >= 1.0 - Eps::Cut || cut_count < 3)
+        if (cut_val >= 1.0 - Eps::MinCut || cut_count < 3)
             continue;
 
         vector<int> handle;
@@ -217,7 +217,7 @@ bool ExBlossoms::find_cuts() {
         //frees cut nodes when it goes out of scope
         util::c_array_ptr<int> cnodes_ptr(cut_nodes);
 
-        if (cut_val >= 1.0 - Eps::Cut || cut_count < 3)
+        if (cut_val >= 1.0 - Eps::MinCut || cut_count < 3)
             continue;
 
         vector<int> handle;

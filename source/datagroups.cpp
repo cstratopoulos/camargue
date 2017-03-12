@@ -520,7 +520,7 @@ bool SupportGroup::in_subtour_poly()
         return false;
 
     double cutval = 2.0;
-    double rhs = 2.0 - Eps::Cut;
+    double rhs = 2.0 - Eps::MinCut;
 
     if (CCcut_mincut(supp_graph.node_count, support_ecap.size(),
                      &support_elist[0], &support_ecap[0], &cutval, NULL, NULL))
