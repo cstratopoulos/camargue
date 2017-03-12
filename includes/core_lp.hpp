@@ -96,7 +96,7 @@ private:
 
     void prune_slacks(); //!< Prune cuts which are not tight at active_tour.
 
-    void purge_gmi(); //!< Get rid of any GMI cuts in the LP.
+    void purge_gmi(bool instate); //!< Get rid of any GMI cuts in the LP.
 
     Graph::CoreGraph &core_graph;
     Data::BestGroup &best_data;

@@ -495,6 +495,10 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch, bool reinstate)
     int new_ecount = old_ecount + batch.size();
 
     try {
+        purge_gmi(false);
+    } CMR_CATCH_PRINT_THROW("getting rid of gmi", err);
+
+    try {
         for (const Graph::Edge &e : batch)
             core_graph.add_edge(e);
     } CMR_CATCH_PRINT_THROW("adding edges to core graph/best group", err);
@@ -529,6 +533,10 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch, bool reinstate)
 void CoreLP::remove_edges(vector<int> edge_delstat)
 {
     runtime_error err("Problem in CoreLP::add_edges");
+
+    try {
+        purge_gmi(false);
+    } CMR_CATCH_PRINT_THROW("getting rid of gmi", err);
 
     int ecount = core_graph.edge_count();
     if (edge_delstat.size() != ecount)
@@ -566,7 +574,10 @@ void CoreLP::remove_edges(vector<int> edge_delstat)
 
 }
 
-void CoreLP::purge_gmi()
+/**
+ * @param instate if true, try to instate the tour after cut deletion.
+ */
+void CoreLP::purge_gmi(bool instate)
 {
     vector<int> delrows(num_rows(), 0);
     int ncount = core_graph.node_count();
@@ -585,7 +596,8 @@ void CoreLP::purge_gmi()
         ext_cuts.del_cuts(delrows);
         del_set_rows(delrows);
 
-        reset_instate_active();
+        if (instate)
+            reset_instate_active();
     }
 }
 
