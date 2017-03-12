@@ -13,7 +13,6 @@
 #include "process_cuts.hpp"
 #include "datagroups.hpp"
 #include "hypergraph.hpp"
-#include "cutmon.hpp"
 #include "util.hpp"
 
 #include <algorithm>
@@ -68,7 +67,6 @@ public:
 
     const Data::SupportGroup &support_data() const { return supp_data; }
     const Sep::ExternalCuts &external_cuts() const { return ext_cuts; }
-    const LP::CutMonitor &cut_monitor() const { return cut_mon; }
     const LP::ActiveTour &get_active_tour() const { return active_tour; }
 
     /// Set active_tour from a list of nodes.
@@ -105,8 +103,6 @@ private:
     Data::SupportGroup supp_data;
 
     Sep::ExternalCuts ext_cuts;
-
-    LP::CutMonitor cut_mon;
 
     ActiveTour active_tour;
 

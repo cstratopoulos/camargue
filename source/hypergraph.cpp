@@ -25,6 +25,9 @@ using lpcut_in = CCtsp_lpcut_in;
 using lpclique = CCtsp_lpclique;
 
 namespace CMR {
+
+namespace Eps = Epsilon;
+
 namespace Sep {
 
 
@@ -36,7 +39,8 @@ namespace Sep {
 HyperGraph::HyperGraph(CliqueBank &bank, const lpcut_in &cc_lpcut,
                        const vector<int> &tour) try :
     sense(cc_lpcut.sense), rhs(cc_lpcut.rhs), source_bank(&bank),
-    source_toothbank(nullptr)
+    source_toothbank(nullptr),
+    t_age(LP::CutAge::Babby), p_age(LP::CutAge::Babby)
 {
     for (int i = 0; i < cc_lpcut.cliquecount; ++i) {
         lpclique &cc_clq = cc_lpcut.cliques[i];
@@ -57,7 +61,8 @@ HyperGraph::HyperGraph(CliqueBank &bank, const lpcut_in &cc_lpcut,
 HyperGraph::HyperGraph(CliqueBank &bank, ToothBank &tbank,
                        const dominoparity &dp_cut, const double _rhs,
                        const std::vector<int> &tour) try :
-    sense('L'), rhs(_rhs), source_bank(&bank), source_toothbank(&tbank)
+    sense('L'), rhs(_rhs), source_bank(&bank), source_toothbank(&tbank),
+    t_age(LP::CutAge::Babby), p_age(LP::CutAge::Babby)
 {
     vector<int> nodes(dp_cut.degree_nodes);
     for(int &n : nodes)
@@ -85,7 +90,8 @@ HyperGraph::HyperGraph(CliqueBank &bank,
                        const vector<int> &blossom_handle,
                        const vector<vector<int>> &tooth_edges) try
     : sense('G'), rhs ((3 * tooth_edges.size()) + 1), source_bank(&bank),
-      source_toothbank(nullptr)
+      source_toothbank(nullptr),
+      t_age(LP::CutAge::Babby), p_age(LP::CutAge::Babby)
 {
     vector<int> handle(blossom_handle);
     cliques.push_back(source_bank->add_clique(handle));
@@ -104,11 +110,14 @@ HyperGraph::HyperGraph(CliqueBank &bank,
 HyperGraph::HyperGraph(HyperGraph &&H) noexcept
     : sense(H.sense), rhs(H.rhs),
       cliques(std::move(H.cliques)), teeth(std::move(H.teeth)),
-      source_bank(H.source_bank), source_toothbank(H.source_toothbank)
+      source_bank(H.source_bank), source_toothbank(H.source_toothbank),
+      t_age(LP::CutAge::Babby), p_age(LP::CutAge::Babby)
 {
     H.sense = '\0';
     H.source_bank = nullptr;
     H.source_toothbank = nullptr;
+    H.t_age = LP::CutAge::Babby;
+    H.p_age = LP::CutAge::Babby;
 }
 
 /**
@@ -130,6 +139,12 @@ HyperGraph &HyperGraph::operator=(Sep::HyperGraph &&H) noexcept
 
     source_toothbank = H.source_toothbank;
     H.source_toothbank = nullptr;
+
+    t_age = H.t_age;
+    p_age = H.p_age;
+
+    H.t_age = LP::CutAge::Babby;
+    H.p_age = LP::CutAge::Babby;
 
     return *this;
 }
@@ -316,15 +331,53 @@ void ExternalCuts::add_cut(HyperGraph &H)
  */
 void ExternalCuts::add_cut() { cuts.emplace_back(); }
 
+void ExternalCuts::reset_ages()
+{
+    for (HyperGraph &H : cuts) {
+        H.t_age = LP::CutAge::Babby;
+        H.p_age = LP::CutAge::Babby;
+    }
+}
+
+void ExternalCuts::tour_age_cuts(vector<double> duals)
+{
+    if (duals.size() != cuts.size()) {
+        cerr << "Duals size " << duals.size() << " vs " << cuts.size()
+             << " cuts" << endl;
+        throw runtime_error("Size mismatch in ExternalCuts::tour_age_cuts");
+    }
+
+    for (int i = 0; i < duals.size(); ++i)
+        if (duals[i] >= Eps::DualDust)
+            cuts[i].t_age = LP::CutAge::Babby;
+        else
+            cuts[i].t_age += 1;
+}
+
+void ExternalCuts::piv_age_cuts(vector<double> duals)
+{
+    if (duals.size() != cuts.size()) {
+        cerr << "Duals size " << duals.size() << " vs " << cuts.size()
+             << " cuts" << endl;
+        throw runtime_error("Size mismatch in ExternalCuts::piv_age_cuts");
+    }
+
+    for (int i = 0; i < duals.size(); ++i)
+        if (duals[i] >= Eps::DualDust)
+            cuts[i].p_age = LP::CutAge::Babby;
+        else
+            cuts[i].p_age += 1;
+}
+
 /**
- * The specified set of cuts will be removed from the vector of cuts, in
- * accordance with a deletion from the LP relaxation.
- * @param[in] delset the entry `delset[i]` shall be -1 if the cut
- * `cuts[i + node_count]` has been deleted from the LP.
- * @param[in] add_to_pool if true, then the deleted cuts will be stored in
- * the cut pool for later use, not including subtour cuts or Non cuts.
+ * @param delset vector with nonzero entries indicating cuts to be deleted
+ * from an LP::Relaxation.
+ * @pre `delset[i] == 1` if `get_cut(i)` is to be deleted immediately, and
+ * `delset[i] == 3` if `get_cut(i)` should be considered for addition to the
+ * cut pool.
+ * @post \p delset will be binary valued with all 3's changed to 1's.
  */
-void ExternalCuts::del_cuts(const vector<int> &delset, bool add_to_pool)
+void ExternalCuts::del_cuts(vector<int> &delset)
 {
     using CutType = HyperGraph::Type;
 
@@ -333,15 +386,23 @@ void ExternalCuts::del_cuts(const vector<int> &delset, bool add_to_pool)
     for (int i = 0; i < cuts.size(); ++i) {
         HyperGraph &H = cuts[i];
         CutType Htype = H.cut_type();
-        if (delset[i + node_count] == -1) {
-            if (add_to_pool)
-                if (Htype == CutType::Comb || Htype == CutType::Domino) {
-                    H.transfer_source(pool_cliques);
-                    cut_pool.emplace_back(std::move(H));
-                    ++poolcount;
-                }
-            H.rhs = '\0';
+
+        if (delset[i + node_count] == 0)
+            continue;
+
+        if (delset[i + node_count] == 3) {
+            if (Htype == CutType::Comb || Htype == CutType::Domino) {
+                H.t_age = LP::CutAge::Babby;
+                H.p_age = LP::CutAge::Babby;
+                H.transfer_source(pool_cliques);
+                cut_pool.emplace_back(std::move(H));
+                ++poolcount;
+            }
+
+            delset[i + node_count] = 1;
         }
+
+        H.rhs = '\0';
     }
 
     cuts.erase(std::remove_if(cuts.begin(), cuts.end(),

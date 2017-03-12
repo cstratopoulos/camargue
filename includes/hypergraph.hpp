@@ -10,6 +10,7 @@
 #include "cut_structs.hpp"
 #include "lp_interface.hpp"
 #include "cliq.hpp"
+#include "lp_util.hpp"
 #include "price_util.hpp"
 #include "err_util.hpp"
 
@@ -64,6 +65,11 @@ public:
 
     Type cut_type() const;
 
+    int tour_age() const { return t_age; }
+    int piv_age() const { return p_age; }
+
+    bool fresh_cut() const { return t_age <= 0 || p_age <= 0; }
+
     /// Get the coefficient of an edge specified by endpoints.
     double get_coeff(int end0, int end1) const;
 
@@ -90,6 +96,9 @@ private:
 
     CliqueBank *source_bank; //!< The CliqueBank for dereferencing the cliques.
     ToothBank *source_toothbank; //!< The ToothBank for the teeth.
+
+    int t_age;
+    int p_age;
 };
 
 inline std::ostream &operator<<(std::ostream &os, HyperGraph::Type t)
@@ -130,8 +139,12 @@ public:
     /// Add a Non HyperGraph cut.
     void add_cut();
 
+    void reset_ages(); //!< Reset the ages of all cuts to zero.
+    void tour_age_cuts(std::vector<double> duals); //!< Update tour ages.
+    void piv_age_cuts(std::vector<double> duals); //!< Update pivot ages.
+
     /// Delete a specified set of cuts or move them to the cut pool.
-    void del_cuts(const std::vector<int> &delset, bool add_to_pool);
+    void del_cuts(std::vector<int> &delset);
 
     /// Return a cut corresponding to a row number index from the lp.
     const HyperGraph &get_cut(int lp_rownum) const {
@@ -140,6 +153,9 @@ public:
 
     const std::vector<HyperGraph> &get_cuts() const { return cuts; }
     const std::vector<HyperGraph> &get_cutpool() const { return cut_pool; }
+
+    int cut_count() const { return cuts.size(); }
+    int pool_count() const { return cut_pool.size(); }
 
     const CliqueBank &get_cbank() const { return clique_bank; }
     const CliqueBank &get_pool_cbank() const { return pool_cliques; }

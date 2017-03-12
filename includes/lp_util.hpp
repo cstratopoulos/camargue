@@ -18,6 +18,17 @@ namespace CMR {
 /// Manners related to LP relaxations and solver interfaces.
 namespace LP {
 
+/// Constants related to ages of cuts.
+/// The age of a cut (wrt a tour or pivot) is for how many dual solutions the
+/// cut has assumed a dual value less than Epsilon::DualDust.
+namespace CutAge {
+
+constexpr int Babby = -1; //!< A new or reset cut.
+constexpr int PivOld = 25; //!< Old cut age at pivot duals.
+constexpr int TourOld = 15; //!< Old cut age at tour dual solution.
+
+}
+
 /// Enum class for categorizing lp solutions.
 enum class PivType {
     Frac, //!< Fractional solution.

@@ -164,7 +164,7 @@ SCENARIO ("Pricing cuts from a cutpool",
         ProbPair("pr1002", 1487347814),
         ProbPair("d2103", 1487347819),
         ProbPair("pr2392", 1487353952),
-         ProbPair("pcb3038", 99),
+        ProbPair("pcb3038", 99),
         };
 
     for (ProbPair &pp : probs) {
@@ -267,7 +267,7 @@ SCENARIO ("Pricing cuts from a cutpool",
                     CHECK(manual_lp_slack == Approx(pool_lp_slack));
                     CHECK(manual_tour_slack == Approx(pool_tour_slack));
                     CHECK(manual_tour_slack >= 0);
-                    if (manual_lp_slack <= -Epsilon::Cut &&
+                    if (manual_lp_slack <= -Epsilon::CutViol &&
                         tour_activity == rhs)
                         found_primal = true;
                 }

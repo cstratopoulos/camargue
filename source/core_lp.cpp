@@ -123,6 +123,13 @@ PivType CoreLP::primal_pivot()
             result = PivType::Frac;
     }
 
+    if(is_tour_piv(result))
+        ext_cuts.reset_ages();
+    else if (num_rows() > core_graph.node_count())
+        try {
+            ext_cuts.piv_age_cuts(pi(core_graph.node_count(), num_rows() - 1));
+        } CMR_CATCH_PRINT_THROW("upating pivot ages", err);
+
     if (result == PivType::Tour) {
         try {
             handle_aug_pivot(std::move(dfs_island), basis_obj());
@@ -136,17 +143,6 @@ PivType CoreLP::primal_pivot()
             active_tour.set_basis(std::move(bas));
         }
     }
-
-    // try {
-    //     if (is_tour_piv(result))
-    //         cut_mon = LP::CutMonitor(num_rows() - ncount);
-    //     else {
-    //         if (num_rows() > ncount) {
-    //             get_pi(pi_vals, ncount, num_rows() - 1);
-    //             cut_mon.update_pivs(pi_vals);
-    //         }
-    //     }
-    // } CMR_CATCH_PRINT_THROW("updating CutMonitor", err);
 
     return result;
 }
@@ -174,6 +170,20 @@ void CoreLP::pivot_back(bool prune_slacks)
         try { delset = vector<int>(numrows, 0); }
         CMR_CATCH_PRINT_THROW("allocating delset", err);
 
+        for (int i = core_graph.node_count(); i < prev_numrows; ++i) {
+            const Sep::HyperGraph &H = ext_cuts.get_cut(i);
+            if (H.fresh_cut())
+                continue;
+
+            if (H.tour_age() >= CutAge::TourOld &&
+                H.piv_age() >= CutAge::PivOld) {
+                // cout << "Cut with tour age " << H.tour_age() << " and piv age "
+                //      << H.piv_age() << " looks prunable" << endl;
+                delset[i] = 3;
+                ++delct;
+            }
+        }
+
         for (int i = prev_numrows; i < numrows; ++i)
             if (cut_stats[i] == 1) {
                 delset[i] = 1;
@@ -183,8 +193,8 @@ void CoreLP::pivot_back(bool prune_slacks)
 
     if (delct > 0 && delct != rowdiff) {
         try {
+            ext_cuts.del_cuts(delset);
             del_set_rows(delset);
-            ext_cuts.del_cuts(delset, false);
             reset_instate_active();
         } CMR_CATCH_PRINT_THROW("deleting cuts/instating tour", err);
     } else {
@@ -192,6 +202,12 @@ void CoreLP::pivot_back(bool prune_slacks)
             instate_active();
         } CMR_CATCH_PRINT_THROW("instating tour", err);
     }
+
+    if (num_rows() > core_graph.node_count())
+        try {
+            ext_cuts.tour_age_cuts(pi(core_graph.node_count(),
+                                      num_rows() - 1));
+        } CMR_CATCH_PRINT_THROW("updating tour ages", err);
 }
 
 void CoreLP::instate_active()
@@ -340,7 +356,7 @@ void CoreLP::prune_slacks()
 
     for (double slack : slacks) {
         if (slack) {
-            delrows[rownum] = 1;
+            delrows[rownum] = 3;
             ++delcount;
         }
         ++rownum;
@@ -349,9 +365,10 @@ void CoreLP::prune_slacks()
     if (verbose)
         cout << "\t" << delcount << " slack rows can be pruned" << endl;
 
+    ext_cuts.del_cuts(delrows);
     del_set_rows(delrows);
-    ext_cuts.del_cuts(delrows, true);
-    factor_basis();
+
+    reset_instate_active();
 }
 
 void CoreLP::add_cuts(Sep::LPcutList &cutq)
@@ -571,8 +588,9 @@ void CoreLP::purge_gmi()
     }
 
     if (delcount > 0) {
+        ext_cuts.del_cuts(delrows);
         del_set_rows(delrows);
-        ext_cuts.del_cuts(delrows, false);
+
         reset_instate_active();
     }
 }
