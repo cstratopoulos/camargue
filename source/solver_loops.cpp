@@ -21,6 +21,7 @@
 #include <vector>
 
 #include <cmath>
+#include <cstdio>
 
 using std::abs;
 using std::ceil;
@@ -387,6 +388,7 @@ PivType Solver::abc_dfs(int depth, bool do_price)
                 cout << "Sparse edge set, problem can be pruned" << endl;
                 call_again = false;
             } else {
+                double opt_time = util::zeit();
                 try {
                     if (P->price_basis) {
                         cout << "\tPricing based on opt basis, copying.\n";
@@ -398,9 +400,11 @@ PivType Solver::abc_dfs(int depth, bool do_price)
                     }
                     core_lp.primal_opt();
                 } CMR_CATCH_PRINT_THROW("optimizing for pricing", err);
+                opt_time = util::zeit() - opt_time;
 
                 double objval = core_lp.get_objval();
-                cout << "\tPrimal opt objval" << objval << endl;
+                printf("\tPrimal opt objval %.2f in %.2fs", objval, opt_time);
+                cout << endl;
 
                 Price::ScanStat price_stat = Price::ScanStat::Full;
 
