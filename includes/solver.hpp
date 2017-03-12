@@ -117,7 +117,8 @@ private:
     bool call_separator(const std::function<bool()> &sepcall,
                         Qtype &sep_q,
                         LP::PivType &piv, double &prev_val,
-                        double &total_delta, double &delta_ratio);
+                        double &total_delta, double &delta_ratio,
+                        double &lowest_piv);
 
     Data::Instance tsp_instance;
     Data::KarpPartition karp_part;

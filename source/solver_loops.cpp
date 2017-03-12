@@ -65,7 +65,8 @@ namespace Eps = Epsilon;
 template<typename Qtype>
 bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
                             PivType &piv, double &prev_val,
-                            double &total_delta, double &delta_ratio)
+                            double &total_delta, double &delta_ratio,
+                            double &lowest_piv)
 {
     bool result = sepcall();
     if (result) {
@@ -78,6 +79,8 @@ bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
         double tourlen = core_lp.active_tourlen();
 
         total_delta += delta;
+        if (new_val < lowest_piv)
+            lowest_piv = new_val;
 
         double ph_delta = std::abs((new_val - prev_val)/(tourlen - prev_val));
         delta_ratio = ph_delta;
@@ -138,6 +141,7 @@ PivType Solver::cut_and_piv(bool do_price)
         double total_delta = 0.0;
         double delta_ratio = 0.0;
         double prev_val = core_lp.get_objval();
+        double lowest_piv = prev_val;
 
         if (return_pivot(piv))
             return piv;
@@ -156,7 +160,8 @@ PivType Solver::cut_and_piv(bool do_price)
                 if (call_separator([&pool_sep]()
                                    { return pool_sep->find_cuts(); },
                                    pool_sep->pool_q(), piv,
-                                   prev_val, total_delta, delta_ratio)) {
+                                   prev_val, total_delta, delta_ratio,
+                                   lowest_piv)) {
                     found_primal = true;
 
                     if (return_pivot(piv))
@@ -175,7 +180,7 @@ PivType Solver::cut_and_piv(bool do_price)
                 if (call_separator([&sep]() { return sep->segment_sep(); },
                                    sep->segment_q(), piv,
                                    prev_val, total_delta,
-                                   delta_ratio)) {
+                                   delta_ratio, lowest_piv)) {
                     found_primal = true;
                     found_seg = true;
 
@@ -200,7 +205,7 @@ PivType Solver::cut_and_piv(bool do_price)
                     call_separator([&sep]() { return sep->connect_sep(); },
                                    sep->connect_cuts_q(), piv,
                                    prev_val, total_delta,
-                                   delta_ratio);
+                                   delta_ratio, lowest_piv);
                     if (!found_con)
                         throw logic_error("Disconnected w no connect cuts??");
                 } CMR_CATCH_PRINT_THROW("doing connect cut loop", err);
@@ -226,7 +231,7 @@ PivType Solver::cut_and_piv(bool do_price)
                 if (call_separator([&sep]() { return sep->fast2m_sep(); },
                                    sep->fastblossom_q(), piv,
                                    prev_val, total_delta,
-                                   delta_ratio)) {
+                                   delta_ratio, lowest_piv)) {
                     found_primal = true;
 
                     if (return_pivot(piv))
@@ -243,7 +248,7 @@ PivType Solver::cut_and_piv(bool do_price)
                 if (call_separator([&sep]() { return sep->blkcomb_sep(); },
                                    sep->blockcomb_q(), piv,
                                    prev_val, total_delta,
-                                   delta_ratio)) {
+                                   delta_ratio, lowest_piv)) {
                     found_primal = true;
                     if (return_pivot(piv))
                         return piv;
@@ -259,7 +264,7 @@ PivType Solver::cut_and_piv(bool do_price)
                 if (call_separator([&sep]() { return sep->exact2m_sep(); },
                                    sep->exblossom_q(), piv,
                                    prev_val, total_delta,
-                                   delta_ratio)) {
+                                   delta_ratio, lowest_piv)) {
                     found_primal = true;
                     if (return_pivot(piv))
                         return piv;
@@ -275,7 +280,7 @@ PivType Solver::cut_and_piv(bool do_price)
                 if (call_separator([&sep]() { return sep->simpleDP_sep(); },
                                    sep->simpleDP_q(), piv,
                                    prev_val, total_delta,
-                                   delta_ratio)) {
+                                   delta_ratio, lowest_piv)) {
                     if (return_pivot(piv))
                         return piv;
 
@@ -288,8 +293,12 @@ PivType Solver::cut_and_piv(bool do_price)
             cout << "\tBefore GMI, total_delta "
                  << total_delta << ", last ratio " << delta_ratio << endl;
 
-        if (total_delta < Eps::TotalDelta)
+        if (total_delta < 0.001 * (core_lp.active_tourlen() - lowest_piv)) {
+            cout << "Total delta " << total_delta << ", active tourlen "
+                 << core_lp.active_tourlen() << ", lowest piv "
+                 << lowest_piv << ", setting found_primal false" << endl;
             found_primal = false;
+        }
 
         if (found_primal)
             continue;
@@ -305,7 +314,7 @@ PivType Solver::cut_and_piv(bool do_price)
                                    { return gmi_sep->find_cuts(); },
                                    gmi_sep->gomory_q(), piv,
                                    prev_val, total_delta,
-                                   delta_ratio)) {
+                                   delta_ratio, lowest_piv)) {
                     if (return_pivot(piv))
                         return piv;
 
