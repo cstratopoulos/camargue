@@ -177,8 +177,6 @@ void CoreLP::pivot_back(bool prune_slacks)
 
             if (H.tour_age() >= CutAge::TourOld &&
                 H.piv_age() >= CutAge::PivOld) {
-                // cout << "Cut with tour age " << H.tour_age() << " and piv age "
-                //      << H.piv_age() << " looks prunable" << endl;
                 delset[i] = 3;
                 ++delct;
             }
@@ -386,10 +384,6 @@ void CoreLP::add_cuts(Sep::LPcutList &cutq)
             SparseRow R = Sep::get_row(*cur, perm, core_graph);
             add_cut(R);
             ext_cuts.add_cut(*cur, tour);
-            if (R.rhs != cur->rhs) {
-                cerr << R.rhs << " vs " << cur->rhs << endl;
-                throw runtime_error("RHS mismatch somehow");
-            }
         }
     } CMR_CATCH_PRINT_THROW("processing/adding cut", err);
 

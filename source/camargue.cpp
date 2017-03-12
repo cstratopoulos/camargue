@@ -22,6 +22,7 @@
 using std::string;
 using std::cout;
 using std::cerr;
+using std::endl;
 
 using std::unique_ptr;
 
@@ -196,7 +197,7 @@ static void usage(const std::string &fname)
          << "-n \t random problem with x nodes\n"
          << "-g \t random problem gridsize x by x (1 million default)\n"
          << "-s \t random seed x used throughout code (current time default)\n"
-         << "-t \t load starting tour from path x\n";
+         << "-t \t load starting tour from path x" << endl;
 }
 
 #endif //CMR_DO_TESTS
