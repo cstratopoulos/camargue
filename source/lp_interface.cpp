@@ -388,6 +388,22 @@ vector<char> Relaxation::senses(int begin, int end) const
     return result;
 }
 
+vector<double> Relaxation::lower_bds(int begin, int end) const
+{
+    vector<double> result;
+    set_info_vec(CPXgetlb, "CPXgetlb", simpl_p->env, simpl_p->lp,
+                 result, begin, end);
+    return result;
+}
+
+vector<double> Relaxation::upper_bds(int begin, int end) const
+{
+    vector<double> result;
+    set_info_vec(CPXgetub, "CPXgetub", simpl_p->env, simpl_p->lp,
+                 result, begin, end);
+    return result;
+}
+
 void Relaxation::get_col(const int col, vector<int> &cmatind,
                            vector<double> &cmatval) const
 {
@@ -1014,8 +1030,12 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
     factor_basis();
 }
 
-void Relaxation::tighten_bound(const int index, const char sense,
-                               const double val)
+/**
+ * @param index the column number on which to change the bound.
+ * @param sense 'L' for <=, 'G' for >=, 'E' for ==.
+ * @param val the value to set the bound to.
+ */
+void Relaxation::tighten_bound(int index, char sense, double val)
 {
     int rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &index, &sense,
                              &val);
@@ -1047,7 +1067,6 @@ void Relaxation::init_mir_data(Sep::MIRgroup &mir_data)
     using mir_basinfo = SLVRbasisInfo_t;
 
     // Initialize the solver/constraint info //
-
     int numcols = num_cols();
     vector<char> ctype;
 

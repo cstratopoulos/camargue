@@ -60,6 +60,12 @@ public:
     /// Get a ranged vector of righthand sides.
     void get_rhs(std::vector<double> &rhs, int begin, int end) const;
 
+    /// Get the lower bounds for a range of variables.
+    std::vector<double> lower_bds(int begin, int end) const;
+
+    /// Get the upper bounds for a range of variables.
+    std::vector<double> upper_bds(int begin, int end) const;
+
     /// Get the senses of a range of constraints.
     std::vector<char> senses(int begin, int end) const;
 
