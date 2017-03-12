@@ -36,12 +36,12 @@ constexpr int Lim2Max = 500;
 
 inline int round1_limit(int avg_itcount)
 {
-    return std::min(std::max(Lim1Min, avg_itcount), Lim2Max);
+    return std::min(std::max(Lim1Min, 2 * avg_itcount), Lim2Max);
 }
 
 inline int round2_limit(int avg_itcount)
 {
-    return std::min(2 * avg_itcount, Lim2Max);
+    return std::min(4 * avg_itcount, Lim2Max);
 }
 
 }
