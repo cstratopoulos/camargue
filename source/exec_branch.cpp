@@ -25,19 +25,21 @@ using std::exception;
 namespace CMR {
 
 constexpr int IntMax = std::numeric_limits<int>::max();
+constexpr double DoubleMax = std::numeric_limits<double>::max();
 
 namespace ABC {
 
-BranchNode::BranchNode() : stat(Status::NeedsBranch), parent(nullptr),
-                           depth(0),
-                           tour_clq(nullptr), tourlen(IntMax) {}
+BranchNode::BranchNode() : stat(Status::NeedsCut),
+                           parent(nullptr), depth(0),
+                           tourlen(IntMax),
+                           estimate(DoubleMax) {}
 
 BranchNode::BranchNode(EndPts ends_, Dir direction_,
-                       const BranchNode &parent_, Sep::Clique::Ptr tour_clq_,
-                       double tourlen_)
+                       const BranchNode &parent_,
+                       double tourlen_, double estimate_)
     : ends(ends_), direction(direction_), stat(Status::NeedsCut),
       parent(&parent_), depth(1 + parent_.depth),
-      tour_clq(tour_clq_), tourlen(tourlen_) {}
+      tourlen(tourlen_), estimate(estimate_) {}
 
 BranchNode::BranchNode(BranchNode &&B) noexcept
     : ends(std::move(B.ends)),
@@ -45,30 +47,45 @@ BranchNode::BranchNode(BranchNode &&B) noexcept
       stat(B.stat),
       parent(B.parent),
       depth(B.depth),
-      tour_clq(std::move(B.tour_clq)),
       tourlen(B.tourlen),
-      price_basis(std::move(B.price_basis))
+      price_basis(std::move(B.price_basis)),
+      estimate(B.estimate)
 {
     B.stat = Status::Done;
+
     B.parent = nullptr;
     B.depth = 0;
+
     B.tourlen = IntMax;
+    B.estimate = DoubleMax;
 }
 
 BranchNode &BranchNode::operator=(BranchNode &&B) noexcept
 {
+    if (&B == this)
+        return *this;
+
     ends = std::move(B.ends);
     direction = B.direction;
+
     stat = B.stat;
+
+
     parent = B.parent;
     depth = B.depth;
-    tour_clq = std::move(B.tour_clq);
+
     tourlen = B.tourlen;
+
+    estimate = B.estimate;
     price_basis = std::move(B.price_basis);
 
     B.stat = Status::Done;
+
     B.parent = nullptr;
+    B.depth = 0;
+
     B.tourlen = IntMax;
+    B.estimate = DoubleMax;
 
     return *this;
 }
@@ -125,8 +142,7 @@ Executor::Executor(const Data::Instance &inst,
     : instance(inst), active_tour(activetour), best_data(bestdata),
       core_graph(coregraph), core_lp(core),
       inds_table(inst.node_count()),
-      fix_degrees(inst.node_count()), avail_degrees(inst.node_count()),
-      tour_cliques(bestdata.best_tour_nodes, bestdata.perm)
+      fix_degrees(inst.node_count()), avail_degrees(inst.node_count())
 {} catch (const exception &e) {
     cerr << e.what() << endl;
     throw runtime_error("Executor constructor failed");
@@ -160,8 +176,6 @@ ScoreTuple Executor::branch_edge()
     double upper_bound = best_data.min_tour_value;
     double avg_itcount = core_lp.avg_itcount();
 
-    cout << "\tPrimal sb round 1" << endl;
-
     try {
         core_lp.primal_strong_branch(active_tour.edges(),
                                      active_tour.base().colstat,
@@ -174,8 +188,6 @@ ScoreTuple Executor::branch_edge()
     vector<ScoreTuple> sb2cands;
     vector<int> sb2inds;
     vector<LP::Basis> sb2bases;
-
-    cout << "Primal sb round 2" << endl;
 
     try {
         sb2cands = ranked_cands(sb1inds, down_ests, up_ests, core_edges, cbases,
@@ -230,12 +242,12 @@ BranchNode::Split Executor::split_problem(ScoreTuple &branch_tuple,
     vector<EndsDir> edge_stats;
 
     const BranchNode *iter = &parent;
-    cout << "Building edge stats starting from parent...." << endl;
+    //cout << "Building edge stats starting from parent...." << endl;
 
     try {
         while(!iter->is_root()) {
 
-            cout << bnode_brief(*iter) << ", ";
+            //cout << bnode_brief(*iter) << ", ";
 
             if (iter->ends == branch_edge)
                 throw runtime_error("Trying to split already-branched edge.");
@@ -245,14 +257,14 @@ BranchNode::Split Executor::split_problem(ScoreTuple &branch_tuple,
         edge_stats.reserve(edge_stats.size() + 1);
     } CMR_CATCH_PRINT_THROW("building edge_stats", err);
 
-    cout << endl;
+    //cout << endl;
 
     BranchNode::Split result;
     const vector<int> &start_nodes = active_tour.nodes();
 
     for (int i : {0, 1}) {
-        cout << "Adding " << branch_edge << " = " << i << ", "
-             << "getting tour..." << endl;
+        // cout << "Adding " << branch_edge << " = " << i << ", "
+        //      << "getting tour..." << endl;
 
         edge_stats.emplace_back(EndsDir(branch_edge, dir_from_int(i)));
 
@@ -260,32 +272,28 @@ BranchNode::Split Executor::split_problem(ScoreTuple &branch_tuple,
         bool feas = true;
         double tour_val = 0.0;
         vector<int> btour;
-        Sep::Clique::Ptr tcliq(nullptr);
+
+        LP::Estimate &est = (i == 0 ? branch_tuple.down_est :
+                             branch_tuple.up_est);
+        EstStat estat = est.sol_stat;
+        double estval = est.value;
 
         try {
             branch_tour(edge_stats, start_nodes,
                         found_tour, feas,
-                        btour, tour_val);
-            if (found_tour)
-                tcliq = compress_tour(btour);
+                        btour, tour_val, false);
+            if (!found_tour)
+                tour_val = IntMax;
         } CMR_CATCH_PRINT_THROW("computing/compressing branch tour", err);
 
         result[i] = BranchNode(branch_edge, dir_from_int(i), parent,
-                               tcliq, tour_val);
+                               tour_val, estval);
 
         if (!feas)
             result[i].stat = BranchNode::Status::Pruned;
         else {
-            LP::Estimate &est = (i == 0 ? branch_tuple.down_est :
-                                 branch_tuple.up_est);
-            EstStat estat = est.sol_stat;
-            double estval = est.value;
-
             if (estat != EstStat::Abort || estval > best_data.min_tour_value) {
-                LP::Basis::Ptr &price_base = (i == 0 ?
-                                              branch_tuple.down_est.sb_base :
-                                              branch_tuple.up_est.sb_base);
-                result[i].price_basis = std::move(price_base);
+                result[i].price_basis = std::move(est.sb_base);
                 if (estat == EstStat::Infeas)
                     result[i].stat = BranchNode::Status::NeedsRecover;
                 else
@@ -325,7 +333,8 @@ BranchNode::Split Executor::split_problem(ScoreTuple &branch_tuple,
 void Executor::branch_tour(const vector<EndsDir> &edge_stats,
                            const vector<int> &start_tour_nodes,
                            bool &found_tour, bool &feas,
-                           vector<int> &tour, double &tour_val)
+                           vector<int> &tour, double &tour_val,
+                           bool for_use)
 {
     runtime_error err("Problem in Executor::branch_tour");
 
@@ -447,6 +456,8 @@ void Executor::branch_tour(const vector<EndsDir> &edge_stats,
     double val = 0;
     int stallcount = std::max(ncount, 250);
     int kicks = std::min(100, (std::max(500, ncount / 2)));
+    if (for_use)
+        kicks *= 2;
 
     try { tour.resize(ncount); } CMR_CATCH_PRINT_THROW("allocating cyc", err);
 
@@ -484,24 +495,21 @@ void Executor::branch_tour(const vector<EndsDir> &edge_stats,
         return;
     }
 
-    cout << "\tComputed genuine branch tour of length "
-         << tour_val << "\n\t"
-         << "branch tour: best_tour\t"
-         << (tour_val / best_data.min_tour_value) << endl;
-}
-
-Sep::Clique::Ptr Executor::compress_tour(const vector<int> &tour)
-{
-    return tour_cliques.add_tour_clique(tour);
-}
-
-vector<int> Executor::expand_tour(const Sep::Clique::Ptr &tour_clique)
-{
-    return tour_clique->node_list(tour_cliques.ref_tour());
+    if (for_use)
+        cout << "\tComputed genuine branch tour of length "
+             << tour_val << "\n\t"
+             << "branch tour: best_tour\t"
+             << (tour_val / best_data.min_tour_value) << endl;
+    else
+        cout << "\tComputed branch tour, setting estimate to "
+             << tour_val << "\n\t";
 }
 
 void Executor::clamp(const BranchNode &current_node)
 {
+    if (current_node.is_root())
+        return;
+
     int index = core_graph.find_edge_ind(current_node.ends.end[0],
                                          current_node.ends.end[1]);
     if (index == -1)
@@ -525,6 +533,9 @@ void Executor::clamp(const BranchNode &current_node)
 
 void Executor::unclamp(const BranchNode &current_node)
 {
+    if (current_node.is_root())
+        return;
+
     int index = core_graph.find_edge_ind(current_node.ends.end[0],
                                          current_node.ends.end[1]);
     if (index == -1)

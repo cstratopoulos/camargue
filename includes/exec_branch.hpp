@@ -43,7 +43,7 @@ struct BranchNode {
 
     /// Construct a child node.
     BranchNode(EndPts ends_, Dir direction_, const BranchNode &parent_,
-               Sep::Clique::Ptr tour_clq_, double tourlen_);
+               double tourlen_, double estimate_);
 
     BranchNode(BranchNode &&B) noexcept;
     BranchNode &operator=(BranchNode &&B) noexcept;
@@ -59,11 +59,11 @@ struct BranchNode {
     const BranchNode *parent;
     int depth; //!< Search tree depth of this node.
 
-    Sep::Clique::Ptr tour_clq; //!< The tour to be instated at this node.
-    double tourlen; //!< The length of the tour in tour_clq.
+    double tourlen; //!< Estimated best tour length for this node.
 
     /// A starting basis for if Status is NeedsPrice or NeedsRecover.
     LP::Basis::Ptr price_basis;
+    double estimate; //!< The objective value estimate from edge selection.
 
     /// Is this the root problem.
     bool is_root() const { return parent == nullptr; }
@@ -83,8 +83,9 @@ std::ostream &operator<<(std::ostream &os, const BranchNode::Dir &dir);
 std::ostream &operator<<(std::ostream &os, const BranchNode &B);
 
 using BranchHistory = std::list<BranchNode>;
-using SplitIter = std::array<BranchHistory::iterator, 2>;
 
+/// Alias declaration for EndPts and branching direction.
+using EndsDir = std::pair<EndPts, BranchNode::Dir>;
 
 class Executor {
 public:
@@ -92,9 +93,6 @@ public:
     Executor(const Data::Instance &inst, const LP::ActiveTour &activetour,
              const Data::BestGroup &bestdata,
              const Graph::CoreGraph &coregraph, LP::CoreLP &core);
-
-    /// Alias declaration for EndPts and branching direction.
-    using EndsDir = std::pair<EndPts, BranchNode::Dir>;
 
     ScoreTuple branch_edge(); //!< Get the next edge to branch on.
 
@@ -106,13 +104,8 @@ public:
     void branch_tour(const std::vector<EndsDir> &edge_stats,
                      const std::vector<int> &start_tour_nodes,
                      bool &found_tour, bool &feas,
-                     std::vector<int> &tour, double &tour_val);
-
-    /// Compress \p tour into a Clique reference.
-    Sep::Clique::Ptr compress_tour(const std::vector<int> &tour);
-
-    /// Expand a compressed representation computed by compress_tour.
-    std::vector<int> expand_tour(const Sep::Clique::Ptr &tour_clique);
+                     std::vector<int> &tour, double &tour_val,
+                     bool for_use);
 
     /// Clamp a variable as indicated by \p current_node.
     void clamp(const BranchNode &current_node);
@@ -145,11 +138,6 @@ private:
     /// edge_stats. Initialized to all `instance.node_count() - 1`, and
     /// decremented. No tour can exist if an entry is less than two.
     std::vector<int> avail_degrees;
-
-    /// Used to compress the tours returned by branch_tour.
-    /// This CliqueBank shall represent Cliques in terms of whatever was the
-    /// best_data.best_tour_nodes when this Executor was constructed.
-    Sep::CliqueBank tour_cliques;
 };
 
 }
