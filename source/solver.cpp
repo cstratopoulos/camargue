@@ -363,9 +363,15 @@ PivType Solver::abc(bool do_price)
     cout << "\n\tABC search completed, optimal tour has length "
          << best_data.min_tour_value << endl;
 
+
+    int max_depth = 0;
     const ABC::BranchHistory &BH = dfs_brancher->get_history();
+    for (const auto &B : BH)
+        if (B.depth > max_depth)
+            max_depth = B.depth;
+
     cout << "\t" << BH.size() << " branch nodes, max depth "
-         << BH.front().depth << endl;
+         << max_depth << endl;
 
     report_cuts();
 
