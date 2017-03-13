@@ -326,13 +326,18 @@ PivType Solver::abc(bool do_price)
     }
 
     if (do_price) {
-        cout << "\tTesting elim in ABC...\n";
         try {
             edge_pricer->elim_edges(true);
             core_lp.primal_opt();
             cout << "\tcol count " << core_lp.num_cols()
                  << ", opt objval " << core_lp.get_objval() << endl;
         } CMR_CATCH_PRINT_THROW("eliminating and optimizing", err);
+    } else {
+        try {
+            core_lp.primal_opt();
+        } CMR_CATCH_PRINT_THROW("optimizing at root", err);
+        cout << "\tRoot LP optimized with obj val " << core_lp.get_objval()
+             << endl;
     }
 
 
@@ -355,7 +360,7 @@ PivType Solver::abc(bool do_price)
         CMR_CATCH_PRINT_THROW("dumping gmi cuts before abc", err);
     }
 
-    try { piv = abc_dfs(0, do_price); }
+    try { piv = abc_dfs(do_price); }
     CMR_CATCH_PRINT_THROW("running abc_dfs", err);
 
     abct.stop();

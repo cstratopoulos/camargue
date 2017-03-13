@@ -93,7 +93,7 @@ private:
     /// A loop of primal pivoting and cutting plane generation.
     LP::PivType cut_and_piv(bool do_price);
 
-    LP::PivType abc_dfs(int depth, bool do_price);
+    LP::PivType abc_dfs(bool do_price);
 
     /// Attempt to recover from a fractional pivot with the x-tour heuristic.
     LP::PivType frac_recover();
