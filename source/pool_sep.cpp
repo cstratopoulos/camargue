@@ -62,7 +62,8 @@ bool PoolCuts::find_cuts()
     runtime_error err("Problem in PoolCuts::find_cuts");
 
     if (verbose)
-        cout << "Cutpool sep, filter_primal " << filter_primal << endl;
+        cout << "Cutpool sep, filter_primal " << filter_primal << ", "
+             << EC.cut_pool.size() << " cuts in pool." << endl;
 
     try {
         if (price_cuts() == false)

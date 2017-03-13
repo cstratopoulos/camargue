@@ -150,7 +150,8 @@ PivType Solver::cut_and_piv(bool do_price)
         ++round;
         if (verbose)
             cout << "Cut and Piv round " << round << ", initial pivot value "
-                 << prev_val << ", " << piv << endl;
+                 << prev_val << ", " << piv << ", " << core_lp.num_rows()
+                 << " rows, " << core_lp.num_cols() << " cols"<< endl;
 
 
         bool found_primal = false;
@@ -295,7 +296,7 @@ PivType Solver::cut_and_piv(bool do_price)
                  << total_delta << ", last ratio " << delta_ratio << endl;
 
         if (total_delta < 0.001 * (core_lp.active_tourlen() - lowest_piv)) {
-            if (!found_primal && total_delta != 0.0)
+            if (!found_primal && total_delta >= Eps::Zero)
                 cout << "Total delta " << total_delta << ", active tourlen "
                      << core_lp.active_tourlen() << ", lowest piv "
                      << lowest_piv << ", setting found_primal false" << endl;
@@ -338,100 +339,99 @@ PivType Solver::cut_and_piv(bool do_price)
     return piv;
 }
 
-PivType Solver::abc_dfs(int depth, bool do_price)
+PivType Solver::abc_dfs(bool do_price)
 {
-    using SplitIter = ABC::SplitIter;
-    using NodeIter = ABC::BranchHistory::iterator;
     using BranchStat = ABC::BranchNode::Status;
+    using ABC::BranchHistory;
 
-    runtime_error err("Prolem in Solver::abc_dfs");
+    runtime_error err("Problem in Solver::abc_dfs");
 
     PivType piv = PivType::Frac;
+    BranchHistory::iterator cur = dfs_brancher->next_prob();
 
-    try {
-        piv = cutting_loop(do_price, false, false);
-    } CMR_CATCH_PRINT_THROW("solving branch prob", err);
+    while (cur != dfs_brancher->get_history().end()) {
 
-    if (piv != PivType::Frac) {
-        if (piv == PivType::FathomedTour)
-            return piv;
-        else {
-            cerr << "Pivot status " << piv << " in abc.\n";
-            throw logic_error("Invalid pivtype in abc_dfs.");
+        try { dfs_brancher->do_branch(*cur); }
+        CMR_CATCH_PRINT_THROW("branching on current problem", err);
+
+        if (cur->stat == BranchStat::NeedsRecover) {
+            cout << "\tProblem " << ABC::bnode_brief(*cur)
+                 << " looks infeasible\n";
+            cout << "\tACTUAL VERIFICATION SHOULD GO HERE!!!!\n";
+            cout << "\t\t....marking as pruned." << endl;
+
+            cur->stat = BranchStat::Pruned;
         }
-    }
 
-    SplitIter branch_probs;
-
-    try {
-        branch_probs = dfs_brancher->next_level();
-    } CMR_CATCH_PRINT_THROW("getting next level", err);
-
-    for (NodeIter &P : branch_probs) {
-        if (P == dfs_brancher->get_history().end())
-            continue;
-
-        try {
-            dfs_brancher->do_branch(*P);
-        } CMR_CATCH_PRINT_THROW("doing branch", err);
-
-        bool call_again = true;
-
-        if (P->stat == BranchStat::NeedsRecover) {
-            cout << *P << " appears infeasible\n";
-            cout << "\tActual verification should go here!!!" << endl;
-            call_again = false;
-            P->stat = BranchStat::Pruned;
-        } else if (P->stat == BranchStat::NeedsPrice) {
-            cout << *P << " needs edge pricing\n";
-            if (!do_price) {
-                cout << "Sparse edge set, problem can be pruned" << endl;
-                call_again = false;
-            } else {
-                double opt_time = util::zeit();
-                try {
-                    if (P->price_basis) {
-                        cout << "\tPricing based on opt basis, copying.\n";
-                        core_lp.copy_base(P->price_basis->colstat,
-                                          P->price_basis->rowstat);
-                    } else {
-                        cout << "\tPricing based on strong estimate.\n";
-                        core_lp.copy_start(core_lp.active_tour.edges());
-                    }
-                    core_lp.primal_opt();
-                } CMR_CATCH_PRINT_THROW("optimizing for pricing", err);
-                opt_time = util::zeit() - opt_time;
-
-                double objval = core_lp.get_objval();
-                printf("\tPrimal opt objval %.2f in %.2fs", objval, opt_time);
-                cout << endl;
-
-                Price::ScanStat price_stat = Price::ScanStat::Full;
-
-                if (objval >= core_lp.global_ub() - 0.9) {
-                    try {
-                        price_stat =
-                        edge_pricer->gen_edges(PivType::FathomedTour, false);
-                    } CMR_CATCH_PRINT_THROW("pricing edges", err);
+        if (cur->stat == BranchStat::NeedsPrice) {
+            cout << ABC::bnode_brief(*cur)
+                 << " needs price/prune check" << endl;
+            double opt_time = util::zeit();
+            try {
+                if (cur->price_basis) {
+                    cout << "\tPricing based on opt basis\n";
+                    core_lp.copy_base(cur->price_basis->colstat,
+                                      cur->price_basis->rowstat);
+                } else {
+                    cout << "\tPricing based on strong estimate\n";
+                    core_lp.copy_start(core_lp.active_tour.edges());
                 }
 
-                if (price_stat == Price::ScanStat::FullOpt) {
-                    cout << "Branch problem can be pruned." << endl;
-                    P->stat = BranchStat::Pruned;
-                    call_again = false;
+                core_lp.primal_opt();
+            } CMR_CATCH_PRINT_THROW("optimizing for pricing", err);
+            opt_time = util::zeit() - opt_time;
+
+            double objval = core_lp.get_objval();
+
+            printf("\tPrimal opt objval %.2f in %.2fs\n", objval, opt_time);
+
+            cur->stat = BranchStat::NeedsCut;
+
+            if (objval >= core_lp.global_ub() - 0.9) {
+                if (!do_price) {
+                    cout << "\tSparse problem prunable." << endl;
+                    cur->stat = BranchStat::Pruned;
                 } else {
-                    try { core_lp.pivot_back(false); }
-                    CMR_CATCH_PRINT_THROW("pivoting back after pricing", err);
+                    Price::ScanStat pstat = Price::ScanStat::Full;
+                    try {
+                        pstat = edge_pricer->gen_edges(PivType::FathomedTour,
+                                                       false);
+                    } CMR_CATCH_PRINT_THROW("pricing edges", err);
+
+                    if (pstat == Price::ScanStat::FullOpt)
+                        cur->stat = BranchStat::Pruned;
                 }
             }
         }
 
-        if (call_again)
-            piv = abc_dfs(++depth, do_price);
+        if (cur->stat == BranchStat::NeedsCut) {
+            try {
+                piv = cutting_loop(do_price, false, false);
+            } CMR_CATCH_PRINT_THROW("cutting branch prob", err);
 
-        try {
-            dfs_brancher->do_unbranch(*P);
-        } CMR_CATCH_PRINT_THROW("undoing branch", err);
+            if (piv == PivType::Frac)
+                cur->stat = BranchStat::NeedsBranch;
+            else if (piv == PivType::FathomedTour)
+                cur->stat = BranchStat::Pruned;
+            else {
+                cerr << "Pivot status " << piv << " in abc" << endl;
+                throw err;
+            }
+        }
+
+        if (cur->stat == BranchStat::NeedsBranch) {
+            try {
+                dfs_brancher->split_prob(cur);
+            } CMR_CATCH_PRINT_THROW("splitting branch problem", err);
+
+            cur->stat = BranchStat::Done;
+        } else if (cur->stat == BranchStat::Pruned) {
+            try {
+                dfs_brancher->do_unbranch(*cur);
+            } CMR_CATCH_PRINT_THROW("unbranching pruned problem", err);
+        }
+
+        cur = dfs_brancher->next_prob();
     }
 
     return piv;
