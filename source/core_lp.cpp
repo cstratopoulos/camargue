@@ -193,6 +193,7 @@ void CoreLP::pivot_back(bool prune_slacks)
         try {
             ext_cuts.del_cuts(delset);
             del_set_rows(delset);
+            prev_numrows = num_rows();
             reset_instate_active();
         } CMR_CATCH_PRINT_THROW("deleting cuts/instating tour", err);
     } else {
@@ -365,6 +366,7 @@ void CoreLP::prune_slacks()
 
     ext_cuts.del_cuts(delrows);
     del_set_rows(delrows);
+    prev_numrows = num_rows();
 
     reset_instate_active();
 }
@@ -595,6 +597,7 @@ void CoreLP::purge_gmi(bool instate)
     if (delcount > 0) {
         ext_cuts.del_cuts(delrows);
         del_set_rows(delrows);
+        prev_numrows = num_rows();
 
         if (instate)
             reset_instate_active();
