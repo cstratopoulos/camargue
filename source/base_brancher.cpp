@@ -123,7 +123,7 @@ void BaseBrancher::do_unbranch(const BranchNode &B)
 
     runtime_error err("Problem in BaseBrancher::do_unbranch");
 
-    const BranchHistory::iterator Bnext = next_prob();
+    const BranchHistory::iterator Bnext = peek_next();
     if (Bnext == branch_history.end())
         return;
 

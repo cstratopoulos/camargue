@@ -36,7 +36,7 @@ static void initial_parse(int argc, char **argv,
                           string &tsp_fname, string &tour_fname,
                           int &seed, int &rnodes, int &rgrid,
                           CMR::OutPrefs &outprefs, bool &sparseflag,
-                          bool &branchflag);
+                          bool &branchflag, int &node_sel);
 
 static void usage(const std::string &fname);
 
@@ -50,6 +50,8 @@ int main(int argc, char** argv) try
     int rand_nodes = 0;
     int rand_grid = 0;
 
+    int node_sel = 0;
+
     bool sparse = false;
     bool branch = true;
 
@@ -58,7 +60,8 @@ int main(int argc, char** argv) try
     unique_ptr<CMR::Solver> tsp_solver;
 
     initial_parse(argc, argv, tsp_fname, tour_fname,
-                  seed, rand_nodes, rand_grid, outprefs, sparse, branch);
+                  seed, rand_nodes, rand_grid, outprefs, sparse, branch,
+                  node_sel);
 
     if (!tsp_fname.empty()) {
         if (tour_fname.empty())
@@ -77,10 +80,32 @@ int main(int argc, char** argv) try
     CMR::Timer t(tsp_solver->inst_info().problem_name() + " overall");
     t.start();
 
-    if (branch)
-        tsp_solver->abc<CMR::ABC::TourBrancher>(!sparse);
-    else
+    bool do_price = !sparse;
+
+    if (branch) {
+        switch (node_sel) {
+        case 0:
+            cout << "DFS branching" << endl;
+            tsp_solver->abc<CMR::ABC::DFSbrancher>(do_price);
+            break;
+        case 1:
+            cout << "Best-estimate branching with LK tours" << endl;
+            tsp_solver->abc<CMR::ABC::TourBrancher>(do_price);
+            break;
+        case 2:
+            cout << "Best-bound search with strong branch probs" << endl;
+            tsp_solver->abc<CMR::ABC::BoundBrancher>(do_price);
+            break;
+        case 3:
+            cout << "Interleaved best-estimate/best-bound search" << endl;
+            tsp_solver->abc<CMR::ABC::InterBrancher>(do_price);
+            break;
+        default:
+            throw logic_error("Unimplemented node selection rule");
+        }
+    } else {
         tsp_solver->cutting_loop(!sparse, true, true);
+    }
 
     t.stop();
     t.report(true);
@@ -96,7 +121,7 @@ static void initial_parse(int ac, char **av,
                           string &tsp_fname, string &tour_fname,
                           int &seed, int &rnodes, int &rgrid,
                           CMR::OutPrefs &outprefs, bool &sparseflag,
-                          bool &branchflag)
+                          bool &branchflag, int &node_sel)
 {
     bool randflag = false;
 
@@ -109,7 +134,7 @@ static void initial_parse(int ac, char **av,
         throw logic_error("No arguments specified");
     }
 
-    while ((c = getopt(ac, av, "aEGPRSVXn:g:s:t:")) != EOF) {
+    while ((c = getopt(ac, av, "aEGPRSVXb:n:g:s:t:")) != EOF) {
         switch (c) {
         case 'E':
             outprefs.save_tour_edges = true;
@@ -131,6 +156,9 @@ static void initial_parse(int ac, char **av,
             break;
         case 'X':
             outprefs.dump_xy = true;
+            break;
+        case 'b':
+            node_sel = atoi(optarg);
             break;
         case 'n':
             rnodes = atoi(optarg);
@@ -158,6 +186,9 @@ static void initial_parse(int ac, char **av,
         usage(av[0]);
         throw logic_error("Bad option count");
     }
+
+    if (node_sel < 0 || node_sel > 3)
+        throw logic_error("Branching strategy (-b) must be 0, 1, 2, or 3");
 
     if (tsp_fname.empty() && rnodes <= 0) {
         usage(av[0]);
@@ -195,10 +226,19 @@ static void usage(const std::string &fname)
          <<"\t\t except some with MATRIX or EXPLICIT coordinates.\n";
     cerr << "\n";
     cerr << "\t\t PARAMETER OPTIONS (argument x)\n"
-         << "-n \t random problem with x nodes\n"
-         << "-g \t random problem gridsize x by x (1 million default)\n"
-         << "-s \t random seed x used throughout code (current time default)\n"
-         << "-t \t load starting tour from path x" << endl;
+         << "-b \t Branching strategy x (see below).\n"
+         << "   \t Options: 0 DFS branching (default).\n"
+         << "   \t          1 Best-estimate branching w short, sparse "
+         << "LK tour estimates.\n"
+         << "   \t          2 Best-first branching w strong branch probe "
+         <<"objective vals.\n"
+         << "   \t          3 Interleaved best-estimate/best-first:\n"
+         <<"    \t            Mainly use best-estimate, w best-first every "
+         << "10 nodes.\n"
+         << "-n \t Random problem with x nodes\n"
+         << "-g \t Random problem gridsize x by x (1 million default)\n"
+         << "-s \t Random seed x used throughout code (current time default)\n"
+         << "-t \t Load starting tour from path x" << endl;
 }
 
 #endif //CMR_DO_TESTS

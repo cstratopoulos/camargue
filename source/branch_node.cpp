@@ -1,5 +1,6 @@
 #include "branch_node.hpp"
 
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -81,16 +82,32 @@ BranchNode &BranchNode::operator=(BranchNode &&B) noexcept
     return *this;
 }
 
-bool BranchNode::tour_compare(const BranchNode &A, const BranchNode &B)
+/**
+ * Comparator where \p A is worse than \p B if \p A is estimated to have a
+ * longer best tour. Ties are broken by depth and then strong branch estimate,
+ * in that order.
+ * @remark the depth of \p A and \p B are reversed `tie`d because we prefer
+ * greater values of depth but lesser values of tour and estimate.
+ */
+bool BranchNode::tour_worse(const BranchHistory::iterator &A,
+                            const BranchHistory::iterator &B)
 {
-    return (std::make_tuple(A.visited(), A.tourlen) >
-            std::make_tuple(B.visited(), B.tourlen));
+    return (std::tie(A->tourlen, B->depth, A->estimate) >
+            std::tie(B->tourlen, A->depth, B->estimate));
 }
 
-bool BranchNode::bound_compare(const BranchNode &A, const BranchNode &B)
+/**
+ * Comparator where \p A is worse than \p B if \p A is estimated to have a
+ * higher objective value lower bound. Ties are broken by depth and estimated
+ * tour length, in that order.
+ * @remark the depth of \p A and \p B are reversed `tie`d because we prefer
+ * greater values of depth but lesser values of tour and estimate.
+ */
+bool BranchNode::bound_worse(const BranchHistory::iterator &A,
+                             const BranchHistory::iterator &B)
 {
-    return (std::make_tuple(A.visited(), A.estimate) >
-            std::make_tuple(B.visited(), B.estimate));
+    return (std::tie(A->estimate, B->depth, A->tourlen) >
+            std::tie(B->estimate, A->depth, B->tourlen));
 }
 
 BranchNode::Dir dir_from_int(int entry)
@@ -112,7 +129,8 @@ std::string bnode_brief(const BranchNode &B)
     if (B.is_root())
         result << "[root]";
     else {
-        result << "[" << B.ends << " = " << B.direction << "]";
+        result << "[" << B.ends << " = " << B.direction << "], lvl "
+               << B.depth;
     }
 
     return result.str();
@@ -130,8 +148,10 @@ ostream &operator<<(ostream &os, const BranchNode &B)
     if (B.is_root()) {
         os << "depth 0";
     } else {
-        os << "depth " << B.depth << ", tourlen "
+        os << "tour "
            << static_cast<int>(B.tourlen)
+           << ", est " << std::setprecision(2) << B.estimate
+           << std::setprecision(6) << std::fixed
            << ", parent "
            << bnode_brief(*(B.parent));
     }

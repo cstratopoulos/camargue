@@ -79,21 +79,23 @@ struct BranchNode {
      * from the C++ STL. Such heaps are _max_ heaps by default, and node
      * selection rules usually demand _min_ heaps (e.g., shortest tour,
      * lowest strong branch bound). Thus, these functions must implement a
-     * comparator where preferred nodes are _greater_. This should be
-     * implemented as a lexicographic ordering with std::tie and/or
-     *  std::make_tuple, with unvisited nodes always comparing greater than
-     * visited ones, and then the actual ranking criteria. For example
+     * comparator where preferred nodes are _greater_. For example
      * if \f$ F \f$ is a comparator and \f$ A, B \f$ are two unvisited nodes
      *  where \f$ A \f$ has a shorter tour than \f$ B \f$, then
      * \f$ F(A, B) \f$ should return false.
+     * @remark Implementations should use std::tie to implement
+     * lexicographic ordering to break ties first based on depth, and then
+     * based on an estimate not being used.
      */
     ///@{
 
-    /// Returns true if \p A has a longer tour than \p B.
-    static bool tour_compare(const BranchNode &A, const BranchNode &B);
+    /// Returns true if \p A has a worse tour than \p B.
+    static bool tour_worse(const std::list<BranchNode>::iterator &A,
+                             const std::list<BranchNode>::iterator &B);
 
-    /// Returns true if \p A has a higher strong branch estimate than \p B.
-    static bool bound_compare(const BranchNode &A, const BranchNode &B);
+    /// Returns true if \p A has a worse (higher) SB estimate than \p B.
+    static bool bound_worse(const std::list<BranchNode>::iterator &A,
+                            const std::list<BranchNode>::iterator &B);
 
     ///@}
 };

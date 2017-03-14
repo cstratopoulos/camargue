@@ -51,6 +51,12 @@ protected:
     /// Execute variable changes if \p done was just done and \p next is next.
     void common_prep_next(const BranchNode &done, const BranchNode &next);
 
+    /// For use by do_unbranch, peek at what the next subproblem will be.
+    /// This should be implemented almost identically (or identically in the
+    /// case of DFS branching) to next_prob, but it shall not modify the
+    /// problem queue.
+    virtual BranchHistory::iterator peek_next() = 0;
+
     const Data::Instance &instance;
     const Data::BestGroup &best_data;
     const Graph::CoreGraph &core_graph;
