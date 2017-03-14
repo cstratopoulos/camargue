@@ -18,23 +18,25 @@ using std::vector;
 namespace CMR {
 namespace ABC {
 
-
 DFSbrancher::DFSbrancher(const Data::Instance &inst,
-                         const LP::ActiveTour &activetour,
-                         const Data::BestGroup &bestdata,
-                         const Graph::CoreGraph &coregraph, LP::CoreLP &core)
-try : BaseBrancher(inst, activetour, bestdata, coregraph, core)
+                         const LP::ActiveTour &active_tour,
+                         const Data::BestGroup &best_data,
+                         const Graph::CoreGraph &core_graph,
+                         LP::CoreLP &core_lp)
+try : BaseBrancher(inst, active_tour, best_data, core_graph, core_lp)
 {} catch (const exception &e) {
     cerr << e.what() << endl;
     throw runtime_error("DFSbrancher constructor failed.");
 }
 
+/**
+ * If applicable, this method will swap the position of nodes in
+ * \p prob_array to ensure that the node agreeing with the current tour is
+ * first in the queue.
+ */
 void DFSbrancher::enqueue_split(BranchNode::Split prob_array)
 {
     runtime_error err("Problem in DFSbrancher::enqueue_split");
-
-    // The tour entry checking below ensures that the first node examined is
-    // always the one that agrees with the current tour.
 
     const EndPts &branch_edge = prob_array[0].ends;
     int ind = core_graph.find_edge_ind(branch_edge.end[0], branch_edge.end[1]);
@@ -46,6 +48,8 @@ void DFSbrancher::enqueue_split(BranchNode::Split prob_array)
 
     int tour_entry = best_data.best_tour_edges[ind];
 
+    // swap based on tour entry since they will be added to the list in
+    // the reverse order of their appearance in the array.
     if (tour_entry == 0) {
         std::swap(prob_array[0], prob_array[1]);
     }

@@ -80,7 +80,7 @@ ActiveTour::ActiveTour(const Graph::CoreGraph &graph,
     }
 } catch (const exception &e) {
     cerr << e.what() << endl;
-    throw runtime_error("ActiveTour Padberg-Hong constructor failed.");
+    throw runtime_error("ActiveTour Padberg-Hong constructor failed");
 }
 
 /**

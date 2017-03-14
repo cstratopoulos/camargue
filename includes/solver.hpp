@@ -13,7 +13,7 @@
 #include "datagroups.hpp"
 #include "separator.hpp"
 #include "pool_sep.hpp"
-#include "dfs_brancher.hpp"
+#include "abc_nodesel.hpp"
 
 #if CMR_HAVE_SAFEGMI
 
