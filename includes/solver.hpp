@@ -93,7 +93,7 @@ private:
     /// A loop of primal pivoting and cutting plane generation.
     LP::PivType cut_and_piv(bool do_price);
 
-    LP::PivType abc_dfs(bool do_price);
+    LP::PivType abc_bcp(bool do_price); //!< The branch-cut-price loop.
 
     /// Attempt to recover from a fractional pivot with the x-tour heuristic.
     LP::PivType frac_recover();
@@ -129,7 +129,7 @@ private:
 
     std::unique_ptr<Price::Pricer> edge_pricer;
 
-    std::unique_ptr<ABC::DFSbrancher> dfs_brancher;
+    std::unique_ptr<ABC::BaseBrancher> branch_controller;
 
     bool branch_engaged = false; //!< Is an ABC search active.
 

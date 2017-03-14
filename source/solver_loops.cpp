@@ -339,19 +339,19 @@ PivType Solver::cut_and_piv(bool do_price)
     return piv;
 }
 
-PivType Solver::abc_dfs(bool do_price)
+PivType Solver::abc_bcp(bool do_price)
 {
     using BranchStat = ABC::BranchNode::Status;
     using ABC::BranchHistory;
 
-    runtime_error err("Problem in Solver::abc_dfs");
+    runtime_error err("Problem in Solver::abc_bcp");
 
     PivType piv = PivType::Frac;
-    BranchHistory::iterator cur = dfs_brancher->next_prob();
+    BranchHistory::iterator cur = branch_controller->next_prob();
 
-    while (cur != dfs_brancher->get_history().end()) {
+    while (cur != branch_controller->get_history().end()) {
 
-        try { dfs_brancher->do_branch(*cur); }
+        try { branch_controller->do_branch(*cur); }
         CMR_CATCH_PRINT_THROW("branching on current problem", err);
 
         if (cur->stat == BranchStat::NeedsRecover) {
@@ -421,17 +421,17 @@ PivType Solver::abc_dfs(bool do_price)
 
         if (cur->stat == BranchStat::NeedsBranch) {
             try {
-                dfs_brancher->split_prob(cur);
+                branch_controller->split_prob(cur);
             } CMR_CATCH_PRINT_THROW("splitting branch problem", err);
 
             cur->stat = BranchStat::Done;
         } else if (cur->stat == BranchStat::Pruned) {
             try {
-                dfs_brancher->do_unbranch(*cur);
+                branch_controller->do_unbranch(*cur);
             } CMR_CATCH_PRINT_THROW("unbranching pruned problem", err);
         }
 
-        cur = dfs_brancher->next_prob();
+        cur = branch_controller->next_prob();
     }
 
     return piv;

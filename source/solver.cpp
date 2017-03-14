@@ -347,8 +347,14 @@ PivType Solver::abc(bool do_price)
     abct.start();
 
     try {
-        util::ptr_reset(dfs_brancher, tsp_instance, active_tour(),
-                        best_info(), graph_info(), core_lp);
+        branch_controller = util::make_unique<ABC::DFSbrancher>(tsp_instance,
+                                                                active_tour(),
+                                                                best_info(),
+                                                                graph_info(),
+                                                                core_lp);
+        // util::ptr_reset<ABC::DFSbrancher>(branch_controller, tsp_instance,
+        //                                   active_tour(), best_info(),
+        //                                   graph_info(), core_lp);
     } CMR_CATCH_PRINT_THROW("allocating/instantiating Brancher", err);
 
     branch_engaged = true;
@@ -360,7 +366,7 @@ PivType Solver::abc(bool do_price)
         CMR_CATCH_PRINT_THROW("dumping gmi cuts before abc", err);
     }
 
-    try { piv = abc_dfs(do_price); }
+    try { piv = abc_bcp(do_price); }
     CMR_CATCH_PRINT_THROW("running abc_dfs", err);
 
     abct.stop();
@@ -370,7 +376,7 @@ PivType Solver::abc(bool do_price)
 
 
     int max_depth = 0;
-    const ABC::BranchHistory &BH = dfs_brancher->get_history();
+    const ABC::BranchHistory &BH = branch_controller->get_history();
     for (const auto &B : BH)
         if (B.depth > max_depth)
             max_depth = B.depth;
