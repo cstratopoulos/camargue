@@ -38,7 +38,7 @@ void BaseBrancher::split_prob(BranchHistory::iterator &current)
 
     BranchNode::Split prob_array;
     ScoreTuple branch_tuple;
-    bool verbose = false;
+    bool verbose = true;
 
     try {
         cout << "Getting next branch edge...." << endl;
@@ -143,8 +143,8 @@ void BaseBrancher::common_prep_next(const BranchNode &done,
                                    const BranchNode &next)
 {
     runtime_error err("Problem in BaseBrancher::common_prep_next");
-    // cout << "Calling common_prep next.\n The Done node:\n"
-    //      << done << "\nThe Next node:\n" << next << endl;
+    cout << "Calling common_prep next.\n The Done node:\n"
+         << done << "\nThe Next node:\n" << next << endl;
 
     try {
         exec.unclamp(done);
@@ -152,12 +152,12 @@ void BaseBrancher::common_prep_next(const BranchNode &done,
     cout << "Undid clamp on done." << endl;
 
     if (done.parent->is_root()) {
-        //cout << "done node is root child, returning." << endl;
+        cout << "done node is root child, returning." << endl;
         return;
     }
 
     if (done.parent == next.parent) {
-        //cout << "done and next are siblings, returning" << endl;
+        cout << "done and next are siblings, returning" << endl;
         return;
     }
 
@@ -197,8 +197,8 @@ void BaseBrancher::common_prep_next(const BranchNode &done,
         }
     } CMR_CATCH_PRINT_THROW("finding common ancestor path", err);
 
-    // cout << "Loop completed with common ancestor "
-    //      << bnode_brief(*(done_path.first)) << endl;
+    cout << "Loop completed with common ancestor "
+         << bnode_brief(*(done_path.first)) << endl;
 
     try {
         for (const BranchNode *b : done_path.second)

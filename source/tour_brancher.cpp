@@ -36,7 +36,7 @@ try : BaseBrancher(inst, active_tour, best_data, core_graph, core_lp)
 void TourBrancher::enqueue_split(BranchNode::Split prob_array) try
 {
     for (BranchNode &B : prob_array) {
-        branch_history.emplace_back(std::move(B));
+        branch_history.emplace_front(std::move(B));
         // std::push_heap(branch_history.begin(), branch_history.end(),
         //                BranchNode::tour_compare);
     }
@@ -49,6 +49,8 @@ BranchHistory::iterator TourBrancher::next_prob()
 {
     if (branch_history.empty())
         return branch_history.end();
+
+    cout << "Calling TourBrancher::next_prob...." << endl;
 
     // std::make_heap(branch_history.begin(), branch_history.end(),
     //                BranchNode::tour_compare);
@@ -66,10 +68,14 @@ BranchHistory::iterator TourBrancher::next_prob()
 
     //BranchHistory::iterator result = std::prev(branch_history.end());
 
-    if (result->visited())
+    if (result->visited()) {
+        cout << "All problems visited, returning end." << endl;
         return branch_history.end();
-    else
+    } else {
+        cout << "Returning " << bnode_brief(*result) << ", tour length "
+             << static_cast<int>(result->tourlen) << endl;
         return result;
+    }
 }
 
 }
