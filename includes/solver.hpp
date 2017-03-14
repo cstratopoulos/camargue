@@ -146,6 +146,12 @@ private:
 
 ///////////////////////// TEMPLATE IMPLEMENTATION /////////////////////////////
 
+
+/**
+ * @tparam SelectionRule the node selection to guide the ABC search. Should
+ * be a derived class of ABC::BaseBrancher.
+ * @param do_price will edge pricing be performed.
+ */
 template <typename SelectionRule>
 LP::PivType Solver::abc(bool do_price)
 {

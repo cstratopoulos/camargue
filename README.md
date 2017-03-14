@@ -6,7 +6,8 @@ cutting plane methods. Camargue tries to move from tour to tour, either
 proving that a tour is optimal or finding a better one. This page contains
 information on installing and using Camargue. To get a sense of the
 layout of the code, a good starting point would be the documentation
-for CMR::Solver.
+for CMR::Solver. To get an idea of how branching machinery is laid out, look at
+derived classes of CMR::ABC::Brancher, or the namespace CMR::ABC.
 
 Inline references in this README are meant to be rendered by
 [Doxygen](http://www.stack.nl/~dimitri/doxygen/). If you are reading
@@ -22,7 +23,7 @@ document it in a way that keeps header files compact and
 readable. Except for class/structure definitions, the
 documentation in a `.hpp` is mostly terse one-liners, with detailed
 coumentation of function parameters and behaviors in the `.cpp`
-files. 
+files.
 
 
 Installation
@@ -35,7 +36,7 @@ from the camargue main directory just do
 
 The compiler and CPLEX directories are already specified, so you just
 need to do the steps below concerning symlinks to Concorde, and
-installing externals. 
+installing externals.
 
 Camargue is a C++11 application, so most importantly you will need a
 compiler that is compliant with most of the C++11 standard. In fact the code
@@ -44,7 +45,7 @@ has been developed and tested with GCC 4.7, which technically does
 should be fine, and `g++` on a Mac (which is actually an alias of
 Apple `clang`) should be fine too; this is the preset option.
 Your compiler is specified by editing the `CC` definition in the `Makefile`.
-A bit more detail and example options are given there. 
+A bit more detail and example options are given there.
 
 Camargue relies heavily on two main external dependencies:
 - The TSP solver/combinatorial optimization library
@@ -60,12 +61,12 @@ CPLEX is best, but it should work with QSOPT too. For help, see
 for Leandro Coelho's guide to doing an install with CPLEX; and
 - [here](https://qmha.wordpress.com/2015/08/20/installing-concorde-on-mac-os-x/)
 for David S. Johnson's guide to installing on Mac OS X with QSOPT; and
-- the [Concorde README](http://www.math.uwaterloo.ca/tsp/concorde/DOC/README.html). 
+- the [Concorde README](http://www.math.uwaterloo.ca/tsp/concorde/DOC/README.html).
 
 After installing Concorde, go into the directory `camargue/externals`
 and create a symlink to the `concorde` directory. That is, `concorde`
 must point to the folder containing the files `TSP`, `INCLUDE`,
-`CUT`, etc. 
+`CUT`, etc.
 
 After installing CPLEX, open the `Makefile` and edit the definitions
 `CPXDIR` and `CPX_LIB`. Details and examples are given in the
@@ -114,7 +115,7 @@ requires that the Catch unit testing framework be
 installed, which is done by running `cmr_install.sh` with the `-F`
 full install, or with the flag `-c`. Information on this is given in
 @ref extdeps, and specific information on invoking the unit tests is
-in @ref unittests. 
+in @ref unittests.
 
 Usage
 ------
@@ -145,7 +146,7 @@ the following lines (with arbitrary spacing/indentation) giving
 zero-indexed ordering of the nodes. Camargue will make sure no obvious
 mistakes are present, checking that no node appears twice and that the
 indices are drawn from the proper range. You are free to specify an
-abysmal starting tour, though! 
+abysmal starting tour, though!
 
 Random problems can be generated with the flag argument `-R`, and some
 additional arguments. To generate a 500-node instance on the 1,000 by
@@ -172,7 +173,7 @@ current time being used.
 By default, Camargue will do a loop of pivoting and cutting for as
 long as possible, and then begin a so-called Augment-Branch-Cut
 search. The flag option `-P` will disable branching, attempting a "pure"
-primal cutting plane solution method instead. 
+primal cutting plane solution method instead.
 
 Finally, the flag option `-S` is available to specify sparse solution
 mode. In this mode, Camargue will run no edge pricing of any kind; it

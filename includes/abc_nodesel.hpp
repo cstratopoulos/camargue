@@ -102,6 +102,15 @@ private:
     static constexpr int BestFreq = 10;
     int node_num = 1;
 
+    /**@name Priority queue adaptors.
+     * This class effectively uses a priority queue of problems, but the
+     * actual std::priority_queue cannot be used because occasionally we
+     * need to extract the lowest bound element. These functions adapt
+     * std::push_heap, std::make_heap, and std::pop_heap to modify
+     * prob_q on best tour calls.
+     */
+    ///@{
+
     static void heap_push(std::vector<BranchHistory::iterator> &target_q,
                           BranchHistory::iterator itr);
 
@@ -115,6 +124,7 @@ private:
                            const BranchHistory::iterator &B)
         { return A->estimate < B->estimate; }
 
+    ///@}
 
     std::vector<BranchHistory::iterator> prob_q;
 };

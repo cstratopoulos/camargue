@@ -143,8 +143,11 @@ BranchNode::Split Executor::split_problem(ScoreTuple &branch_tuple,
             //cout << bnode_brief(*iter) << ", ";
 
             if (iter->ends == branch_edge) {
-                cerr << "Building edge stats for " << bnode_brief(*iter)
-                     << ", encountered " << iter->ends << endl;
+                cerr << "Building edge stats for a branch on  "
+                     << branch_edge << "\nwith parent "
+                     << bnode_brief(parent)
+                     << ", encountered " << iter->ends << " as ancestor"
+                     << endl;
                 throw runtime_error("Trying to split already-branched edge.");
             }
 
