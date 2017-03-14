@@ -22,14 +22,28 @@ namespace CMR {
 namespace ABC {
 
 /// Depth-first search branching.
-/// A child of the current node is always the next subproblem. In particular,
-/// starting from the root, this class will always examine the child subproblem
-/// that affirms the current best tour.
+/// The child of the current node that agrees with the current tour is always
+/// examined first.
 class DFSbrancher : public BaseBrancher {
 public:
-    DFSbrancher(const Data::Instance &inst, const LP::ActiveTour &activetour,
-                const Data::BestGroup &bestdata,
-                const Graph::CoreGraph &coregraph, LP::CoreLP &core);
+    DFSbrancher(const Data::Instance &inst, const LP::ActiveTour &active_tour,
+                const Data::BestGroup &best_data,
+                const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp);
+
+    BranchHistory::iterator next_prob();
+
+protected:
+    void enqueue_split(BranchNode::Split prob_array);
+};
+
+/// Best estimate search branching.
+/// The node with best estimated tour length is examined first, as determined
+/// by the tour computed by ExecBranch::branch_tour.
+class BESbrancher : public BaseBrancher {
+public:
+    BESbrancher(const Data::Instance &inst, const LP::ActiveTour &active_tour,
+                const Data::BestGroup &best_data,
+                const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp);
 
     BranchHistory::iterator next_prob();
 

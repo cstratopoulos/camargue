@@ -41,7 +41,8 @@ public:
     const BranchHistory &get_history() { return branch_history; }
 
 protected:
-    /// Implementation of adding child subproblems to branch_history.
+    /// Adding child subproblems to branch_history.
+    /// @param prob_array the pair of child subproblems to be added.
     /// This function shall be implemented to add child subproblems to the
     /// list of problems to be processed in a way that preserves the ordering
     /// criteria of the node selection rule.

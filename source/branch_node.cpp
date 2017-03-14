@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <tuple>
 
 using std::cout;
 using std::cerr;
@@ -78,6 +79,18 @@ BranchNode &BranchNode::operator=(BranchNode &&B) noexcept
     B.estimate = DoubleMax;
 
     return *this;
+}
+
+bool BranchNode::tour_compare(const BranchNode &A, const BranchNode &B)
+{
+    return (std::make_tuple(A.visited(), A.tourlen) >
+            std::make_tuple(B.visited(), B.tourlen));
+}
+
+bool BranchNode::bound_compare(const BranchNode &A, const BranchNode &B)
+{
+    return (std::make_tuple(A.visited(), A.estimate) >
+            std::make_tuple(B.visited(), B.estimate));
 }
 
 BranchNode::Dir dir_from_int(int entry)
