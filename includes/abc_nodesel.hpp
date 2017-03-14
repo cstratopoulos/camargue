@@ -39,11 +39,11 @@ protected:
 /// Best estimate search branching.
 /// The node with best estimated tour length is examined first, as determined
 /// by the tour computed by ExecBranch::branch_tour.
-class BESbrancher : public BaseBrancher {
+class TourBrancher : public BaseBrancher {
 public:
-    BESbrancher(const Data::Instance &inst, const LP::ActiveTour &active_tour,
-                const Data::BestGroup &best_data,
-                const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp);
+    TourBrancher(const Data::Instance &inst, const LP::ActiveTour &active_tour,
+                 const Data::BestGroup &best_data,
+                 const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp);
 
     BranchHistory::iterator next_prob();
 
