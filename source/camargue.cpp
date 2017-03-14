@@ -3,6 +3,7 @@
 #ifndef CMR_DO_TESTS
 
 #include "solver.hpp"
+#include "abc_nodesel.hpp"
 #include "util.hpp"
 #include "io_util.hpp"
 #include "timer.hpp"
@@ -77,7 +78,7 @@ int main(int argc, char** argv) try
     t.start();
 
     if (branch)
-        tsp_solver->abc(!sparse);
+        tsp_solver->abc<CMR::ABC::TourBrancher>(!sparse);
     else
         tsp_solver->cutting_loop(!sparse, true, true);
 
