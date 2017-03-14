@@ -1,4 +1,4 @@
-#include "dfs_brancher.hpp"
+#include "abc_nodesel.hpp"
 #include "graph.hpp"
 #include "err_util.hpp"
 
@@ -18,37 +18,31 @@ using std::vector;
 namespace CMR {
 namespace ABC {
 
+
 DFSbrancher::DFSbrancher(const Data::Instance &inst,
                          const LP::ActiveTour &activetour,
                          const Data::BestGroup &bestdata,
                          const Graph::CoreGraph &coregraph, LP::CoreLP &core)
-try : instance(inst), best_data(bestdata), core_graph(coregraph), core_lp(core),
-      exec(inst, activetour, bestdata, coregraph, core)
-{
-    branch_history.emplace_front();
-} catch (const exception &e) {
+try : BaseBrancher(inst, activetour, bestdata, coregraph, core)
+{} catch (const exception &e) {
     cerr << e.what() << endl;
     throw runtime_error("DFSbrancher constructor failed.");
 }
 
-void DFSbrancher::split_prob(BranchHistory::iterator &current)
+void DFSbrancher::enqueue_split(BranchNode::Split prob_array)
 {
-    runtime_error err("Problem in DFSbrancher::next_level");
+    runtime_error err("Problem in DFSbrancher::enqueue_split");
 
-    BranchNode::Split prob_array;
-    ScoreTuple branch_tuple;
+    // The tour entry checking below ensures that the first node examined is
+    // always the one that agrees with the current tour.
 
-    try {
-        cout << "Getting next branch edge...." << endl;
-        branch_tuple = exec.branch_edge();
-        cout << "Splitting on edge...." << endl;
-        prob_array = exec.split_problem(branch_tuple, *current);
-    } CMR_CATCH_PRINT_THROW("finding next edge and splitting", err);
-
-    const EndPts branch_edge = branch_tuple.ends;
+    const EndPts &branch_edge = prob_array[0].ends;
     int ind = core_graph.find_edge_ind(branch_edge.end[0], branch_edge.end[1]);
-    if (ind == -1)
-        throw runtime_error("Couldn't get index of branch edge");
+
+    if (ind == -1) {
+        cerr << "Branch edge " << branch_edge << " not found in graph" << endl;
+        throw err;
+    }
 
     int tour_entry = best_data.best_tour_edges[ind];
 
@@ -60,170 +54,14 @@ void DFSbrancher::split_prob(BranchHistory::iterator &current)
         for (BranchNode &B : prob_array)
             branch_history.emplace_front(std::move(B));
     } CMR_CATCH_PRINT_THROW("putting nodes in history", err);
-
-    cout << "DFSbrancher::split_prob printing history thus far" << endl;
-    for (const auto &B : branch_history)
-        cout << B << "\n";
 }
 
-void DFSbrancher::do_branch(const BranchNode &B)
-{
-    if (B.is_root())
-        return;
-
-    runtime_error err("Problem in DFSbrancher::do_branch");
-    vector<int> tour;
-
-    try {
-        const BranchNode *iter = &B;
-        vector<EndsDir> edge_stats;
-
-        while(!iter->is_root()) {
-            edge_stats.emplace_back(iter->ends, iter->direction);
-            iter = iter->parent;
-        }
-
-        double tval = 0.0;
-        bool found_tour = false;
-        bool feas = true;
-
-        exec.branch_tour(edge_stats, core_lp.get_active_tour().nodes(),
-                         found_tour, feas,
-                         tour, tval, true);
-        if (!found_tour)
-            throw runtime_error("Unimplemented case of no tour");
-
-    } CMR_CATCH_PRINT_THROW("building edge_stats/getting branch tour", err);
-
-    int ncount = core_graph.node_count();
-    vector<Graph::Edge> missing_edges;
-
-    try {
-        for (int i = 0; i < ncount; ++i) {
-            int e0 = tour[i];
-            int e1 = tour[(i + 1) % ncount];
-            int ind = core_graph.find_edge_ind(e0, e1);
-            if (ind == -1)
-                missing_edges.emplace_back(e0, e1, instance.edgelen(e0, e1));
-        }
-
-        core_lp.add_edges(missing_edges, false);
-    } CMR_CATCH_PRINT_THROW("finding add adding missing edges", err);
-
-
-    try {
-        exec.clamp(B);
-        core_lp.set_active_tour(std::move(tour));
-    } CMR_CATCH_PRINT_THROW("clamping bound/instating branch tour", err);
-
-    cout << "\nBranched " << B << endl;
-}
-
-void DFSbrancher::do_unbranch(const BranchNode &B)
-{
-    if (B.is_root())
-        return;
-
-    if (!B.visited()) {
-        std::string es = "Calling do_unbranch on unvisited " + bnode_brief(B);
-        throw runtime_error(es);
-    }
-
-    runtime_error err("Problem in DFSbrancher::do_unbranch");
-
-    const BranchHistory::iterator Bnext = next_prob();
-    if (Bnext == branch_history.end())
-        return;
-
-    try {
-        common_prep_next(B, *Bnext);
-    } CMR_CATCH_PRINT_THROW("calling common_prep_next", err);
-}
 
 BranchHistory::iterator DFSbrancher::next_prob()
 {
     return std::find_if_not(branch_history.begin(), branch_history.end(),
                             [](const BranchNode &B)
                             { return B.visited(); });
-}
-
-/**
- * @param done the BranchNode that was just examined/pruned.
- * @param next the BranchNode that will succeed \p done in the current search.
- * Compute the common ancestor A of \p done and \p next, undoing all the clamps
- * from \p done to A and doing all the clamps from A to the parent of
- * \p next.
- */
-void DFSbrancher::common_prep_next(const BranchNode &done,
-                                   const BranchNode &next)
-{
-    runtime_error err("Problem in DFSbrancher::common_prep_next");
-    cout << "Calling common_prep next.\n The Done node:\n"
-         << done << "\nThe Next node:\n" << next << endl;
-
-    try {
-        exec.unclamp(done);
-    } CMR_CATCH_PRINT_THROW("undoing done problem", err);
-    cout << "Undid clamp on done." << endl;
-
-    if (done.parent->is_root()) {
-        cout << "done node is root child, returning." << endl;
-        return;
-    }
-
-    if (done.parent == next.parent) {
-        cout << "done and next are siblings, returning" << endl;
-        return;
-    }
-
-    using IterPath = std::pair<const BranchNode *, vector<const BranchNode *>>;
-
-    IterPath done_path(done.parent, {});
-    IterPath next_path(next.parent, {});
-
-    if (done.parent->depth != next.parent->depth) {
-        int shallow_common = std::min(done.parent->depth, next.parent->depth);
-        IterPath &catchup = (done.parent->depth > shallow_common ?
-                                   done_path : next_path);
-        cout << "Catchup list is for " << bnode_brief(*(catchup.first))
-             << " because its depth is  " << catchup.first->depth << " vs "
-             << " shallow common " << shallow_common << endl;
-
-        try {
-            while (catchup.first->depth > shallow_common &&
-                   !catchup.first->is_root()) {
-                catchup.second.push_back(catchup.first);
-                catchup.first = catchup.first->parent;
-            }
-        } CMR_CATCH_PRINT_THROW("building catchup list", err);
-    }
-
-    cout << "After catchup loop, first entries are "
-         << bnode_brief(*(done_path.first)) << ", "
-         << bnode_brief(*(next_path.first)) << endl;
-
-    if (done_path.first->depth != next_path.first->depth)
-        throw runtime_error("Depth mismatch for finding common ancestor");
-
-    try {
-        while (done_path.first != next_path.first) {
-            done_path.second.push_back(done_path.first);
-            next_path.second.push_back(next_path.first);
-
-            done_path.first = done_path.first->parent;
-            next_path.first = next_path.first->parent;
-        }
-    } CMR_CATCH_PRINT_THROW("finding common ancestor path", err);
-
-    cout << "Loop completed with common ancestor "
-         << bnode_brief(*(done_path.first)) << endl;
-
-    try {
-        for (const BranchNode *b : done_path.second)
-            exec.unclamp(*b);
-        for (const BranchNode *b : next_path.second)
-            exec.clamp(*b);
-    } CMR_CATCH_PRINT_THROW("doing actual clamps/unclamps", err);
 }
 
 }
