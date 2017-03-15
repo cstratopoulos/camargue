@@ -700,12 +700,28 @@ bool CoreLP::check_feas(const std::vector<numtype> &x_vec)
         }
     }
 
+    vector<double> lbs;
+    vector<double> ubs;
+
+    try {
+        lbs = lower_bds(0, numcols - 1);
+        ubs = upper_bds(0, numcols - 1);
+    } CMR_CATCH_PRINT_THROW("getting bounds", err);
+
     for (int i = 0; i < numcols; ++i) {
         double colfeas = col_feas[i];
         if (colfeas != 0.0) {
             result = false;
+            Graph::Edge e = core_graph.get_edge(i);
             cout << "Found infeas of " << colfeas << " on edge "
-                 << core_graph.get_edge(i) << endl;
+                 << e << " with bds " << static_cast<int>(lbs[i])
+                 << " <= x_" << i
+                 << " <= " << static_cast<int>(ubs[i]) << "\n"
+                 << "Endpoint degrees "
+                 << core_graph.get_adj().nodelist[e.end[0]].degree()
+                 << " / "
+                 << core_graph.get_adj().nodelist[e.end[1]].degree()
+                 << endl;
         }
     }
 
