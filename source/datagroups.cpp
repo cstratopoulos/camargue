@@ -198,7 +198,7 @@ CoreGraph::CoreGraph(const Data::Instance &inst) try
     plan.linkern.nkicks = (ncount / 100) + 1;
 
     if (ncount < 100) // to prevent small edge counts on tiny instances
-        plan.quadnearest = 1;
+        plan.quadnearest = 2;
 
     int *elist = (int *) NULL;
 
