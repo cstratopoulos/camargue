@@ -416,7 +416,7 @@ void Executor::clamp(const BranchNode &current_node)
         throw runtime_error("Tried to clamp edge not in graph.");
 
     double clamp_bd = static_cast<int>(current_node.direction);
-    double clamp_sense = '\0';
+    char clamp_sense = '\0';
 
     if (clamp_bd == 0.0)
         clamp_sense = 'U';
@@ -429,6 +429,11 @@ void Executor::clamp(const BranchNode &current_node)
         cerr << e.what() << endl;
         throw runtime_error("Executor::clamp failed.");
     }
+
+    if (verbose)
+        cout << "Called clamp on " << bnode_brief(current_node)
+             << ", set bd " << clamp_sense << " to "
+             << static_cast<int>(clamp_bd) << endl;
 }
 
 void Executor::unclamp(const BranchNode &current_node)
@@ -442,7 +447,7 @@ void Executor::unclamp(const BranchNode &current_node)
         throw runtime_error("Tried to unclamp edge not in graph.");
 
     double clamp_bd = static_cast<int>(current_node.direction);
-    double clamp_sense;
+    char clamp_sense = '\0';
 
     if (clamp_bd == 0.0)
         clamp_sense = 'U';
@@ -455,6 +460,11 @@ void Executor::unclamp(const BranchNode &current_node)
         cerr << e.what() << endl;
         throw runtime_error("Executor::clamp failed.");
     }
+
+    if (verbose)
+        cout << "Called unclamp on " << bnode_brief(current_node)
+             << ", set bd " << clamp_sense << " to "
+             << static_cast<int>(1 - clamp_bd) << endl;
 }
 
 

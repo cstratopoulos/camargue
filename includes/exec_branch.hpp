@@ -51,6 +51,8 @@ public:
     /// Undo the clamp done on \p current_node.
     void unclamp(const BranchNode &current_node);
 
+    bool verbose = true;
+
 private:
     const Data::Instance &instance;
     const LP::ActiveTour &active_tour;
