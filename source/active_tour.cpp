@@ -137,7 +137,7 @@ ActiveTour::ActiveTour(vector<int> tour_nodes_, vector<double> lp_edges,
 
 } catch (const exception &e) {
     cerr << e.what() << endl;
-    throw runtime_error("ActiveTour augmenting pivot constructor failed.");
+    throw runtime_error("ActiveTour augmenting pivot constructor failed");
 }
 
 /**
@@ -174,7 +174,7 @@ ActiveTour::ActiveTour(std::vector<int> tour_nodes_,
     tour_base = relax.basis_obj();
 } catch (const exception &e) {
     cerr << e.what() << endl;
-    throw runtime_error("ActiveTour new tour constructor failed.");
+    throw runtime_error("ActiveTour new tour constructor failed");
 }
 
 ActiveTour::ActiveTour(ActiveTour &&T) noexcept

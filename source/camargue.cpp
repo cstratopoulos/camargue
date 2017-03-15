@@ -93,7 +93,7 @@ int main(int argc, char** argv) try
             tsp_solver->abc<CMR::ABC::TourBrancher>(do_price);
             break;
         case 2:
-            cout << "Best-bound search with strong branch probs" << endl;
+            cout << "Best-bound search with strong branch probes" << endl;
             tsp_solver->abc<CMR::ABC::BoundBrancher>(do_price);
             break;
         case 3:
