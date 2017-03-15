@@ -354,7 +354,14 @@ PivType Solver::abc_bcp(bool do_price)
 
     while (cur != branch_controller->get_history().end()) {
 
-        try { branch_controller->do_branch(*cur); }
+        try {
+            branch_controller->do_branch(*cur);
+            if (core_lp.active_tourlen() < best_data.min_tour_value) {
+                cout << "Instated branch tour improves on best tour" << endl;
+                core_lp.active_tour.best_update(best_data);
+                report_aug(Aug::Branch);
+            }
+        }
         CMR_CATCH_PRINT_THROW("branching on current problem", err);
 
         if (cur->stat == BranchStat::NeedsRecover) {

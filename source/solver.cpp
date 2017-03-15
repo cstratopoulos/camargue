@@ -17,6 +17,7 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::ostream;
 
 using std::string;
 
@@ -93,16 +94,37 @@ void Solver::report_lp(PivType piv)
          << core_lp.num_cols() << " cols in LP.\n" << endl;
 }
 
+ostream &operator<<(ostream &os, Solver::Aug aug)
+{
+    switch (aug) {
+    case Solver::Aug::Init:
+        os << "Initial Tour";
+        break;
+    case Solver::Aug::Piv:
+        os << "Primal Pivot";
+        break;
+    case Solver::Aug::Xtour:
+        os << "X-tour Heuristic";
+        break;
+    case Solver::Aug::Branch:
+        os << "Branch Tour";
+        break;
+    }
+
+    return os;
+}
+
 /**
  * Prints the progress in tour improvement.
- * @param piv_aug should be true if the tour was obtained from a non-degenerate
- * primal pivot, false if it was obtained from frac_recover.
+ * @param aug_type the Solver::Aug describing the mode of augmentation.
  */
-void Solver::report_aug(bool piv_aug)
+void Solver::report_aug(Aug aug_type)
 {
     cout << "\tTour " << ++num_augs << ": "
-         << core_lp.get_objval() << ", augmented from "
-         << (piv_aug ? "primal pivot" : "x-heuristic") << endl;
+         << static_cast<int>(best_data.min_tour_value) << ", "
+         << aug_type << endl;
+
+    aug_chart.emplace_back(aug_type, core_lp.get_objval());
 
     if (!output_prefs.save_tour_edges && !output_prefs.save_tour)
         return;
@@ -171,6 +193,8 @@ void Solver::initial_prints()
     bool gif_out = output_prefs.gif_tour;
 
     string pname = tsp_instance.problem_name();
+
+    aug_chart.emplace_back(Aug::Init, best_data.min_tour_value);
 
     if (want_xy) {
         if (tsp_instance.ptr()->x == NULL)
@@ -262,7 +286,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                 try { core_lp.active_tour.best_update(best_data); }
                 CMR_CATCH_PRINT_THROW("pivot updating best data", err);
 
-                report_aug(true);
+                report_aug(Aug::Piv);
             }
 
             if (do_price) {
@@ -281,7 +305,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                     if (core_lp.active_tourlen() < best_data.min_tour_value) {
                         core_lp.active_tour.best_update(best_data);
 
-                        report_aug(false);
+                        report_aug(Aug::Xtour);
                     }
                     continue;
                 }

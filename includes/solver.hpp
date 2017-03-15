@@ -79,13 +79,25 @@ public:
         bool connect = true; //!< Standard connect cut SECs.
     } cut_sel;
 
+    /// Types of augmentations that can take place.
+    enum Aug : char {
+        Init = 'I', //!< The starting tour.
+        Piv = 'P', //!< An augmenting pivot.
+        Xtour = 'X', //!< The x-tour/short LK heuristic.
+        Branch = 'B', //!< An improving branch tour.
+    };
+
+    using AugObj = std::pair<Aug, double>;
+
+    const std::vector<AugObj> &get_aug_chart() const { return aug_chart; }
+
 private:
     /// Print info about \p piv and the size of the CoreLP.
     void report_lp(LP::PivType piv);
 
     void report_cuts(); //!< Report the number and types of cuts in CoreLP.
 
-    void report_aug(bool piv_aug); //!< Output info about a new tour found.
+    void report_aug(Aug aug_type); //!< Output info about a new tour found.
 
     void initial_prints(); //!< Handles writing initial data to file.
 
@@ -141,7 +153,10 @@ private:
     OutPrefs output_prefs;
 
     int num_augs = 0;
+    std::vector<AugObj> aug_chart;
 };
+
+std::ostream &operator<<(std::ostream &os, Solver::Aug aug);
 
 
 ///////////////////////// TEMPLATE IMPLEMENTATION /////////////////////////////
