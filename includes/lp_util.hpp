@@ -24,8 +24,8 @@ namespace LP {
 namespace CutAge {
 
 constexpr int Babby = -1; //!< A new or reset cut.
-constexpr int PivOld = 25; //!< Old cut age at pivot duals.
-constexpr int TourOld = 15; //!< Old cut age at tour dual solution.
+constexpr int PivOld = 30; //!< Old cut age at pivot duals.
+constexpr int TourOld = 20; //!< Old cut age at tour dual solution.
 
 }
 
