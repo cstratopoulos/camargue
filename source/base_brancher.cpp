@@ -63,6 +63,8 @@ void BaseBrancher::do_branch(const BranchNode &B)
     if (B.is_root())
         return;
 
+    cout << "Calling do_branch on " << bnode_brief(B) << "..." << endl;
+
     runtime_error err("Problem in BaseBrancher::do_branch");
     vector<int> tour;
 
@@ -146,14 +148,18 @@ void BaseBrancher::common_prep_next(const BranchNode &done,
     cout << "Calling common_prep next.\n The Done node:\n"
          << done << "\nThe Next node:\n" << next << endl;
 
+    if (next.parent == &done) {
+        cout << "next is child of done, returning" << endl;
+        return;
+    }
+
     try {
         exec.unclamp(done);
     } CMR_CATCH_PRINT_THROW("undoing done problem", err);
     cout << "Undid clamp on done." << endl;
 
     if (done.parent->is_root()) {
-        cout << "done node is root child, returning." << endl;
-        return;
+        cout << "done node is root child, common ancestor is root." << endl;
     }
 
     if (done.parent == next.parent) {
@@ -170,9 +176,6 @@ void BaseBrancher::common_prep_next(const BranchNode &done,
         int shallow_common = std::min(done.parent->depth, next.parent->depth);
         IterPath &catchup = (done.parent->depth > shallow_common ?
                                    done_path : next_path);
-        // cout << "Catchup list is for " << bnode_brief(*(catchup.first))
-        //      << " because its depth is  " << catchup.first->depth << " vs "
-        //      << " shallow common " << shallow_common << endl;
 
         try {
             while (catchup.first->depth > shallow_common &&
@@ -182,10 +185,6 @@ void BaseBrancher::common_prep_next(const BranchNode &done,
             }
         } CMR_CATCH_PRINT_THROW("building catchup list", err);
     }
-
-    // cout << "After catchup loop, first entries are "
-    //      << bnode_brief(*(done_path.first)) << ", "
-    //      << bnode_brief(*(next_path.first)) << endl;
 
     try {
         while (done_path.first != next_path.first) {
@@ -201,10 +200,17 @@ void BaseBrancher::common_prep_next(const BranchNode &done,
          << bnode_brief(*(done_path.first)) << endl;
 
     try {
-        for (const BranchNode *b : done_path.second)
+        cout << "Undoing clamps from done to ancestor..." << endl;
+        for (const BranchNode *b : done_path.second) {
             exec.unclamp(*b);
-        for (const BranchNode *b : next_path.second)
+            cout << "\t" << bnode_brief(*b) << "\n";
+        }
+
+        cout << "Clamping from next to ancestor...." << endl;
+        for (const BranchNode *b : next_path.second) {
             exec.clamp(*b);
+            cout << "\t" << bnode_brief(*b) << "\n";
+        }
     } CMR_CATCH_PRINT_THROW("doing actual clamps/unclamps", err);
 }
 

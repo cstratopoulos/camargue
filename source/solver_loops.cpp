@@ -295,12 +295,15 @@ PivType Solver::cut_and_piv(bool do_price)
             cout << "\tBefore GMI, total_delta "
                  << total_delta << ", last ratio " << delta_ratio << endl;
 
-        if (total_delta < 0.001 * (core_lp.active_tourlen() - lowest_piv)) {
-            if (!found_primal && total_delta >= Eps::Zero)
-                cout << "Total delta " << total_delta << ", active tourlen "
-                     << core_lp.active_tourlen() << ", lowest piv "
-                     << lowest_piv << ", setting found_primal false" << endl;
-            found_primal = false;
+        double target_total = 0.01 * (core_lp.active_tourlen() - lowest_piv);
+        if (total_delta < target_total) {
+            if (found_primal) {
+                cout << "Total delta target was "
+                     << target_total
+                     << ", actual " << total_delta
+                     << ", setting found_primal false" << endl;
+                found_primal = false;
+            }
         }
 
         if (found_primal)
@@ -425,11 +428,13 @@ PivType Solver::abc_bcp(bool do_price)
             } CMR_CATCH_PRINT_THROW("splitting branch problem", err);
 
             cur->stat = BranchStat::Done;
-        } else if (cur->stat == BranchStat::Pruned) {
-            try {
-                branch_controller->do_unbranch(*cur);
-            } CMR_CATCH_PRINT_THROW("unbranching pruned problem", err);
-        }
+        }// else if (cur->stat == BranchStat::Pruned) {
+
+        try {
+            branch_controller->do_unbranch(*cur);
+        } CMR_CATCH_PRINT_THROW("unbranching pruned problem", err);
+
+            // }
 
         cur = branch_controller->next_prob();
     }
