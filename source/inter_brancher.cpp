@@ -42,7 +42,6 @@ InterBrancher::InterBrancher(const Data::Instance &inst,
                              LP::CoreLP &core_lp)
 try : BaseBrancher(inst, active_tour, best_data, core_graph, core_lp)
 {
-    branch_history.emplace_front();
     heap_push(prob_q, branch_history.begin());
 } catch (const exception &e) {
     cerr << e.what() << endl;

@@ -26,7 +26,6 @@ TourBrancher::TourBrancher(const Data::Instance &inst,
 try : BaseBrancher(inst, active_tour, best_data, core_graph, core_lp),
       prob_q(BranchNode::tour_worse)
 {
-    branch_history.emplace_front();
     prob_q.push(branch_history.begin());
 } catch (const exception &e) {
     cerr << e.what() << endl;
