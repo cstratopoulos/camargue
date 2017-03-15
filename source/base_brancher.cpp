@@ -203,13 +203,11 @@ void BaseBrancher::common_prep_next(const BranchNode &done,
         cout << "Undoing clamps from done to ancestor..." << endl;
         for (const BranchNode *b : done_path.second) {
             exec.unclamp(*b);
-            cout << "\t" << bnode_brief(*b) << "\n";
         }
 
         cout << "Clamping from next to ancestor...." << endl;
         for (const BranchNode *b : next_path.second) {
             exec.clamp(*b);
-            cout << "\t" << bnode_brief(*b) << "\n";
         }
     } CMR_CATCH_PRINT_THROW("doing actual clamps/unclamps", err);
 }
