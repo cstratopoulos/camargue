@@ -109,7 +109,7 @@ inline std::ostream &operator<<(std::ostream &os, HyperGraph::Type t)
     else if (t == T::Subtour)
         os << "Subtour";
     else if (t == T::Comb)
-        os << "Blossom or comb";
+        os << "Blossom/Comb/Wild Thing";
     else if (t == T::Non)
         os << "Non HyperGraph Gomory cut or branch constraint.";
     return os;
