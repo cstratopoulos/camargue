@@ -38,6 +38,8 @@ public:
 
     bool connect_sep();
 
+    bool local_sep();
+
     LPcutList &segment_q()  { return seg_q; }
     LPcutList &fastblossom_q()  { return fast2m_q; }
     LPcutList &blockcomb_q()  { return blkcomb_q; }
@@ -47,10 +49,15 @@ public:
 
     LPcutList &connect_cuts_q()  { return connect_q; }
 
+    LPcutList &local_cuts_q() { return local_q; }
+
     /// The desired filter_primal value for ConcordeSeparator inheritors.
     bool filter_primal = true;
 
     bool verbose = false;
+
+    int lc_chunk = 8;
+    bool lc_sphere = false;
 
 private:
     void set_TG(); //!< Construct the TourGraph TG.
@@ -72,6 +79,8 @@ private:
     CutQueue<dominoparity> dp_q;
 
     LPcutList connect_q;
+
+    LPcutList local_q;
 };
 
 }

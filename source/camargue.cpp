@@ -76,6 +76,7 @@ int main(int argc, char** argv) try
                                                          rand_grid, outprefs);
 
     tsp_solver->cut_sel.safeGMI = sparse;
+    tsp_solver->cut_sel.localcuts = true;
 
     CMR::Timer t(tsp_solver->inst_info().problem_name() + " overall");
     t.start();

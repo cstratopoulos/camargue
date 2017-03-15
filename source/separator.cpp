@@ -161,8 +161,34 @@ bool Separator::connect_sep() try
 
     return result;
 } catch (const exception &e) {
-    cerr << e.what() << "\n";
+    cerr << e.what() << endl;
     throw runtime_error("Separator::connect_sep failed.");
+}
+
+bool Separator::local_sep() try
+{
+    set_TG();
+
+    LocalCuts local_cuts(perm_elist, supp_data.support_ecap, TG, local_q);
+    local_cuts.current_max = lc_chunk;
+    local_cuts.spheres = lc_sphere;
+
+    double lct = util::zeit();
+    bool result = local_cuts.find_cuts();
+    lct = util::zeit() - lct;
+
+    if (verbose)
+        if (!lc_sphere)
+            printf("\t%d chunk %d local cuts\t%.2fs\n",
+                   local_q.size(), lc_chunk, lct);
+        else
+            printf("\t%d chunk %d local cuts spheres\t%.2fs\n",
+                   local_q.size(), lc_chunk, lct);
+
+    return result;
+} catch (const exception &e) {
+    cerr << e.what() << endl;
+    throw runtime_error("Separator::local_sep failed.");
 }
 
 

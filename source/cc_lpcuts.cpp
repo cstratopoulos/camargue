@@ -4,6 +4,10 @@
 #include <iostream>
 #include <utility>
 
+extern "C" {
+#include <concorde/INCLUDE/localcut.h>
+}
+
 using std::vector;
 
 using std::cout;
@@ -199,6 +203,44 @@ bool FastBlossoms::find_cuts()
       return true;
 
   return(!cutq.empty());
+}
+
+bool LocalCuts::find_cuts()
+{
+    CCchunk_flag flags;
+    CCchunk_localcut_timer lc_timer;
+    CCchunk_init_localcut_timer(&lc_timer);
+
+    flags.dummy = 0;
+    flags.permute = 0;
+    flags.weighted = 0;
+    flags.spheres = spheres;
+    flags.uncivilized = 0;
+    flags.noshrink = 0;
+    flags.nolift = 0;
+
+    int cutcount = 0;
+    lpcut_in *head = NULL;
+
+    CCrandstate rstate;
+    CCutil_sprand(random_seed, &rstate);
+
+    flags.maxchunksize = current_max;
+    flags.spheresize   = current_max - 2;
+
+    if (CCchunk_localcuts(&head, &cutcount, TG.node_count(), ecap.size(),
+                          &elist[0], &ecap[0], 0.0, flags, &lc_timer, 1,
+                          &rstate))
+        throw std::runtime_error("CCchunk_localcuts failed.");
+
+    if (cutcount == 0)
+        return false;
+
+    cutq = LPcutList(head, cutcount);
+    if (filter_primal)
+        cutq.filter_primal(TG);
+
+    return !cutq.empty();
 }
 
 }

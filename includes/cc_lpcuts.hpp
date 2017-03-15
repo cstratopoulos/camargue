@@ -167,6 +167,21 @@ public:
     bool find_cuts();
 };
 
+/// Primal separation of non-template local cuts via standard heuristics.
+class LocalCuts : public ConcordeSeparator {
+public:
+    LocalCuts(std::vector<int> &elist, std::vector<double> &ecap,
+              TourGraph &TG, Sep::LPcutList &cutq) :
+        ConcordeSeparator(elist, ecap, TG, cutq) {}
+
+    bool find_cuts(); //!< Returns true if tight local cuts are found.
+
+    static constexpr int MaxChunkSize = 16;
+    int current_max = 8;
+    int random_seed = 99;
+    bool spheres = false;
+};
+
 }
 }
 

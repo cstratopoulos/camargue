@@ -291,11 +291,55 @@ PivType Solver::cut_and_piv(bool do_price)
                 }
             } CMR_CATCH_PRINT_THROW("calling simpleDP sep", err);
 
+        if (cut_sel.localcuts) {
+            bool lc_restart = false;
+            for (int chk = 8; chk <= Sep::LocalCuts::MaxChunkSize; ++chk) {
+                reset_separator(sep);
+                sep->lc_chunk = chk;
+
+                if (call_separator([&sep]() { return sep->local_sep(); },
+                                   sep->local_cuts_q(), piv, prev_val,
+                                   total_delta, delta_ratio, lowest_piv)) {
+                    found_primal = true;
+                    if (return_pivot(piv))
+                        return piv;
+
+                    lc_restart = restart_loop(piv, delta_ratio);
+                    if (lc_restart)
+                        break;
+                }
+            }
+
+            if (lc_restart)
+                continue;
+
+            for (int chk = 8; chk <= Sep::LocalCuts::MaxChunkSize; ++chk) {
+                reset_separator(sep);
+                sep->lc_chunk = chk;
+                sep->lc_sphere = true;
+
+                if (call_separator([&sep]() { return sep->local_sep(); },
+                                   sep->local_cuts_q(), piv, prev_val,
+                                   total_delta, delta_ratio, lowest_piv)) {
+                    found_primal = true;
+                    if (return_pivot(piv))
+                        return piv;
+
+                    lc_restart = restart_loop(piv, delta_ratio);
+                    if (lc_restart)
+                        break;
+                }
+            }
+
+            if (lc_restart)
+                continue;
+        }
+
         if (verbose && cut_sel.safeGMI)
             cout << "\tBefore GMI, total_delta "
                  << total_delta << ", last ratio " << delta_ratio << endl;
 
-        double target_total = 0.01 * (core_lp.active_tourlen() - lowest_piv);
+        double target_total = 0.1 * (core_lp.active_tourlen() - lowest_piv);
         if (total_delta < target_total) {
             if (found_primal) {
                 cout << "Total delta target was "

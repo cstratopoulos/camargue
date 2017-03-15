@@ -75,6 +75,7 @@ public:
         bool blkcomb = true; //!< Standard block comb heuristics.
         bool ex2m = true; //!< Exact primal blossom separation.
         bool simpleDP = true; //!< Primal simple DP separation.
+        bool localcuts = false; //!< Standard local cut separation.
         bool safeGMI = false; //!< Primal safe Gomory cuts.
         bool connect = true; //!< Standard connect cut SECs.
     } cut_sel;
