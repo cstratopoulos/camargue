@@ -86,20 +86,20 @@ int main(int argc, char** argv) try
     if (branch) {
         switch (node_sel) {
         case 0:
-            cout << "DFS branching" << endl;
-            tsp_solver->abc<CMR::ABC::DFSbrancher>(do_price);
+            cout << "Interleaved best-tour/best-bound search" << endl;
+            tsp_solver->abc<CMR::ABC::InterBrancher>(do_price);
             break;
         case 1:
-            cout << "Best-estimate branching with LK tours" << endl;
+            cout << "Best-tour branching with LK tours" << endl;
             tsp_solver->abc<CMR::ABC::TourBrancher>(do_price);
             break;
         case 2:
-            cout << "Best-bound search with strong branch probes" << endl;
+            cout << "Best-bound with primal strong branch probes" << endl;
             tsp_solver->abc<CMR::ABC::BoundBrancher>(do_price);
             break;
         case 3:
-            cout << "Interleaved best-estimate/best-bound search" << endl;
-            tsp_solver->abc<CMR::ABC::InterBrancher>(do_price);
+            cout << "DFS branching" << endl;
+            tsp_solver->abc<CMR::ABC::DFSbrancher>(do_price);
             break;
         default:
             throw logic_error("Unimplemented node selection rule");
@@ -228,14 +228,11 @@ static void usage(const std::string &fname)
     cerr << "\n";
     cerr << "\t\t PARAMETER OPTIONS (argument x)\n"
          << "-b \t Branching strategy x (see below).\n"
-         << "   \t Options: 0 DFS branching (default).\n"
-         << "   \t          1 Best-estimate branching w short, sparse "
-         << "LK tour estimates.\n"
-         << "   \t          2 Best-first branching w strong branch probe "
-         <<"objective vals.\n"
-         << "   \t          3 Interleaved best-estimate/best-first:\n"
-         <<"    \t            Mainly use best-estimate, w best-first every "
-         << "10 nodes.\n"
+         << "   \t 0\tInterleaved best-tour/best-bound every 10 nodes"
+         << " (default).\n"
+         << "   \t 1\tBest-tour using sparse LK tours.\n"
+         << "   \t 2\tBest-bound using primal strong branch bounds.\n"
+         << "   \t 3\tDepth-first search.\n"
          << "-n \t Random problem with x nodes\n"
          << "-g \t Random problem gridsize x by x (1 million default)\n"
          << "-s \t Random seed x used throughout code (current time default)\n"
