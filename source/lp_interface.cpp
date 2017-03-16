@@ -742,8 +742,6 @@ void Relaxation::cb_nondegen_pivot(double upper_bound, Basis &base,
     int rval = 0;
     NDpivotHandle piv_handle(*this, upper_bound, bas_freq);
 
-    base = basis_obj();
-
     if (bas_freq > 0) {
         rval = CPXsetlpcallbackfunc(simpl_p->env, ndpiv_cb, &piv_handle);
         if (rval)

@@ -88,7 +88,9 @@ PivType CoreLP::primal_pivot()
     Basis bas;
 
     try {
-        cb_nondegen_pivot(active_tourlen(), bas, 1);
+        bas = basis_obj();
+        nondegen_pivot(active_tourlen());
+        //cb_nondegen_pivot(active_tourlen(), bas, 1);
         get_x(lp_edges);
         supp_data = Data::SupportGroup(core_graph.get_edges(),
                                        lp_edges, dfs_island,
