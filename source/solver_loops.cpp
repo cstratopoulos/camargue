@@ -142,6 +142,7 @@ PivType Solver::cut_and_piv(bool do_price)
         double total_delta = 0.0;
         double delta_ratio = 0.0;
         double prev_val = core_lp.get_objval();
+        const double initial_piv = prev_val;
         double lowest_piv = prev_val;
 
         if (return_pivot(piv))
@@ -339,9 +340,12 @@ PivType Solver::cut_and_piv(bool do_price)
             cout << "\tBefore GMI, total_delta "
                  << total_delta << ", last ratio " << delta_ratio << endl;
 
-        double target_total = 0.1 * (core_lp.active_tourlen() - lowest_piv);
+        double target_total = 0.002 * (core_lp.active_tourlen() - initial_piv);
         if (total_delta < target_total) {
             if (found_primal) {
+                cout << "Tour/inital gap "
+                     << core_lp.active_tourlen() << " [--] "
+                     << initial_piv << endl;
                 cout << "Total delta target was "
                      << target_total
                      << ", actual " << total_delta
