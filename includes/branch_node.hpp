@@ -97,6 +97,8 @@ struct BranchNode {
     static bool bound_worse(const std::list<BranchNode>::iterator &A,
                             const std::list<BranchNode>::iterator &B);
 
+    using Pref = decltype(&tour_worse);
+
     ///@}
 };
 

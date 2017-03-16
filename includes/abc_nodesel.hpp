@@ -14,9 +14,8 @@
 #include "active_tour.hpp"
 #include "branch_node.hpp"
 #include "base_brancher.hpp"
+#include "qpref_brancher.hpp"
 
-#include <list>
-#include <queue>
 #include <vector>
 
 namespace CMR {
@@ -39,48 +38,13 @@ protected:
     void enqueue_split(BranchNode::Split prob_array);
 };
 
-/// Best estimate search branching.
-/// The node with best estimated tour length is examined first, as determined
-/// by the tour computed by ExecBranch::branch_tour.
-class TourBrancher : public BaseBrancher {
-public:
-    TourBrancher(const Data::Instance &inst, const LP::ActiveTour &active_tour,
-                 const Data::BestGroup &best_data,
-                 const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp);
+/// Alias declaration for "best tour" branching.
+/// @see BranchNode::tour_worse for implementation and tie-breaking rules.
+using TourBrancher = QprefBrancher<BranchNode::tour_worse>;
 
-    BranchHistory::iterator next_prob();
-
-protected:
-    BranchHistory::iterator peek_next();
-    void enqueue_split(BranchNode::Split prob_array);
-
-private:
-    std::priority_queue<BranchHistory::iterator,
-                        std::vector<BranchHistory::iterator>,
-                        decltype(&BranchNode::tour_worse)> prob_q;
-};
-
-/// Best first (best bound) search branching.
-/// The node with the lowest strong branch objective value estimate is
-/// examined first.
-class BoundBrancher : public BaseBrancher {
-public:
-    BoundBrancher(const Data::Instance &inst,
-                  const LP::ActiveTour &active_tour,
-                  const Data::BestGroup &best_data,
-                  const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp);
-
-    BranchHistory::iterator next_prob();
-
-protected:
-    BranchHistory::iterator peek_next();
-    void enqueue_split(BranchNode::Split prob_array);
-
-private:
-    std::priority_queue<BranchHistory::iterator,
-                        std::vector<BranchHistory::iterator>,
-                        decltype(&BranchNode::bound_worse)> prob_q;
-};
+/// Alias declaration for best-first search branching.
+/// @see BranchNode::bound_worse for implementation and tie-breaking rules.
+using BoundBrancher = QprefBrancher<BranchNode::bound_worse>;
 
 /// Interleaved best-estimate and best-first search branching.
 /// Tour length is used as the primary node selection criterion, with a
