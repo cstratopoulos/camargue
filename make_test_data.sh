@@ -34,7 +34,7 @@ for f in $(cat test_data/blossom_examples.txt); do
     have_f=$(ls test_data/blossom_lp | grep "$f" | wc -l)
     if [ "$have_f" -eq 0 ]; then
 	problem=problems/"$f".tsp
-	blos_fname="$f".sub.x
+	blos_fname="$f".2m.x
 	"$CC_TSP"/concorde -s99 -ixX test_data/blossom_lp/"$blos_fname" "$problem"
 	rm "$f".sol
 	if [ "$?" -ne 0 ]; then
