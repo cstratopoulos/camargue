@@ -52,10 +52,16 @@ void BaseBrancher::split_prob(BranchHistory::iterator &current)
         enqueue_split(std::move(prob_array));
     } CMR_CATCH_PRINT_THROW("adding child problems to queue", err);
 
+    int num_remain = 0;
+
     if (verbose) {
         cout << "BaseBrancher::split_prob printing history thus far" << endl;
-        for (const auto &B : branch_history)
+        for (const auto &B : branch_history) {
             cout << B << "\n";
+            if (!B.visited())
+                ++num_remain;
+        }
+        cout << num_remain << " unvisited problems remain" << endl;
     }
 }
 
