@@ -1,6 +1,6 @@
 #include "config.hpp"
 
-#ifdef CMR_DO_TESTS
+#ifdef CMR_DO_TESTS_DISABLED
 
 #include "exec_branch.hpp"
 #include "solver.hpp"
