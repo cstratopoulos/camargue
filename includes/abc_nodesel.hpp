@@ -33,7 +33,7 @@ public:
     BranchHistory::iterator next_prob();
 
 protected:
-    BranchHistory::iterator peek_next() { return next_prob(); }
+    void fetch_next();
 
     void enqueue_split(BranchNode::Split prob_array);
 };
@@ -59,7 +59,7 @@ public:
     BranchHistory::iterator next_prob();
 
 protected:
-    BranchHistory::iterator peek_next();
+    void fetch_next();
     void enqueue_split(BranchNode::Split prob_array);
 
 private:

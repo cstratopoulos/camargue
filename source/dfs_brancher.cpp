@@ -63,9 +63,37 @@ void DFSbrancher::enqueue_split(BranchNode::Split prob_array)
 
 BranchHistory::iterator DFSbrancher::next_prob()
 {
-    return std::find_if_not(branch_history.begin(), branch_history.end(),
-                            [](const BranchNode &B)
-                            { return B.visited(); });
+    if (verbose)
+        cout << "Calling DFSbrancher::next_prob..." << endl;
+
+    if (next_itr == branch_history.end()) {
+        fetch_next();
+    } else {
+        if (verbose)
+            cout << "....next_itr already set." << endl;
+    }
+
+    BranchHistory::iterator result = next_itr;
+
+    next_itr = branch_history.end();
+    return result;
+}
+
+void DFSbrancher::fetch_next()
+{
+    if (verbose)
+        cout << "Calling DFSbrancher::fetch_next" << endl;
+    next_itr = std::find_if_not(branch_history.begin(), branch_history.end(),
+                                [](const BranchNode &B)
+                                { return B.visited(); });
+    if (verbose) {
+        cout << "Set next_itr to ";
+        if (next_itr != branch_history.end())
+            cout << "END";
+        else
+            cout << bnode_brief(*next_itr);
+        cout << endl;
+    }
 }
 
 }

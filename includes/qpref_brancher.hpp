@@ -30,7 +30,7 @@ class QprefBrancher : public BaseBrancher {
 public:
     QprefBrancher(const Data::Instance &inst, const LP::ActiveTour &active_tour,
                   const Data::BestGroup &best_data,
-                  const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp)
+                  const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp) try
         : BaseBrancher(inst, active_tour, best_data, core_graph, core_lp),
           prob_q(q_pref)
         {
@@ -43,7 +43,7 @@ public:
     BranchHistory::iterator next_prob();
 
 protected:
-    BranchHistory::iterator peek_next();
+    void fetch_next();
     void enqueue_split(BranchNode::Split prob_array);
 
 private:
@@ -67,19 +67,41 @@ void QprefBrancher<q_pref>::enqueue_split(BranchNode::Split prob_array) try
 template <BranchNode::Pref q_pref>
 BranchHistory::iterator QprefBrancher<q_pref>::next_prob()
 {
-    BranchHistory::iterator result = peek_next();
-    prob_q.pop();
+    using std::cout;
+    using std::endl;
 
+    if (verbose)
+        cout << "Calling QprefBrancher::next_prob...." << endl;
+
+    if (next_itr == branch_history.end())
+        fetch_next();
+    else if (verbose)
+        cout << "....already set." << endl;
+
+    BranchHistory::iterator result = next_itr;
+
+    next_itr = branch_history.end();
     return result;
 }
 
 template <BranchNode::Pref q_pref>
-BranchHistory::iterator QprefBrancher<q_pref>::peek_next()
+void QprefBrancher<q_pref>::fetch_next()
 {
-    if (branch_history.empty() || prob_q.empty())
-        return branch_history.end();
+    using std::cout;
+    using std::endl;
 
-    return prob_q.top();
+    if (verbose)
+        cout << "Calling QprefBrancher::fetch_next..." << endl;
+    if (branch_history.empty() || prob_q.empty()) {
+        cout << "set to END" << endl;
+        next_itr = branch_history.end();
+        return;
+    }
+
+    next_itr = prob_q.top();
+    prob_q.pop();
+    cout << "Set next_itr to " << bnode_brief(*next_itr) << " and popped"
+         << endl;
 }
 
 

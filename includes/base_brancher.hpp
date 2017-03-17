@@ -17,16 +17,14 @@
 namespace CMR {
 namespace ABC {
 
+/// Abstract base class for implementing a branching node selection rule.
 class BaseBrancher {
 public:
     BaseBrancher(const Data::Instance &inst, const LP::ActiveTour &activetour,
                  const Data::BestGroup &bestdata,
                  const Graph::CoreGraph &coregraph, LP::CoreLP &core);
 
-    /// Implementation of a node selection rule.
-    /// Node selection rules such as best bound, best estimate, depth first,
-    /// etc shall be implemented by this function which picks the next
-    /// unvisited element from the branch_history list.
+    /// Return the next subproblem to be examined.
     virtual BranchHistory::iterator next_prob() = 0;
 
     /// Split the current problem, adding the subproblems to branch_history.
@@ -40,6 +38,8 @@ public:
 
     const BranchHistory &get_history() { return branch_history; }
 
+    bool verbose = true;
+
 protected:
     /// Adding child subproblems to branch_history.
     /// @param prob_array the pair of child subproblems to be added.
@@ -51,11 +51,9 @@ protected:
     /// Execute variable changes if \p done was just done and \p next is next.
     void common_prep_next(const BranchNode &done, const BranchNode &next);
 
-    /// For use by do_unbranch, peek at what the next subproblem will be.
-    /// This should be implemented almost identically (or identically in the
-    /// case of DFS branching) to next_prob, but it shall not modify the
-    /// problem queue.
-    virtual BranchHistory::iterator peek_next() = 0;
+    /// Set next_itr to the next subproblem to be examined.
+    /// This is effectively the implementation of the node selection rule.
+    virtual void fetch_next() = 0;
 
     const Data::Instance &instance;
     const Data::BestGroup &best_data;
@@ -64,6 +62,8 @@ protected:
 
     Executor exec;
     BranchHistory branch_history;
+
+    BranchHistory::iterator next_itr;
 };
 
 }

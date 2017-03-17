@@ -65,41 +65,52 @@ void InterBrancher::enqueue_split(BranchNode::Split prob_array) try
 
 BranchHistory::iterator InterBrancher::next_prob()
 {
-    cout << "Calling InterBrancher::next_prob" << endl;
-    BranchHistory::iterator result = peek_next();
-    prob_q.pop_back();
+    cout << "Calling InterBrancher::next_prob...." << endl;
+    if (next_itr == branch_history.end()) {
+        fetch_next();
+    } else {
+        cout << "...Already set." << endl;
+    }
 
-    if (node_num % BestFreq == 0) {
-        if (result != branch_history.end())
-            cout << "INTERLEAVE: returning " << bnode_brief(*result) << endl;
-        //heap_make(prob_q);
-    } else if (result != branch_history.end())
-        cout << "USUAL (prob " << node_num << "):"
-             << " returning " << bnode_brief(*result) << endl;
+    BranchHistory::iterator result = next_itr;
 
-    ++node_num;
+    next_itr = branch_history.end();
     return result;
 }
 
-BranchHistory::iterator InterBrancher::peek_next()
+void InterBrancher::fetch_next()
 {
-    cout << "Calling InterBrancher::peek_next" << endl;
-    if (branch_history.empty() || prob_q.empty())
-        return branch_history.end();
+    using QueueIterator = std::vector<BranchHistory::iterator>::iterator;
 
-    if (node_num % BestFreq != 0) { //pick a usual best tour node.
-        heap_make(prob_q);
-        heap_pop(prob_q);
-    } else { // pick a best bound node, corrupting the heap.
-        auto best_bound_itr = std::min_element(prob_q.begin(),
-                                               prob_q.end(), better_bound);
-        auto last_itr = std::prev(prob_q.end());
-
-        if (best_bound_itr != last_itr)
-            std::swap(*best_bound_itr, *last_itr);
+    if (verbose)
+        cout << "Calling InterBrancher::fetch_next" << endl;
+    if (branch_history.empty() || prob_q.empty()) {
+        next_itr = branch_history.end();
+        return;
     }
 
-    return prob_q.back();
+    if (node_num % BestFreq != 0) { //pop a usual best tour node from heap
+        heap_pop(prob_q);
+        next_itr = prob_q.back();
+        if (verbose)
+            cout << "USUAL (prob " << node_num << ") set next_itr to "
+                 << bnode_brief(*next_itr) << endl;
+    } else { // pick a best bound node, corrupting and rebuilding the heap.
+        QueueIterator best_bound_itr = std::min_element(prob_q.begin(),
+                                                        prob_q.end(),
+                                                        better_bound);
+        QueueIterator last_itr = std::prev(prob_q.end());
+
+        next_itr = *best_bound_itr;
+        if (verbose)
+            cout << "INTERLEAVE (prob " << node_num << ") set next_itr to "
+                 << bnode_brief(*next_itr) << endl;
+        std::swap(*best_bound_itr, *last_itr);
+        heap_make(prob_q);
+    }
+
+    ++node_num;
+    prob_q.pop_back();
 }
 
 }

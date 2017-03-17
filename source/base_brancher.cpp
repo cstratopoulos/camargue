@@ -24,7 +24,8 @@ BaseBrancher::BaseBrancher(const Data::Instance &inst,
                          const Data::BestGroup &bestdata,
                          const Graph::CoreGraph &coregraph, LP::CoreLP &core)
 try : instance(inst), best_data(bestdata), core_graph(coregraph), core_lp(core),
-      exec(inst, activetour, bestdata, coregraph, core)
+      exec(inst, activetour, bestdata, coregraph, core),
+      next_itr(branch_history.end())
 {
     branch_history.emplace_front();
 } catch (const exception &e) {
@@ -125,7 +126,8 @@ void BaseBrancher::do_unbranch(const BranchNode &B)
 
     runtime_error err("Problem in BaseBrancher::do_unbranch");
 
-    const BranchHistory::iterator Bnext = peek_next();
+    fetch_next();
+    const BranchHistory::iterator Bnext = next_itr;
     if (Bnext == branch_history.end())
         return;
 
