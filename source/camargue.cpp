@@ -42,8 +42,8 @@ static void usage(const std::string &fname);
 
 int main(int argc, char** argv) try
 {
-    string tsp_fname;
-    string tour_fname;
+    string tsp_fname = "";
+    string tour_fname = "";
 
     int seed = 0;
 
