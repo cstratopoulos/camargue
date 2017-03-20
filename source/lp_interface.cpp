@@ -502,7 +502,6 @@ void Relaxation::add_cut(const double rhs, const char sense,
                          const vector<double> &rmatval)
 {
     int rmatbeg = 0;
-
     int rval = CPXaddrows(simpl_p->env, simpl_p->lp, 0, 1,
                           rmatind.size(), &rhs, &sense, &rmatbeg,
                           &rmatind[0], &rmatval[0], (char **) NULL,
@@ -687,6 +686,7 @@ void Relaxation::factor_basis()
 void Relaxation::primal_opt()
 {
     int rval = CPXprimopt(simpl_p->env, simpl_p->lp);
+
     if (rval)
         throw cpx_err(rval, "CPXprimopt");
 }
@@ -730,6 +730,12 @@ void Relaxation::nondegen_pivot(double upper_bound)
 }
 
 
+/**
+ * This method computes a non-degenerate pivot with a callback that copies
+ * the tour basis at each degenerate pivot.
+ * @warning This may be illegal CPLEX callback behavior, so it is not used
+ * by default.
+ */
 void Relaxation::cb_nondegen_pivot(double upper_bound, Basis &base,
                                    int bas_freq)
 {
@@ -835,6 +841,17 @@ double Relaxation::get_objval() const
     int rval = CPXgetobjval(simpl_p->env, simpl_p->lp, &result);
     if (rval)
         throw cpx_err(rval, "CPXgetobjval");
+
+    return result;
+}
+
+double Relaxation::condition_num() const
+{
+    double result = 0.0;
+    int rval = CPXgetdblquality(simpl_p->env, simpl_p->lp, &result,
+                                CPX_EXACT_KAPPA);
+    if (rval)
+        throw cpx_err(rval, "CPXgetdblquality EXACT_KAPPA");
 
     return result;
 }

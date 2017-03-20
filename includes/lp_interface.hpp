@@ -91,6 +91,8 @@ public:
 
     double get_objval() const; //!< Objective value for resident solution.
 
+    double condition_num() const; //!< Condition number for resident solution.
+
     void get_x(std::vector<double> &x) const; //!< Get current solution.
 
     std::vector<double> lp_vec() const; //!< Return current solution.
