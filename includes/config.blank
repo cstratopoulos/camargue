@@ -50,7 +50,7 @@
 
 
 #ifndef CMR_DO_TESTS
-#ifdef CMR_HAVE_OPENMP
+#if CMR_HAVE_OPENMP
 
 /// Define if OMP parallelism will actually be used in the code.
 #define CMR_USE_OMP
