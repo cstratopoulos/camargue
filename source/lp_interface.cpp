@@ -845,6 +845,24 @@ double Relaxation::get_objval() const
     return result;
 }
 
+SolStat Relaxation::get_stat() const
+{
+    int solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
+
+    switch (solstat) {
+    case CPX_STAT_OPTIMAL:
+        return SolStat::Optimal;
+    case CPX_STAT_ABORT_IT_LIM:
+    case CPX_STAT_ABORT_OBJ_LIM:
+    case CPX_STAT_ABORT_USER:
+        return SolStat::Abort;
+    case CPX_STAT_INFEASIBLE:
+        return SolStat::Infeas;
+    default:
+        throw cpx_err(solstat, "CPXgetstat uncategorized");
+    }
+}
+
 double Relaxation::condition_num() const
 {
     double result = 0.0;

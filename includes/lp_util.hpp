@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -36,6 +37,27 @@ enum class PivType {
     Tour, //!< A new or augmented tour.
     FathomedTour //!< A tour with a dual feasible basis in the current lp.
 };
+
+/// Enum class for categorizing solution statuses.
+enum class SolStat {
+    Optimal, //!< Optimal solution.
+    Infeas, //!< Model proved infeasible.
+    Abort //!< Solution aborted due to external limit.
+};
+
+inline std::ostream &operator<<(std::ostream &os, SolStat stat)
+{
+    if (stat == SolStat::Optimal)
+        os << "Optimal";
+    else if (stat == SolStat::Infeas)
+        os << "Infeasible";
+    else if (stat == SolStat::Abort)
+        os << "Limit Abort";
+    else
+        throw std::logic_error("Unimplemented SolStat ostream<<");
+
+    return os;
+}
 
 inline bool is_tour_piv(PivType P)
 {
@@ -112,8 +134,10 @@ inline std::ostream &operator<<(std::ostream &os, Estimate::Stat estat)
         os << "Prunable";
     else if (estat == Estat::Infeas)
         os << "Infeasible";
-    else
+    else if (estat == Estat::Abort)
         os << "Limit Abort";
+    else
+        throw std::logic_error("Unimplemented Estimate::Stat ostream<<");
 
     return os;
 }
