@@ -39,6 +39,8 @@ public:
     ScanStat gen_edges(LP::PivType piv_stat,
                        bool try_elim); //!< Generate/add edges to core.
 
+    bool feas_recover(); //!< Generate/add edges to recover LP feasibility.
+
     /// Compute a lower bound in Fixed64 arithmetic.
     util::Fixed64 exact_lb(bool full);
 
@@ -51,7 +53,8 @@ public:
     /// Compute reduced costs for a set of edges.
     template <typename numtype>
     void price_edges(std::vector<PrEdge<numtype>> &target_edges,
-                     std::unique_ptr<LP::DualGroup<numtype>> &duals);
+                     std::unique_ptr<LP::DualGroup<numtype>> &duals,
+                     bool include_len);
 
     bool verbose = false;
 
@@ -63,6 +66,9 @@ private:
 
     bool scan_edges(std::vector<PrEdge<util::Fixed64>> &gen_edges,
                     int &loop1, int &loop2);
+
+    bool feas_gen_edges(std::vector<PrEdge<double>> &price_elist,
+                        int start_ind, int &end1, int &end2);
 
     // bool f64_gen_edges(const std::vector<util::Fixed64> &node_pi_est,
     //                    std::vector<PrEdge<double>64> &gen_edges,
@@ -90,9 +96,19 @@ private:
 
 //////////////////// TEMPLATE METHOD IMPLEMENTATIONS //////////////////////////
 
+/**
+ * @tparam numtype the number type for computing reduced costs. Should be
+ * double or util::fixed64.
+ * @param target_edges the edges to be priced.
+ * @param duals the dual solution info for computing reduced costs.
+ * @param include_len true iff the length of an edge will be included in its
+ * price. Should always be true except when pricing edges to recover an
+ * infeasible LP.
+ */
 template <typename numtype>
 void Pricer::price_edges(std::vector<PrEdge<numtype>> &target_edges,
-                         std::unique_ptr<LP::DualGroup<numtype>> &duals)
+                         std::unique_ptr<LP::DualGroup<numtype>> &duals,
+                         bool include_len)
 {
     using std::vector;
     using std::unique_ptr;
@@ -111,9 +127,14 @@ void Pricer::price_edges(std::vector<PrEdge<numtype>> &target_edges,
     vector<numtype> &cut_pi = duals->cut_pi;
     std::unordered_map<Sep::Clique, numtype> &clique_pi = duals->clique_pi;
 
-    for (auto &e : target_edges)
-        e.redcost = inst.edgelen(e.end[0], e.end[1]) - node_pi[e.end[0]]
-        - node_pi[e.end[1]];
+    if (include_len) {
+        for (auto &e : target_edges)
+            e.redcost = inst.edgelen(e.end[0], e.end[1]) - node_pi[e.end[0]]
+            - node_pi[e.end[1]];
+    } else {
+        for (auto &e : target_edges)
+            e.redcost = 0 - node_pi[e.end[0]] - node_pi[e.end[1]];
+    }
 
     Graph::AdjList price_adjlist;
 

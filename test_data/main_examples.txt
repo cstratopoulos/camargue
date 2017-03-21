@@ -2,6 +2,7 @@ a280
 att532
 burma14
 bays29
+brg180
 brd14051
 d2103
 d493
@@ -35,6 +36,7 @@ pr1002
 pr2392
 pr76
 pr152
+pr226
 rat99
 rl1304
 rl1323

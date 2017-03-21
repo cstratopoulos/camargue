@@ -30,6 +30,180 @@ using std::vector;
 using std::string;
 using std::to_string;
 using std::cout;
+using std::endl;
+
+static bool degree_cmp(const CMR::Graph::Node &a, const CMR::Graph::Node &b)
+{ return a.degree() < b.degree(); }
+
+SCENARIO ("Recovering infeasible LPs",
+          "[Price][Pricer][feas_recover]") {
+    using namespace CMR;
+    using SolStat = CMR::LP::SolStat;
+
+    vector<string> probs{
+        "dantzig42",
+        "pr76",
+        "brg180",
+        "pr226",
+        "a280",
+        "lin318",
+        "d493",
+        "pr1002",
+        "pr2392",
+        };
+
+    for (string &prob : probs) {
+    GIVEN ("Data for " + prob) {
+        int seed = 99;
+        string probfile = "problems/" + prob + ".tsp";
+        string solfile = "test_data/tours/" + prob + ".sol";
+        OutPrefs prefs;
+        Solver solver (probfile, solfile, seed, prefs);
+
+        LP::CoreLP &core = const_cast<LP::CoreLP &>(solver.get_core_lp());
+        Graph::CoreGraph &core_graph =
+        const_cast<Graph::CoreGraph &>(solver.graph_info());
+        const Graph::AdjList &adj = core_graph.get_adj();
+
+        int ncount = core_graph.node_count();
+
+        Price::Pricer pricer(core, solver.inst_info(), core_graph);
+        pricer.verbose = true;
+
+        THEN ("The degree LP is feasible") {
+            bool result = false;
+            REQUIRE_NOTHROW(result = pricer.feas_recover());
+            REQUIRE(result);
+        AND_THEN("Overfixing causes infeasibility that can't be recovered") {
+            bool found_target = false;
+
+            cout << "Making an overfixing infeas..." << endl;
+            vector<int> indices;
+
+            for (const Graph::Node &vx : adj.nodelist) {
+                if (vx.degree() > 2) {
+                    cout << "Found vx with degree " << vx.degree() << endl;
+                    found_target = true;
+                    for (const Graph::AdjObj &a : vx.neighbors) {
+                        int ind = a.edge_index;
+                        cout << "Tightening bound on edge " << ind << ", "
+                             << core_graph.get_edge(ind) << " to 1"
+                             << endl;
+                        core.tighten_bound(ind, 'B', 1.0);
+                        indices.push_back(ind);
+                    }
+                    break;
+                }
+            }
+
+            REQUIRE(found_target);
+            core.primal_opt();
+            auto sstat = core.get_stat();
+            REQUIRE(sstat == SolStat::Infeas);
+            bool result = false;
+            REQUIRE_NOTHROW(result = pricer.feas_recover());
+            REQUIRE_FALSE(result);
+        }
+
+        AND_THEN("Underfixing infeasibilities can be recovered") {
+            bool found_target = false;
+            cout << "Making an underfixing infeas..." << endl;
+            for (const Graph::Node &vx : adj.nodelist) {
+                if (vx.degree() < 6) {
+                    cout << "Found vx with degree " << vx.degree() << endl;
+                    found_target = true;
+                    for (const Graph::AdjObj &a : vx.neighbors) {
+                        cout << "Tightening bound on "
+                             << core_graph.get_edge(a.edge_index)
+                             << " to 0" << endl;
+                        core.tighten_bound(a.edge_index, 'B', 0.0);
+                    }
+
+                    break;
+                }
+            }
+
+            INFO("Max degree " << std::max_element(adj.nodelist.begin(),
+                                                   adj.nodelist.end(),
+                                                   degree_cmp)->degree()
+                 << ", min degree " << std::min_element(adj.nodelist.begin(),
+                                                        adj.nodelist.end(),
+                                                        degree_cmp)->degree());
+
+            REQUIRE(found_target);
+            core.primal_opt();
+            auto sstat = core.get_stat();
+            REQUIRE(sstat == SolStat::Infeas);
+            bool result = false;
+            REQUIRE_NOTHROW(result = pricer.feas_recover());
+            REQUIRE(result);
+        }
+        }
+
+        THEN ("The LP at the end of pure cutting is feasible") {
+            solver.cutting_loop(false, false, true);
+            bool result = false;
+            REQUIRE_NOTHROW(result = pricer.feas_recover());
+            REQUIRE(result);
+
+        AND_THEN("Overfixing infeasibilities can't be recovered") {
+            bool found_target = false;
+
+            cout <<"Making an overfixing infeas..." << endl;
+
+            for (const Graph::Node &vx : adj.nodelist) {
+                if (vx.degree() > 2) {
+                    cout << "Found vx with degree " << vx.degree() << endl;
+                    found_target = true;
+                    for (const Graph::AdjObj &a : vx.neighbors) {
+                        cout << "Tightening bound on "
+                             << core_graph.get_edge(a.edge_index) << " to 1"
+                             << endl;
+                        core.tighten_bound(a.edge_index, 'B', 1.0);
+                    }
+                    break;
+                }
+            }
+
+            REQUIRE(found_target);
+            core.primal_opt();
+            auto sstat = core.get_stat();
+            REQUIRE(sstat == SolStat::Infeas);
+            bool result = false;
+            REQUIRE_NOTHROW(result = pricer.feas_recover());
+            REQUIRE_FALSE(result);
+        }
+
+        AND_THEN("Underfixing infeasibilities can be recovered") {
+            bool found_target = false;
+            cout << "Making an underfixing infeas..." << endl;
+            for (const Graph::Node &vx : adj.nodelist) {
+                if (vx.degree() < 6) {
+                    cout << "Found vx with degree " << vx.degree() << endl;
+                    found_target = true;
+                    for (const Graph::AdjObj &a : vx.neighbors) {
+                        cout << "Tightening bound on "
+                             << core_graph.get_edge(a.edge_index)
+                             << " to 0" << endl;
+                        core.tighten_bound(a.edge_index, 'B', 0.0);
+                    }
+                    break;
+                }
+            }
+
+            REQUIRE(found_target);
+            core.primal_opt();
+            auto sstat = core.get_stat();
+            REQUIRE(sstat == SolStat::Infeas);
+            bool result = false;
+            REQUIRE_NOTHROW(result = pricer.feas_recover());
+            REQUIRE(result);
+        }
+        }
+    }
+    }
+
+}
 
 SCENARIO ("Elminating edges after a run of cutting_loop",
           "[Price][exact_lb][elim]") {
@@ -95,7 +269,7 @@ SCENARIO ("Elminating edges after a run of cutting_loop",
                 for (auto &e : core_graph.get_edges())
                     graph_edges.emplace_back(e.end[0], e.end[1]);
 
-                pricer.price_edges(graph_edges, dg);
+                pricer.price_edges(graph_edges, dg, true);
 
                 int elimct = 0;
                 int fixct = 0;
@@ -104,10 +278,10 @@ SCENARIO ("Elminating edges after a run of cutting_loop",
                     auto &e = graph_edges[i];
                     if (e.redcost > cutoff) {
                         ++elimct;
-                        core.tighten_bound(i, 'E', 0.0);
+                        core.tighten_bound(i, 'B', 0.0);
                     } else if (e.redcost < negcutoff) {
                         ++fixct;
-                        core.tighten_bound(i, 'E', 1.0);
+                        core.tighten_bound(i, 'B', 1.0);
                     }
                 }
                 cout << "\t" << elimct << " eliminated, " << fixct
@@ -180,7 +354,7 @@ SCENARIO ("Computing dual bounds after run of cutting loop",
                     for (auto &e : core_graph.get_edges())
                         graph_edges.emplace_back(e.end[0], e.end[1]);
 
-                    pricer.price_edges(graph_edges, dg);
+                    pricer.price_edges(graph_edges, dg, true);
 
                     auto ex_rc_sum = f64{0.0};
 
@@ -284,7 +458,7 @@ SCENARIO ("Trying to compute dual bounds for the degree LP",
                         for (auto &e : core_graph.get_edges())
                             graph_edges.emplace_back(e.end[0], e.end[1]);
 
-                        price.price_edges(graph_edges, dg);
+                        price.price_edges(graph_edges, dg, true);
 
                         auto ex_rc_sum = f64{0.0};
                         for (auto &e : graph_edges)
@@ -304,7 +478,7 @@ SCENARIO ("Trying to compute dual bounds for the degree LP",
                                 for (int j = i + 1; j < ncount; ++j)
                                     full_edges.emplace_back(i, j);
 
-                            price.price_edges(full_edges, dg);
+                            price.price_edges(full_edges, dg, true);
 
                             auto full_rc_sum = f64{0.0};
                             for (auto &e : full_edges)
@@ -423,8 +597,9 @@ vector<ProbPair> probs {
                     std::unique_ptr<LP::DualGroup<double>> dgp;
                     std::unique_ptr<LP::DualGroup<util::Fixed64>> f64_dgp;
 
-                    REQUIRE_NOTHROW(pricer.price_edges(pr_edges, dgp));
-                    REQUIRE_NOTHROW(pricer.price_edges(f64_edges, f64_dgp));
+                    REQUIRE_NOTHROW(pricer.price_edges(pr_edges, dgp, true));
+                    REQUIRE_NOTHROW(pricer.price_edges(f64_edges, f64_dgp,
+                                                       true));
 
                     cout << "Dual feasible before getting cpx_rc: "
                          << core_lp.dual_feas() << "\n";
