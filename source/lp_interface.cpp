@@ -1065,11 +1065,15 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
 
 /**
  * @param index the column number on which to change the bound.
- * @param sense 'L' for <=, 'G' for >=, 'E' for ==.
+ * @param sense 'L' for <=, 'G' for >=, 'B' for ==.
  * @param val the value to set the bound to.
  */
 void Relaxation::tighten_bound(int index, char sense, double val)
 {
+    if (sense != 'L' && sense != 'G' && sense != 'B') {
+        cout << "Called tighten_bound with sense " << sense << endl;
+        throw logic_error("Invalid sense in Relaxation::tighten_bound");
+    }
     int rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &index, &sense,
                              &val);
     if (rval)
