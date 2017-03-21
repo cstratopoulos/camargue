@@ -49,7 +49,6 @@ SCENARIO ("Recovering infeasible LPs",
         "lin318",
         "d493",
         "pr1002",
-        "pr2392",
         };
 
     for (string &prob : probs) {

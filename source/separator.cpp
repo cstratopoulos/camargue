@@ -177,13 +177,14 @@ bool Separator::local_sep() try
     bool result = local_cuts.find_cuts();
     lct = util::zeit() - lct;
 
-    if (verbose)
+    if (verbose) {
         if (!lc_sphere)
             printf("\t%d chunk %d local cuts\t%.2fs\n",
                    local_q.size(), lc_chunk, lct);
         else
             printf("\t%d chunk %d local cuts spheres\t%.2fs\n",
                    local_q.size(), lc_chunk, lct);
+    }
 
     return result;
 } catch (const exception &e) {

@@ -168,7 +168,7 @@ void CoreLP::pivot_back(bool prune_slacks)
     const vector<int> &cut_stats = active_tour.base().rowstat;
     vector<int> delset;
 
-    if (prune_slacks) {
+    if (prune_slacks && !active_tour.tourless()) {
         try { delset = vector<int>(numrows, 0); }
         CMR_CATCH_PRINT_THROW("allocating delset", err);
 
@@ -333,10 +333,21 @@ void CoreLP::set_active_tour(std::vector<int> tour_nodes)
     try { prune_slacks(); } CMR_CATCH_PRINT_THROW("pruning slacks", err);
 }
 
+void CoreLP::tourless_mode() try
+{
+    active_tour.enter_tourless(best_data);
+} catch (const exception &e) {
+    cerr << e.what() << " entering tourless mode" << endl;
+    throw runtime_error("CoreLP::tourless_mode failed");
+}
+
 
 void CoreLP::prune_slacks()
 {
     if (num_rows() == core_graph.node_count())
+        return;
+
+    if (active_tour.tourless())
         return;
 
     get_x(lp_edges);

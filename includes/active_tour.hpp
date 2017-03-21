@@ -59,7 +59,12 @@ public:
     /// Update \p best_data with the this tour.
     void best_update(Data::BestGroup &best_data) const;
 
+    /// Go into tourless mode of operation with best tour.
+    void enter_tourless(Data::BestGroup &best_data);
+
     double length() const { return tour_len; }
+
+    bool tourless() const { return tourless_mode; }
 
     const std::vector<int> &nodes() const { return tour_nodes; }
     const std::vector<int> &tour_perm() const { return perm; }
@@ -77,6 +82,8 @@ private:
     std::vector<double> tour_edges;
 
     Basis tour_base;
+
+    bool tourless_mode = false;
 };
 
 }

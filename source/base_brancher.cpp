@@ -74,6 +74,7 @@ void BaseBrancher::do_branch(const BranchNode &B)
 
     runtime_error err("Problem in BaseBrancher::do_branch");
     vector<int> tour;
+    bool found_tour = false;
 
     try {
         const BranchNode *iter = &B;
@@ -85,36 +86,39 @@ void BaseBrancher::do_branch(const BranchNode &B)
         }
 
         double tval = 0.0;
-        bool found_tour = false;
         bool feas = true;
 
         exec.branch_tour(edge_stats, core_lp.get_active_tour().nodes(),
                          found_tour, feas,
                          tour, tval, true);
-        if (!found_tour)
-            throw runtime_error("Unimplemented case of no tour");
-
+        if (!found_tour) {
+            cout << "No tour found, putting core in tourless mode" << endl;
+            core_lp.tourless_mode();
+        }
     } CMR_CATCH_PRINT_THROW("building edge_stats/getting branch tour", err);
 
-    int ncount = core_graph.node_count();
-    vector<Graph::Edge> missing_edges;
+    if (found_tour) {
+        int ncount = core_graph.node_count();
+        vector<Graph::Edge> missing_edges;
 
-    try {
-        for (int i = 0; i < ncount; ++i) {
-            int e0 = tour[i];
-            int e1 = tour[(i + 1) % ncount];
-            int ind = core_graph.find_edge_ind(e0, e1);
-            if (ind == -1)
-                missing_edges.emplace_back(e0, e1, instance.edgelen(e0, e1));
-        }
-
-        core_lp.add_edges(missing_edges, false);
-    } CMR_CATCH_PRINT_THROW("finding add adding missing edges", err);
+        try {
+            for (int i = 0; i < ncount; ++i) {
+                int e0 = tour[i];
+                int e1 = tour[(i + 1) % ncount];
+                int ind = core_graph.find_edge_ind(e0, e1);
+                if (ind == -1)
+                    missing_edges.emplace_back(e0, e1,
+                                               instance.edgelen(e0, e1));
+            }
+            core_lp.add_edges(missing_edges, false);
+        } CMR_CATCH_PRINT_THROW("finding add adding missing edges", err);
+    }
 
 
     try {
         exec.clamp(B);
-        core_lp.set_active_tour(std::move(tour));
+        if (found_tour)
+            core_lp.set_active_tour(std::move(tour));
     } CMR_CATCH_PRINT_THROW("clamping bound/instating branch tour", err);
 
     cout << "\nBranched " << B << endl;

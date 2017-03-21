@@ -72,6 +72,8 @@ public:
     /// Set active_tour from a list of nodes.
     void set_active_tour(std::vector<int> tour_nodes);
 
+    void tourless_mode(); //!< Set active_tour to tourless mode.
+
     /// Average number of iterations per primal_pivot.
     int avg_itcount() const { return sum_it_count / num_nd_pivots; }
 

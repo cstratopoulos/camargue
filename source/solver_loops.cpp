@@ -404,24 +404,38 @@ PivType Solver::abc_bcp(bool do_price)
 
     while (cur != branch_controller->get_history().end()) {
 
-        try {
-            branch_controller->do_branch(*cur);
-            if (core_lp.active_tourlen() < best_data.min_tour_value) {
-                cout << "Instated branch tour improves on best tour" << endl;
-                core_lp.active_tour.best_update(best_data);
-                report_aug(Aug::Branch);
+        if (cur->stat == BranchStat::NeedsRecover) {
+            cout << ABC::bnode_brief(*cur) << " needs feas recover"
+                 << endl;
+            if (do_price) {
+                bool feasible = false;
+
+                try { feasible = edge_pricer->feas_recover(); }
+                CMR_CATCH_PRINT_THROW("doing feas_recover on node", err);
+
+                if (feasible) {
+                    cout << "Recovered infeasible BranchNode." << endl;
+                    cur->stat = BranchStat::NeedsCut;
+                } else {
+                    cout << "Pricing pruned node by infeasibility." << endl;
+                    cur->stat = BranchStat::Pruned;
+                }
+            } else {
+                cout << "Infeasible sparse problem can be pruned" << endl;
+                cur->stat = BranchStat::Pruned;
             }
         }
-        CMR_CATCH_PRINT_THROW("branching on current problem", err);
 
-        if (cur->stat == BranchStat::NeedsRecover) {
-            cout << "\tProblem " << ABC::bnode_brief(*cur)
-                 << " looks infeasible\n";
-            cout << "\tACTUAL VERIFICATION SHOULD GO HERE!!!!\n";
-            cout << "\t\t....marking as pruned." << endl;
-
-            cur->stat = BranchStat::Pruned;
-        }
+        if (cur->stat != BranchStat::Pruned)
+            try {
+                branch_controller->do_branch(*cur);
+                if (core_lp.active_tourlen() < best_data.min_tour_value) {
+                    cout << "Instated branch tour improves on best tour"
+                         << endl;
+                    core_lp.active_tour.best_update(best_data);
+                    report_aug(Aug::Branch);
+                }
+            } CMR_CATCH_PRINT_THROW("branching on current problem", err);
 
         if (cur->stat == BranchStat::NeedsPrice) {
             cout << ABC::bnode_brief(*cur)
@@ -485,13 +499,10 @@ PivType Solver::abc_bcp(bool do_price)
             } CMR_CATCH_PRINT_THROW("splitting branch problem", err);
 
             cur->stat = BranchStat::Done;
-        }// else if (cur->stat == BranchStat::Pruned) {
+        }
 
-        try {
-            branch_controller->do_unbranch(*cur);
-        } CMR_CATCH_PRINT_THROW("unbranching pruned problem", err);
-
-            // }
+        try { branch_controller->do_unbranch(*cur); }
+        CMR_CATCH_PRINT_THROW("unbranching pruned problem", err);
 
         cur = branch_controller->next_prob();
     }

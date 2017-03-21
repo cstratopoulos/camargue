@@ -216,6 +216,9 @@ void ActiveTour::reset_instate(Relaxation &relax)
         relax.factor_basis();
     } CMR_CATCH_PRINT_THROW("copying and factoring", err);
 
+    if (tourless_mode)
+        return;
+
     double objval = relax.get_objval();
     if (fabs(objval - tour_len) >= Eps::Zero) {
         cerr << "Tour len " << tour_len << " vs lp objval "
@@ -236,6 +239,9 @@ void ActiveTour::reset_instate(Relaxation &relax)
 void ActiveTour::instate(Relaxation &relax)
 {
     runtime_error err("Problem in ActiveTour::instate");
+
+    if (tourless_mode)
+        reset_instate(relax);
 
     try {
         relax.copy_start(tour_edges, tour_base.colstat, tour_base.rowstat);
@@ -282,6 +288,17 @@ void ActiveTour::best_update(Data::BestGroup &best_data) const
                              " edges equal one in ActiveTour::best_update");
         throw runtime_error(mismatch);
     }
+}
+
+
+void ActiveTour::enter_tourless(Data::BestGroup &best_data)
+{
+    tourless_mode = true;
+    tour_nodes = best_data.best_tour_nodes;
+    perm = best_data.perm;
+    tour_edges = vector<double>(best_data.best_tour_edges.begin(),
+                                best_data.best_tour_edges.end());
+    tour_base = Basis{};
 }
 
 }
