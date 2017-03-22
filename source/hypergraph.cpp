@@ -167,6 +167,55 @@ void HyperGraph::transfer_source(CliqueBank &new_source_bank) try
     throw runtime_error("HyperGraph::transfer_source failed.");
 }
 
+CCtsp_lpcut_in HyperGraph::to_lpcut_in(const vector<int> &active_perm) const
+{
+    if (source_toothbank != nullptr)
+        throw logic_error("Called HyperGraph::to_lpcut_in on domino");
+    if (source_bank == nullptr)
+        throw logic_error("Called HyperGraph::to_lpcut_in w no source_bank");
+
+    runtime_error err("Problem in HyperGraph::to_lpcut_in");
+    int rval = 0;
+    CCtsp_lpcut_in result;
+
+    CCtsp_init_lpcut_in(&result);
+    result.rhs = rhs;
+    result.sense = sense;
+
+    int num_cliques = cliques.size();
+    auto cleanup = util::make_guard([&rval, &result]
+                                    {
+                                        if (rval) CCtsp_free_lpcut_in(&result);
+                                    });
+
+    if ((rval = CCtsp_create_lpcliques(&result, num_cliques)))
+        throw err;
+
+    const vector<int> &def_tour = source_bank->ref_tour();
+    for (int i = 0; i < num_cliques; ++i) {
+        const Clique::Ptr &clq_ref = cliques[i];
+        vector<int> clq_nodes;
+
+        try { clq_nodes = clq_ref->node_list(def_tour); }
+        catch (const exception &e) {
+            rval = 1;
+            cerr << e.what() << " getting clique nodes" << endl;
+            throw err;
+        }
+
+        for (int &n : clq_nodes)
+            n = active_perm[n];
+
+        CCtsp_lpclique *cur_clq = (result.cliques + i);
+
+        if ((rval = CCtsp_array_to_lpclique(&clq_nodes[0], clq_nodes.size(),
+                                            cur_clq)))
+            throw err;
+    }
+
+    return result;
+}
+
 HyperGraph::~HyperGraph()
 {
     if (source_bank != nullptr)

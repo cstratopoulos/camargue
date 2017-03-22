@@ -52,6 +52,8 @@ public:
     /// Change the source_bank to \p new_source_bank.
     void transfer_source(CliqueBank &new_source_bank);
 
+    CCtsp_lpcut_in to_lpcut_in(const std::vector<int> &active_perm) const;
+
     ~HyperGraph(); //!< Destruct and decrement/delete Clique/Tooth refs.
 
     /// Enumeration for the types of HyperGraph inequalities.
