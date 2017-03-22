@@ -90,6 +90,29 @@ LPcutList &LPcutList::operator=(LPcutList &&L) noexcept {
   return *this;
 }
 
+void LPcutList::push_front(CCtsp_lpcut_in *new_head)
+{
+    ++cutcount;
+    new_head->next = head_cut.release();
+    head_cut.reset(new_head);
+}
+
+void LPcutList::splice(LPcutList &&L)
+{
+    if (empty()) {
+        head_cut = std::move(L.head_cut);
+        cutcount = L.cutcount;
+    } else {
+        auto it = begin();
+        while(it->next != nullptr)
+            it = it->next;
+        it->next = L.head_cut.release();
+        cutcount += L.cutcount;
+    }
+
+    L.cutcount = 0;
+}
+
 void LPcutList::filter_primal(TourGraph &TG)
 {
     if (cutcount == 0 || !head_cut) return;

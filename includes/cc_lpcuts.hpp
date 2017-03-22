@@ -55,15 +55,20 @@ private:
   CCtsp_lpgraph L;
 };
 
+/// Management of Concorde lpcut_in linked list.
 class LPcutList {
 public:
     LPcutList() noexcept;
-    LPcutList(CCtsp_lpcut_in *head, int count) noexcept;
-    LPcutList(LPcutList &&L) noexcept;
-    LPcutList(const LPcutList &L) = delete;
 
+    /// Construct a list of \p count cuts with head cut \p head.
+    LPcutList(CCtsp_lpcut_in *head, int count) noexcept;
+
+    LPcutList(LPcutList &&L) noexcept;
     LPcutList &operator=(LPcutList &&L) noexcept;
-    LPcutList &operator=(const LPcutList &L) = delete;
+
+    void push_front(CCtsp_lpcut_in *new_head);
+
+    void splice(LPcutList &&L);
 
     int size() const { return cutcount; }
     bool empty() const { return cutcount == 0; }
@@ -76,17 +81,18 @@ public:
     void clear();
 
 private:
-  struct hungry_delete {
-    void operator()(CCtsp_lpcut_in *cut) const {
-      for(auto it = cut; it; it = cut){
-	cut = it->next;
-	CCtsp_free_lpcut_in(it);
-	CC_IFFREE(it, CCtsp_lpcut_in);
-      }
-    }
-  };
-  std::unique_ptr<CCtsp_lpcut_in, hungry_delete> head_cut;
-  int cutcount;
+    /// Deleter to clear the linked list.
+    struct hungry_delete {
+        void operator()(CCtsp_lpcut_in *cut) const {
+            for(auto it = cut; it; it = cut){
+                cut = it->next;
+                CCtsp_free_lpcut_in(it);
+                CC_IFFREE(it, CCtsp_lpcut_in);
+            }
+        }
+    };
+    std::unique_ptr<CCtsp_lpcut_in, hungry_delete> head_cut;
+    int cutcount;
 };
 
 
