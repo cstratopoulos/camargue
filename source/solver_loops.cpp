@@ -549,7 +549,8 @@ PivType Solver::abc_bcp(bool do_price)
 
             double objval = core_lp.get_objval();
 
-            printf("\tPrimal opt objval %.2f in %.2fs\n", objval, opt_time);
+            printf("\tPrimal opt objval %.2f in %.2fs", objval, opt_time);
+            cout << endl;
 
             cur->stat = BranchStat::NeedsCut;
 
