@@ -132,6 +132,7 @@ PivType Solver::cut_and_piv(bool do_price)
 
     unique_ptr<Sep::Separator> sep;
     unique_ptr<Sep::PoolCuts> pool_sep;
+    unique_ptr<Sep::MetaCuts> meta_sep;
 
 
     while (true) {
@@ -291,6 +292,59 @@ PivType Solver::cut_and_piv(bool do_price)
                         continue;
                 }
             } CMR_CATCH_PRINT_THROW("calling simpleDP sep", err);
+
+        using MetaType = Sep::MetaCuts::Type;
+
+        if (cut_sel.decker)
+            try {
+                reset_separator(meta_sep);
+                meta_sep->set_type(MetaType::Decker);
+                if (call_separator([&meta_sep]()
+                                   { return meta_sep->find_cuts(); },
+                                   meta_sep->metacuts_q(), piv,
+                                   prev_val, total_delta, delta_ratio,
+                                   lowest_piv)) {
+                    if (return_pivot(piv))
+                        return piv;
+
+                    if (restart_loop(piv, delta_ratio))
+                        continue;
+                }
+            }  CMR_CATCH_PRINT_THROW("calling Double Decker sep", err);
+
+        if (cut_sel.handling)
+            try {
+                reset_separator(meta_sep);
+                meta_sep->set_type(MetaType::Handling);
+                if (call_separator([&meta_sep]()
+                                   { return meta_sep->find_cuts(); },
+                                   meta_sep->metacuts_q(), piv,
+                                   prev_val, total_delta, delta_ratio,
+                                   lowest_piv)) {
+                    if (return_pivot(piv))
+                        return piv;
+
+                    if (restart_loop(piv, delta_ratio))
+                        continue;
+                }
+            } CMR_CATCH_PRINT_THROW("calling Handling sep", err);
+
+        if (cut_sel.teething)
+            try {
+                reset_separator(meta_sep);
+                meta_sep->set_type(MetaType::Teething);
+                if (call_separator([&meta_sep]()
+                                   { return meta_sep->find_cuts(); },
+                                   meta_sep->metacuts_q(), piv,
+                                   prev_val, total_delta, delta_ratio,
+                                   lowest_piv)) {
+                    if (return_pivot(piv))
+                        return piv;
+
+                    if (restart_loop(piv, delta_ratio))
+                        continue;
+                }
+            } CMR_CATCH_PRINT_THROW("calling Teething sep", err);
 
         if (cut_sel.localcuts) {
             bool lc_restart = false;
@@ -569,7 +623,7 @@ void Solver::reset_separator(unique_ptr<Sep::Separator> &S)
 {
     util::ptr_reset(S, core_graph.get_edges(), active_tour(),
                     core_lp.supp_data, karp_part);
-    S->filter_primal = !branch_engaged;
+    S->filter_primal = !active_tour().tourless();
     S->verbose = output_prefs.verbose;
 }
 
@@ -578,8 +632,16 @@ void Solver::reset_separator(std::unique_ptr<Sep::PoolCuts> &PS)
     util::ptr_reset(PS, core_lp.ext_cuts,
                     core_graph.get_edges(), active_tour().edges(),
                     core_lp.supp_data);
-    PS->filter_primal = !branch_engaged;
+    PS->filter_primal = !active_tour().tourless();
     PS->verbose = output_prefs.verbose;
+}
+
+void Solver::reset_separator(std::unique_ptr<Sep::MetaCuts> &MS)
+{
+    util::ptr_reset(MS, core_lp.external_cuts(), graph_info().get_edges(),
+                    active_tour(), core_lp.supp_data);
+    MS->filter_primal = !active_tour().tourless();
+    MS->verbose = output_prefs.verbose;
 }
 
 #if CMR_HAVE_SAFEGMI
@@ -588,7 +650,7 @@ void Solver::reset_separator(std::unique_ptr<Sep::SafeGomory> &GS)
 {
     util::ptr_reset(GS, core_lp, active_tour().edges(),
                     core_lp.lp_edges);
-    GS->filter_primal = !branch_engaged;
+    GS->filter_primal = !active_tour().tourless();
     GS->verbose = output_prefs.verbose;
 }
 

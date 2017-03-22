@@ -75,8 +75,10 @@ int main(int argc, char** argv) try
         tsp_solver = CMR::util::make_unique<CMR::Solver>(seed, rand_nodes,
                                                          rand_grid, outprefs);
 
-    tsp_solver->cut_sel.safeGMI = sparse;
-    tsp_solver->cut_sel.localcuts = true;
+    if (sparse)
+        tsp_solver->choose_cuts(CMR::Solver::CutSel::Presets::Sparse);
+    else
+        tsp_solver->choose_cuts(CMR::Solver::CutSel::Presets::Aggressive);
 
     CMR::Timer t(tsp_solver->inst_info().problem_name() + " overall");
     t.start();

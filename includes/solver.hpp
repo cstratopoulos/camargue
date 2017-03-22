@@ -13,6 +13,7 @@
 #include "datagroups.hpp"
 #include "separator.hpp"
 #include "pool_sep.hpp"
+#include "meta_sep.hpp"
 #include "abc_nodesel.hpp"
 
 #if CMR_HAVE_SAFEGMI
@@ -58,27 +59,48 @@ public:
     LP::PivType abc(bool do_price);
 
     const Data::Instance &inst_info() const { return tsp_instance; }
-
     const Graph::CoreGraph &graph_info() const { return core_graph; }
-
     const Data::BestGroup &best_info() const{ return best_data; }
-
     const LP::ActiveTour &active_tour() const { return core_lp.active_tour; }
-
     const LP::CoreLP &get_core_lp() const { return core_lp; }
 
     /// Which separation routines should be called.
     struct CutSel {
+        /// Preset selection routine choices. Each contains the one before it.
+        enum Presets {
+            Vanilla, //!< The default initializations indicated below.
+            Aggressive, //!< Add cut metamorphoses/local cuts.
+            Sparse, //!< Add safe Gomory cuts.
+        };
+
         bool cutpool = true; //!< Cuts from a cut pool.
-        bool segment = true; //!< Primal SECs.
-        bool fast2m = true; //!< Standard fast blossom heuristics.
-        bool blkcomb = true; //!< Standard block comb heuristics.
-        bool ex2m = true; //!< Exact primal blossom separation.
-        bool simpleDP = true; //!< Primal simple DP separation.
-        bool localcuts = false; //!< Standard local cut separation.
+
+        /**@name Primal template cuts. */
+        ///@{
+        bool segment = true; //!< Exact SECs.
+        bool ex2m = true; //!< Exact blossoms.
+        bool simpleDP = true; //!< Partitioned simple DP cuts.
+        ///@}
+
+        /**@name Fast standard heuristics. */
+        ///@{
+        bool fast2m = true; //!< Odd component (PH/GH) blossoms.
+        bool blkcomb = true; //!< Block combs.
+        bool connect = true; //!< Connected component SECs.
+        ///@}
+
+        /**@name Standard non-template cuts and metamorphoses. */
+        ///@{
+        bool localcuts = false;
+        bool decker = false;
+        bool handling = false;
+        bool teething = false;
+        ///@}
+
         bool safeGMI = false; //!< Primal safe Gomory cuts.
-        bool connect = true; //!< Standard connect cut SECs.
     } cut_sel;
+
+    void choose_cuts(CutSel::Presets preset); //!< Set the choice of cuts.
 
     /// Types of augmentations that can take place.
     enum Aug : char {
@@ -123,6 +145,7 @@ private:
 
     void reset_separator(std::unique_ptr<Sep::Separator> &S);
     void reset_separator(std::unique_ptr<Sep::PoolCuts> &PS);
+    void reset_separator(std::unique_ptr<Sep::MetaCuts> &MS);
 
 #if CMR_HAVE_SAFEGMI
     void reset_separator(std::unique_ptr<Sep::SafeGomory> &GS);

@@ -84,6 +84,27 @@ try : tsp_instance(make_seed(seed), node_count, gridsize),
     throw runtime_error("Solver random constructor failed.");
 }
 
+void Solver::choose_cuts(CutSel::Presets preset)
+{
+    using CutPre = CutSel::Presets;
+    cut_sel = CutSel{};
+    if (preset == CutPre::Vanilla)
+        return;
+
+    if (preset == CutPre::Aggressive || preset == CutPre::Sparse) {
+        cut_sel.localcuts = true;
+        cut_sel.decker = true;
+        cut_sel.handling = true;
+        cut_sel.teething = true;
+        if (preset == CutPre::Aggressive)
+            return;
+        cut_sel.safeGMI = true;
+        return;
+    }
+
+    throw logic_error("Unimplemented CutSel::Presets choice");
+}
+
 void Solver::report_lp(PivType piv)
 {
     int rowcount = core_lp.num_rows();

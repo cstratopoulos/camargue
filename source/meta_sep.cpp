@@ -226,22 +226,24 @@ bool MetaCuts::price_combs()
         }
     }
 
-    if (verbose)
-        cout << "MetaCuts::price_combs found "
-             << interest_combs.size() << " combs of interest" << endl;
     return (!interest_combs.empty());
 }
 
 bool MetaCuts::above_threshold(int num_paths)
 {
-    return num_paths > 0.15 * TG.node_count();
+    return num_paths > 0.2 * TG.node_count();
 }
 
 
-/// @returns true iff we should attempt separation based on the given x-vector.
+/// @returns true iff we should attempt separation. This is always true for
+/// Decker cuts. For Handling and Teething it is based on properties of the
+/// x-vector.
 /// @remark A rewrite of static int no_tighten from concorde/TSP/control.c
 bool MetaCuts::attempt_sep()
 {
+    if (meta_type == Type::Decker)
+        return true;
+
     CC_SRKgraph G;
     auto cleanup = util::make_guard([&G]{ CCcut_SRK_free_graph(&G); });
 
