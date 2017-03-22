@@ -211,6 +211,8 @@ public:
     /**@name Pivoting and optimizing. */
     ///@{
 
+    void switch_steepest(); //!< Permanent switch to steepest edge pivots.
+
     void primal_opt(); //!< Optimize the Relaxation with primal simplex.
 
     void dual_opt(); //!< Optimize the relaxation with dual simplex.

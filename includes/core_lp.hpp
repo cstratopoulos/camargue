@@ -116,6 +116,8 @@ private:
     int sum_it_count = 0;
 
     int prev_numrows;
+
+    bool steepest_engaged = false;
 };
 
 

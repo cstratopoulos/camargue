@@ -98,7 +98,14 @@ PivType CoreLP::primal_pivot()
     } CMR_CATCH_PRINT_THROW("pivoting and setting x", err);
 
     ++num_nd_pivots;
-    sum_it_count += it_count();
+    int piv_ic = it_count();
+    sum_it_count += piv_ic;
+
+    if (!steepest_engaged)
+        if (piv_ic > std::max(3 * core_graph.node_count(), 500)) {
+            try { switch_steepest(); } CMR_CATCH_PRINT_THROW("", err);
+            steepest_engaged = true;
+        }
 
     bool integral = supp_data.integral;
     bool connected = supp_data.connected;

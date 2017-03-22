@@ -683,6 +683,14 @@ void Relaxation::factor_basis()
         throw cpx_err(solstat, "CPXgetstat in factor_basis");
 }
 
+void Relaxation::switch_steepest()
+{
+    int rval = CPXsetintparam(simpl_p->env, CPX_PARAM_PPRIIND,
+                              CPX_PPRIIND_STEEP);
+    if (rval)
+        throw cpx_err(rval, "CPXsetintparam steepest edge");
+}
+
 void Relaxation::primal_opt()
 {
     int rval = CPXprimopt(simpl_p->env, simpl_p->lp);

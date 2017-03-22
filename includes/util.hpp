@@ -46,6 +46,9 @@ struct OutPrefs {
     ///@}
 
     bool verbose = false; //!< Verbose output from classes and subroutines.
+
+    /// A jittering progress bar for pivot values.
+    bool prog_bar = false;
 };
 
 

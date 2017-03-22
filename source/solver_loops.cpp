@@ -80,7 +80,8 @@ bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
         double delta = std::abs(new_val - prev_val);
         double tourlen = core_lp.active_tourlen();
 
-        place_pivot(.98 * tourlen, tourlen, new_val);
+        if (output_prefs.prog_bar)
+            place_pivot(.99 * tourlen, tourlen, new_val);
 
         total_delta += delta;
         if (new_val < lowest_piv)
@@ -114,19 +115,14 @@ bool Solver::restart_loop(LP::PivType piv, double delta_metric)
 
 inline bool Solver::return_pivot(LP::PivType piv)
 {
-    bool result = (piv == PivType::Tour || piv == PivType::FathomedTour);
-
-    if (result)
-        cout << "\n";
-
-    return result;
+    return (piv == PivType::Tour || piv == PivType::FathomedTour);
 }
 
 inline void Solver::place_pivot(double low_lim, double best_tourlen,
                                 double piv_val)
 {
     int target_entry = 1;
-    char piv_char = '|';
+    char piv_char = '>';
     if (piv_val <= low_lim)
         piv_char = '!';
     else if (piv_val == best_tourlen) {
@@ -139,8 +135,13 @@ inline void Solver::place_pivot(double low_lim, double best_tourlen,
 
     p_bar[target_entry] = piv_char;
 
-    for (char &c : p_bar)
-        cout << c;
+    int i = 0;
+    cout << p_bar[i];
+    for (i = 1; i < target_entry; ++i)
+        cout << '#';
+    while (i < 80)
+        cout << p_bar[i++];
+
     cout << "\r" << std::flush;
     p_bar[target_entry] = ' ';
 }
@@ -473,6 +474,9 @@ PivType Solver::cut_and_piv(bool do_price)
             cout << "Tried all routines, returning " << piv
                  << " with total delta " << total_delta << endl;
         }
+
+        if (output_prefs.prog_bar)
+            cout << endl;
 
         break;
     }

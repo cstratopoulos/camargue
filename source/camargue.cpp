@@ -137,8 +137,11 @@ static void initial_parse(int ac, char **av,
         throw logic_error("No arguments specified");
     }
 
-    while ((c = getopt(ac, av, "aEGPRSVXb:n:g:s:t:")) != EOF) {
+    while ((c = getopt(ac, av, "aBEGPRSVXb:n:g:s:t:")) != EOF) {
         switch (c) {
+        case 'B':
+            outprefs.prog_bar = true;
+            break;
         case 'E':
             outprefs.save_tour_edges = true;
             break;
@@ -208,12 +211,19 @@ static void initial_parse(int ac, char **av,
         usage(av[0]);
         throw logic_error("Cannot specify tour without TSPLIB file.");
     }
+
+    if (outprefs.verbose && outprefs.prog_bar) {
+        usage(av[0]);
+        throw logic_error("Requested progress bar and verbose.");
+    }
 }
 
 static void usage(const std::string &fname)
 {
     cerr << "Usage: " << fname << " [-see below-] [-prob_file-]\n";
     cerr << "\t\t FLAG OPTIONS\n"
+         << "-B \t Show a jittering progress bar for piv values.\n"
+         << "   \t Notes:\t Incompatible with verbose.\n"
          << "-E \t Write tour edges to file (in addition to nodes).\n"
          << "-G \t GIF output: write each new tour to a distinct file.\n"
          << "-P \t Pure primal cutting plane solution: do not branch.\n"

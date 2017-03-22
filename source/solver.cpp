@@ -141,6 +141,8 @@ ostream &operator<<(ostream &os, Solver::Aug aug)
  */
 void Solver::report_aug(Aug aug_type)
 {
+    if (output_prefs.prog_bar)
+        cout << "\n";
     cout << "\tTour " << ++num_augs << ": "
          << static_cast<int>(best_data.min_tour_value) << ", "
          << aug_type << endl;
