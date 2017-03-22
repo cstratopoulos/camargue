@@ -27,6 +27,7 @@
 #include "util.hpp"
 #include "timer.hpp"
 
+#include <array>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -178,6 +179,9 @@ private:
 
     int num_augs = 0;
     std::vector<AugObj> aug_chart;
+
+    std::array<char, 80> p_bar;
+    void place_pivot(double low_limit, double best_tourlen, double piv_val);
 };
 
 std::ostream &operator<<(std::ostream &os, Solver::Aug aug);

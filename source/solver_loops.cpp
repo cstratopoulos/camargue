@@ -39,6 +39,7 @@ using std::logic_error;
 using std::exception;
 
 
+
 namespace CMR {
 
 using CutType = Sep::HyperGraph::Type;
@@ -79,6 +80,8 @@ bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
         double delta = std::abs(new_val - prev_val);
         double tourlen = core_lp.active_tourlen();
 
+        place_pivot(.98 * tourlen, tourlen, new_val);
+
         total_delta += delta;
         if (new_val < lowest_piv)
             lowest_piv = new_val;
@@ -111,7 +114,35 @@ bool Solver::restart_loop(LP::PivType piv, double delta_metric)
 
 inline bool Solver::return_pivot(LP::PivType piv)
 {
-    return piv == PivType::Tour || piv == PivType::FathomedTour;
+    bool result = (piv == PivType::Tour || piv == PivType::FathomedTour);
+
+    if (result)
+        cout << "\n";
+
+    return result;
+}
+
+inline void Solver::place_pivot(double low_lim, double best_tourlen,
+                                double piv_val)
+{
+    int target_entry = 1;
+    char piv_char = '|';
+    if (piv_val <= low_lim)
+        piv_char = '!';
+    else if (piv_val == best_tourlen) {
+        piv_char = '*';
+        target_entry = 78;
+    } else {
+        target_entry = ceil(78 * ((piv_val - low_lim) /
+                                  (best_tourlen - low_lim)));
+    }
+
+    p_bar[target_entry] = piv_char;
+
+    for (char &c : p_bar)
+        cout << c;
+    cout << "\r" << std::flush;
+    p_bar[target_entry] = ' ';
 }
 
 /**
@@ -134,6 +165,9 @@ PivType Solver::cut_and_piv(bool do_price)
     unique_ptr<Sep::PoolCuts> pool_sep;
     unique_ptr<Sep::MetaCuts> meta_sep;
 
+    std::fill(p_bar.begin(), p_bar.end(), ' ');
+    p_bar[0] = '[';
+    p_bar[79] = ']';
 
     while (true) {
         try {
