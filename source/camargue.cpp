@@ -36,7 +36,7 @@ static void initial_parse(int argc, char **argv,
                           string &tsp_fname, string &tour_fname,
                           int &seed, int &rnodes, int &rgrid,
                           CMR::OutPrefs &outprefs, bool &sparseflag,
-                          bool &branchflag, int &node_sel);
+                          bool &branchflag, int &node_sel, int &cut_sel);
 
 static void usage(const std::string &fname);
 
@@ -52,6 +52,8 @@ int main(int argc, char** argv) try
 
     int node_sel = 0;
 
+    int cut_sel = 1;
+
     bool sparse = false;
     bool branch = true;
 
@@ -61,7 +63,7 @@ int main(int argc, char** argv) try
 
     initial_parse(argc, argv, tsp_fname, tour_fname,
                   seed, rand_nodes, rand_grid, outprefs, sparse, branch,
-                  node_sel);
+                  node_sel, cut_sel);
 
     if (!tsp_fname.empty()) {
         if (tour_fname.empty())
@@ -75,10 +77,16 @@ int main(int argc, char** argv) try
         tsp_solver = CMR::util::make_unique<CMR::Solver>(seed, rand_nodes,
                                                          rand_grid, outprefs);
 
-    if (sparse)
-        tsp_solver->choose_cuts(CMR::Solver::CutSel::Presets::Sparse);
-    else
-        tsp_solver->choose_cuts(CMR::Solver::CutSel::Presets::Aggressive);
+    using SelPreset = CMR::Solver::CutSel::Presets;
+
+    if (cut_sel == 1) {
+            tsp_solver->choose_cuts(sparse ? SelPreset::Sparse :
+                                    SelPreset::Aggressive);
+    } else if (cut_sel == 0) {
+        tsp_solver->choose_cuts(SelPreset::Vanilla);
+        tsp_solver->cut_sel.safeGMI = sparse;
+    } else
+        throw logic_error("Unimplemented CutSel preset val");
 
     CMR::Timer t(tsp_solver->inst_info().problem_name() + " overall");
     t.start();
@@ -124,7 +132,7 @@ static void initial_parse(int ac, char **av,
                           string &tsp_fname, string &tour_fname,
                           int &seed, int &rnodes, int &rgrid,
                           CMR::OutPrefs &outprefs, bool &sparseflag,
-                          bool &branchflag, int &node_sel)
+                          bool &branchflag, int &node_sel, int &cut_sel)
 {
     bool randflag = false;
 
@@ -137,7 +145,7 @@ static void initial_parse(int ac, char **av,
         throw logic_error("No arguments specified");
     }
 
-    while ((c = getopt(ac, av, "aBEGPRSVXb:n:g:s:t:")) != EOF) {
+    while ((c = getopt(ac, av, "aBEGPRSVXb:c:n:g:s:t:")) != EOF) {
         switch (c) {
         case 'B':
             outprefs.prog_bar = true;
@@ -165,6 +173,9 @@ static void initial_parse(int ac, char **av,
             break;
         case 'b':
             node_sel = atoi(optarg);
+            break;
+        case 'c':
+            cut_sel = atoi(optarg);
             break;
         case 'n':
             rnodes = atoi(optarg);
@@ -195,6 +206,9 @@ static void initial_parse(int ac, char **av,
 
     if (node_sel < 0 || node_sel > 3)
         throw logic_error("Branching strategy (-b) must be 0, 1, 2, or 3");
+
+    if (cut_sel < 0 || cut_sel > 1)
+        throw logic_error("Cut sel (-c) must be 0 or 1");
 
     if (tsp_fname.empty() && rnodes <= 0) {
         usage(av[0]);
@@ -239,6 +253,9 @@ static void usage(const std::string &fname)
          <<"\t\t except some with MATRIX or EXPLICIT coordinates.\n";
     cerr << "\n";
     cerr << "\t\t PARAMETER OPTIONS (argument x)\n"
+         << "-c \t Cut selection x (see below, each contains prev).\n"
+         << "   \t 0\tPrimal algorithms + simple standard heuristics.\n"
+         << "   \t 1\tAs above, plus local cuts/cut metamorphoses (default).\n"
          << "-b \t Branching strategy x (see below).\n"
          << "   \t 0\tInterleaved best-tour/best-bound every 10 nodes"
          << " (default).\n"
