@@ -12,6 +12,7 @@
 
 #include <catch.hpp>
 
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -34,7 +35,11 @@ SCENARIO ("Searching for cut metamorphoses",
         "d493",
         "att532",
         "u724",
+        "dsj1000",
         "pr1002",
+        "rl1304",
+        "d2103",
+        "pcb3038"
         };
 
     for (string &prob : probs) {
@@ -52,9 +57,11 @@ SCENARIO ("Searching for cut metamorphoses",
         const auto &active_tour = solver.active_tour();
 
         auto &core_lp = const_cast<LP::CoreLP &>(solver.get_core_lp());
-        // core_lp.primal_opt();
-        // cout << "Primal optimized with objval " << core_lp.get_objval()
-        //      << endl;
+        if (core_graph.node_count() > 500) {
+            core_lp.primal_opt();
+            cout << "Larger problem, primal optimized with objval "
+                 << core_lp.get_objval() << endl;
+        }
 
         const auto &ext_cuts = solver.get_core_lp().external_cuts();
         const auto &lp_vec = solver.get_core_lp().lp_vec();
@@ -63,15 +70,31 @@ SCENARIO ("Searching for cut metamorphoses",
         Data::SupportGroup s_dat(core_graph.get_edges(), lp_vec, island,
                                  core_graph.node_count());
 
-        Sep::MetaCuts mcuts(ext_cuts, core_graph.get_edges(), active_tour,
-                            s_dat);
-
         for (MetaType m : {MetaType::Decker, MetaType::Handling,
                 MetaType::Teething}) {
+            Sep::MetaCuts mcuts(ext_cuts, core_graph.get_edges(), active_tour,
+                                s_dat);
             bool found_meta = false;
             mcuts.set_type(m);
-            INFO("Set cut type to " << m);
             REQUIRE_NOTHROW(found_meta = mcuts.find_cuts());
+            if (!found_meta)
+                continue;
+
+            Sep::LPcutList &meta_q = mcuts.metacuts_q();
+            const vector<int> &perm = solver.best_info().perm;
+            const vector<int> &tour_edges = solver.best_info().best_tour_edges;
+            for (auto it = meta_q.begin(); it; it = it->next) {
+                LP::SparseRow R = Sep::get_row(*it, perm, core_graph);
+                double rhs = R.rhs;
+                cout << "Tour activity " << std::setprecision(2)
+                     << (Sep::get_activity(tour_edges, R) - R.rhs)
+                     << ", lp activity "
+                     << (Sep::get_activity(lp_vec, R) - R.rhs)
+                     << endl;
+            }
+
+            meta_q.clear();
+            cout << "\n";
         }
     }
     }

@@ -34,9 +34,10 @@ public:
         Teething,
     };
 
+    /// Choose what kind of cuts will be found by find_cuts.
     void set_type(Type t) { meta_type = t; }
 
-    bool find_cuts(); //!< Search for cuts of type meta_type.
+    bool find_cuts();
 
     LPcutList &metacuts_q() { return meta_q; }
 
@@ -51,7 +52,11 @@ private:
     /// Price all comb-like cuts in LP; return true iff some are of interest.
     bool price_combs();
 
+    /// Used by attempt_sep to determine if \p num_paths is high enough.
+    bool above_threshold(int num_paths);
+
     bool attempt_sep(); //!< Should separation be attempted at all.
+
     void price_cliques(); //!< Price all the Cliques in the LP.
 
     bool pure_comb(CCtsp_lpcut_in &c); //!< Is \p c a pure comb.

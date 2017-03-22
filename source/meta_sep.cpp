@@ -1,5 +1,6 @@
 #include "meta_sep.hpp"
 #include "err_util.hpp"
+#include "util.hpp"
 
 #include <algorithm>
 #include <iomanip>
@@ -10,6 +11,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::flush;
+using std::setprecision;
 
 using std::exception;
 using std::runtime_error;
@@ -56,6 +58,7 @@ MetaCuts::MetaCuts(const ExternalCuts &EC_,
 bool MetaCuts::find_cuts()
 {
     runtime_error err("Problem in MetaCuts::find_cuts");
+    double st = util::zeit();
 
     try {
         if (!attempt_sep())
@@ -104,9 +107,6 @@ bool MetaCuts::find_cuts()
     vector<CutViol> found_cuts;
     const std::vector<int> &perm = active_tour.tour_perm();
 
-    if (verbose)
-        cout << "Calling MetaCuts::find_cuts for type " << meta_type << endl;
-
     int ic_num = 0;
     for (HGitr it : interest_combs) {
         ++ic_num;
@@ -117,7 +117,6 @@ bool MetaCuts::find_cuts()
                                             { CCtsp_free_lpcut_in(&old);});
 
         CCtsp_init_lpcut_in(&old);
-        CCtsp_init_lpcut_in(dd);
 
         try { old = H.to_lpcut_in(perm); }
         CMR_CATCH_PRINT_THROW("getting lpcut_in from HyperGraph", err);
@@ -156,15 +155,9 @@ bool MetaCuts::find_cuts()
             double tour_slack = CCtsp_cutprice(TG.pass_ptr(), dd,
                                                TG.tour_array());
 
-
             if (lp_slack <= -Epsilon::CutViol &&
                 (!filter_primal || tour_slack == 0.0)) {
                 found_cuts.emplace_back(dd, lp_slack);
-                cout << "\tFrom HG " << ic_num
-                     << ", lp_slack "
-                     << std::setprecision(2)
-                     << lp_slack << ", tour_slack " << tour_slack
-                     << std::setprecision(6) << endl;
             } else {
                 CCtsp_free_lpcut_in(dd);
                 CC_IFFREE(dd, CCtsp_lpcut_in);
@@ -173,12 +166,13 @@ bool MetaCuts::find_cuts()
         }
     }
 
-    if (verbose)
-        cout << "MetaCuts::find_cuts found "
-             << found_cuts.size() << endl;
 
-    if (found_cuts.empty())
+    if (found_cuts.empty()) {
+        st = util::zeit() - st;
+        cout << "\tFound 0 " << meta_type << " cuts in "
+             << setprecision(2) << st << "s" << setprecision(6) << endl;
         return false;
+    }
 
     if (found_cuts.size() > 250) {
         std::sort(found_cuts.begin(), found_cuts.end(),
@@ -190,16 +184,16 @@ bool MetaCuts::find_cuts()
             CC_IFFREE(found_cuts.back().first, CCtsp_lpcut_in);
             found_cuts.pop_back();
         }
-
-        if (verbose)
-            cout << "Pruned to 250 most violated" << endl;
     }
 
     for (const CutViol &cv : found_cuts)
         meta_q.push_front(cv.first);
 
+    st = util::zeit() - st;
+
     if (verbose)
-        cout << "Enqueued cuts, meta_q has size " <<  meta_q.size()
+        cout << "\tEnqueued " << meta_q.size() << " " << meta_type
+             << " cuts in " << setprecision(2) << st << "s" << setprecision(6)
              << endl;
 
     return true;
@@ -238,15 +232,20 @@ bool MetaCuts::price_combs()
     return (!interest_combs.empty());
 }
 
+bool MetaCuts::above_threshold(int num_paths)
+{
+    return num_paths > 0.15 * TG.node_count();
+}
+
 
 /// @returns true iff we should attempt separation based on the given x-vector.
-///@remark A rewrite of static int no_tighten from concorde/TSP/control.c
+/// @remark A rewrite of static int no_tighten from concorde/TSP/control.c
 bool MetaCuts::attempt_sep()
 {
     CC_SRKgraph G;
     auto cleanup = util::make_guard([&G]{ CCcut_SRK_free_graph(&G); });
 
-    int k = 0;
+    int num_paths = 0;
     int ncount = TG.node_count();
 
     CCcut_SRK_init_graph(&G);
@@ -260,29 +259,9 @@ bool MetaCuts::attempt_sep()
     if (CCcut_SRK_defluff(&G))
         throw runtime_error("CCcut_SRK_defluff failed");
 
-    CCcut_SRK_identify_paths_to_edges(&G, &k, 0);
+    CCcut_SRK_identify_paths_to_edges(&G, &num_paths, 0);
 
-    double target_count = 0.1 * ncount;
-
-    if (verbose)
-        cout << "Paths to edges returned " << k << " with target "
-             << target_count << ", ratio to ncount "
-             << ((double) k / ncount) << endl;
-
-    cout << "Returning tru eanyway!!!!" << endl;
-    return true;
-
-    if (verbose)
-        cout << "MetaCuts::attempt_sep returning ";
-    if (k < (target_count)) {
-        if (verbose)
-            cout << "false" << endl;
-        return false;
-    } else {
-        if (verbose)
-            cout << "true" << endl;
-        return true;
-    }
+    return above_threshold(num_paths);
 }
 
 
