@@ -1070,7 +1070,7 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
  */
 void Relaxation::tighten_bound(int index, char sense, double val)
 {
-    if (sense != 'L' && sense != 'G' && sense != 'B') {
+    if (sense != 'L' && sense != 'U' && sense != 'B') {
         cout << "Called tighten_bound with sense " << sense << endl;
         throw logic_error("Invalid sense in Relaxation::tighten_bound");
     }

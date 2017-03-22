@@ -169,8 +169,9 @@ bool MetaCuts::find_cuts()
 
     if (found_cuts.empty()) {
         st = util::zeit() - st;
-        cout << "\tFound 0 " << meta_type << " cuts in "
-             << setprecision(2) << st << "s" << setprecision(6) << endl;
+        if (verbose)
+            cout << "\tFound 0 " << meta_type << " cuts in "
+                 << setprecision(2) << st << "s" << setprecision(6) << endl;
         return false;
     }
 
