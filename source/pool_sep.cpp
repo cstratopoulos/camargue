@@ -1,4 +1,5 @@
 #include "pool_sep.hpp"
+#include "cc_lpcuts.hpp"
 #include "err_util.hpp"
 #include "timer.hpp"
 
@@ -29,9 +30,10 @@ using DoublePair = std::pair<double, double>;
 
 PoolCuts::PoolCuts(ExternalCuts &EC_,
                    const std::vector<Graph::Edge> &core_edges_,
-                   const std::vector<double> &tour_edges_,
+                   const LP::ActiveTour &active_tour_,
                    Data::SupportGroup &s_dat) try
-    : EC(EC_), core_edges(core_edges_), tour_edges(tour_edges_),
+    : EC(EC_), core_edges(core_edges_), active_tour(active_tour_),
+      tour_edges(active_tour_.edges()),
       supp_data(s_dat), hg_q(50),
       lp_slacks(vector<double>(EC_.get_cutpool().size(), 0.0)),
       tour_slacks(vector<double>(EC_.get_cutpool().size(), 0.0))
@@ -57,6 +59,28 @@ PoolCuts::PoolCuts(ExternalCuts &EC_,
     throw runtime_error("PoolCuts constructor failed.");
 }
 
+// bool PoolCuts::tighten_pool()
+// {
+//     runtime_error err("Problem in PoolCuts::tighten_pool");
+
+//     if (verbose)
+//         cout << "Cutpool tighten sep, filter_primal " << filter_primal
+//              << ", " << EC.cut_pool.size() << " cuts in pool." << endl;
+
+//     TourGraph TG;
+//     try {
+//         TG = TourGraph(tour_edges, )
+//     }
+
+//     vector<int> tour_perm_elist;
+//     vector<int> lp_perm_elist;
+
+//     try {
+//         if (!price_cuts(true))
+//             return true;
+//     } CMR_CATCH_PRINT_THROW("pricing cuts", err);
+// }
+
 bool PoolCuts::find_cuts()
 {
     runtime_error err("Problem in PoolCuts::find_cuts");
@@ -66,7 +90,7 @@ bool PoolCuts::find_cuts()
              << EC.cut_pool.size() << " cuts in pool." << endl;
 
     try {
-        if (price_cuts() == false)
+        if (!price_cuts(false))
             return false;
     } CMR_CATCH_PRINT_THROW("pricing cuts", err);
 
@@ -109,7 +133,7 @@ bool PoolCuts::find_cuts()
     return true;
 }
 
-bool PoolCuts::price_cuts()
+bool PoolCuts::price_cuts(bool tighten)
 {
     Timer t("Price cuts");
     t.start();
@@ -147,27 +171,33 @@ bool PoolCuts::price_cuts()
             }
             hgt.stop();
         } else if (h_type == CutType::Domino) { // we just expand the whole row
-            dpt.resume();
-            LP::SparseRow R;
+            if (!tighten) {
+                dpt.resume();
+                LP::SparseRow R;
 
-            try {
-                H.get_coeffs(core_edges, R.rmatind, R.rmatval);
-            } catch (const exception &e) {
-                cerr << e.what() << "\n";
-                throw runtime_error("Couldn't get DP row");
+                try {
+                    H.get_coeffs(core_edges, R.rmatind, R.rmatval);
+                } catch (const exception &e) {
+                    cerr << e.what() << "\n";
+                    throw runtime_error("Couldn't get DP row");
+                }
+
+                double lp_activity = get_activity(supp_data.lp_vec, R);
+                lp_slack = rhs - lp_activity;
+
+                if (filter_primal)
+                    tour_slack = rhs - get_activity(tour_edges, R);
+
+                dpt.stop();
+            } else {
+                lp_slack = 1000;
+                tour_slack = 1000;
             }
-
-            double lp_activity = get_activity(supp_data.lp_vec, R);
-            double tour_activity = get_activity(tour_edges, R);
-            lp_slack = rhs - lp_activity;
-            tour_slack = rhs - tour_activity;
-            dpt.stop();
         }
 
         lp_slacks[i] = lp_slack;
         tour_slacks[i] = tour_slack;
-        if (lp_slack <= -Eps::CutViol &&
-            (tour_slack == 0.0 || filter_primal == false)) {
+        if (slack_of_interest(lp_slack, tour_slack, tighten)) {
             result = true;
             ++numfound;
         }
@@ -230,6 +260,16 @@ void PoolCuts::price_cliques()
             }
         clique_vals[clq] = DoublePair(lp_val, tour_val);
     }
+}
+
+inline bool PoolCuts::slack_of_interest(double lp_slack, double tour_slack,
+                                        bool tighten)
+{
+    if (tighten)
+        return (lp_slack < 0.5 && (!filter_primal || tour_slack < 0.5));
+    else
+        return (lp_slack <= -Eps::CutViol &&
+                (!filter_primal || tour_slack == 0.0));
 }
 
 }

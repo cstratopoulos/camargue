@@ -215,12 +215,12 @@ SCENARIO ("Pricing cuts from a cutpool",
                 vector<int> island;
 
                 Data::SupportGroup s_dat(edges, lp_vec, island, G.node_count());
-                Sep::PoolCuts pool_sep(EC, edges, solver.active_tour().edges(),
+                Sep::PoolCuts pool_sep(EC, edges, solver.active_tour(),
                                        s_dat);
 
                 bool found_pool = false;
                 double pt = util::zeit();
-                REQUIRE_NOTHROW(found_pool = pool_sep.price_cuts());
+                REQUIRE_NOTHROW(found_pool = pool_sep.price_cuts(false));
                 pt = util::zeit() - pt;
                 cout << "\tPriced pool in " << pt << "s\n";
 

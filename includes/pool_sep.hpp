@@ -7,6 +7,7 @@
 #ifndef CMR_POOL_SEP_H
 #define CMR_POOL_SEP_H
 
+#include "active_tour.hpp"
 #include "hypergraph.hpp"
 #include "datagroups.hpp"
 #include "process_cuts.hpp"
@@ -23,14 +24,16 @@ class PoolCuts {
 public:
     PoolCuts(ExternalCuts &EC_,
              const std::vector<Graph::Edge> &core_edges_,
-             const std::vector<double> &tour_edges_,
+             const LP::ActiveTour &active_tour_,
              Data::SupportGroup &s_dat);
 
     /// Search pool for primal violated cuts, enqueueing them if found.
     bool find_cuts();
 
+    bool tighten_pool(); //!< Attempt to tighten cuts in the pool.
+
     /// Populate lp_slacks and tour_slacks; return true if primal cuts found.
-    bool price_cuts();
+    bool price_cuts(bool tighten);
 
     CutQueue<HyperGraph> &pool_q() { return hg_q; }
 
@@ -43,8 +46,13 @@ public:
 private:
     void price_cliques(); //!< Populate clique_vals.
 
+    /// Are we interested in a cut based on its tour/lp slack.
+    bool slack_of_interest(double lp_slack, double tour_slack,
+                           bool tighten);
+
     ExternalCuts &EC;
     const std::vector<Graph::Edge> &core_edges;
+    const LP::ActiveTour &active_tour;
     const std::vector<double> &tour_edges;
     Data::SupportGroup &supp_data;
     Graph::AdjList tour_adj;

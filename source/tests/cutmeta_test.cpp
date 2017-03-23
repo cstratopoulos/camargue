@@ -52,16 +52,14 @@ SCENARIO ("Searching for cut metamorphoses",
                       prob == "a280" ? 99 : 999, prefs);
 
         solver.cutting_loop(false, false, true);
+
+        cout << "Ran cutting loop, pool has size "
+             << solver.get_core_lp().external_cuts().pool_count() << endl;
     THEN ("We can search for cut metamorphoses") {
         const auto &core_graph = solver.graph_info();
         const auto &active_tour = solver.active_tour();
 
         auto &core_lp = const_cast<LP::CoreLP &>(solver.get_core_lp());
-        if (core_graph.node_count() > 500) {
-            core_lp.primal_opt();
-            cout << "Larger problem, primal optimized with objval "
-                 << core_lp.get_objval() << endl;
-        }
 
         const auto &ext_cuts = solver.get_core_lp().external_cuts();
         const auto &lp_vec = solver.get_core_lp().lp_vec();
@@ -96,6 +94,29 @@ SCENARIO ("Searching for cut metamorphoses",
             meta_q.clear();
             cout << "\n";
         }
+
+        bool found_tighten = false;
+        Sep::MetaCuts mcuts(ext_cuts, core_graph.get_edges(), active_tour,
+                            s_dat);
+        mcuts.set_type(MetaType::Tighten);
+        REQUIRE_NOTHROW(found_tighten = mcuts.tighten_cuts());
+
+        if (found_tighten) {
+            Sep::LPcutList &meta_q = mcuts.metacuts_q();
+            const vector<int> &perm = solver.best_info().perm;
+            const vector<int> &tour_edges = solver.best_info().best_tour_edges;
+            for (auto it = meta_q.begin(); it; it = it->next) {
+                LP::SparseRow R = Sep::get_row(*it, perm, core_graph);
+                double rhs = R.rhs;
+                cout << "Tour activity " << std::setprecision(2)
+                     << (Sep::get_activity(tour_edges, R) - R.rhs)
+                     << ", lp activity "
+                     << (Sep::get_activity(lp_vec, R) - R.rhs)
+                     << endl;
+            }
+        }
+
+
     }
     }
     }

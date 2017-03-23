@@ -32,12 +32,15 @@ public:
         Decker,
         Handling,
         Teething,
+        Tighten,
     };
 
     /// Choose what kind of cuts will be found by find_cuts.
     void set_type(Type t) { meta_type = t; }
 
     bool find_cuts();
+
+    bool tighten_cuts();
 
     LPcutList &metacuts_q() { return meta_q; }
 

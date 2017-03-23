@@ -33,6 +33,8 @@ std::ostream &operator<<(std::ostream &os, MetaCuts::Type t)
         os << "Handling";
     else if (t == Mtype::Teething)
         os << "Teething";
+    else if (t == Mtype::Tighten)
+        os << "Tighten";
     else
         throw std::logic_error("Unimplemented MetaCuts::Type <<");
 
@@ -45,9 +47,12 @@ MetaCuts::MetaCuts(const ExternalCuts &EC_,
                    Data::SupportGroup &s_dat) try
     : EC(EC_), core_edges(core_edges_), active_tour(active_tour_),
       supp_data(s_dat),
-      TG(active_tour_.edges(), core_edges_, active_tour_.tour_perm()),
+      TG(),
       perm_elist(s_dat.support_elist)
 {
+    if (filter_primal)
+        TG = TourGraph(active_tour.edges(), core_edges,
+                       active_tour.tour_perm());
     for (int i = 0; i < perm_elist.size(); ++i)
         perm_elist[i] = active_tour.tour_perm()[perm_elist[i]];
 } catch (const exception &e) {
@@ -55,8 +60,134 @@ MetaCuts::MetaCuts(const ExternalCuts &EC_,
     throw runtime_error("MetaCuts constructor failed");
 }
 
+bool MetaCuts::tighten_cuts()
+{
+    meta_type = Type::Tighten;
+    double st = util::zeit();
+
+    runtime_error err("Problem in MetaCuts::tighten_cuts");
+
+    try {
+        if (!price_combs())
+            return false;
+    } CMR_CATCH_PRINT_THROW("searching for combs within tolerance", err);
+
+    CCtsp_lpgraph lg;
+    int ncount = supp_data.supp_graph.node_count;
+    vector<double> &ecap = supp_data.support_ecap;
+    int ecount = ecap.size();
+
+    auto cleanup = util::make_guard([&lg] { CCtsp_free_lpgraph (&lg); });
+
+    CCtsp_init_lpgraph_struct(&lg);
+
+    if (CCtsp_build_lpgraph(&lg, ncount, ecount, &perm_elist[0],
+                            (int *) NULL)) {
+        cerr << "CCtsp_build_lpgraph failed" << endl;
+        throw err;
+    }
+
+    if (CCtsp_build_lpadj(&lg, 0, ecount)) {
+        cerr << "CCtsp_build_lpadj failed" << endl;
+        throw err;
+    }
+
+    using CutViol = std::pair<lpcut_in *, double>;
+    vector<CutViol> found_cuts;
+    const std::vector<int> &perm = active_tour.tour_perm();
+
+    CCtsp_tighten_info tstats; // unused
+    CCtsp_init_tighten_info(&tstats);
+
+    int ic_num = -1;
+    for (HGitr it : interest_combs) {
+        ++ic_num;
+        const HyperGraph &H = *it;
+        lpcut_in old;
+        lpcut_in *tight = NULL;
+        auto lpcut_guard = util::make_guard([&old]
+                                            { CCtsp_free_lpcut_in(&old); });
+
+        tight = CC_SAFE_MALLOC(1, CCtsp_lpcut_in);
+        if (tight == NULL) {
+            cerr << "Couldn't allocate tight" << endl;
+            throw err;
+        }
+
+        CCtsp_init_lpcut_in(&old);
+        CCtsp_init_lpcut_in(tight);
+
+        try { old = H.to_lpcut_in(perm, true); }
+        CMR_CATCH_PRINT_THROW("getting lpcut_in/skelly from HyperGraph", err);
+
+        double improve = 0.0;
+        if (CCtsp_tighten_lpcut_in(&lg, &old, &ecap[0], tight, &tstats,
+                                   &improve)) {
+            cerr << "CCtsp_tighten_lpcut_in failed" << endl;
+            throw err;
+        }
+
+        double lp_slack = 0.0;
+        double tour_slack = 0.0;
+
+        if (improve != 0) {
+            lp_slack = CCtsp_cutprice(&lg, tight, &ecap[0]);;
+            if (lp_slack <= -Epsilon::CutViol) {
+                if (filter_primal)
+                    tour_slack = CCtsp_cutprice(TG.pass_ptr(), tight,
+                                                TG.tour_array());
+                if (tour_slack == 0.0) {
+                    try { found_cuts.emplace_back(tight, lp_slack); }
+                    CMR_CATCH_PRINT_THROW("emplacing cut", err);
+                }
+
+                cout << "HG " << ic_num << " tightened cut to lp slack "
+                     << lp_slack << ", tour " << tour_slack << endl;
+            }
+        } else {
+            CCtsp_free_lpcut_in(tight);
+            CC_IFFREE(tight, CCtsp_lpcut_in);
+        }
+    }
+
+    if (found_cuts.empty()) {
+        st = util::zeit() - st;
+        if (verbose)
+            cout << "\tFound 0 " << meta_type << " cuts in "
+                 << setprecision(2) << st << "s" << setprecision(6) << endl;
+        return false;
+    }
+
+    if (found_cuts.size() > 250) {
+        std::sort(found_cuts.begin(), found_cuts.end(),
+                  [](const CutViol &a, const CutViol &b)
+                  { return a.second < b.second; });
+
+        while (found_cuts.size() > 250) {
+            CCtsp_free_lpcut_in(found_cuts.back().first);
+            CC_IFFREE(found_cuts.back().first, CCtsp_lpcut_in);
+            found_cuts.pop_back();
+        }
+    }
+
+    for (const CutViol &cv : found_cuts)
+        meta_q.push_front(cv.first);
+
+    st = util::zeit() - st;
+
+    if (verbose)
+        cout << "\tEnqueued " << meta_q.size() << " " << meta_type
+             << " cuts in " << setprecision(2) << st << "s" << setprecision(6)
+             << endl;
+
+    return true;
+}
+
 bool MetaCuts::find_cuts()
 {
+    if (meta_type == Type::Tighten)
+        throw logic_error("Invoked find_cuts with Tighten");
+
     runtime_error err("Problem in MetaCuts::find_cuts");
     double st = util::zeit();
 
@@ -72,7 +203,7 @@ bool MetaCuts::find_cuts()
 
     CCtsp_lpgraph lg;
     CC_GCgraph gg;
-    int ncount = TG.node_count();
+    int ncount = supp_data.supp_graph.node_count;
     vector<double> &ecap = supp_data.support_ecap;
     int ecount = ecap.size();
 
@@ -107,7 +238,7 @@ bool MetaCuts::find_cuts()
     vector<CutViol> found_cuts;
     const std::vector<int> &perm = active_tour.tour_perm();
 
-    int ic_num = 0;
+    int ic_num = -1;
     for (HGitr it : interest_combs) {
         ++ic_num;
         const HyperGraph &H = *it;
@@ -118,7 +249,7 @@ bool MetaCuts::find_cuts()
 
         CCtsp_init_lpcut_in(&old);
 
-        try { old = H.to_lpcut_in(perm); }
+        try { old = H.to_lpcut_in(perm, false); }
         CMR_CATCH_PRINT_THROW("getting lpcut_in from HyperGraph", err);
 
         try {
@@ -152,12 +283,16 @@ bool MetaCuts::find_cuts()
         while (dd) {
             lpcut_in *ddnext = dd->next;
             double lp_slack = CCtsp_cutprice(&lg, dd, &ecap[0]);
-            double tour_slack = CCtsp_cutprice(TG.pass_ptr(), dd,
-                                               TG.tour_array());
+            double tour_slack = 0.0;
 
-            if (lp_slack <= -Epsilon::CutViol &&
-                (!filter_primal || tour_slack == 0.0)) {
-                found_cuts.emplace_back(dd, lp_slack);
+            if (lp_slack <= -Epsilon::CutViol) {
+                if (filter_primal)
+                    tour_slack = CCtsp_cutprice(TG.pass_ptr(), dd,
+                                                TG.tour_array());
+                if (tour_slack == 0.0) {
+                    try { found_cuts.emplace_back(dd, lp_slack); }
+                    CMR_CATCH_PRINT_THROW("emplacing cut", err);
+                }
             } else {
                 CCtsp_free_lpcut_in(dd);
                 CC_IFFREE(dd, CCtsp_lpcut_in);
@@ -208,6 +343,8 @@ bool MetaCuts::price_combs()
 
     const vector<HyperGraph> &lp_cuts = EC.get_cuts();
 
+    double tolerance = (meta_type == Type::Tighten) ? 0.5 : 10;
+
     for (HGitr it = lp_cuts.begin(); it != lp_cuts.end(); ++it) {
         const HyperGraph &H = *it;
         int num_cliques = H.get_cliques().size();
@@ -221,7 +358,7 @@ bool MetaCuts::price_combs()
         for (const Clique::Ptr &clq_ref : H.get_cliques())
             slack += clique_vals[*clq_ref];
 
-        if (slack < 10) {
+        if (slack < tolerance) {
             try { interest_combs.push_back(it); }
             CMR_CATCH_PRINT_THROW("emplacing back comb of interest", err);
         }
@@ -232,7 +369,7 @@ bool MetaCuts::price_combs()
 
 bool MetaCuts::above_threshold(int num_paths)
 {
-    return num_paths > 0.2 * TG.node_count();
+    return num_paths > 0.2 * supp_data.supp_graph.node_count;
 }
 
 
@@ -249,7 +386,7 @@ bool MetaCuts::attempt_sep()
     auto cleanup = util::make_guard([&G]{ CCcut_SRK_free_graph(&G); });
 
     int num_paths = 0;
-    int ncount = TG.node_count();
+    int ncount = supp_data.supp_graph.node_count;
 
     CCcut_SRK_init_graph(&G);
     if (CCcut_SRK_buildgraph(&G, ncount, supp_data.support_ecap.size(),
@@ -314,7 +451,8 @@ void MetaCuts::price_cliques()
 bool MetaCuts::pure_comb(lpcut_in &c)
 {
     int result = 0;
-    if (CCtsp_test_pure_comb(TG.node_count(), &c, &result, (int *) NULL)) {
+    int ncount = supp_data.supp_graph.node_count;
+    if (CCtsp_test_pure_comb(ncount, &c, &result, (int *) NULL)) {
         cerr << "CCtsp_test_pure_comb failed" << endl;
         throw runtime_error("MetaCuts::pure_comb failed");
     }

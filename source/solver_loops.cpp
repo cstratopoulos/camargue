@@ -669,7 +669,7 @@ void Solver::reset_separator(unique_ptr<Sep::Separator> &S)
 void Solver::reset_separator(std::unique_ptr<Sep::PoolCuts> &PS)
 {
     util::ptr_reset(PS, core_lp.ext_cuts,
-                    core_graph.get_edges(), active_tour().edges(),
+                    core_graph.get_edges(), active_tour(),
                     core_lp.supp_data);
     PS->filter_primal = !active_tour().tourless();
     PS->verbose = output_prefs.verbose;

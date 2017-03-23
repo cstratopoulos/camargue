@@ -167,12 +167,19 @@ void HyperGraph::transfer_source(CliqueBank &new_source_bank) try
     throw runtime_error("HyperGraph::transfer_source failed.");
 }
 
-CCtsp_lpcut_in HyperGraph::to_lpcut_in(const vector<int> &active_perm) const
+/**
+ * @param active_perm the permutation vector for the active best tour.
+ * @param with_skeleton true iff a skeleton should be constructed for the cut
+ * as well.
+ * @returns a CCtsp_lpcut_in representation of this HyperGraph cut.
+ */
+CCtsp_lpcut_in HyperGraph::to_lpcut_in(const vector<int> &active_perm,
+                                       bool with_skeleton) const
 {
     if (source_toothbank != nullptr)
-        throw logic_error("Called HyperGraph::to_lpcut_in on domino");
+        throw runtime_error("Called HyperGraph::to_lpcut_in on domino");
     if (source_bank == nullptr)
-        throw logic_error("Called HyperGraph::to_lpcut_in w no source_bank");
+        throw runtime_error("Called HyperGraph::to_lpcut_in w no source_bank");
 
     runtime_error err("Problem in HyperGraph::to_lpcut_in");
     int rval = 0;
@@ -210,6 +217,11 @@ CCtsp_lpcut_in HyperGraph::to_lpcut_in(const vector<int> &active_perm) const
 
         if ((rval = CCtsp_array_to_lpclique(&clq_nodes[0], clq_nodes.size(),
                                             cur_clq)))
+            throw err;
+    }
+
+    if (with_skeleton) {
+        if ((rval = CCtsp_construct_skeleton(&result, active_perm.size())))
             throw err;
     }
 
