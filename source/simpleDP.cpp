@@ -96,10 +96,12 @@ bool Sep::SimpleDP::find_cuts()
     if (verbose) {
         cout << "\t" << dp_q.size() << " total simple DP cuts enqueued."
              << endl;
-        candidates.profile();
-        find_cands.report(false);
-        search_wit.report(false);
-        find_total.report(false);
+        if (verbose > 1) {
+            candidates.profile();
+            find_cands.report(false);
+            search_wit.report(false);
+            find_total.report(false);
+        }
     }
 
     return(!dp_q.empty());
@@ -186,10 +188,12 @@ bool Sep::SimpleDP::find_cuts()
 
     if (verbose) {
         cout << dp_q.size() << " total simple DP cuts enqueued." << endl;
-        candidates.profile();
-        find_cands.report(true);
-        search_wit.report(true);
-        find_total.report(true);
+        if (verbose > 1) {
+            candidates.profile();
+            find_cands.report(true);
+            search_wit.report(true);
+            find_total.report(true);
+        }
     }
 
     return (!dp_q.empty());

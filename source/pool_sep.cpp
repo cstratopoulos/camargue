@@ -109,6 +109,7 @@ bool PoolCuts::tighten_pool()
     CCtsp_init_tighten_info(&tstats);
 
     vector<HyperGraph> &cutpool = EC.cut_pool;
+    int prev_size = cutpool.size();
     using PoolItr = vector<HyperGraph>::iterator;
 
     // for cuts of interest, store their CC pointer, lp slack, and iterator
@@ -215,7 +216,8 @@ bool PoolCuts::tighten_pool()
         st = util::zeit() - st;
         if (verbose)
             cout << "\tFound 0 tighten_pool cuts in "
-                 << setprecision(2) << st << "s" << setprecision(6) << endl;
+                 << setprecision(2) << st << "s" << setprecision(6)
+                 << "(" << prev_size << " cuts in pool)" << endl;
         return false;
     }
 
@@ -245,12 +247,15 @@ bool PoolCuts::tighten_pool()
                                  { return H.cut_type() == CutType::Non; }),
                   cutpool.end());
 
+    int after_size = cutpool.size();
+
     st = util::zeit() - st;
 
     if (verbose)
         cout << "\tEnqueued " << tight_q.size() << " tighten pool cuts in "
              << setprecision(2) << st << "s" << setprecision(6)
-             << endl;
+             << " (Cutpool size " << prev_size << " -> "
+             << after_size << ")" << endl;
 
     return true;
 }
@@ -375,17 +380,14 @@ bool PoolCuts::price_cuts(bool tighten)
 
     t.stop();
 
-    if (verbose) {
+    if (verbose > 1) {
         cout << "\tPriced cuts, found " << numfound << " of interest" << endl;
-        if (verbose > 1) {
             pc.report(false);
             hgt.report(false);
             dpt.report(false);
             t.report(false);
-        }
     }
-
-
+    
     return result;
 }
 

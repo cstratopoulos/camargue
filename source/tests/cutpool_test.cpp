@@ -217,7 +217,7 @@ SCENARIO ("Pricing cuts from a cutpool",
                 Data::SupportGroup s_dat(edges, lp_vec, island, G.node_count());
                 Sep::PoolCuts pool_sep(EC, edges, solver.active_tour(),
                                        s_dat);
-                pool_sep.verbose = true;
+                pool_sep.verbose = 2;
 
                 bool found_pool = false;
                 double pt = util::zeit();

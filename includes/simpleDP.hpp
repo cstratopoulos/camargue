@@ -27,7 +27,7 @@ public:
 
     bool find_cuts(); //!< Separator invocation, returns true iff cuts found.
 
-    bool verbose = false;
+    int verbose = 0;
 
 private:
     CandidateTeeth candidates;

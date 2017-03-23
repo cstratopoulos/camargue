@@ -76,7 +76,7 @@ SCENARIO ("pla85900 paritioned simple DP sep case study",
     THEN ("We can bench mark tooth separation/zone allocation/dp sep") {
         Timer sdp_con("Full CandidateTeeth ctor (including allocs)");
         Sep::SimpleDP sDP(kpart, act_tour, s_dat, dp_q);
-        sDP.verbose = true;
+        sDP.verbose = 2;
 
         REQUIRE(sDP.find_cuts());
 
