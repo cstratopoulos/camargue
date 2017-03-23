@@ -166,6 +166,8 @@ PivType Solver::cut_and_piv(bool do_price)
     unique_ptr<Sep::PoolCuts> pool_sep;
     unique_ptr<Sep::MetaCuts> meta_sep;
 
+    bool tpool_once = false;
+
     std::fill(p_bar.begin(), p_bar.end(), ' ');
     p_bar[0] = '[';
     p_bar[79] = ']';
@@ -210,6 +212,26 @@ PivType Solver::cut_and_piv(bool do_price)
                         continue;
                 }
             } CMR_CATCH_PRINT_THROW("calling pool sep", err);
+
+        // tighten pool can be very slow, so only call it right after an
+        // augmenting pivot.
+        if (cut_sel.tighten_pool && core_lp.external_cuts().pool_count() != 0
+            && !tpool_once && aug_chart.size() > 1)
+            try {
+                tpool_once = true;
+                reset_separator(pool_sep);
+                if (call_separator([&pool_sep]()
+                                   { return pool_sep->tighten_pool(); },
+                                   pool_sep->tighten_q(), piv, prev_val,
+                                   total_delta, delta_ratio, lowest_piv)) {
+                    found_primal = true;
+                    if (return_pivot(piv))
+                        return piv;
+
+                    if (restart_loop(piv, delta_ratio))
+                        continue;
+                }
+            } CMR_CATCH_PRINT_THROW("calling tighten pool sep", err);
 
         bool found_seg = false;
 
@@ -398,23 +420,6 @@ PivType Solver::cut_and_piv(bool do_price)
                         continue;
                 }
             } CMR_CATCH_PRINT_THROW("calling Teething sep", err);
-
-        if (cut_sel.tighten_pool && core_lp.external_cuts().pool_count() != 0)
-            try {
-                reset_separator(pool_sep);
-                pool_sep->verbose = 1;
-                if (call_separator([&pool_sep]()
-                                   { return pool_sep->tighten_pool(); },
-                                   pool_sep->tighten_q(), piv, prev_val,
-                                   total_delta, delta_ratio, lowest_piv)) {
-                    found_primal = true;
-                    if (return_pivot(piv))
-                        return piv;
-
-                    if (restart_loop(piv, delta_ratio))
-                        continue;
-                }
-            } CMR_CATCH_PRINT_THROW("calling tighten pool sep", err);
 
         if (cut_sel.localcuts) {
             bool lc_restart = false;

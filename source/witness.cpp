@@ -277,9 +277,8 @@ void DPwitness::grab_dominos(CutQueue<dominoparity> &dp_q)
         }
 
         try {
-            dominoparity newDP(used_teeth, handle_nodes, nonneg_edges);
-
-            dp_q.push_back(newDP);
+            if (!handle_nodes.empty()) // bad hack workaround for empty handles
+                dp_q.emplace_back(used_teeth, handle_nodes, nonneg_edges);
         } CMR_CATCH_PRINT_THROW("adding new dp ineq", err);
 
         CC_gh_q.pop_front();
