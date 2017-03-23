@@ -19,6 +19,7 @@ using std::logic_error;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::flush;
 
 
 namespace CMR {
@@ -58,8 +59,10 @@ bool Separator::segment_sep() try
     bool result = segments.find_cuts();
     st = util::zeit() - st;
 
-    if (verbose)
+    if (verbose) {
         printf("\t%d segment cuts\t%.2fs\n", seg_q.size(), st);
+        cout << flush;
+    }
 
     return result;
 } catch (const exception &e) {
@@ -78,9 +81,11 @@ bool Separator::fast2m_sep() try
     bool result = fast2m.find_cuts();
     f2mt = util::zeit() - f2mt;
 
-    if (verbose)
+    if (verbose) {
         printf("\t%d fast blossoms, primal %d\t%.2fs\n",
                fast2m_q.size(), filter_primal, f2mt);
+        cout << flush;
+    }
 
     return result;
 } catch (const exception &e) {
@@ -97,9 +102,11 @@ bool Separator::blkcomb_sep() try
     bool result = blkcomb.find_cuts();
     blkt = util::zeit() - blkt;
 
-    if (verbose)
+    if (verbose) {
         printf("\t%d block combs, primal %d\t%.2fs\n",
                blkcomb_q.size(), filter_primal, blkt);
+        cout << flush;
+    }
 
     return result;
 } catch (const exception &e) {
@@ -156,8 +163,10 @@ bool Separator::connect_sep() try
     bool result = subtour.find_cuts();
     cont = util::zeit() - cont;
 
-    if (verbose)
+    if (verbose) {
         printf ("\t%d connect cuts\t%.2fs\n", connect_q.size(), cont);
+        cout << flush;
+    }
 
     return result;
 } catch (const exception &e) {
@@ -178,12 +187,15 @@ bool Separator::local_sep() try
     lct = util::zeit() - lct;
 
     if (verbose) {
-        if (!lc_sphere)
+        if (!lc_sphere) {
             printf("\t%d chunk %d local cuts\t%.2fs\n",
                    local_q.size(), lc_chunk, lct);
-        else
+            cout << flush;
+        } else {
             printf("\t%d chunk %d local cuts spheres\t%.2fs\n",
                    local_q.size(), lc_chunk, lct);
+            cout << flush;
+        }
     }
 
     return result;
