@@ -91,11 +91,22 @@ private:
 
 namespace Graph {
 
+/// Edge generation protocol to use.
+enum class EdgePlan {
+    Linkern, //!< 10 LK tours, with quadnearest for tiny instances.
+    Delaunay, //!< Delaunay triangulation.
+};
+
 class CoreGraph {
 public:
     CoreGraph() = default;
 
-    CoreGraph(const Data::Instance &inst);
+    /// Construct a CoreGraph specified by a TSP instance and edge plan.
+    CoreGraph(const Data::Instance &inst, Graph::EdgePlan edge_plan);
+
+    /// Construct a CoreGraph as above with EdgePlan::Linkern edges.
+    CoreGraph(const Data::Instance &inst)
+        : CoreGraph(inst, EdgePlan::Linkern) {}
 
     /// Construct a CoreGraph from a length func and a c-array node-node elist.
     CoreGraph(int ncount, int ecount, const int *elist,

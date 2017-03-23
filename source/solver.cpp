@@ -42,10 +42,11 @@ inline static int make_seed(const int seed)
     return (seed > 0) ? seed : (int) util::real_zeit();
 }
 
-Solver::Solver(const string &fname, const int seed, const OutPrefs outprefs)
+Solver::Solver(const string &fname, int seed, Graph::EdgePlan eplan,
+               OutPrefs outprefs)
 try : tsp_instance(fname, make_seed(seed)),
       karp_part(tsp_instance),
-      core_graph(tsp_instance), best_data(tsp_instance, core_graph),
+      core_graph(tsp_instance, eplan), best_data(tsp_instance, core_graph),
       core_lp(core_graph, best_data),
       output_prefs(outprefs)
 {
@@ -55,11 +56,14 @@ try : tsp_instance(fname, make_seed(seed)),
     throw runtime_error("Solver TSPLIB constructor failed.");
 }
 
+Solver::Solver(const std::string &tsp_fname, int seed, OutPrefs outprefs)
+    : Solver(tsp_fname, seed, Graph::EdgePlan::Linkern, outprefs) {}
+
 Solver::Solver(const string &fname, const string &tour_fname,
-               const int seed, const OutPrefs outprefs)
+               int seed, Graph::EdgePlan eplan, OutPrefs outprefs)
 try : tsp_instance(fname, make_seed(seed)),
       karp_part(tsp_instance),
-      core_graph(tsp_instance),
+      core_graph(tsp_instance, eplan),
       best_data(tsp_instance, core_graph, tour_fname),
       core_lp(core_graph, best_data),
       output_prefs(outprefs)
@@ -70,11 +74,16 @@ try : tsp_instance(fname, make_seed(seed)),
     throw runtime_error("Solver TSPLIB/tour constructor failed.");
 }
 
-Solver::Solver(const int seed, const int node_count,
-               const int gridsize, const OutPrefs outprefs)
+Solver::Solver(const std::string &tsp_fname, const std::string &tour_fname,
+               int seed, OutPrefs outprefs)
+    : Solver(tsp_fname, tour_fname, seed, Graph::EdgePlan::Linkern, outprefs)
+{}
+
+Solver::Solver(int seed, int node_count, int gridsize, Graph::EdgePlan eplan,
+               OutPrefs outprefs)
 try : tsp_instance(make_seed(seed), node_count, gridsize),
       karp_part(tsp_instance),
-      core_graph(tsp_instance), best_data(tsp_instance, core_graph),
+      core_graph(tsp_instance, eplan), best_data(tsp_instance, core_graph),
       core_lp(core_graph, best_data),
       output_prefs(outprefs)
 {
@@ -83,6 +92,9 @@ try : tsp_instance(make_seed(seed), node_count, gridsize),
     cerr << e.what() << endl;
     throw runtime_error("Solver random constructor failed.");
 }
+
+Solver::Solver(int seed, int node_count, int gridsize, OutPrefs outprefs)
+    : Solver(seed, node_count, gridsize, Graph::EdgePlan::Linkern, outprefs) {}
 
 void Solver::choose_cuts(CutSel::Presets preset)
 {

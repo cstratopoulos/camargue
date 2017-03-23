@@ -180,7 +180,7 @@ double Instance::tour_length(const vector<int> &tour_nodes) const
 
 namespace Graph {
 
-CoreGraph::CoreGraph(const Data::Instance &inst) try
+CoreGraph::CoreGraph(const Data::Instance &inst, Graph::EdgePlan edge_plan) try
     : nodecount(inst.node_count())
 {
     int ncount = nodecount;
@@ -188,17 +188,35 @@ CoreGraph::CoreGraph(const Data::Instance &inst) try
 
     CCedgegengroup plan;
     CCrandstate rstate;
+    int norm = inst.ptr()->norm;
+
+    if (edge_plan == EdgePlan::Delaunay)
+        if (norm != CC_EUCLIDEAN && norm != CC_EUCLIDEAN_CEIL) {
+            cout << "Requested Delaunay for incompatible norm, overriding"
+                 << endl;
+            edge_plan = EdgePlan::Linkern;
+        }
 
     CCutil_sprand(inst.seed(), &rstate);
     CCedgegen_init_edgegengroup(&plan);
 
-    plan.linkern.count = 9;
-    plan.linkern.quadnearest = 2;
-    plan.linkern.greedy_start = 0;
-    plan.linkern.nkicks = (ncount / 100) + 1;
-
-    if (ncount < 100) // to prevent small edge counts on tiny instances
-        plan.quadnearest = 2;
+    switch (edge_plan) {
+    case EdgePlan::Linkern:
+        cout << "Linkern edges\n";
+        plan.linkern.count = 9;
+        plan.linkern.quadnearest = 2;
+        plan.linkern.greedy_start = 0;
+        plan.linkern.nkicks = (ncount / 100) + 1;
+        if (ncount < 100)
+            plan.quadnearest = 2;
+        break;
+    case EdgePlan::Delaunay:
+        cout << "Delaunay edges\n";
+        plan.delaunay = 1;
+        break;
+    default:
+        throw logic_error("Unimplemented EdgePlan case.");
+    }
 
     int *elist = (int *) NULL;
 

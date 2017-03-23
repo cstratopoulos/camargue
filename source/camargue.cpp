@@ -36,7 +36,8 @@ static void initial_parse(int argc, char **argv,
                           string &tsp_fname, string &tour_fname,
                           int &seed, int &rnodes, int &rgrid,
                           CMR::OutPrefs &outprefs, bool &sparseflag,
-                          bool &branchflag, int &node_sel, int &cut_sel);
+                          bool &branchflag, int &node_sel, int &cut_sel,
+                          int &edge_sel);
 
 static void usage(const std::string &fname);
 
@@ -54,6 +55,8 @@ int main(int argc, char** argv) try
 
     int cut_sel = 1;
 
+    int edge_sel = 0;
+
     bool sparse = false;
     bool branch = true;
 
@@ -63,19 +66,25 @@ int main(int argc, char** argv) try
 
     initial_parse(argc, argv, tsp_fname, tour_fname,
                   seed, rand_nodes, rand_grid, outprefs, sparse, branch,
-                  node_sel, cut_sel);
+                  node_sel, cut_sel, edge_sel);
+
+    using EdgePlan = CMR::Graph::EdgePlan;
+    EdgePlan ep = (edge_sel == 0) ? EdgePlan::Linkern : EdgePlan::Delaunay;
 
     if (!tsp_fname.empty()) {
         if (tour_fname.empty())
             tsp_solver = CMR::util::make_unique<CMR::Solver>(tsp_fname, seed,
+                                                             ep,
                                                              outprefs);
         else
             tsp_solver = CMR::util::make_unique<CMR::Solver>(tsp_fname,
                                                              tour_fname, seed,
+                                                             ep,
                                                              outprefs);
     } else
         tsp_solver = CMR::util::make_unique<CMR::Solver>(seed, rand_nodes,
-                                                         rand_grid, outprefs);
+                                                         rand_grid, ep,
+                                                         outprefs);
 
     using SelPreset = CMR::Solver::CutSel::Presets;
 
@@ -132,7 +141,8 @@ static void initial_parse(int ac, char **av,
                           string &tsp_fname, string &tour_fname,
                           int &seed, int &rnodes, int &rgrid,
                           CMR::OutPrefs &outprefs, bool &sparseflag,
-                          bool &branchflag, int &node_sel, int &cut_sel)
+                          bool &branchflag, int &node_sel, int &cut_sel,
+                          int &edge_sel)
 {
     bool randflag = false;
 
@@ -145,7 +155,7 @@ static void initial_parse(int ac, char **av,
         throw logic_error("No arguments specified");
     }
 
-    while ((c = getopt(ac, av, "aBEGPRSVXb:c:n:g:s:t:")) != EOF) {
+    while ((c = getopt(ac, av, "aBEGPRSVXb:c:e:n:g:s:t:")) != EOF) {
         switch (c) {
         case 'B':
             outprefs.prog_bar = true;
@@ -177,6 +187,9 @@ static void initial_parse(int ac, char **av,
         case 'c':
             cut_sel = atoi(optarg);
             break;
+        case 'e':
+            edge_sel = atoi(optarg);
+            break;
         case 'n':
             rnodes = atoi(optarg);
             break;
@@ -204,11 +217,20 @@ static void initial_parse(int ac, char **av,
         throw logic_error("Bad option count");
     }
 
-    if (node_sel < 0 || node_sel > 3)
+    if (node_sel < 0 || node_sel > 3) {
+        usage(av[0]);
         throw logic_error("Branching strategy (-b) must be 0, 1, 2, or 3");
+    }
 
-    if (cut_sel < 0 || cut_sel > 1)
+    if (cut_sel < 0 || cut_sel > 1) {
+        usage(av[0]);
         throw logic_error("Cut sel (-c) must be 0 or 1");
+    }
+
+    if (edge_sel < 0 || edge_sel > 1) {
+        usage(av[0]);
+        throw logic_error("Edge sel (-e) must be 0 or 1");
+    }
 
     if (tsp_fname.empty() && rnodes <= 0) {
         usage(av[0]);
@@ -253,17 +275,22 @@ static void usage(const std::string &fname)
          <<"\t\t except some with MATRIX or EXPLICIT coordinates.\n";
     cerr << "\n";
     cerr << "\t\t PARAMETER OPTIONS (argument x)\n"
-         << "-c \t Cut selection x (see below, each contains prev).\n"
-         << "   \t 0\tPrimal algorithms + simple standard heuristics.\n"
-         << "   \t 1\tAs above, plus local cuts/cut metamorphoses (default).\n"
          << "-b \t Branching strategy x (see below).\n"
          << "   \t 0\tInterleaved best-tour/best-bound every 10 nodes"
          << " (default).\n"
          << "   \t 1\tBest-tour using sparse LK tours.\n"
          << "   \t 2\tBest-bound using primal strong branch bounds.\n"
          << "   \t 3\tDepth-first search.\n"
-         << "-n \t Random problem with x nodes\n"
+         << "-c \t Cut selection x (see below, each contains prev).\n"
+         << "   \t 0\tPrimal algorithms + simple standard heuristics.\n"
+         << "   \t 1\tAs above, plus local cuts/cut metamorphoses (default).\n"
+         << "-e \t Initial edge set (see below).\n"
+         << "   \t 0\tUnion of 10 LK tours (+ quad-2 on tiny probs) (default).\n"
+         << "   \t 1\tEuclidean-norm Delaunay triangulation.\n"
+         << "   \t Notes:\t If a Delaunay triangulation is requested with an\n"
+         << "   \t incompatible norm, the Linkern edges will be used.\n"
          << "-g \t Random problem gridsize x by x (1 million default)\n"
+         << "-n \t Random problem with x nodes\n"
          << "-s \t Random seed x used throughout code (current time default)\n"
          << "-t \t Load starting tour from path x" << endl;
 }

@@ -39,17 +39,25 @@ namespace CMR {
 /// Solution of TSP instances.
 class Solver {
 public:
-    /// Construct a Solver from a TSPLIB instance.
-    Solver(const std::string &tsp_fname, const int seed,
-           const OutPrefs outprefs);
+    /**@name TSPLIB constructors, each with or without specifying EdgePlan. */
+    ///@{
+    Solver(const std::string &tsp_fname, int seed, Graph::EdgePlan eplan,
+           OutPrefs outprefs);
+    Solver(const std::string &tsp_fname, int seed, OutPrefs outprefs);
 
-    /// Construct Solver from TSPLIB instance with starting tour from file.
+    ///Specify a starting tour from file.
     Solver(const std::string &tsp_fname, const std::string &tour_fname,
-           const int seed, const OutPrefs outprefs);
+           int seed, Graph::EdgePlan eplan, OutPrefs outprefs);
+    Solver(const std::string &tsp_fname, const std::string &tour_fname,
+           int seed, OutPrefs outprefs);
+    ///@}
 
-    /// Construct Solver from randomly generated Euclidean TSP instance.
-    Solver(const int seed, const int node_count, const int gridsize,
-           const OutPrefs outprefs);
+    /**@name Random Euclidean constructors, with or without EdgePlan. */
+    ///@{
+    Solver(int seed, int node_count, int gridsize, Graph::EdgePlan eplan,
+           OutPrefs outprefs);
+    Solver(int seed, int node_count, int gridsize, OutPrefs outprefs);
+    ///@}
 
     /// Run a primal cutting plane loop of pivoting and cut generation.
     LP::PivType cutting_loop(bool do_price, bool try_recover,
