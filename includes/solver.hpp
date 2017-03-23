@@ -104,6 +104,9 @@ public:
         bool decker = false;
         bool handling = false;
         bool teething = false;
+
+        bool tighten = false;
+        bool tighten_pool = false;
         ///@}
 
         bool safeGMI = false; //!< Primal safe Gomory cuts.

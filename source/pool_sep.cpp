@@ -1,9 +1,9 @@
 #include "pool_sep.hpp"
-#include "cc_lpcuts.hpp"
 #include "err_util.hpp"
 #include "timer.hpp"
 
 #include <algorithm>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 #include <utility>
@@ -11,6 +11,7 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::setprecision;
 
 using std::runtime_error;
 using std::logic_error;
@@ -59,27 +60,200 @@ PoolCuts::PoolCuts(ExternalCuts &EC_,
     throw runtime_error("PoolCuts constructor failed.");
 }
 
-// bool PoolCuts::tighten_pool()
-// {
-//     runtime_error err("Problem in PoolCuts::tighten_pool");
+bool PoolCuts::tighten_pool()
+{
+    double st = util::zeit();
+    using lpcut_in = CCtsp_lpcut_in;
+    runtime_error err("Problem in PoolCuts::tighten_pool");
 
-//     if (verbose)
-//         cout << "Cutpool tighten sep, filter_primal " << filter_primal
-//              << ", " << EC.cut_pool.size() << " cuts in pool." << endl;
+    try {
+        if (!price_cuts(true))
+            return false;
+    } CMR_CATCH_PRINT_THROW("pricing cuts", err);
 
-//     TourGraph TG;
-//     try {
-//         TG = TourGraph(tour_edges, )
-//     }
+    TourGraph TG;
+    try {
+        TG = TourGraph(tour_edges, core_edges, active_tour.tour_perm());
+    } CMR_CATCH_PRINT_THROW("constructing TourGraph", err);
 
-//     vector<int> tour_perm_elist;
-//     vector<int> lp_perm_elist;
+    vector<int> lp_perm_elist;
+    const vector<int> &perm = active_tour.tour_perm();
 
-//     try {
-//         if (!price_cuts(true))
-//             return true;
-//     } CMR_CATCH_PRINT_THROW("pricing cuts", err);
-// }
+    try {
+        lp_perm_elist = supp_data.support_elist;
+        for (int i = 0; i < lp_perm_elist.size(); ++i)
+            lp_perm_elist[i] = perm[lp_perm_elist[i]];
+    } CMR_CATCH_PRINT_THROW("building lp perm elist", err);
+
+    CCtsp_lpgraph lg;
+    int ncount = supp_data.supp_graph.node_count;
+    vector<double> &ecap = supp_data.support_ecap;
+    int ecount = ecap.size();
+
+    auto cleanup = util::make_guard([&lg] { CCtsp_free_lpgraph (&lg); });
+
+    CCtsp_init_lpgraph_struct(&lg);
+
+    if (CCtsp_build_lpgraph(&lg, ncount, ecount, &lp_perm_elist[0],
+                            (int *) NULL)) {
+        cerr << "CCtsp_build_lpgraph failed" << endl;
+        throw err;
+    }
+
+    if (CCtsp_build_lpadj(&lg, 0, ecount)) {
+        cerr << "CCtsp_build_lpadj failed" << endl;
+        throw err;
+    }
+
+    CCtsp_tighten_info tstats; //unused
+    CCtsp_init_tighten_info(&tstats);
+
+    vector<HyperGraph> &cutpool = EC.cut_pool;
+    using PoolItr = vector<HyperGraph>::iterator;
+
+    // for cuts of interest, store their CC pointer, lp slack, and iterator
+    // to cut they were derived from.
+    using CutViolPitr = std::tuple<lpcut_in *, double, PoolItr>;
+    vector<CutViolPitr> found_cuts;
+
+    for (int i = 0; i < cutpool.size(); ++i) {
+        if (!slack_of_interest(lp_slacks[i], tour_slacks[i], true))
+            continue;
+        double lp_slack = lp_slacks[i];
+        double tour_slack = tour_slacks[i];
+        HyperGraph &H = cutpool[i];
+
+        lpcut_in old;
+        lpcut_in *tight = NULL;
+        bool want_new = false;
+        auto lpcut_guard = util::make_guard([&old, &want_new, &tight]
+                                            {
+                                                CCtsp_free_lpcut_in(&old);
+                                                if (!want_new) {
+                                                    CCtsp_free_lpcut_in(tight);
+                                                    CC_IFFREE(tight,
+                                                              CCtsp_lpcut_in);
+                                                }
+                                            });
+
+        tight = CC_SAFE_MALLOC(1, CCtsp_lpcut_in);
+        if (tight == NULL) {
+            cerr << "Couldn't allocate tight" << endl;
+            throw err;
+        }
+
+        CCtsp_init_lpcut_in(&old);
+        CCtsp_init_lpcut_in(tight);
+
+        try { old = H.to_lpcut_in(perm, true); }
+        CMR_CATCH_PRINT_THROW("getting lpcut_in/skelly from HyperGraph", err);
+
+        double lp_act = 0.0;
+
+        /* Split cases based on filter_primal and lp_slack/tour_slack */
+        /* If filter_primal...
+               - If the cut is already tight at the tour, try to tighten it
+                 wrt the lp, then check it is still tight at tour.
+               - Else, try to tighten it wrt the tour, then check if it is
+               violated by the LP. */
+        /* Else....
+              - Just try and tighten it wrt the LP. */
+
+        if (filter_primal) {
+            if (tour_slack == 0.0) { //already tight, tigthen wrt lp
+                double lp_improve = 0.0;
+                if (CCtsp_tighten_lpcut_in(&lg, &old, &ecap[0], tight,
+                                           &tstats, &lp_improve)) {
+                    cerr << "CCtsp_tighten_lpcut_in failed" << endl;
+                    throw err;
+                }
+                lp_act = lp_slack - lp_improve;
+
+                // check still tight at tour
+                if (lp_act <= -Epsilon::CutViol) {
+                    double tour_slack = CCtsp_cutprice(TG.pass_ptr(), tight,
+                                                       TG.tour_array());
+                    want_new = (tour_slack == 0.0);
+                }
+            } else { //tighten wrt tour
+                double tour_improve = 0.0;
+                if (CCtsp_tighten_lpcut_in(TG.pass_ptr(), &old,
+                                           TG.tour_array(), tight, &tstats,
+                                           &tour_improve)) {
+                    cerr << "CCtsp_tighten_lpcut_in failed" << endl;
+                    throw err;
+                }
+                double tour_act = tour_slack - tour_improve;
+
+                // want it if violated
+                if (tour_act == 0.0) {
+                    cout << "MADE A SLACK PRIMAL CUT TIGHT!!!!!" << endl;
+                    lp_act = CCtsp_cutprice(&lg, tight, &ecap[0]);
+                    want_new = (lp_act <= -Epsilon::CutViol);
+                    if (want_new)
+                        cout << "AND LP VIOLATED!!!!!" << endl;
+                }
+            }
+        } else { // don't care abt primal, tighten wrt lp
+            double lp_improve = 0.0;
+            if (CCtsp_tighten_lpcut_in(&lg, &old, &ecap[0], tight,
+                                       &tstats, &lp_improve)) {
+                cerr << "CCtsp_tighten_lpcut_in failed" << endl;
+                throw err;
+            }
+            lp_act = lp_slack - lp_improve;
+            want_new = (lp_act <= -Epsilon::CutViol);
+        }
+
+        if (want_new)
+            try {
+                found_cuts.emplace_back(tight, lp_act, cutpool.begin() + i);
+            } CMR_CATCH_PRINT_THROW("emplacing successful tighten", err);
+    }
+
+    if (found_cuts.empty()) {
+        st = util::zeit() - st;
+        if (verbose)
+            cout << "\tFound 0 tighten_pool cuts in "
+                 << setprecision(2) << st << "s" << setprecision(6) << endl;
+        return false;
+    }
+
+    if (found_cuts.size() > 250) {
+        std::sort(found_cuts.begin(), found_cuts.end(),
+                  [](const CutViolPitr &A, const CutViolPitr &B)
+                  { return std::get<1>(A) < std::get<1>(B); });
+
+        while(found_cuts.size() > 250) {
+            lpcut_in *delp = std::get<0>(found_cuts.back());
+            CCtsp_free_lpcut_in(delp);
+            CC_IFFREE(delp, CCtsp_lpcut_in);
+            found_cuts.pop_back();
+        }
+    }
+
+    for (const CutViolPitr &CVP : found_cuts) {
+        HyperGraph &H = *std::get<2>(CVP);
+        H = HyperGraph();
+
+        lpcut_in *found = std::get<0>(CVP);
+        tight_q.push_front(found);
+    }
+
+    cutpool.erase(std::remove_if(cutpool.begin(), cutpool.end(),
+                                 [](const HyperGraph &H)
+                                 { return H.cut_type() == CutType::Non; }),
+                  cutpool.end());
+
+    st = util::zeit() - st;
+
+    if (verbose)
+        cout << "\tEnqueued " << tight_q.size() << " tighten pool cuts in "
+             << setprecision(2) << st << "s" << setprecision(6)
+             << endl;
+
+    return true;
+}
 
 bool PoolCuts::find_cuts()
 {
@@ -102,8 +276,7 @@ bool PoolCuts::find_cuts()
 
     try {
         for (int i = 0; i < cutpool.size(); ++i)
-            if (lp_slacks[i] <= -Eps::CutViol &&
-                (tour_slacks[i] == 0 || filter_primal == false))
+            if (slack_of_interest(lp_slacks[i], tour_slacks[i], false))
                 primal_cuts.push_back(ItrIdx(cutpool.begin() + i, i));
     } CMR_CATCH_PRINT_THROW("creating iterator vector", err);
 
@@ -182,11 +355,8 @@ bool PoolCuts::price_cuts(bool tighten)
                     throw runtime_error("Couldn't get DP row");
                 }
 
-                double lp_activity = get_activity(supp_data.lp_vec, R);
-                lp_slack = rhs - lp_activity;
-
-                if (filter_primal)
-                    tour_slack = rhs - get_activity(tour_edges, R);
+                lp_slack = rhs - get_activity(supp_data.lp_vec, R);
+                tour_slack = rhs - get_activity(tour_edges, R);
 
                 dpt.stop();
             } else {
@@ -206,11 +376,13 @@ bool PoolCuts::price_cuts(bool tighten)
     t.stop();
 
     if (verbose) {
-        cout << "\tPriced cuts, found" << numfound << endl;
-        pc.report(false);
-        hgt.report(false);
-        dpt.report(false);
-        t.report(false);
+        cout << "\tPriced cuts, found " << numfound << " of interest" << endl;
+        if (verbose > 1) {
+            pc.report(false);
+            hgt.report(false);
+            dpt.report(false);
+            t.report(false);
+        }
     }
 
 

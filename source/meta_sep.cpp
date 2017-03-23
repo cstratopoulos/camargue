@@ -140,9 +140,6 @@ bool MetaCuts::tighten_cuts()
                     try { found_cuts.emplace_back(tight, lp_slack); }
                     CMR_CATCH_PRINT_THROW("emplacing cut", err);
                 }
-
-                cout << "HG " << ic_num << " tightened cut to lp slack "
-                     << lp_slack << ", tour " << tour_slack << endl;
             }
         } else {
             CCtsp_free_lpcut_in(tight);

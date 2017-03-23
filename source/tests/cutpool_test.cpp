@@ -152,7 +152,7 @@ SCENARIO ("Experimenting with CutMonitor metrics",
 }
 
 SCENARIO ("Pricing cuts from a cutpool",
-          "[Sep][PoolCuts][price_cuts]") {
+          "[Sep][PoolCuts][price_cuts][tighten_pool]") {
     using namespace CMR;
     using ProbPair = std::pair<string, int>;
 
@@ -217,6 +217,7 @@ SCENARIO ("Pricing cuts from a cutpool",
                 Data::SupportGroup s_dat(edges, lp_vec, island, G.node_count());
                 Sep::PoolCuts pool_sep(EC, edges, solver.active_tour(),
                                        s_dat);
+                pool_sep.verbose = true;
 
                 bool found_pool = false;
                 double pt = util::zeit();
@@ -272,6 +273,10 @@ SCENARIO ("Pricing cuts from a cutpool",
                         found_primal = true;
                 }
                 REQUIRE(found_primal == found_pool);
+            AND_THEN("We can search for tighten pool cuts") {
+                bool found_tight = false;
+                REQUIRE_NOTHROW(found_tight = pool_sep.tighten_pool());
+            }
             }
         }
     }

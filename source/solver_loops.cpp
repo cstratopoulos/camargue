@@ -330,15 +330,31 @@ PivType Solver::cut_and_piv(bool do_price)
 
         using MetaType = Sep::MetaCuts::Type;
 
+        if (cut_sel.tighten)
+            try {
+                reset_separator(meta_sep);
+                if (call_separator([&meta_sep]()
+                                   { return meta_sep->tighten_cuts(); },
+                                   meta_sep->metacuts_q(), piv, prev_val,
+                                   total_delta, delta_ratio, lowest_piv)) {
+                    found_primal = true;
+                    if (return_pivot(piv))
+                        return piv;
+
+                    if (restart_loop(piv, delta_ratio))
+                        continue;
+                }
+            } CMR_CATCH_PRINT_THROW("calling Tighten sep", err);
+
         if (cut_sel.decker)
             try {
                 reset_separator(meta_sep);
                 meta_sep->set_type(MetaType::Decker);
                 if (call_separator([&meta_sep]()
                                    { return meta_sep->find_cuts(); },
-                                   meta_sep->metacuts_q(), piv,
-                                   prev_val, total_delta, delta_ratio,
-                                   lowest_piv)) {
+                                   meta_sep->metacuts_q(), piv, prev_val,
+                                   total_delta, delta_ratio, lowest_piv)) {
+                    found_primal = true;
                     if (return_pivot(piv))
                         return piv;
 
@@ -356,6 +372,7 @@ PivType Solver::cut_and_piv(bool do_price)
                                    meta_sep->metacuts_q(), piv,
                                    prev_val, total_delta, delta_ratio,
                                    lowest_piv)) {
+                    found_primal = true;
                     if (return_pivot(piv))
                         return piv;
 
@@ -373,6 +390,7 @@ PivType Solver::cut_and_piv(bool do_price)
                                    meta_sep->metacuts_q(), piv,
                                    prev_val, total_delta, delta_ratio,
                                    lowest_piv)) {
+                    found_primal = true;
                     if (return_pivot(piv))
                         return piv;
 
@@ -380,6 +398,23 @@ PivType Solver::cut_and_piv(bool do_price)
                         continue;
                 }
             } CMR_CATCH_PRINT_THROW("calling Teething sep", err);
+
+        if (cut_sel.tighten_pool && core_lp.external_cuts().pool_count() != 0)
+            try {
+                reset_separator(pool_sep);
+                pool_sep->verbose = 1;
+                if (call_separator([&pool_sep]()
+                                   { return pool_sep->tighten_pool(); },
+                                   pool_sep->tighten_q(), piv, prev_val,
+                                   total_delta, delta_ratio, lowest_piv)) {
+                    found_primal = true;
+                    if (return_pivot(piv))
+                        return piv;
+
+                    if (restart_loop(piv, delta_ratio))
+                        continue;
+                }
+            } CMR_CATCH_PRINT_THROW("calling tighten pool sep", err);
 
         if (cut_sel.localcuts) {
             bool lc_restart = false;

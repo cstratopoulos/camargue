@@ -108,6 +108,8 @@ void Solver::choose_cuts(CutSel::Presets preset)
         cut_sel.decker = true;
         cut_sel.handling = true;
         cut_sel.teething = true;
+        cut_sel.tighten = true;
+        cut_sel.tighten_pool = true;
         if (preset == CutPre::Aggressive)
             return;
         cut_sel.safeGMI = true;

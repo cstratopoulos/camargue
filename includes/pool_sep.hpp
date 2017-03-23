@@ -11,6 +11,7 @@
 #include "hypergraph.hpp"
 #include "datagroups.hpp"
 #include "process_cuts.hpp"
+#include "cc_lpcuts.hpp"
 
 #include <unordered_map>
 #include <utility>
@@ -37,11 +38,13 @@ public:
 
     CutQueue<HyperGraph> &pool_q() { return hg_q; }
 
+    LPcutList &tighten_q() { return tight_q; }
+
     const std::vector<double> &get_lp_slacks() const { return lp_slacks; }
     const std::vector<double> &get_tour_slacks() const { return tour_slacks; }
 
     bool filter_primal = true; //!< Should only tight cuts be included.
-    bool verbose = false;
+    int verbose = 0;
 
 private:
     void price_cliques(); //!< Populate clique_vals.
@@ -59,6 +62,9 @@ private:
 
     /// If cuts are found they are removed from the cut pool and placed here.
     CutQueue<HyperGraph> hg_q;
+
+    /// Successfully tightened cuts are placed here.
+    LPcutList tight_q;
 
     /// The slack on each cut relative to the solution in supp_data.
     std::vector<double> lp_slacks;
