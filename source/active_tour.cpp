@@ -2,6 +2,7 @@
 #include "err_util.hpp"
 
 #include <algorithm>
+#include <iomanip>
 #include <iostream>
 #include <utility>
 #include <stdexcept>
@@ -103,14 +104,23 @@ ActiveTour::ActiveTour(vector<int> tour_nodes_, vector<double> lp_edges,
     int ncount = graph.node_count();
     int one_count = 0;
     double manual_objval = 0.0;
+    double sum_discrep = 0.0;
 
+    auto cout_guard = util::make_guard([]{ cout << std::setprecision(6); });
+
+    cout << std::setprecision(12);
     for (int i = 0; i < tour_edges.size(); ++i) {
         double &val = tour_edges[i];
+        double discrep = 0.0;
         if (val > 1 - Eps::Zero) {
+            discrep = 1.0 - val;
+            sum_discrep += discrep;
             ++one_count;
             manual_objval += graph.get_edge(i).len;
             val = 1.0;
         } else if (val < Eps::Zero) {
+            discrep = val;
+            sum_discrep += val;
             val = 0.0;
         } else {
             cerr << "Entry " << val << " not integral." << endl;
@@ -123,9 +133,14 @@ ActiveTour::ActiveTour(vector<int> tour_nodes_, vector<double> lp_edges,
         throw runtime_error("Wrong number of edges in ActiveTour edge vec.");
     }
 
-    if (fabs(manual_objval - lp_objval) >= Eps::Zero) {
+    double objval_diff = fabs(manual_objval - lp_objval);
+
+    if (objval_diff >= Eps::Zero && objval_diff > sum_discrep) {
         cerr << "Manual objval " << manual_objval << ", lp objval "
              << lp_objval << endl;
+        cerr << "Difference: "
+             << fabs(manual_objval - lp_objval) << " vs sum discrep "
+             << sum_discrep << endl;
         throw runtime_error("Objval disagreement");
     }
 

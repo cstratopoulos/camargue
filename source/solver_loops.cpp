@@ -73,7 +73,7 @@ bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
         piv_stats.update(new_val, tourlen);
 
         if (output_prefs.prog_bar)
-            place_pivot(piv_stats.lowest_piv, tourlen, new_val);
+            place_pivot(0.99 * tourlen, tourlen, new_val);
 
         if (output_prefs.verbose) {
             printf("\t^^Pivot %.2f -> %.2f, ratio %.2f\n",
