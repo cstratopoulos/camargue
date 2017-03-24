@@ -106,9 +106,6 @@ ActiveTour::ActiveTour(vector<int> tour_nodes_, vector<double> lp_edges,
     double manual_objval = 0.0;
     double sum_discrep = 0.0;
 
-    auto cout_guard = util::make_guard([]{ cout << std::setprecision(6); });
-
-    cout << std::setprecision(12);
     for (int i = 0; i < tour_edges.size(); ++i) {
         double &val = tour_edges[i];
         double discrep = 0.0;
@@ -135,12 +132,14 @@ ActiveTour::ActiveTour(vector<int> tour_nodes_, vector<double> lp_edges,
 
     double objval_diff = fabs(manual_objval - lp_objval);
 
-    if (objval_diff >= Eps::Zero && objval_diff > sum_discrep) {
+    if (objval_diff >= 0.0001) {
+        cout << std::setprecision(12);
         cerr << "Manual objval " << manual_objval << ", lp objval "
              << lp_objval << endl;
         cerr << "Difference: "
              << fabs(manual_objval - lp_objval) << " vs sum discrep "
              << sum_discrep << endl;
+        cout << std::setprecision(6);
         throw runtime_error("Objval disagreement");
     }
 
