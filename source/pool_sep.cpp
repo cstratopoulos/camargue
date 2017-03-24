@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include <utility>
 
+#include <cstdio>
+
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -263,14 +265,18 @@ bool PoolCuts::tighten_pool()
 bool PoolCuts::find_cuts()
 {
     runtime_error err("Problem in PoolCuts::find_cuts");
+    double ft = util::zeit();
 
     if (verbose)
-        cout << "Cutpool sep, filter_primal " << filter_primal << ", "
+        cout << "\tCutpool sep, filter_primal " << filter_primal << ", "
              << EC.cut_pool.size() << " cuts in pool." << endl;
 
     try {
-        if (!price_cuts(false))
+        if (!price_cuts(false)) {
+            printf("\tFound 0 cuts in %.2fs", util::zeit() - ft);
+            cout << endl;
             return false;
+        }
     } CMR_CATCH_PRINT_THROW("pricing cuts", err);
 
     vector<HyperGraph> &cutpool = EC.cut_pool;
@@ -299,14 +305,16 @@ bool PoolCuts::find_cuts()
         *(I.first) = HyperGraph();
     }
 
-    if (verbose)
-        cout << "\t" << hg_q.size() << " cuts removed from pool for addition."
-             << endl;
-
     cutpool.erase(std::remove_if(cutpool.begin(), cutpool.end(),
                                  [](const HyperGraph &H)
                                  { return H.cut_type() == CutType::Non; }),
                   cutpool.end());
+
+    if (verbose) {
+        printf("\tRemoved %d cuts for addition in %.2fs",
+               hg_q.size(), util::zeit() - ft);
+        cout << endl;
+    }
 
     return true;
 }
@@ -387,7 +395,7 @@ bool PoolCuts::price_cuts(bool tighten)
             dpt.report(false);
             t.report(false);
     }
-    
+
     return result;
 }
 

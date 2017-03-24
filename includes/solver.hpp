@@ -63,9 +63,8 @@ public:
     LP::PivType cutting_loop(bool do_price, bool try_recover,
                              bool pure_cut);
 
-    /// Embed cutting_loop in an augment and branch and cut search.
     template <typename SelectionRule>
-    LP::PivType abc(bool do_price);
+    LP::PivType abc(bool do_price); //!< Augment-branch-cut search.
 
     const Data::Instance &inst_info() const { return tsp_instance; }
     const Graph::CoreGraph &graph_info() const { return core_graph; }
@@ -123,18 +122,16 @@ public:
     };
 
     using AugObj = std::pair<Aug, double>;
-
     const std::vector<AugObj> &get_aug_chart() const { return aug_chart; }
 
 private:
-    /// Print info about \p piv and the size of the CoreLP.
-    void report_lp(LP::PivType piv);
-
+    void report_lp(LP::PivType piv); //!< Report on \p piv and core_lp.
     void report_cuts(); //!< Report the number and types of cuts in CoreLP.
-
     void report_aug(Aug aug_type); //!< Output info about a new tour found.
-
     void initial_prints(); //!< Handles writing initial data to file.
+
+    /// Compute the Padberg-Hong-esque delta ratio.
+    static double PH_delta(double new_val, double prev_val, double tourlen);
 
     /// Should cut_and_piv start again with the easier separation routines.
     bool restart_loop(LP::PivType piv, double delta_metric);
@@ -147,14 +144,12 @@ private:
 
     LP::PivType abc_bcp(bool do_price); //!< The branch-cut-price loop.
 
-    /// Attempt to recover from a fractional pivot with the x-tour heuristic.
-    LP::PivType frac_recover();
+    LP::PivType frac_recover(); //!< Use x-tour heuristic on fractional pivot.
 
     /**@name Separator resetting routines.
      * These methods reset their argument with data about the current pivot.
      */
     ///@{
-
     void reset_separator(std::unique_ptr<Sep::Separator> &S);
     void reset_separator(std::unique_ptr<Sep::PoolCuts> &PS);
     void reset_separator(std::unique_ptr<Sep::MetaCuts> &MS);
@@ -162,16 +157,31 @@ private:
 #if CMR_HAVE_SAFEGMI
     void reset_separator(std::unique_ptr<Sep::SafeGomory> &GS);
 #endif
-
     ///@}
+
+    /// Tracking objective values of pivots within a cut_and_piv loop.
+    struct PivStats {
+        /// Construct PivStats from the first pivot before adding cuts.
+        PivStats(double first_piv) :
+            initial_piv(first_piv), prev_val(first_piv), lowest_piv(first_piv)
+            {}
+
+        void update(double new_val, double tourlen);
+
+        void report_extrema();
+
+        const double initial_piv; //!< The first pivot val before adding cuts.
+        double prev_val = 0.0; //!< The previous pivot val.
+        double delta_ratio = 0.0; //!< The Padberg-Hong delta ratio.
+        double lowest_piv = 0.0; //!< The lowest piv val seen.
+        double max_ratio = 0.0; //!< The highest delta ratio seen.
+        double first_last_ratio = 0.0; //!< Delta ratio for first and last piv.
+    };
 
     /// Method template for calling a separation routine in cut_and_piv.
     template <typename Qtype>
     bool call_separator(const std::function<bool()> &sepcall,
-                        Qtype &sep_q,
-                        LP::PivType &piv, double &prev_val,
-                        double &total_delta, double &delta_ratio,
-                        double &lowest_piv);
+                        Qtype &sep_q, LP::PivType &piv, PivStats &piv_stats);
 
     Data::Instance tsp_instance;
     Data::KarpPartition karp_part;
