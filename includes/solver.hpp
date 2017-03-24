@@ -176,6 +176,8 @@ private:
         double lowest_piv = 0.0; //!< The lowest piv val seen.
         double max_ratio = 0.0; //!< The highest delta ratio seen.
         double first_last_ratio = 0.0; //!< Delta ratio for first and last piv.
+
+        bool found_cuts = false; //!< Have any cuts been found.
     };
 
     /// Method template for calling a separation routine in cut_and_piv.
