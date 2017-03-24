@@ -273,8 +273,10 @@ bool PoolCuts::find_cuts()
 
     try {
         if (!price_cuts(false)) {
-            printf("\tFound 0 cuts in %.2fs", util::zeit() - ft);
-            cout << endl;
+            if (verbose) {
+                printf("\tFound 0 cuts in %.2fs", util::zeit() - ft);
+                cout << endl;
+            }
             return false;
         }
     } CMR_CATCH_PRINT_THROW("pricing cuts", err);
