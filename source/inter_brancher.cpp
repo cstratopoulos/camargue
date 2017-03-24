@@ -83,7 +83,8 @@ void InterBrancher::fetch_next()
     using QueueIterator = std::vector<BranchHistory::iterator>::iterator;
 
     if (verbose)
-        cout << "Calling InterBrancher::fetch_next" << endl;
+        cout << "Calling InterBrancher::fetch_next, "
+             << prob_q.size() << " problems in q" << endl;
     if (branch_history.empty() || prob_q.empty()) {
         next_itr = branch_history.end();
         return;
@@ -95,6 +96,7 @@ void InterBrancher::fetch_next()
         if (verbose)
             cout << "USUAL (prob " << node_num << ") set next_itr to "
                  << bnode_brief(*next_itr) << endl;
+        prob_q.pop_back();
     } else { // pick a best bound node, corrupting and rebuilding the heap.
         QueueIterator best_bound_itr = std::min_element(prob_q.begin(),
                                                         prob_q.end(),
@@ -106,11 +108,11 @@ void InterBrancher::fetch_next()
             cout << "INTERLEAVE (prob " << node_num << ") set next_itr to "
                  << bnode_brief(*next_itr) << endl;
         std::swap(*best_bound_itr, *last_itr);
+        prob_q.pop_back();
         heap_make(prob_q);
     }
 
     ++node_num;
-    prob_q.pop_back();
 }
 
 }
