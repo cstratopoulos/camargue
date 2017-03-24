@@ -132,7 +132,7 @@ ActiveTour::ActiveTour(vector<int> tour_nodes_, vector<double> lp_edges,
 
     double objval_diff = fabs(manual_objval - lp_objval);
 
-    if (objval_diff >= 0.0001) {
+    if (objval_diff >= 1) {
         cout << std::setprecision(12);
         cerr << "Manual objval " << manual_objval << ", lp objval "
              << lp_objval << endl;
