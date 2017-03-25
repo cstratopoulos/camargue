@@ -192,8 +192,7 @@ BranchNode::Split Executor::split_problem(ScoreTuple &branch_tuple,
         if (!feas)
             result[i].stat = BranchNode::Status::Pruned;
         else {
-            if (estat != EstStat::Abort ||
-                estval >= (1.01 * best_data.min_tour_value)) {
+            if (estat != EstStat::Abort || estval > best_data.min_tour_value) {
                 result[i].price_basis = std::move(est.sb_base);
                 if (estat == EstStat::Infeas)
                     result[i].stat = BranchNode::Status::NeedsRecover;

@@ -233,15 +233,11 @@ PivType Solver::cut_and_piv(bool do_price)
                 }
             } CMR_CATCH_PRINT_THROW("calling tighten pool sep", err);
 
-        bool found_seg = false;
-
         if (cut_sel.segment)
             try {
                 reset_separator(sep);
                 if (call_separator([&sep]() { return sep->segment_sep(); },
                                    sep->segment_q(), piv, piv_stats)) {
-                    found_seg = true;
-
                     if (return_pivot(piv))
                         return piv;
 
@@ -320,7 +316,7 @@ PivType Solver::cut_and_piv(bool do_price)
                 }
             } CMR_CATCH_PRINT_THROW("calling exact 2m sep", err);
 
-        if (cut_sel.simpleDP && !found_seg && supp_data.connected)
+        if (cut_sel.simpleDP && supp_data.connected)
             try {
                 reset_separator(sep);
                 if (call_separator([&sep]() { return sep->simpleDP_sep(); },
