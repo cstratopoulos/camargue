@@ -82,7 +82,8 @@ try : random_seed(seed) {
  */
 Instance::Instance(const int seed, const int ncount, const int gridsize)
 try : nodecount(ncount), random_seed(seed),
-      pname("r" + to_string(ncount) + "g" + to_string(gridsize)) {
+      pname("r" + to_string(ncount) + "g" + to_string(gridsize)
+            + "s" + to_string(seed)) {
   if (ncount <= 2)
       throw logic_error("Specified bad ncount.");
 
