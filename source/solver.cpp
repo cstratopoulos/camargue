@@ -166,11 +166,7 @@ void Solver::report_aug(Aug aug_type)
     if (!output_prefs.save_tour_edges && !output_prefs.save_tour)
         return;
 
-    string infix;
-    if (output_prefs.gif_tour == true)
-        infix = "." + std::to_string(num_augs) + ".";
-    else
-        infix = ".";
+    string infix = file_infix();
 
     if (output_prefs.save_tour || output_prefs.save_tour_edges){
         cout << "\tWrote tour ";
@@ -227,8 +223,6 @@ void Solver::initial_prints()
     bool want_tour = output_prefs.save_tour;
     bool want_edges = output_prefs.save_tour_edges;
 
-    bool gif_out = output_prefs.gif_tour;
-
     string pname = tsp_instance.problem_name();
 
     aug_chart.emplace_back(Aug::Init, best_data.min_tour_value);
@@ -246,7 +240,7 @@ void Solver::initial_prints()
         }
     }
 
-    string infix = gif_out ? ".0." : ".";
+    string infix = file_infix();
 
     if (want_tour) {
         string tour_fname = pname + infix + "sol";
@@ -261,6 +255,15 @@ void Solver::initial_prints()
                                core_graph.get_edges(),
                                tsp_instance.node_count(), edges_fname);
         cout << "Wrote starting tour edges to " << edges_fname << endl;
+    }
+}
+
+std::string Solver::file_infix()
+{
+    if (!output_prefs.gif_tour) {
+        return ".";
+    } else {
+        return "." + std::to_string((int) best_data.min_tour_value) + ".";
     }
 }
 

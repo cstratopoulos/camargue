@@ -132,6 +132,8 @@ private:
     void report_aug(Aug aug_type); //!< Output info about a new tour found.
     void initial_prints(); //!< Handles writing initial data to file.
 
+    std::string file_infix(); //!< Returns an infix for data saved to file.
+
     /// Compute the Padberg-Hong-esque delta ratio.
     static double PH_delta(double new_val, double prev_val, double tourlen);
 

@@ -82,7 +82,7 @@ extdeps. The simplest options are `-F` and `-B`. So
     ./cmr_install.h -F
 
 will run a full install with all the external dependencies. Assuming
-you are connected to the internet, this will downloaded, extract, and
+you are connected to the internet, this will download, extract, and
 edit all the necessary external dependencies for a full install. This is
 recommended for best performance, and to observe all the features
 described in my thesis. The complementary option is
