@@ -32,6 +32,7 @@ using std::logic_error;
 using std::exception;
 
 
+static void proc_label();
 static void initial_parse(int argc, char **argv,
                           string &tsp_fname, string &tour_fname,
                           int &seed, int &rnodes, int &rgrid,
@@ -43,6 +44,7 @@ static void usage(const std::string &fname);
 
 int main(int argc, char** argv) try
 {
+    proc_label();
     string tsp_fname = "";
     string tour_fname = "";
 
@@ -252,6 +254,14 @@ static void initial_parse(int ac, char **av,
         usage(av[0]);
         throw logic_error("Requested progress bar and verbose.");
     }
+}
+
+static void proc_label()
+{
+    char buf[1024];
+    ::gethostname(buf, 1024);
+    printf("Hostname: %s Current PID: %d", buf, static_cast<int>(::getpid()));
+    cout << endl;
 }
 
 static void usage(const std::string &fname)
