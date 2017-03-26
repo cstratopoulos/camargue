@@ -1,3 +1,7 @@
+/**
+ * @file
+ * @brief The camargue main program.
+ */
 #include "config.hpp"
 
 #ifndef CMR_DO_TESTS
@@ -10,6 +14,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -31,47 +36,55 @@ using std::runtime_error;
 using std::logic_error;
 using std::exception;
 
+static constexpr double large_neg{-std::numeric_limits<double>::max() + 1.0};
 
-static void proc_label();
-static void initial_parse(int argc, char **argv,
-                          string &tsp_fname, string &tour_fname,
-                          int &seed, int &rnodes, int &rgrid,
-                          CMR::OutPrefs &outprefs, bool &sparseflag,
-                          bool &branchflag, int &node_sel, int &cut_sel,
-                          int &edge_sel);
-
-static void usage(const std::string &fname);
-
-int main(int argc, char** argv) try
-{
-    proc_label();
+/// Data grabbed from the user at the command line.
+struct OptData {
     string tsp_fname = "";
     string tour_fname = "";
 
     int seed = 0;
 
     int rand_nodes = 0;
-    int rand_grid = 0;
+    int rand_grid = 1000000;
 
     int node_sel = 0;
-
     int cut_sel = 1;
-
     int edge_sel = 0;
 
     bool sparse = false;
     bool branch = true;
 
+    double target_lb{large_neg};
+};
+
+
+static void proc_label();
+static void initial_parse(int argc, char **argv, OptData &opt_dat,
+                          CMR::OutPrefs &outprefs);
+
+static void usage(const std::string &fname);
+
+int main(int argc, char** argv) try
+{
+    proc_label();
+
+    OptData opt_dat;
     CMR::OutPrefs outprefs;
 
     unique_ptr<CMR::Solver> tsp_solver;
 
-    initial_parse(argc, argv, tsp_fname, tour_fname,
-                  seed, rand_nodes, rand_grid, outprefs, sparse, branch,
-                  node_sel, cut_sel, edge_sel);
+    initial_parse(argc, argv, opt_dat, outprefs);
 
     using EdgePlan = CMR::Graph::EdgePlan;
-    EdgePlan ep = (edge_sel == 0) ? EdgePlan::Linkern : EdgePlan::Delaunay;
+    EdgePlan ep = ((opt_dat.edge_sel == 0) ? EdgePlan::Linkern :
+                   EdgePlan::Delaunay);
+
+    string &tsp_fname = opt_dat.tsp_fname;
+    string &tour_fname = opt_dat.tour_fname;
+    int &seed = opt_dat.seed;
+    int &rand_nodes = opt_dat.rand_nodes;
+    int &rand_grid = opt_dat.rand_grid;
 
     if (!tsp_fname.empty()) {
         if (tour_fname.empty())
@@ -88,7 +101,12 @@ int main(int argc, char** argv) try
                                                          rand_grid, ep,
                                                          outprefs);
 
+    if (opt_dat.target_lb != large_neg)
+        tsp_solver->set_lowerbound(opt_dat.target_lb);
+
     using SelPreset = CMR::Solver::CutSel::Presets;
+    int &cut_sel = opt_dat.cut_sel;
+    bool &sparse = opt_dat.sparse;
 
     if (cut_sel == 1) {
             tsp_solver->choose_cuts(sparse ? SelPreset::Sparse :
@@ -104,8 +122,8 @@ int main(int argc, char** argv) try
 
     bool do_price = !sparse;
 
-    if (branch) {
-        switch (node_sel) {
+    if (opt_dat.branch) {
+        switch (opt_dat.node_sel) {
         case 0:
             cout << "Interleaved best-tour/best-bound search" << endl;
             tsp_solver->abc<CMR::ABC::InterBrancher>(do_price);
@@ -139,16 +157,10 @@ int main(int argc, char** argv) try
     return 1;
 }
 
-static void initial_parse(int ac, char **av,
-                          string &tsp_fname, string &tour_fname,
-                          int &seed, int &rnodes, int &rgrid,
-                          CMR::OutPrefs &outprefs, bool &sparseflag,
-                          bool &branchflag, int &node_sel, int &cut_sel,
-                          int &edge_sel)
+static void initial_parse(int ac, char **av, OptData &opt_dat,
+                          CMR::OutPrefs &outprefs)
 {
     bool randflag = false;
-
-    rgrid = 1000000;
 
     int c;
 
@@ -157,7 +169,7 @@ static void initial_parse(int ac, char **av,
         throw logic_error("No arguments specified");
     }
 
-    while ((c = getopt(ac, av, "aBEGPRSVXb:c:e:n:g:s:t:")) != EOF) {
+    while ((c = getopt(ac, av, "aBEGPRSVXb:c:e:l:n:g:s:t:")) != EOF) {
         switch (c) {
         case 'B':
             outprefs.prog_bar = true;
@@ -169,13 +181,13 @@ static void initial_parse(int ac, char **av,
             outprefs.gif_tour = true;
             break;
         case 'P':
-            branchflag = false;
+            opt_dat.branch = false;
             break;
         case 'R':
             randflag = true;
             break;
         case 'S':
-            sparseflag = true;
+            opt_dat.sparse = true;
             break;
         case 'V':
             outprefs.verbose = true;
@@ -184,25 +196,28 @@ static void initial_parse(int ac, char **av,
             outprefs.dump_xy = true;
             break;
         case 'b':
-            node_sel = atoi(optarg);
+            opt_dat.node_sel = atoi(optarg);
             break;
         case 'c':
-            cut_sel = atoi(optarg);
+            opt_dat.cut_sel = atoi(optarg);
             break;
         case 'e':
-            edge_sel = atoi(optarg);
+            opt_dat.edge_sel = atoi(optarg);
+            break;
+        case 'l':
+            opt_dat.target_lb = atof(optarg);
             break;
         case 'n':
-            rnodes = atoi(optarg);
+            opt_dat.rand_nodes = atoi(optarg);
             break;
         case 'g':
-            rgrid = atoi(optarg);
+            opt_dat.rand_grid = atoi(optarg);
             break;
         case 's':
-            seed = atoi(optarg);
+            opt_dat.seed = atoi(optarg);
             break;
         case 't':
-            tour_fname = optarg;
+            opt_dat.tour_fname = optarg;
             break;
         case '?':
         default:
@@ -212,40 +227,40 @@ static void initial_parse(int ac, char **av,
     }
 
     if (optind < ac)
-        tsp_fname = av[optind++];
+        opt_dat.tsp_fname = av[optind++];
 
     if (optind != ac) {
         usage(av[0]);
         throw logic_error("Bad option count");
     }
 
-    if (node_sel < 0 || node_sel > 3) {
+    if (opt_dat.node_sel < 0 || opt_dat.node_sel > 3) {
         usage(av[0]);
         throw logic_error("Branching strategy (-b) must be 0, 1, 2, or 3");
     }
 
-    if (cut_sel < 0 || cut_sel > 1) {
+    if (opt_dat.cut_sel < 0 || opt_dat.cut_sel > 1) {
         usage(av[0]);
         throw logic_error("Cut sel (-c) must be 0 or 1");
     }
 
-    if (edge_sel < 0 || edge_sel > 1) {
+    if (opt_dat.edge_sel < 0 || opt_dat.edge_sel > 1) {
         usage(av[0]);
         throw logic_error("Edge sel (-e) must be 0 or 1");
     }
 
-    if (tsp_fname.empty() && rnodes <= 0) {
+    if (opt_dat.tsp_fname.empty() && opt_dat.rand_nodes <= 0) {
         usage(av[0]);
         throw logic_error("Must specify problem file or random nodecount");
     }
 
     if (randflag &&
-        (!tsp_fname.empty() || !tour_fname.empty())) {
+        (!opt_dat.tsp_fname.empty() || !opt_dat.tour_fname.empty())) {
         usage(av[0]);
         throw logic_error("Cannot specify filenames and random prob");
     }
 
-    if (tsp_fname.empty() && !tour_fname.empty()) {
+    if (opt_dat.tsp_fname.empty() && !opt_dat.tour_fname.empty()) {
         usage(av[0]);
         throw logic_error("Cannot specify tour without TSPLIB file.");
     }
@@ -268,8 +283,8 @@ static void usage(const std::string &fname)
 {
     cerr << "Usage: " << fname << " [-see below-] [-prob_file-]\n";
     cerr << "\t\t FLAG OPTIONS\n"
-         << "-B \t Show a jittering progress bar for piv values.\n"
-         << "   \t Notes:\t Incompatible with verbose.\n"
+         << "-B \t Show a jittering progress bar for piv values "
+         << "(incompatible w verbose).\n"
          << "-E \t Write tour edges to file (in addition to nodes).\n"
          << "-G \t GIF output: write each new tour to a distinct file.\n"
          << "-P \t Pure primal cutting plane solution: do not branch.\n"
@@ -300,6 +315,7 @@ static void usage(const std::string &fname)
          << "   \t Notes:\t If a Delaunay triangulation is requested with an\n"
          << "   \t incompatible norm, the Linkern edges will be used.\n"
          << "-g \t Random problem gridsize x by x (1 million default)\n"
+         << "-l \t Target lower bound: report optimal if tour is at most x.\n"
          << "-n \t Random problem with x nodes\n"
          << "-s \t Random seed x used throughout code (current time default)\n"
          << "-t \t Load starting tour from path x" << endl;

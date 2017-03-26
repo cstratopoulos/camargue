@@ -264,10 +264,27 @@ void Solver::initial_prints()
     }
 }
 
+void Solver::set_lowerbound(double lb)
+{
+    target_lb = std::ceil(lb);
+    cout << "Set target lower bound to " << target_lb << endl;
+}
+
+bool Solver::lb_fathom()
+{
+    return best_data.min_tour_value <= target_lb;
+}
+
 
 PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
 {
     runtime_error err("Problem in Solver::cutting_loop");
+
+    if (lb_fathom()) {
+        cout << "Starting tour already matches target LB, returning optimal."
+             << endl;
+        return PivType::FathomedTour;
+    }
 
     if (do_price)
         try {
@@ -290,7 +307,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
 
     int rounds = 0;
 
-    while (true) {
+    while (!lb_fathom()) {
         ++rounds;
         if (output_prefs.verbose)
             cout << "|| Cutting loop pass " << rounds << endl;
@@ -324,6 +341,12 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                 CMR_CATCH_PRINT_THROW("pivot updating best data", err);
 
                 report_aug(Aug::Piv);
+                if (lb_fathom()) {
+                    cout << "Augmenting pivot matches target LB, "
+                         << "returning optimal." << endl;
+                    piv = PivType::FathomedTour;
+                    continue;
+                }
             }
 
             if (do_price) {
@@ -343,6 +366,12 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                         core_lp.active_tour.best_update(best_data);
 
                         report_aug(Aug::Xtour);
+                        if (lb_fathom()) {
+                            cout << "X-tour pivot matches target LB, "
+                                 << "returning optimal." << endl;
+                            piv = PivType::FathomedTour;
+                            continue;
+                        }
                     }
                     continue;
                 }

@@ -463,10 +463,10 @@ PivType Solver::cut_and_piv(bool do_price)
                  << ", returning " << piv << endl;
             piv_stats.report_extrema();
         }
-        
+
         break;
     }
-    
+
     return piv;
 }
 
@@ -512,6 +512,11 @@ PivType Solver::abc_bcp(bool do_price)
                          << endl;
                     core_lp.active_tour.best_update(best_data);
                     report_aug(Aug::Branch);
+                    if (lb_fathom()) {
+                        cout << "Branch tour is optimal by LB, "
+                             << "terminating ABC search." << endl;
+                        return PivType::FathomedTour;
+                    }
                 }
             } CMR_CATCH_PRINT_THROW("branching on current problem", err);
 
@@ -564,9 +569,13 @@ PivType Solver::abc_bcp(bool do_price)
 
             if (piv == PivType::Frac)
                 cur->stat = BranchStat::NeedsBranch;
-            else if (piv == PivType::FathomedTour)
+            else if (piv == PivType::FathomedTour) {
                 cur->stat = BranchStat::Pruned;
-            else {
+                if (lb_fathom()) {
+                    cout << "Terminating ABC search by lower bound." << endl;
+                    return piv;
+                }
+            } else {
                 cerr << "Pivot status " << piv << " in abc" << endl;
                 throw err;
             }

@@ -59,6 +59,8 @@ public:
     Solver(int seed, int node_count, int gridsize, OutPrefs outprefs);
     ///@}
 
+    void set_lowerbound(double lb); //!< Set a target for early termination.
+
     /// Run a primal cutting plane loop of pivoting and cut generation.
     LP::PivType cutting_loop(bool do_price, bool try_recover,
                              bool pure_cut);
@@ -139,6 +141,8 @@ private:
     /// Should cut_and_piv return \p piv for augmentation or pricing.
     bool return_pivot(LP::PivType piv);
 
+    bool lb_fathom(); //!< Does the current best tour match or beat target_lb.
+
     /// A loop of primal pivoting and cutting plane generation.
     LP::PivType cut_and_piv(bool do_price);
 
@@ -184,6 +188,8 @@ private:
     template <typename Qtype>
     bool call_separator(const std::function<bool()> &sepcall,
                         Qtype &sep_q, LP::PivType &piv, PivStats &piv_stats);
+
+    double target_lb{-std::numeric_limits<double>::max() + 1.0};
 
     Data::Instance tsp_instance;
     Data::KarpPartition karp_part;
