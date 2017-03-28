@@ -33,7 +33,7 @@ for trial in $(seq 1 3); do
     this_pre="$init_pre$trial"
     this_run="$this_pre".run
 
-    timeout 30s ./camargue -b1 -l"$opt" -GPS problems/"$tspname".tsp \
+    timeout 5m ./camargue -b1 -l"$opt" -GPS problems/"$tspname".tsp \
 	    >> "$this_run"
     mv "$this_run" "$dir_name"/"$this_run"
 done
@@ -46,6 +46,6 @@ fi
 
 best_sol="$(ls | grep "$tspname.*sol" | head -n1)"
 
-timeout 1m ./camargue -e1 -b1 -l"$opt" -t"$best_sol" \
+timeout 1h ./camargue -e1 -b1 -l"$opt" -t"$best_sol" \
 	-GS problems/"$tspname".tsp >> "$main_run"
 mv "$main_run" "$dir_name"/"$main_run"
