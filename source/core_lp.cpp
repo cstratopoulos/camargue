@@ -511,6 +511,9 @@ void CoreLP::add_cuts(Sep::CutQueue<Sep::HyperGraph> &pool_q)
  */
 void CoreLP::add_edges(const vector<Graph::Edge> &batch, bool reinstate)
 {
+    if (batch.empty())
+        return;
+
     runtime_error err("Problem in CoreLP::add_edges");
 
     int old_ecount = core_graph.edge_count();

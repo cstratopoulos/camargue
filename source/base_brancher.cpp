@@ -110,7 +110,12 @@ void BaseBrancher::do_branch(const BranchNode &B)
                     missing_edges.emplace_back(e0, e1,
                                                instance.edgelen(e0, e1));
             }
-            core_lp.add_edges(missing_edges, false);
+            int num_new = missing_edges.size();
+            if (num_new > 0) {
+                cout << num_new << " new edges in branch tour"
+                     << endl;
+                core_lp.add_edges(missing_edges, false);
+            }
         } CMR_CATCH_PRINT_THROW("finding add adding missing edges", err);
     }
 

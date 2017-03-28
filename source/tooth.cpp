@@ -294,8 +294,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
     ToothBody &old_seg = arg->old_seg;
     vector<IteratorMat> &ranges = arg->ranges;
 
-    //distant add
-    if (cut_start == old_seg.start) {
+    if (cut_start == old_seg.start) { // same left endpoint, new right
         for (int i = old_seg.end + 1; i <= cut_end; ++i) {
             marks[i] = true;
             rb_sums.erase(i);
@@ -353,7 +352,7 @@ int CandidateTeeth::teeth_cb(double cut_val, int cut_start, int cut_end,
         }
     }
 
-    old_seg = ToothBody(cut_start, cut_end, slack); //right adjacent update
+    old_seg = ToothBody(cut_start, cut_end, slack);
     return rval;
 }
 
