@@ -210,11 +210,11 @@ void Solver::report_cuts()
     }
 
     cout << "\t" << subcount << " SECs, " << combcount
-         << " combs/blossoms, " << dpcount << " dp cuts, "
+         << " combs/blossoms/clique things, " << dpcount << " dp cuts, "
          << gmicount << " GMI cuts. \n\t("
          << (core_lp.num_rows() - tsp_instance.node_count())
-         << " cuts total, " << core_lp.num_cols() << " cols).\n";
-    cout << endl;
+         << " cuts total, " << core_lp.num_cols() << " cols, "
+         << core_lp.ext_cuts.pool_count() << " cuts in pool)\n" << endl;
 }
 
 void Solver::initial_prints()
