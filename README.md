@@ -74,11 +74,11 @@ After installing CPLEX, open the `Makefile` and edit the definitions
 
 No further edits to the Makefile should be necessary. After that, you
 can run the script `cmr_install.sh` to configure and install
-Camargue. `cmr_install.h` accepts flag arguments to configure the
+Camargue. `cmr_install.sh` accepts flag arguments to configure the
 installation to your preferences, and to edit certain other
 files. Information on individual external dependences is [here](externals/extdeps.md). The simplest options are `-F` and `-B`. So
 
-    ./cmr_install.h -F
+    ./cmr_install.sh -F
 
 will run a `F`ull install with all the external dependencies. Assuming
 you are connected to the internet, this will download, extract, and
@@ -86,7 +86,7 @@ edit all the necessary external dependencies for a full install. This is
 recommended for best performance, and to observe all the features
 described in my thesis. The complementary option is
 
-    ./cmr_install.h -B
+    ./cmr_install.sh -B
 
 which runs a `B`are install with nothing other than Concorde and
 CPLEX.
