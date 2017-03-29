@@ -30,25 +30,32 @@
 namespace CMR {
 namespace Sep {
 
-//http://stackoverflow.com/a/17906532/6516346
+/**@name Safe MIR info deleters.
+ * A collection of structs for unique_ptr deleters to manage safemir data
+ * structures, as per //http://stackoverflow.com/a/17906532/6516346
+ */
+///@{
+
+/// Deleter for constraint matrix system.
 struct SystemDeleter {
     void operator()(CUTSsystem_t<double> *P) {
         CUTSfreeSystem<double>(&P);
     }
 };
 
+//// Deleter for variable info.
 struct VinfoDeleter {
     void operator()(CUTSvarInfo_t<double> *P) {
         CUTSfreeVarInfo<double>(&P);
     }
 };
 
+///@}
 
-/** Memory-managed access to classes needed during safe GMI separation.
- * This is just a collection of safemir data structures with custom deleters.
- * Populating the data depends on the LP::Relaxation solver_impl, so the real
- * work of constructing a MIRgroup is done by the function init_mir_data.
- */
+
+/// Memory-managed access to classes needed during safe GMI separation.
+/// See LP::Relaxation::init_mir_data for what is effectively the constructor
+/// for this struct.
 struct MIRgroup {
     MIRgroup()
     {

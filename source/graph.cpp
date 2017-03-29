@@ -15,6 +15,13 @@ using std::exception;
 namespace CMR {
 namespace Graph {
 
+/**
+ * @param[in] edges the Graph edges to represent.
+ * @param[out] the node-node elist representation.
+ * @param[out] the edge weights.
+ * See the implementation for the way edges correspond to entries in \p elist
+ * and \p elen.
+ */
 void get_elist(const vector<Edge> &edges, vector<int> &elist,
                vector<int> &elen)
 {
@@ -29,26 +36,6 @@ void get_elist(const vector<Edge> &edges, vector<int> &elist,
         elist[2 * i] = e.end[0];
         elist [(2 * i) + 1] = e.end[1];
     }
-}
-
-void get_delta(const int interval_start, const int interval_end,
-               const vector<int> &tour_nodes,
-               const vector<int> &elist,
-               int &deltacount, vector<int> &delta,
-               vector<int> &node_marks)
-{
-  for (int i = interval_start; i <= interval_end; i++)
-    node_marks[tour_nodes[i]] = 1;
-
-  int k = 0;
-
-  for (int i = 0; i < elist.size() / 2; i++) {
-    if (node_marks[elist[2 * i]] + node_marks[elist[(2 * i) + 1]] == 1)
-      delta[k++] = i;
-  }
-
-  for (int i = interval_start; i <= interval_end; i++)
-    node_marks[tour_nodes[i]] = 0;
 }
 
 

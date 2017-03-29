@@ -64,13 +64,15 @@ inline bool is_tour_piv(PivType P)
     return P == PivType::Tour || P == PivType::FathomedTour;
 }
 
+/// Variable basis statuses.
 enum BStat {
-    AtLower = 0,
-    Basic = 1,
-    AtUpper = 2,
-    FreeSuper = 3
+    AtLower = 0, //!< Non-basic and at lower bound.
+    Basic = 1, //!< Basic variable.
+    AtUpper = 2, //!< Non-basic and at upper bound.
+    FreeSuper = 3 //!< Free variable.
 };
 
+/// Row and column basic statuses corresponding to some LP solution.
 struct Basis {
     Basis() = default;
     Basis(Basis &&B) noexcept
@@ -83,10 +85,11 @@ struct Basis {
             return *this;
         }
 
+    /// Is the basis empty/invalid.
     bool empty() const { return colstat.empty() || rowstat.empty(); }
 
-    std::vector<int> colstat;
-    std::vector<int> rowstat;
+    std::vector<int> colstat; //!< Column statuses.
+    std::vector<int> rowstat; //!< Row statuses.
 
     using Ptr = std::unique_ptr<Basis>;
 };
@@ -151,7 +154,6 @@ struct SparseRow {
     double lp_viol = 0.0; //!< (Optional) violation wrt some vector.
 };
 
-/// Operator overload for writing LP::PivType to output stream.
 inline std::ostream &operator<<(std::ostream &os, PivType piv)
 {
     using Ptype = LP::PivType;
