@@ -1,4 +1,4 @@
-Camargue	{#mainpage}
+Camargue
 ========
 
 This is the README for Camargue, a TSP solver based on primal
@@ -9,15 +9,6 @@ layout of the code, a good starting point would be the documentation
 for CMR::Solver. To get an idea of how branching machinery is laid out, look at
 derived classes of CMR::ABC::Brancher, or the namespace CMR::ABC.
 
-Inline references in this README are meant to be rendered by
-[Doxygen](http://www.stack.nl/~dimitri/doxygen/). If you are reading
-it in plain text or on GitHub, then
-
-- extdeps is the External Dependences documentation in
-  externals/extdeps.md
-- unittests is the Catch Unit Tests documentation in
-  source/tests/unittests.md
-
 If you wish to browse the source code manually, I have tried to
 document it in a way that keeps header files compact and
 readable. Except for class/structure definitions, the
@@ -25,11 +16,20 @@ documentation in a `.hpp` is mostly terse one-liners, with detailed
 coumentation of function parameters and behaviors in the `.cpp`
 files.
 
+See below for
 
-Installation
+- [Installation instructions](#install)
+- [Usage info](#usage)
+
+
+[Installation](#install)
 ------------
 
-For users building the code on one of the UW linux.math environments,
+To get started, you can clone the repository with
+
+    git clone https://github.com/cstratopoulos/camargue.git
+
+For users building the code on one of the UW Unix research servers,
 from the camargue main directory just do
 
     cp scripts/Makefile.template.UWlinux Makefile
@@ -76,12 +76,11 @@ No further edits to the Makefile should be necessary. After that, you
 can run the script `cmr_install.sh` to configure and install
 Camargue. `cmr_install.h` accepts flag arguments to configure the
 installation to your preferences, and to edit certain other
-files. Information on individual external dependences is in @ref
-extdeps. The simplest options are `-F` and `-B`. So
+files. Information on individual external dependences is [here](externals/extdeps.md). The simplest options are `-F` and `-B`. So
 
     ./cmr_install.h -F
 
-will run a full install with all the external dependencies. Assuming
+will run a `F`ull install with all the external dependencies. Assuming
 you are connected to the internet, this will download, extract, and
 edit all the necessary external dependencies for a full install. This is
 recommended for best performance, and to observe all the features
@@ -89,11 +88,11 @@ described in my thesis. The complementary option is
 
     ./cmr_install.h -B
 
-which runs a "bare" install with nothing other than Concorde and
+which runs a `B`are install with nothing other than Concorde and
 CPLEX.
 
 In either case, `cmr_install.sh` will then invoke
-`configure.sh` to generate a config.hpp file and make appropriate
+`configure.sh` to generate a `config.hpp` file and make appropriate
 edits to the `Makefile`. You can double check both of these to see if
 everything looks right.
 
@@ -113,15 +112,16 @@ tests, benchmarks, and experiments that I used to develop
 Camargue (and write my thesis!) by using the recipe `make test`. This
 requires that the Catch unit testing framework be
 installed, which is done by running `cmr_install.sh` with the `-F`
-full install, or with the flag `-c`. Information on this is given in
-@ref extdeps, and specific information on invoking the unit tests is
-in @ref unittests.
+full install, or with the flag `-c`. Install info is
+[here](externals/extdeps.md), with specific
+information on invoking the unit tests
+[here](source/tests/unittests.md).
 
-Usage
+[Usage](#usage)
 ------
 
 This heading is about standard command line usage of Camargue. For
-information on running tests/benchmarks, see @ref unittests.
+information on running tests/benchmarks, see [their documentation](source/tests/unittests.md).
 
 This section will try to elaborate a bit on the terse documentation
 that you get from typing `./camargue` with no arguments.
@@ -160,24 +160,50 @@ gridsize.
 For both styles of problems, Camargue will generate an initial edge
 set consisting of the nodes in the tour found, plus the union of 10
 quick Lin-Kernighan runs as implemented by Concorde's edge generation
-code.
+code. For Euclidean-norm instances, the option `-e 1` can be used to
+set the Delaunay triangulation edges as the starting edge set too.
 
 Also for both styles of problems, you can pass a random seed with
 `-s`. This is to allow reproducibility through all areas of the
-code. For a random problem, this will be used to pick the distribution
+code. (Note, however, that if OMP is [enabled](externals/extdeps.md),
+non-determinism will still be present.)
+For a random problem, this will be used to pick the distribution
 of points on the grid. For both types of problems, it will also always
 be used in calls to edge generators, separation routines,
 etc. Negative arguments, or an argument of zero, will result in the
 current time being used.
 
 By default, Camargue will do a loop of pivoting and cutting for as
-long as possible, and then begin a so-called Augment-Branch-Cut
+long as possible, and then begin a so-called Augment-Branch-Cut (ABC)
 search. The flag option `-P` will disable branching, attempting a "pure"
 primal cutting plane solution method instead.
 
-Finally, the flag option `-S` is available to specify sparse solution
+Camargue implements several different node selection rules for guiding
+the ABC search -- these can be specified by passing options to `-b`;
+see the usage info from running `./camargue` for more info.
+
+The flag option `-S` is available to specify sparse solution
 mode. In this mode, Camargue will run no edge pricing of any kind; it
 will just generate an initial edge set as above and try to prove that
 a given starting tour is optimal for this edge set. This option is
-required for the use of primal safe Gomory cut separation; see @ref
-extdeps for more info.
+required for the use of primal safe Gomory cut separation, described
+in the [external dependencies](externals/extdeps.md).
+
+Moreover, users can also specify cut generation style with
+`-c`. Camargue contains implementations of certain primal separation
+algorithms based on the research of Letchford and Lodi, as well as
+Fleischer, Letchford and Lodi. The option `-c 0` will select these
+algorithms, as well as heuristics for fast blossoms and block
+combs. The `-c 1` option, the default, will supplement these with some
+more exotic standard separation routines implemented in the Concorde
+TSP solver, such as cut tightening, double deckers, path inequalities,
+comb teething, and local cuts. Camargue will struggle to solve most
+instances with the `-c 0` option, but it can still be used.
+
+Finally, there is the `-l [int or float]` option to specify a target
+lower bound for the solver. Since Camargue works by trying to augment
+starting tours, you may be satisfied with terminating the solver
+prematurely if some target objective value is met. Values supplied
+will be rounded up to their integer ceiling, with the interpretation
+that integer values represent tour lengths and floating points
+represent dual lower bounds.

@@ -1,4 +1,4 @@
-External Dependencies	{#extdeps}
+External Dependencies
 =====================
 
 Camargue  would not exist without heavy reuse of facilities
@@ -17,8 +17,14 @@ individual ones, it should be sufficient to run `make clean` and then
 corresponding sections, with a brief mention of what the install
 script does.
 
-Safe Gomory Cuts
-----------------
+The add-ons are:
+
+- [Primal separation of safe Gomory cuts](#gmi)
+- [Unit tests and benchmarks with Catch](#catch)
+- [Shared-memory parallelism with OpenMP](#omp)
+
+[Safe Gomory Cuts](#gmi)
+-------------------------
 
 In "Primal Cutting Plane Algorithms Revisted", Letchford and Lodi
 describe how to generate Gomory cuts that solve the primal separation
@@ -52,12 +58,12 @@ need to make the automated changes just described. Running
 `./cmr_install.sh -s` should do these, but you can also call
 `scripts/edit_safemir.sh` from the camargue directory.
 
-Catch Unit Tests
-----------------
+[Catch Unit Tests](#catch)
+---------------------------
 
 This section just describes installation of the Catch unit testing
 framework. For info on running the tests, and suggested usage, see
-@ref unittests.
+[here](../source/tests/unittests.md).
 
 The current version of Camargue has been developed in a test driven
 fashion with the help of the unit testing framework
@@ -69,7 +75,8 @@ header](https://raw.githubusercontent.com/philsquared/Catch/master/include/catch
 
     ./cmr_install.sh -c
 
-will place the actual header there directly with a simple `curl` script.
+will place the actual header there directly with a simple `curl`
+script, as will the `-F` full install option.
 
 To compile Camargue in testing mode, use the recipe `make test`. This
 edits a line in config.hpp to enable testing, `make`s the project,
@@ -82,13 +89,12 @@ config.hpp and allow the normal Camargue main to be built.
 If you want to run the tests, there are some requirements on
 what your `camargue` directory has to look like. Most importantly, all
 the tests search for TSPLIB instances in a folder called `problems` in
-the Camargue directory, so at `camargue/problems`. The
-largest problem used in any of the tests is `usa13509`. Thus, if you
+the Camargue directory, so at `camargue/problems`. Thus, if you
 have a folder containing the TSPLIB instances from
 [here](http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/),
-and you have extracted all problems of size at most as big as
-`usa13509`, just create a symlink to the containing folder in the
-`camargue/` directory. The other requirement is the `test_data`
+and you have extracted all problems, just create a symlink to the
+containing folder in the `camargue/` directory. The other requirement
+is the `test_data`
 folder. This folder contains three subdirectories:
 
 - `tours` for (often suboptimal, sometimes deliberately terrible) TSP tours
@@ -97,11 +103,23 @@ folder. This folder contains three subdirectories:
 
 The latter two are cases where Concorde was used with the flag `-i` or
 `-I` to solve over the blossom or subtour polytope, respectively. If
-you don't have these files, the script `make_external_data.sh` can be used
+you don't have these files, the script `make_test_data.sh` can be used
 to generate them, provided
 
 - you have linked to a working build of Concorde in `externals`, and
 - you have created the `problems` symlink in the camargue directory.
+
+If you have some files but not others, the script will do a simple
+check before actually invoking Concorde.
+
+Be warned that the tests contain examples of size up to and including
+the largest instance, `pla85900`, so the test script may take a little
+while to run (although Concorde still finds the subtour polytope
+optimum extremely quickly). If you would rather not run this or other
+giant instances, you can just remove them from the problems
+folder. The script will still show "file not found" error from
+Concorde, and an error will be reported on the corresponding unit
+tests, but everything else will proceed as usual.
 
 The exception to these are a family of extremely tiny examples that I
 created, `blossom6.tsp`, `comb9.tsp`, `fleisA9.tsp` and
@@ -119,8 +137,8 @@ change the `CMR_DO_TESTS` line in config.hpp and change it back when
 you are done.
 
 
-OpenMP Parallelism
--------------------
+[OpenMP Parallelism](#omp)
+---------------------------
 
 There are a few separation routines in the code that can be
 implemented to run in parallel. I have chosen to implement this using
