@@ -143,7 +143,11 @@ will run the solver with the starting tour `dantzig42.sol`. The format
 of solution files supported is *not* the TSPLIB `.tour` format. Rather,
 it should be a file whose first line is the instance node count, with
 the following lines (with arbitrary spacing/indentation) giving
-zero-indexed ordering of the nodes. Camargue will make sure no obvious
+zero-indexed ordering of the nodes. If you would like to use a tour in the
+TSPLIB `.tour` format, there is a simple script at `scripts/to_sol.sh` that
+will convert a `.tour` file to a `.sol` file for you.
+
+When loading a starting tour, Camargue will make sure no obvious
 mistakes are present, checking that no node appears twice and that the
 indices are drawn from the proper range. You are free to specify an
 abysmal starting tour, though!
