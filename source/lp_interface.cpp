@@ -2,13 +2,6 @@
 #include "err_util.hpp"
 #include "util.hpp"
 
-#if CMR_HAVE_SAFEGMI
-
-#include <safemir/src/cplex_slvr.cpp>
-#include <safemir/src/ds_slvr.cpp>
-
-#endif
-
 #include <algorithm>
 #include <stdexcept>
 #include <iostream>
@@ -19,8 +12,14 @@
 
 #include <cfenv>
 
-
 #include <cplex.h>
+
+#if CMR_HAVE_SAFEGMI
+
+#include <safemir/src/cplex_slvr.cpp>
+#include <safemir/src/ds_slvr.cpp>
+
+#endif
 
 using std::abs;
 
@@ -56,10 +55,11 @@ struct Relaxation::solver_impl {
     solver_impl();
     ~solver_impl();
 
-    CPXENVptr env;
-    CPXLPptr lp;
+    CPXENVptr env; //!< The CPLEX environment.
+    CPXLPptr lp; //!< The LP problem object.
 };
 
+/// Construct a solver_impl with empty data, initializing parameters.
 Relaxation::solver_impl::solver_impl() try
 {
     int rval = 0;
@@ -117,6 +117,7 @@ Relaxation::solver_impl::solver_impl() try
     throw runtime_error("cplex solver_impl constructor failed.");
 }
 
+/// Destruct and free CPLEX resource handles.
 Relaxation::solver_impl::~solver_impl()
 {
     if (env) {
@@ -129,7 +130,13 @@ Relaxation::solver_impl::~solver_impl()
     }
 }
 
-
+/// Template for getting a ranged result vector from CPLEX.
+/** @tparam cplex_query the function type of the query.
+ * @param F the function to call.
+ * @param Fname the function name, if an error message needs to be printed.
+ * @returns a vector obtained by calling \p F to obtain info for the range
+ * \p begin to \p end.
+ */
 template <typename cplex_query>
 std::vector<double> info_vec(cplex_query F, const char* Fname,
                              const CPXENVptr cplex_env,
@@ -146,6 +153,7 @@ std::vector<double> info_vec(cplex_query F, const char* Fname,
     return result;
 }
 
+/// Like info_vec, but modifies a vector rather than returning one.
 template <typename cplex_query, typename vectype>
 void set_info_vec(cplex_query F, const char *Fname,
                   const CPXENVptr cplex_env, const CPXLPptr cplex_lp,
@@ -158,6 +166,11 @@ void set_info_vec(cplex_query F, const char *Fname,
         throw cpx_err(rval, Fname);
 }
 
+/// Gets callback info of a particular type from a user-written callback.
+/**
+ * @tparam info_type the data type of the info to be returned.
+ * See CPXgetcallbackinfo documentation for more info.
+ */
 template <typename info_type>
 void get_callback_info(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
                        int which_info, info_type *result_p,
@@ -169,6 +182,12 @@ void get_callback_info(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
         throw cpx_err(rval, query_description);
 }
 
+/**@name Optimization callback implementations.
+ * These are optimization callbacks that implement certain Relaxation methods.
+ */
+///@{
+
+/// Relaxation::primal_recover.
 static int pfeas_cb(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
                     void *cbhandle)
 {
@@ -183,6 +202,7 @@ static int pfeas_cb(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
     return pfeas;
 }
 
+/// Relaxation::cb_nondegen_pivot.
 static int ndpiv_cb(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
     void *cbhandle)
 {
@@ -218,114 +238,85 @@ static int ndpiv_cb(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
     return 0;
 }
 
-class CPXintParamGuard {
+///@}
+
+
+/**@name CPLEX Parameter guards.
+ * Limited versions of util::ScopeGuard used to make temporary changes to
+ *  CPLEX env parameters. Their destructor reverts the parameter, aborting
+ * the program if an error occurs (because destructors cannot throw).
+ */
+///@{
+
+/// Template alias for signature of CPXgetintparam, CPXgetdblparam, etc.
+template<typename numtype>
+using CPXgetType = int(*)(CPXCENVptr, int, numtype *);
+
+/// Template alias for signature of CPXsetintparam, CPXsetdblparam, etc.
+template<typename numtype>
+using CPXsetType = int(*)(CPXENVptr, int, numtype);
+
+/** A scope guard for making temporary changes to a CPLEX parameter.
+ * @tparam numtype the numeric type of the parameter to change.
+ * @tparam GetP a pointer to a function for getting a parameter of type
+ * \p numtype.
+ * @tparam SetP a pointer to a function for setting a parameter of type
+ * \p numtype.
+ */
+template
+<typename numtype, CPXgetType<numtype> GetP, CPXsetType<numtype> SetP>
+class CPXparamGuard {
 public:
-    CPXintParamGuard(int which, int new_value, CPXENVptr env,
-                  const string &p_desc) try
+    /// Construct a parameter guard. See private members for arguments.
+    CPXparamGuard(int which, numtype new_value, CPXENVptr env,
+                  const string p_desc)
         : which_param(which), cplex_env(env), param_desc(p_desc)
     {
-        int rval = CPXgetintparam(cplex_env, which_param, &old_value);
-
+        int rval = GetP(cplex_env, which_param, &old_value);
         if (rval)
-            throw cpx_err(rval, "CPXgetintparam " + param_desc);
+            throw cpx_err(rval, "Get param " + param_desc);
 
-        rval = CPXsetintparam(env, which_param, new_value);
+        rval = SetP(cplex_env, which_param, new_value);
         if (rval)
-            throw cpx_err(rval, "CPXsetintparam " + param_desc);
-    } catch (const exception & e) {
-        cerr << e.what() << "\n";
-        throw runtime_error("Couldn't create int param guard.");
+            throw cpx_err(rval, "Set param " + param_desc);
+    } catch (const exception &e) {
+        cerr << e.what() << endl;
+        throw runtime_error("CPXparamGuard constructor failed");
     }
 
-    ~CPXintParamGuard()
+    /// Revert the parameter, terminating the program upon failure.
+    ~CPXparamGuard()
     {
-        int rval = CPXsetintparam(cplex_env, which_param, old_value);
+        int rval = SetP(cplex_env, which_param, old_value);
         if (rval) {
-            cerr << "\tFATAL ERROR: Failed to revert int param "
-                 << param_desc << ", rval " << rval << "in destructor.\n";
+            cerr << "\tFATAL: Failed to revert " << param_desc << ", rval "
+                 << rval << " in destructor" << endl;
             exit(1);
         }
     }
 
 private:
-    const int which_param;
-    CPXENVptr cplex_env;
-    const string &param_desc;
-    int old_value;
+    const int which_param; //!< The CPLEX enumeration index of the parameter.
+    CPXENVptr cplex_env; //!< The environemnt to change the param in.
+    const string param_desc; //!< A string describing the change being made.
+    numtype old_value; //!< Set by constructor to the old value to revert to.
 };
 
-class CPXdblParamGuard {
-public:
-    CPXdblParamGuard(int which, double new_value, CPXENVptr env,
-                  const string &p_desc) try
-        : which_param(which), cplex_env(env), param_desc(p_desc)
-    {
-        int rval = CPXgetdblparam(cplex_env, which_param, &old_value);
+/// Integer parameter guard.
+using CPXintParamGuard = CPXparamGuard<int,
+                                       &CPXgetintparam,
+                                       &CPXsetintparam>;
+/// Double parameter guard.
+using CPXdblParamGuard = CPXparamGuard<double,
+                                       &CPXgetdblparam,
+                                       &CPXsetdblparam>;
+/// CPXLONG parameter guard.
+using CPXlongParamGuard = CPXparamGuard<CPXLONG,
+                                        &CPXgetlongparam,
+                                        &CPXsetlongparam>;
 
-        if (rval)
-            throw cpx_err(rval, "CPXgetdblparam " + param_desc);
 
-        rval = CPXsetdblparam(env, which_param, new_value);
-        if (rval)
-            throw cpx_err(rval, "CPXsetdblparam " + param_desc);
-    } catch (const exception & e) {
-        cerr << e.what() << "\n";
-        throw runtime_error("Couldn't create double param guard.");
-    }
-
-    ~CPXdblParamGuard()
-    {
-        int rval = CPXsetdblparam(cplex_env, which_param, old_value);
-        if (rval) {
-            cerr << "\tFATAL ERROR: Failed to revert double param "
-                 << param_desc << ", rval " << rval << "in destructor.\n";
-            exit(1);
-        }
-    }
-
-private:
-    const int which_param;
-    CPXENVptr cplex_env;
-    const string &param_desc;
-    double old_value;
-};
-
-class CPXlongParamGuard {
-public:
-    CPXlongParamGuard(int which, CPXLONG new_value, CPXENVptr env,
-                  const string &p_desc) try
-        : which_param(which), cplex_env(env), param_desc(p_desc)
-    {
-        int rval = CPXgetlongparam(cplex_env, which_param, &old_value);
-
-        if (rval)
-            throw cpx_err(rval, "CPXgetlongparam " + param_desc);
-
-        rval = CPXsetlongparam(env, which_param, new_value);
-        if (rval)
-            throw cpx_err(rval, "CPXsetlongparam " + param_desc);
-    } catch (const exception & e) {
-        cerr << e.what() << "\n";
-        throw runtime_error("Couldn't create long param guard.");
-    }
-
-    ~CPXlongParamGuard()
-    {
-        int rval = CPXsetlongparam(cplex_env, which_param, old_value);
-        if (rval) {
-            cerr << "\tFATAL ERROR: Failed to revert long param "
-                 << param_desc << ", rval " << rval << "in destructor.\n";
-            exit(1);
-        }
-    }
-
-private:
-    const int which_param;
-    CPXENVptr cplex_env;
-    const string &param_desc;
-    CPXLONG old_value;
-};
-
+///@}
 
 Relaxation::Relaxation()
 try : simpl_p(util::make_unique<solver_impl>())
