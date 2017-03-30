@@ -2,21 +2,21 @@
 
 #if CMR_HAVE_SAFEGMI
 
-#include <safemir/src/util_cuts.hpp>
-#include <safemir/src/cutmaster_slvr.cpp>
-#include <safemir/src/ds_cuts.cpp>
-#include <safemir/src/safe_mir_dbl.cpp>
-#include <safemir/src/gen_mir.cpp>
-
 #include "util.hpp"
 #include "err_util.hpp"
-
-#include <cfenv>
 
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
+
+#include <cfenv>
+
+#include <safemir/src/util_cuts.hpp>
+#include <safemir/src/cutmaster_slvr.cpp>
+#include <safemir/src/ds_cuts.cpp>
+#include <safemir/src/safe_mir_dbl.cpp>
+#include <safemir/src/gen_mir.cpp>
 
 using std::abs;
 
