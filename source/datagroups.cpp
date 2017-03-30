@@ -114,6 +114,13 @@ try : nodecount(ncount), random_seed(seed),
   throw runtime_error("Instance constructor failed.");
 }
 
+/**
+ * @param probname the name of the problem.
+ * @param seed the random seed to store.
+ * @param ncount the number of nodes.
+ * @param elist a node-node elist of the sparse edges.
+ * @param elen the edge capacities on the sparse edges.
+ */
 Instance::Instance(const string &probname, int seed, int ncount,
                    vector<int> &elist, vector<int> &elen)
 try
@@ -243,6 +250,12 @@ CoreGraph::CoreGraph(const Data::Instance &inst, Graph::EdgePlan edge_plan) try
     throw runtime_error("CoreGraph Instance constructor failed.");
 }
 
+/**
+ * @param ncount the number of nodes in the graph.
+ * @param ecount the number of edges.
+ * @param elist a node-node elist of length \p ecount.
+ * @param edgelen a function determining the length of edges in \p elist.
+ */
 CoreGraph::CoreGraph(int ncount, int ecount, const int *elist,
                      const std::function<double(int, int)> edgelen) try
     : nodecount(ncount)
@@ -261,6 +274,10 @@ CoreGraph::CoreGraph(int ncount, int ecount, const int *elist,
     throw runtime_error("CoreGraph constructor failed.");
 }
 
+/**
+ * @param tour_nodes the tour sequence to represent.
+ * @param edgelen the edge length function to determine edge weights.
+ */
 CoreGraph::CoreGraph(const vector<int> &tour_nodes,
                      const std::function<double(int, int)> edgelen) try
     : nodecount(tour_nodes.size())
@@ -484,6 +501,17 @@ BestGroup::BestGroup(const Instance &inst, Graph::CoreGraph &core_graph,
     throw runtime_error("BestGroup file constructor failed.");
 }
 
+/**
+ * @param[in] edges the edges of the CoreGraph relative to which this
+ * SupportGroup is being constructed.
+ * @param[in] lp_x the lp solution vector.
+ * @param[out] island a list of nodes in a connected component found in
+ * the dfs.
+ * @param[in] ncount the number of nodes in the graph.
+ * Constructs a SupportGroup with respect to an lp solution vector, with edge
+ * capacities corresponding to the lp values in \p lp_x. Computes basic
+ * connectivity info.
+ */
 SupportGroup::SupportGroup(const vector<Graph::Edge> &edges,
                            const vector<double> &lp_x,
                            std::vector<int> &island,

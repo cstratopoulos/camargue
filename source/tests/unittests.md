@@ -1,10 +1,12 @@
-Catch Unit Tests	{#unittests}
+Catch Unit Tests
 =================
 
 This file describes how to interactively use the Catch unit tests that were
 used to develop Camargue. For information on installing Catch and
-building in test mode, see @ref extdeps. Henceforth we'll assume Catch
-is installed, and that all the test data has been generated with a call to
+building in test mode, see the [general external dependencies
+documentation](../../externals/extdeps.md). Henceforth we'll assume
+Catch is installed, and that all the test data has been generated with
+a call to
 
     ./make_test_data.sh
 
@@ -17,17 +19,18 @@ that is provided by Catch. You can run
     ./camargue
 
 but this might not be what you want: this runs *every single* test
-case programmed, and will probably take several minutes to run. More
+case programmed, and will probably take 20-40 minutes to run. More
 likely, you want to examine tests for smaller chunks of code.
 
-Catch offers a tagging system to label test
-cases, and I have used this to indicate logical units of the code that
+Catch offers a tagging system to label test cases, and I have used
+this to indicate logical units of the code that
 are covered by a given test. These mostly correspond to namespaces,
 class names, or function names. To give some examples,
 
     ./camargue '[Sep]'
 
-will run all tests associated to the namespace CMR::Sep. And
+will run all tests associated to the namespace CMR::Sep, for matters
+related to separation routines. And
 
     ./camargue '[HyperGraph]'
 
@@ -65,7 +68,7 @@ that you like to see if tests exist for them, but you can also run
 
     ./camargue -t
 
-to list all the test case tags. 
+to list all the test case tags.
 
 In most of these cases, Camargue and Catch will probably report that
 no errors occurred, but it might not be clear what was being done in
@@ -116,11 +119,50 @@ hidden by default. As the name suggests, these are tests of the error
 handling control flow in Camargue. They ensure that the program
 terminates as expected if provided with bad inputs.
 
-Another tag that may be of interest is `[benchmark]`. Tests with this
-tag are not unit tests at all: rather, with these I have used Catch to
-automate running certain benchmarks, either for reporting in my thesis
-or to guide implementation choices elsewhere in the code. 
+Another notable use of the hidden tags is described in the next section.
 
+Thesis Experiments
+--------------------
+
+In developing Camargue, I have used Catch not only to test the code
+for bugs, but to generate benchmarks, tables, and figures that are
+reported in my thesis. These are implemented through the hidden tag
+system, as described in the previous section. In particular you can
+try tests like
+
+    ./camargue '[.benchmark]'
+    ./camargue '[.figure]'
+    ./camargue '[.table]'
+
+to run tests that correspond to thesis results. Tests with
+`'[figure]'` will usually write tours/coordinates/LP solutions to
+file, which can then be rendered with some sort of graph visualization
+software. With `'[.benchmark]'` or `'[.table]'`, sometimes the tests
+will produce almost verbatim a tab-separated table which was
+then copied into my thesis. In other cases, a bit of extra processing
+was used to format or interpret the data. For all of these, I would
+suggest running with the `-s` flag, as described previously, to get an
+idea of what the results actually mean. Additionally, you may want to
+browse the source of the test case as well to determine which summary
+statistic was being used.
+
+Note the `.` prefix on all the test cases: they are all hidden by
+default because many of them run *extremely* slowly, given that they
+try to provide empirical evidence for one approach being faster than
+another. On top of this, some of them run these slow trials 5 or 10 or
+20+ times, so as to record mean CPU times.
+
+At the end of the chapter on simple DP cuts, I report on several
+different experiments with the TSPLIB instance pla85900. A bit more
+work is required with these, since they involve modifying parameters
+which are determined at compile time. They are associated to the tags
+`'[.sdp-pla85]'` and such, and more detailed instructions for running
+them are given in `simpleDP_test.cpp`.
+
+The tag `'[experiment]'` is also employed in a very limited fashion:
+tests with this tag were used to get a sense of the workings of
+certain aspects of the solution process, so as to guide implementation
+choices.
 
 Reading the tests
 -------------------------
@@ -136,6 +178,8 @@ part. The hope is that this, combined with the natural syntax of
 Catch, will make the tests more or less self-documenting.
 
 That being said, the source files themselves are much less readable
-than the rest of the source code. There are over 3000 lines of test
+than the rest of the source code. There are around 4,500 source lines of test
 code, and a lot of it is repetitive boilerplate that could probably be
-abstracted somehow. 
+abstracted somehow. Similarly, some of the tests that produce
+formatted tables do so using some fairly lamentable array-indexing
+tricks.

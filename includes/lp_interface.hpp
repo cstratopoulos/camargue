@@ -77,7 +77,7 @@ public:
     void get_row(int row, std::vector<int> &rmatind,
                  std::vector<double> &rmatval) const;
 
-    SparseRow get_row(int row) const;
+    SparseRow get_row(int row) const; //!< Return a sparse coefficient row.
 
     /// Feasibility status of a given solution with respect to rows.
     void get_row_infeas(const std::vector<double> &x,
@@ -101,8 +101,7 @@ public:
 
 
     /// Get the resident basis.
-    void get_base(std::vector<int> &colstat,
-                  std::vector<int> &rowstat) const;
+    void get_base(std::vector<int> &colstat, std::vector<int> &rowstat) const;
 
     Basis basis_obj() const; //!< Return the resident basis.
 
@@ -214,15 +213,11 @@ public:
     void switch_steepest(); //!< Permanent switch to steepest edge pivots.
 
     void primal_opt(); //!< Optimize the Relaxation with primal simplex.
-
     void dual_opt(); //!< Optimize the relaxation with dual simplex.
-
-    /// Do a primal non-degenerate pivot.
-    void nondegen_pivot(double upper_bound);
+    void nondegen_pivot(double upper_bound); //!< Primal non-degenerate pivot.
 
     /// Do a primal non-degenerate pivot with a callback to record a basis.
     void cb_nondegen_pivot(double upper_bound, Basis &base, int bas_freq);
-
 
     void one_primal_pivot(); //!< Perform exactly one primal simplex pivot.
     void one_dual_pivot(); //!< Perform exactly one dual simplex pivot.
@@ -236,14 +231,14 @@ public:
     ///@{
 
 #if CMR_HAVE_SAFEGMI
-    void init_mir_data(Sep::MIRgroup &mir_data);
+    void init_mir_data(Sep::MIRgroup &mir_data); //!< Construct a Sep::MirGroup.
 #endif
 
     ///@}
 
 private:
-    struct solver_impl;
-    std::unique_ptr<solver_impl> simpl_p;
+    struct solver_impl; //!< Implementation hiding for solver.
+    std::unique_ptr<solver_impl> simpl_p; //!< Pointer to solver implementation.
 };
 
 /// Handle for data during a non-degenerate pivot callback.

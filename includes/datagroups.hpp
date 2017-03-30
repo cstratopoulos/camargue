@@ -28,13 +28,11 @@ extern "C" {
 
 namespace CMR {
 
-/** Namespace for storing data groups. */
+/// Data group namespace.
 namespace Data {
 
-/** Class for storing raw TSP instance data.
- * This class is a handle to the Concorde CCdatagroup structure, modeling
- * unique_ptr-style sole ownership over a datagroup.
- */
+/// Storing TSP instance data.
+/// This is a handle to CCdatagroup, providing unique ownership.
 class Instance {
 public:
     Instance() noexcept; //!< Default construct an empty instance.
@@ -51,9 +49,6 @@ public:
 
     Instance(Instance &&I) noexcept;
     Instance &operator=(Instance &&I) noexcept;
-
-    Instance(const Instance &I) = delete;
-    Instance &operator=(const Instance &I) = delete;
 
     ~Instance();
 
@@ -97,6 +92,7 @@ enum class EdgePlan {
     Delaunay, //!< Delaunay triangulation.
 };
 
+/// Graph structures for the edges currently in a CoreLP::Relaxation.
 class CoreGraph {
 public:
     CoreGraph() = default;
@@ -112,7 +108,7 @@ public:
     CoreGraph(int ncount, int ecount, const int *elist,
               const std::function<double(int, int)> edgelen);
 
-    /// Construct a CoreGraph containing the nodes of a TSP tour.
+    /// Construct a CoreGraph containing just the nodes of a TSP tour.
     CoreGraph(const std::vector<int> &tour_nodes,
               const std::function<double(int, int)> edgelen);
 
@@ -132,8 +128,9 @@ public:
     void add_edge(int end0, int end1, int len);
     void add_edge(const Edge &e);
 
-    void remove_edges();
+    void remove_edges(); //!< Remove all edges in the graph marked removable.
 
+    /// Get a binary vector representing tour edges.
     template<typename numtype>
     void tour_edge_vec(const std::vector<int> &tour_nodes,
                        std::vector<numtype> &tour_edges,
@@ -149,55 +146,50 @@ private:
 
 namespace Data {
 
-/** Stores information about the current best tour.
- * This structure manages the incumbent best tour for the TSP instance, as
- * well as some extra data about the tour and to facilitate computations
- * with the tour nodes and edges
- */
+/// Information about the current best tour.
 struct BestGroup {
     BestGroup() : min_tour_value(0) {}
 
-    /** The LK constructor. */
+    /// Construct a starting best tour with chained Lin-Kernighan.
     BestGroup(const Instance &inst, Graph::CoreGraph &core_graph);
 
-    /** The tour from file constructor. */
+    /// Load a starting best tour from file.
     BestGroup(const Instance &inst, Graph::CoreGraph &core_graph,
               const std::string &tourfile);
 
-  std::vector<int> best_tour_edges; /**< Binary vector indicating edges used
-				     * in tour */
-  std::vector<int> best_tour_nodes; /**< The sequence of nodes of the tour */
-  std::vector<int> perm; /**< Defined by the relation
-			  * `perm[best_tour_nodes[i]] = i` */
+    /// Binary vector of tour edges.
+    std::vector<int> best_tour_edges;
 
-  double min_tour_value;
+    std::vector<int> best_tour_nodes; //!< Sequence of nodes in the tour.
+    std::vector<int> perm; //!< Defined by `perm[best_tour_nodes[i]] = i`.
+
+    double min_tour_value; //!< The tour length.
 };
 
+/// Support graph data for an LP solution.
 struct SupportGroup {
     SupportGroup() = default;
 
+    /// Construct from an LP solution.
     SupportGroup(const std::vector<Graph::Edge> &edges,
                  const std::vector<double> &lp_x,
                  std::vector<int> &island,
                  int ncount);
 
     SupportGroup(SupportGroup &&SG) noexcept;
-
     SupportGroup &operator=(SupportGroup &&SG) noexcept;
 
+    bool in_subtour_poly(); //!< Is the graph in the subtour polytope.
 
+    std::vector<double> lp_vec; //!< The LP solution vector.
+    std::vector<int> support_indices; //!< Nonzero entries of lp_vec.
+    std::vector<int> support_elist; //!< Node-node elist for nonzero entries.
+    std::vector<double> support_ecap; //!< Weights on nonzero entries.
 
-    bool in_subtour_poly();
+    Graph::AdjList supp_graph; //!< Adjacency list rep of support graph.
 
-    std::vector<double> lp_vec;
-    std::vector<int> support_indices;
-    std::vector<int> support_elist;
-    std::vector<double> support_ecap;
-
-    Graph::AdjList supp_graph;
-
-    bool connected;
-    bool integral;
+    bool connected; //!< Is the graph connected.
+    bool integral; //!< Is the solution vector integral.
 };
 
 /// Load just enough data to test separation routines.
@@ -225,6 +217,12 @@ void make_cut_test(const std::string &tsp_fname,
 
 namespace Graph {
 
+/**
+ * @tparam numtype the number type of the tour edge vector.
+ * @param[in] tour_nodes the edges to represent.
+ * @param[out] tour_edges the binary tour edge vector.
+ * @param[out] the length of the tour.
+ */
 template<typename numtype>
 void CoreGraph::tour_edge_vec(const std::vector<int> &tour_nodes,
                               std::vector<numtype> &tour_edges,

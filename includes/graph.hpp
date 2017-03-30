@@ -25,8 +25,11 @@ namespace CMR {
 /// Classes and functions for working with graphs.
 namespace Graph {
 
+/// Representing graph edges and costs.
 struct Edge : EndPts {
     Edge() : removable(false) {}
+
+    /// Construct by endpoints and length.
     Edge(int e0, int e1, int _len) :
         EndPts(e0, e1), len(_len), removable(false) {}
 
@@ -34,21 +37,26 @@ struct Edge : EndPts {
         return ((end[0] == rhs.end[0]) && (end[1] == rhs.end[1]));
     }
 
-    int len;
-    bool removable;
+    int len; //!< The edge length.
+    bool removable; //!< For use by certain erase-remove procedures.
 };
 
+/// Get a node-node elist representation of a list of edges.
 void get_elist(const std::vector<Edge> &edges, std::vector<int> &elist,
                std::vector<int> &ecap);
 
+/// Object used to represent adjacency in a Graph::AdjList.
+/// For a fixed node `x`, an AdjObj is used to represent adjacency between
+/// `x` and another node `y` in the graph.
 struct AdjObj {
     AdjObj() = default;
+
     AdjObj(int otherend, int index, double _val) :
         other_end(otherend), edge_index(index), val(_val) {}
 
-    int other_end;
-    int edge_index;
-    double val;
+    int other_end; //!< The node `y` in the notation above.
+    int edge_index; //!< The index wrt a fixed Graph::Edge vector of `(x, y)`.
+    double val; //!< Can represent length or some other value on the edge.
 
     bool operator==(const AdjObj &rhs) const
     {
@@ -58,11 +66,13 @@ struct AdjObj {
     }
 };
 
+/// A vertex in a Graph::AdjList graph.
+/// For a node \f$ x \f$, this effectively stores \f$ \delta(x) \f$.
 struct Node {
     Node() : mark(0) {}
 
     int degree() const { return neighbors.size(); }
-    std::vector<AdjObj> neighbors;
+    std::vector<AdjObj> neighbors; //!<
     int mark;
 };
 
@@ -87,8 +97,10 @@ struct AdjList {
 
     AdjList &operator=(AdjList &&AL) noexcept;
 
+    /// Is the graph connected.
     bool connected(std::vector<int> &island, int start_node);
 
+    /// Performs a depth-first beginning with \p start_node.
     void dfs(int start_node, std::vector<int> &island);
 
     /// Get a pointer to the AdjObj with end points \p end0 and \p end1.
@@ -108,31 +120,37 @@ struct AdjList {
     int edge_count;
 
     std::vector<Node> nodelist;
-
 };
 
-/// Graph object representing the edges in a core lp relaxation.
 
+/** @name Functions for getting cuts in a graph.
+ * These functions take as input a graph \f$ G \f$ and a node set \f$ X \f$,
+ * returning a representation of \f$ \delta(X) \f$ in \f$ G \f$. The returned
+ * vector \p delta_inds will store indices of edges in the cut wrt the input
+ * graph.
+ */
+///@{
 
-//TODO get rid of all the versions that need island/deltacount, etc.
+/// Cut set \p node_list, with graph specified by \p edges with \p ncount nodes.
 std::vector<int> delta_inds(const std::vector<int> &node_list,
                             const std::vector<Edge> &edges,
                             int ncount);
 
+/// As above but with node-node list \p elist representing graph edges.
 std::vector<int> delta_inds(const std::vector<int> &node_list,
                             const std::vector<int> &elist,
                             int ncount);
 
-void get_delta (const int interval_start, const int interval_end,
-		const std::vector<int> &tour_nodes,
-		const std::vector<int> &elist,
-		int &deltacount,  std::vector<int> &delta,
-		std::vector<int> &node_marks);
+///@}
 
 
 
 ///////////////// TEMPLATE METHOD IMPLEMENTATIONS /////////////////////////////
 
+/**
+ * @tparam EndPt_type the edge representation being used. Should be derived
+ * from CMR::EndPt.
+ */
 template <typename EndPt_type>
 AdjList::AdjList(int ncount, const std::vector<EndPt_type> &elist) try
     : node_count(ncount), edge_count(elist.size()),
