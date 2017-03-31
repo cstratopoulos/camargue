@@ -26,7 +26,13 @@ LKH
 *~
 
 #none of the doxygen output
-doc
+docs
+
+#none of the modified doxygen files for GitHub pages
+Doxyfile-gh-pages
+README_dx.md
+externals/extdeps_dx.md
+source/tests/unittests_dx.md
 
 #ignore gv files, softlinks, and output
 *.png
