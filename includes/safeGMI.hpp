@@ -22,6 +22,7 @@
 namespace CMR {
 namespace Sep {
 
+/// Primal separation of safe Gomory cuts.
 class SafeGomory {
 public:
     SafeGomory(LP::Relaxation &rel,

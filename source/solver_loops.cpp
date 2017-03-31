@@ -155,6 +155,56 @@ inline void Solver::place_pivot(double low_lim, double best_tourlen,
     p_bar[target_entry] = ' ';
 }
 
+/**@name Convenience macros for separation routines in Solver::cut_and_piv.
+ * These macros are meant to be used in the body of the main `while` loop
+ * in Solver::cut_and_piv to invoke a separation routine using
+ * Solver::call_separator, and then restart or advance the loop as needed.
+ * This saves the use of repetitive boilerplate which can make it hard to
+ * navigate the loop at a glance, given the `return` and `continue` statements
+ * which may not be easy to abstract into a real function template.
+ */
+///@{
+
+/** Macro for invoking a conventional separation routine.
+ * In the body of Solver::cut_and_piv, this can be used to
+ * invoke a straightforward separation routine which is just called and used
+ * to update stats. See below for example usage.
+ */
+#define CUT_PIV_CALL(sep_ptr, find_fn, cuts_q, description)     \
+try {                                                           \
+    reset_separator(sep_ptr);                                   \
+    if (call_separator([&sep_ptr]()                             \
+                       { return sep_ptr->find_fn(); },          \
+                       sep_ptr->cuts_q(), piv, piv_stats)) {    \
+        if (return_pivot(piv))                                  \
+            return piv;                                         \
+                                                                \
+        if (restart_loop(piv, piv_stats.delta_ratio))           \
+            continue;                                           \
+    }                                                           \
+} CMR_CATCH_PRINT_THROW(description, err);
+
+/** Macro for invoking cut metamorphosis separation.
+ * This can be used for a straightforward invocation of one of the
+ * Sep::MetaCuts separation routines. See below for example usage.
+ */
+#define META_SEP_PIV_CALL(meta_type, description)                       \
+try {                                                                   \
+    reset_separator(meta_sep);                                          \
+    meta_sep->set_type(meta_type);                                      \
+    if (call_separator([&meta_sep]()                                    \
+                       { return meta_sep->find_cuts(); },               \
+                       meta_sep->metacuts_q(), piv, piv_stats)) {       \
+        if (return_pivot(piv))                                          \
+            return piv;                                                 \
+                                                                        \
+        if (restart_loop(piv, piv_stats.delta_ratio))                   \
+            continue;                                                   \
+    }                                                                   \
+}  CMR_CATCH_PRINT_THROW(description, err);
+
+///@}
+
 /**
  * @param do_price is edge pricing being performed for this instance. Used to
  * control Gomory cut separation.
@@ -202,49 +252,19 @@ PivType Solver::cut_and_piv(bool do_price)
         }
 
         if (cut_sel.cutpool && core_lp.external_cuts().pool_count() != 0)
-            try {
-                reset_separator(pool_sep);
-                if (call_separator([&pool_sep]()
-                                   { return pool_sep->find_cuts(); },
-                                   pool_sep->pool_q(), piv, piv_stats)) {
-                    if (return_pivot(piv))
-                        return piv;
-
-                    if (restart_loop(piv, delta_ratio))
-                        continue;
-                }
-            } CMR_CATCH_PRINT_THROW("calling pool sep", err);
+            CUT_PIV_CALL(pool_sep, find_cuts, pool_q, "doing pool sep");
 
         // tighten pool can be very slow, so only call it right after an
         // augmenting pivot.
         if (cut_sel.tighten_pool && core_lp.external_cuts().pool_count() != 0
-            && !did_tighten_pool && aug_chart.size() > 1)
-            try {
-                did_tighten_pool = true;
-                reset_separator(pool_sep);
-                if (call_separator([&pool_sep]()
-                                   { return pool_sep->tighten_pool(); },
-                                   pool_sep->tighten_q(), piv, piv_stats)) {
-                    if (return_pivot(piv))
-                        return piv;
+            && !did_tighten_pool && aug_chart.size() > 1) {
+            did_tighten_pool = true;
 
-                    if (restart_loop(piv, delta_ratio))
-                        continue;
-                }
-            } CMR_CATCH_PRINT_THROW("calling tighten pool sep", err);
+            CUT_PIV_CALL(pool_sep, tighten_pool, tighten_q, "tightening pool");
+        }
 
         if (cut_sel.segment)
-            try {
-                reset_separator(sep);
-                if (call_separator([&sep]() { return sep->segment_sep(); },
-                                   sep->segment_q(), piv, piv_stats)) {
-                    if (return_pivot(piv))
-                        return piv;
-
-                    if (restart_loop(piv, delta_ratio))
-                        continue;
-                }
-            } CMR_CATCH_PRINT_THROW("calling segment sep", err);
+            CUT_PIV_CALL(sep, segment_sep, segment_q, "doing segment sep");
 
         if (cut_sel.connect && !supp_data.connected) {
             if (verbose)
@@ -278,117 +298,31 @@ PivType Solver::cut_and_piv(bool do_price)
         }
 
         if (cut_sel.fast2m)
-            try {
-                reset_separator(sep);
-                if (call_separator([&sep]() { return sep->fast2m_sep(); },
-                                   sep->fastblossom_q(), piv, piv_stats)) {
-                    if (return_pivot(piv))
-                        return piv;
-
-                    if (restart_loop(piv, delta_ratio))
-                        continue;
-                }
-            } CMR_CATCH_PRINT_THROW("calling fast2m sep", err);
+            CUT_PIV_CALL(sep, fast2m_sep, fastblossom_q, "doing fast2m sep");
 
         if (cut_sel.blkcomb)
-            try {
-                reset_separator(sep);
-                if (call_separator([&sep]() { return sep->blkcomb_sep(); },
-                                   sep->blockcomb_q(), piv, piv_stats)) {
-                    if (return_pivot(piv))
-                        return piv;
-
-                    if (restart_loop(piv, delta_ratio))
-                        continue;
-                }
-            } CMR_CATCH_PRINT_THROW("calling blkcomb sep", err);
+            CUT_PIV_CALL(sep, blkcomb_sep, blockcomb_q, "doing blkcomb sep");
 
         if (cut_sel.ex2m)
-            try {
-                reset_separator(sep);
-                if (call_separator([&sep]() { return sep->exact2m_sep(); },
-                                   sep->exblossom_q(), piv, piv_stats)) {
-                    if (return_pivot(piv))
-                        return piv;
-
-                    if (restart_loop(piv, delta_ratio))
-                        continue;
-                }
-            } CMR_CATCH_PRINT_THROW("calling exact 2m sep", err);
+            CUT_PIV_CALL(sep, exact2m_sep, exblossom_q, "doing exact 2m sep");
 
         if (cut_sel.simpleDP && supp_data.connected)
-            try {
-                reset_separator(sep);
-                if (call_separator([&sep]() { return sep->simpleDP_sep(); },
-                                   sep->simpleDP_q(), piv, piv_stats)) {
-                    if (return_pivot(piv))
-                        return piv;
-
-                    if (restart_loop(piv, delta_ratio))
-                        continue;
-                }
-            } CMR_CATCH_PRINT_THROW("calling simpleDP sep", err);
+            CUT_PIV_CALL(sep, simpleDP_sep, simpleDP_q, "doing simple DP sep");
 
         using MetaType = Sep::MetaCuts::Type;
 
         if (cut_sel.tighten)
-            try {
-                reset_separator(meta_sep);
-                if (call_separator([&meta_sep]()
-                                   { return meta_sep->tighten_cuts(); },
-                                   meta_sep->metacuts_q(), piv, piv_stats)) {
-                    if (return_pivot(piv))
-                        return piv;
-
-                    if (restart_loop(piv, delta_ratio))
-                        continue;
-                }
-            } CMR_CATCH_PRINT_THROW("calling Tighten sep", err);
+            CUT_PIV_CALL(meta_sep, tighten_cuts, metacuts_q,
+                         "tightening cuts");
 
         if (cut_sel.decker)
-            try {
-                reset_separator(meta_sep);
-                meta_sep->set_type(MetaType::Decker);
-                if (call_separator([&meta_sep]()
-                                   { return meta_sep->find_cuts(); },
-                                   meta_sep->metacuts_q(), piv, piv_stats)) {
-                    if (return_pivot(piv))
-                        return piv;
-
-                    if (restart_loop(piv, delta_ratio))
-                        continue;
-                }
-            }  CMR_CATCH_PRINT_THROW("calling Double Decker sep", err);
+            META_SEP_PIV_CALL(MetaType::Decker, "doing Double Decker sep");
 
         if (cut_sel.handling)
-            try {
-                reset_separator(meta_sep);
-                meta_sep->set_type(MetaType::Handling);
-                if (call_separator([&meta_sep]()
-                                   { return meta_sep->find_cuts(); },
-                                   meta_sep->metacuts_q(), piv, piv_stats)) {
-                    if (return_pivot(piv))
-                        return piv;
-
-                    if (restart_loop(piv, delta_ratio))
-                        continue;
-                }
-            } CMR_CATCH_PRINT_THROW("calling Handling sep", err);
+            META_SEP_PIV_CALL(MetaType::Handling, "doing Handling sep");
 
         if (cut_sel.teething)
-            try {
-                reset_separator(meta_sep);
-                meta_sep->set_type(MetaType::Teething);
-                if (call_separator([&meta_sep]()
-                                   { return meta_sep->find_cuts(); },
-                                   meta_sep->metacuts_q(), piv, piv_stats)) {
-                    if (return_pivot(piv))
-                        return piv;
-
-                    if (restart_loop(piv, delta_ratio))
-                        continue;
-                }
-            } CMR_CATCH_PRINT_THROW("calling Teething sep", err);
+            META_SEP_PIV_CALL(MetaType::Teething, "doing Teething sep");
 
         if (cut_sel.localcuts) {
             bool lc_restart = false;
@@ -435,18 +369,7 @@ PivType Solver::cut_and_piv(bool do_price)
         unique_ptr<Sep::SafeGomory> gmi_sep;
 
         if (cut_sel.safeGMI && !do_price)
-            try {
-                reset_separator(gmi_sep);
-                if (call_separator([&gmi_sep]()
-                                   { return gmi_sep->find_cuts(); },
-                                   gmi_sep->gomory_q(), piv, piv_stats)) {
-                    if (return_pivot(piv))
-                        return piv;
-
-                    if (restart_loop(piv, delta_ratio))
-                        continue;
-                }
-            } CMR_CATCH_PRINT_THROW("doing safe GMI sep", err);
+            CUT_PIV_CALL(gmi_sep, find_cuts, gomory_q, "doing safe GMI sep");
 
 #endif
         double ph_init_prev = piv_stats.first_last_ratio;

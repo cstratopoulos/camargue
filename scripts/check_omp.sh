@@ -1,3 +1,4 @@
+#!/bin/sh
 # OpenMP Configuration routine for Camargue
 # The script in this file will attempt to check if the user-specified compiler
 # supports OpenMP (OMP) parallelism. It makes no changes to the config file

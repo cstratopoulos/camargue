@@ -20,6 +20,7 @@
 namespace CMR {
 namespace Sep {
 
+/// Separation of cut metamorphoses.
 class MetaCuts {
 public:
     MetaCuts(const ExternalCuts &EC_,

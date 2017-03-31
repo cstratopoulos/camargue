@@ -2,8 +2,8 @@
 /** @file
  * @brief ERROR HANDLING CLASSES AND ROUTINES
  *
- * This file contains classes for creating cleanup objects and exceptions 
- * derived from standard library runtime error. 
+ * This file contains classes for creating cleanup objects and exceptions
+ * derived from standard library runtime error.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -15,11 +15,12 @@
 #include <iostream>
 
 /** Macro for handling errors in function with multiple failure points.
- * Suggested usage: This macro should be used in a function by initially 
- * declaring a runtime_error err("Function failed."). Then, for various smaller
- * tasks within the function that may throw for distinct reasons (and which
- * throw exceptions derived from std::exception), use a try block followed by
- * CMR_CATCH_PRINT_THROW("description of failure in small task", err).
+ * Suggested usage: This macro should be used in a function by initially
+ * declaring a runtime_error new_ex("Function failed."). Then, for various
+ *  smaller tasks within the function that may throw for distinct reasons
+ * (and which throw exceptions derived from std::exception),
+ * use a try block followed by
+ * CMR_CATCH_PRINT_THROW("description of failure in small task", new_ex).
  */
 #define CMR_CATCH_PRINT_THROW( msg, new_ex )  catch(const std::exception &e)  \
   { std::cerr << e.what() << " " << msg << ".\n"; throw new_ex; }
@@ -29,9 +30,9 @@ namespace CMR {
 namespace util {
 
 /** Code from Andrei Alexandrescu's ScopeGuard11 slides.
- * This class provides a limited implementation of ScopeGuard. I have not 
- * bothered with the macro definitions for scope exit, or for operator + on 
- * a scope guard; all cleanup tasks must be specified upon construction. 
+ * This class provides a limited implementation of ScopeGuard. I have not
+ * bothered with the macro definitions for scope exit, or for operator + on
+ * a scope guard; all cleanup tasks must be specified upon construction.
  */
 template <typename act_type>
 class ScopeGuard {
@@ -41,7 +42,7 @@ public:
     ScopeGuard(act_type action) :
         final_action(std::move(action)), active(true) {}
 
-    
+
     ~ScopeGuard()
         { if(active) final_action(); } //!< Perform the final_action.
 
@@ -56,7 +57,7 @@ public:
     ScopeGuard(ScopeGuard&& rhs) :
         final_action(std::move(rhs.final_action)),
         active(rhs.active) {rhs.dismiss(); }
-  
+
 private:
     act_type final_action; //!< A function to be called on destruction.
     bool active; //!< True iff final_action should be performed on destruction.
@@ -88,7 +89,7 @@ struct retcode_error : public std::runtime_error {
                            std::to_string(rval)) {}
 };
 
-}  
+}
 }
 
 

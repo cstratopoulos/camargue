@@ -1,3 +1,4 @@
+#!/bin/sh
 # Configuration subroutines for Camargue
 # The script in this file will test for the presence of the following external
 # includes:

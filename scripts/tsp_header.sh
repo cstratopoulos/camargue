@@ -1,3 +1,4 @@
+#!/bin/sh
 # Modifying Concorde INCLUDE/tsp.h header file
 #
 # The keyword 'new' is reserved in C++ as something of a C++ version of malloc.
@@ -18,7 +19,16 @@
 # This script should only be run after a softlink to the concorde directory
 # is present in externals/
 
+echo "Trying to modify concorde/INCLUDE/tsp.h to remove 'new'...."
+
 header=externals/concorde/INCLUDE/tsp.h
+
+newlines="$(grep '\*new)' "$header" | wc -l)"
+
+if [ "$newlines" -eq 0 ]; then
+    echo "Header already looks fine."
+    exit 0
+fi
 
 sed 's/CCtsp\([_a-z]\) \*new)/CCtsp\1 *new\1)/g' "$header" > tmp_header
 

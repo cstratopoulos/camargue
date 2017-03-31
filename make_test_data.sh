@@ -1,3 +1,4 @@
+#!/bin/sh
 # Test data generation script for Camargue
 # This script will use Concorde to generate examples that are used in running
 # Catch test cases. For each TSP instance in test_data/main_examples.txt, it
