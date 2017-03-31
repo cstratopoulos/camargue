@@ -1,12 +1,15 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/**
+ * @file
+ * @brief Hash map for graph edges.
+ */
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef CMR_EDGEHASH_H
 #define CMR_EDGEHASH_H
 
 #include "graph.hpp"
 #include "util.hpp"
-
-extern "C" {
-#include <concorde/INCLUDE/util.h>
-}
 
 #include <iostream>
 #include <memory>
@@ -16,12 +19,12 @@ extern "C" {
 namespace CMR {
 namespace util {
 
-/// Mapping node pairs to edges via wrapper to Concorde data structure.
+/// Hash map for node pairs representing edges.
+/// @remark A wrapper to Concorde's CCutil_edgehash.
 class EdgeHash {
 public:
-    /// Construct an Edgehash for approximately \p size elements.
-    EdgeHash(int size);
-    ~EdgeHash(); //!< Destruct and free associated memory.
+    EdgeHash(int size); //!< An EdgeHash for approximately \p size elements.
+    ~EdgeHash();
 
     EdgeHash(const EdgeHash &eh) = delete; //!< No copy constructor.
     EdgeHash &operator=(const EdgeHash &eh) = delete; //!< No copy assign.
@@ -31,14 +34,13 @@ public:
     void erase(int end1, int end2); //!< Delete a pair.
 
     std::vector<Graph::Edge> get_all(); //!< Get a vector of all the edges.
-    void clear(); //!< Clear all the edges from the hash. 
+    void clear(); //!< Clear all the edges from the hash.
     int get_val(int end1, int end2); //!< Get the val for an edge.
-    
+
 
 private:
-    /// A scaling factor used to set the capacity of the underlying array.
-    static constexpr double factor = 1.5;
-    CCutil_edgehash eh; //!< The underlying Concorde data structure.
+    struct eh_impl; //!< The hash table implementation.
+    std::unique_ptr<eh_impl> eh_pimpl; //!< Pimpl idiom firewall.
 };
 
 

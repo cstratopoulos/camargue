@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief Pricing sets of edges.
+ */
+
 #ifndef CMR_PRICER_H
 #define CMR_PRICER_H
 
@@ -11,10 +16,6 @@
 #include "err_util.hpp"
 #include "fixed64.hpp"
 #include "edgehash.hpp"
-
-extern "C" {
-#include <concorde/INCLUDE/tsp.h>
-}
 
 #include <memory>
 #include <queue>
@@ -34,7 +35,7 @@ public:
     Pricer(LP::CoreLP &core, const Data::Instance &_inst,
            Graph::CoreGraph &core_graph_);
 
-    ~Pricer(); //!< Destruct and free resource handles.
+    ~Pricer();
 
     ScanStat gen_edges(LP::PivType piv_stat,
                        bool try_elim); //!< Generate/add edges to core.
@@ -88,8 +89,9 @@ private:
     std::unique_ptr<LP::DualGroup<double>> reg_duals;
     std::unique_ptr<LP::DualGroup<util::Fixed64>> ex_duals;
 
-    CCtsp_edgegenerator eg_inside; //!< Concorde 50-nearest edge generator.
-    CCtsp_edgegenerator eg_full; //!< Concorde complete graph edge generator.
+    struct edgegen_impl; //!< The edge generator implementation.
+    std::unique_ptr<edgegen_impl> eg_inside; //!< 50-nearest generator.
+    std::unique_ptr<edgegen_impl> eg_full; //!< Complete graph generator.
 
     util::EdgeHash edge_hash; //!< Hash table for tracking generated edges.
 };

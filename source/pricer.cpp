@@ -5,6 +5,10 @@
 #include <iostream>
 #include <utility>
 
+extern "C" {
+#include <concorde/INCLUDE/tsp.h>
+}
+
 using std::vector;
 
 using std::cout;
@@ -27,6 +31,47 @@ namespace Price {
 
 using d_PrEdge = PrEdge<double>;
 
+struct Pricer::edgegen_impl {
+    edgegen_impl(const Data::Instance &inst, int price_mode);
+    ~edgegen_impl();
+
+    void gen_reset(vector<double> &node_pi_est);
+    void gen_edges(int max_ngen, int &num_gen, vector<int> &generated_elist,
+                   vector<int> &generated_elen, int &finished,
+                   CCrandstate &rstate);
+
+    CCtsp_edgegenerator eg;
+};
+
+Pricer::edgegen_impl::edgegen_impl(const Data::Instance &inst, int price_mode)
+{
+    CCrandstate rstate;
+    CCutil_sprand(inst.seed(), &rstate);
+
+    if (CCtsp_init_edgegenerator(&eg, inst.node_count(), inst.ptr(), NULL,
+                                 price_mode, 1, &rstate))
+        throw runtime_error("CCtsp_init_edgegenerator failed");
+}
+
+Pricer::edgegen_impl::~edgegen_impl() { CCtsp_free_edgegenerator(&eg); }
+
+void Pricer::edgegen_impl::gen_reset(vector<double> &node_pi_est)
+{
+    if (CCtsp_reset_edgegenerator(&eg, &node_pi_est[0], 1))
+        throw runtime_error("CCtsp_reset_edgegenerator failed");
+}
+
+void Pricer::edgegen_impl::gen_edges(int max_ngen, int &num_gen,
+                                     vector<int> &generated_elist,
+                                     vector<int> &generated_elen,
+                                     int &finished, CCrandstate &rstate)
+{
+    if (CCtsp_generate_edges(&eg, max_ngen, &num_gen,
+                             &generated_elist[0], &generated_elen[0],
+                             &finished, 1, &rstate))
+        throw runtime_error("CCtsp_generate_edges failed");
+}
+
 /**
  * @param[in] _relax the Relaxation for grabbing dual values
  * @param[in] _inst the TSP instance for generating edges
@@ -39,30 +84,15 @@ Pricer::Pricer(LP::CoreLP &core, const Data::Instance &_inst,
     core_graph(core_graph_),
     gen_max(EstBatch + ScaleBatch * inst.node_count()),
     gen_elist(vector<int>(2 * gen_max)), gen_elen(gen_max),
+    eg_inside(util::make_unique<edgegen_impl>(_inst, 50)),
+    eg_full(util::make_unique<edgegen_impl>(_inst, CCtsp_PRICE_COMPLETE_GRAPH)),
     edge_hash(gen_max)
-{
-    CCrandstate rstate;
-    CCutil_sprand(inst.seed(), &rstate);
-
-    if (CCtsp_init_edgegenerator(&eg_inside, inst.node_count(), inst.ptr(),
-                                 (CCtsp_genadj *) NULL, Nearest, 1, &rstate))
-        throw runtime_error("CCtsp_init_edgegenerator(50) failed.");
-
-    if (CCtsp_init_edgegenerator(&eg_full, inst.node_count(), inst.ptr(),
-                                 (CCtsp_genadj *) NULL,
-                                 CCtsp_PRICE_COMPLETE_GRAPH, 1, &rstate))
-        throw runtime_error("CCtsp_init_edgenerator(complete) failed.");
-
-} catch (const exception &e) {
+{} catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Pricer constructor failed.");
 }
 
-Pricer::~Pricer()
-{
-    CCtsp_free_edgegenerator(&eg_inside);
-    CCtsp_free_edgegenerator(&eg_full);
-}
+Pricer::~Pricer() { }
 
 
 /**
@@ -86,24 +116,21 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
                                                              ext_cuts);
     } CMR_CATCH_PRINT_THROW("populating clique pi", err);
 
-    CCtsp_edgegenerator *current_eg;
+    edgegen_impl *current_eg;
 
     if (piv_stat == PivType::FathomedTour){
-        current_eg = &eg_full;
+        current_eg = eg_full.get();
         if (verbose)
             cout << "\tRunning full eg\n";
     } else if (piv_stat == PivType::Tour){
-        current_eg = &eg_inside;
+        current_eg = eg_inside.get();
         if (verbose)
             cout << "\tRunning inside eg\n";
     } else
         throw logic_error("Tried to run pricing on non tour.");
 
-    if (CCtsp_reset_edgegenerator(current_eg,
-                                  &(reg_duals->node_pi_est[0]), 1)) {
-        cerr << "CCtsp_reset_edgegenerator failed.\n";
-        throw err;
-    }
+    try { current_eg->gen_reset(reg_duals->node_pi_est); }
+    CMR_CATCH_PRINT_THROW("resetting generator", err);
 
     CCrandstate rstate;
 
@@ -129,11 +156,10 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
 
         price_elist.clear();
 
-        if (CCtsp_generate_edges(current_eg, gen_max, &num_gen, &gen_elist[0],
-                                 &gen_elen[0], &finished, 1, &rstate)) {
-            cerr << "CCtsp_generate_edges failed.\n";
-            throw err;
-        }
+        try {
+            current_eg->gen_edges(gen_max, num_gen, gen_elist, gen_elen,
+                                  finished, rstate);
+        } CMR_CATCH_PRINT_THROW("generating edges", err);
 
         for (int i = 0; i < num_gen; ++i) {
             int e0 = gen_elist[2 * i];
@@ -220,12 +246,8 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
 
 
             if (num_added > 0) {
-                if (CCtsp_reset_edgegenerator(current_eg,
-                                              &(reg_duals->node_pi_est[0]),
-                                              1)) {
-                    cerr << "CCtsp_reset_edgegenerator failed.\n";
-                    throw err;
-                }
+                try { current_eg->gen_reset(reg_duals->node_pi_est); }
+                CMR_CATCH_PRINT_THROW("resetting generator", err);
 
                 finished = 0;
                 edge_hash.clear();

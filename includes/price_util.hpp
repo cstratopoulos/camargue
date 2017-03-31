@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief Constants and functions related to edge pricing.
+ */
+
 #ifndef CMR_PRICE_UTIL_H
 #define CMR_PRICE_UTIL_H
 
