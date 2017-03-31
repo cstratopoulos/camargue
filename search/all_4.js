@@ -35,7 +35,7 @@ var searchData=
   ['executor',['Executor',['../class_c_m_r_1_1_a_b_c_1_1_executor.html#ac6fb972a4df1f1f55d9beccf398ce085',1,'CMR::ABC::Executor']]],
   ['expand_5fcut',['expand_cut',['../class_c_m_r_1_1_sep_1_1_d_pwitness.html#a297daa0e6c7dd2addd5d80e2fae7f420',1,'CMR::Sep::DPwitness']]],
   ['ext_5fcuts',['ext_cuts',['../class_c_m_r_1_1_price_1_1_pricer.html#ac2de76fdd430a7acd2d82d979f27665f',1,'CMR::Price::Pricer']]],
+  ['external_20dependencies',['External Dependencies',['../extdeps.html',1,'']]],
   ['externalcuts',['ExternalCuts',['../class_c_m_r_1_1_sep_1_1_external_cuts.html#a2d164570c6688bafe6f315be45c86f5d',1,'CMR::Sep::ExternalCuts']]],
-  ['externalcuts',['ExternalCuts',['../class_c_m_r_1_1_sep_1_1_external_cuts.html',1,'CMR::Sep']]],
-  ['external_20dependencies',['External Dependencies',['../md_externals_extdeps.html',1,'']]]
+  ['externalcuts',['ExternalCuts',['../class_c_m_r_1_1_sep_1_1_external_cuts.html',1,'CMR::Sep']]]
 ];

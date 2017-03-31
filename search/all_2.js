@@ -83,9 +83,9 @@ var searchData=
   ['graph',['Graph',['../namespace_c_m_r_1_1_graph.html',1,'CMR']]],
   ['camargue',['Camargue',['../index.html',1,'']]],
   ['lp',['LP',['../namespace_c_m_r_1_1_l_p.html',1,'CMR']]],
-  ['catch_20unit_20tests',['Catch Unit Tests',['../md_source_tests_unittests.html',1,'']]],
   ['price',['Price',['../namespace_c_m_r_1_1_price.html',1,'CMR']]],
   ['sb',['SB',['../namespace_c_m_r_1_1_a_b_c_1_1_s_b.html',1,'CMR::ABC']]],
   ['sep',['Sep',['../namespace_c_m_r_1_1_sep.html',1,'CMR']]],
+  ['catch_20unit_20tests',['Catch Unit Tests',['../utests.html',1,'']]],
   ['util',['util',['../namespace_c_m_r_1_1util.html',1,'CMR']]]
 ];
