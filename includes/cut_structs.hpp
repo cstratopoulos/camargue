@@ -25,6 +25,7 @@ struct ex_blossom {
     double cut_val;
 };
 
+/// Representing bodies of simple tooth inequalities with associated slack.
 struct ToothBody : Segment {
     ToothBody() = default;
     ToothBody(int _start, int _end, double _slack) :
@@ -34,6 +35,7 @@ struct ToothBody : Segment {
     double slack;
 };
 
+/// Representing simple tooth inequalities.
 struct SimpleTooth {
     SimpleTooth(int _root, int _body_start, int _body_end, double _slack) :
         root(_root), body_start(_body_start), body_end(_body_end),
