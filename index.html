@@ -80,14 +80,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Camargue </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>This is the README for Camargue, a TSP solver based on primal cutting plane methods. Camargue tries to move from tour to tour, either proving that a tour is optimal or finding a better one. This page contains information on installing and using Camargue. To get a sense of the layout of the code, a good starting point would be the documentation for <a class="el" href="class_c_m_r_1_1_solver.html" title="Solution of TSP instances. ">CMR::Solver</a>. To get an idea of how branching machinery is laid out, look at derived classes of CMR::ABC::Brancher, or the namespace <a class="el" href="namespace_c_m_r_1_1_a_b_c.html" title="Augment-Branch-Cut solution. ">CMR::ABC</a>.</p>
+<div class="textblock"><p>This is the README/main page for Camargue, a TSP solver based on primal cutting plane methods. Camargue tries to move from tour to tour, either proving that a tour is optimal or finding a better one. Camargue was developed in tandem with the research in my master's thesis, "Primal
+Cutting Plane Methods for the Traveling Salesman Problem".</p>
+<p>To get a sense of the layout of the code, a good starting point would be the documentation for <a class="el" href="class_c_m_r_1_1_solver.html" title="Solution of TSP instances. ">CMR::Solver</a>. To get an idea of how branching machinery is laid out, look at derived classes of <a class="el" href="class_c_m_r_1_1_a_b_c_1_1_base_brancher.html" title="Abstract base class for implementing a branching node selection rule. ">CMR::ABC::BaseBrancher</a>, or the namespace <a class="el" href="namespace_c_m_r_1_1_a_b_c.html" title="Augment-Branch-Cut solution. ">CMR::ABC</a>.</p>
 <p>If you wish to browse the source code manually, I have tried to document it in a way that keeps header files compact and readable. Except for class/structure definitions, the documentation in a <code>.hpp</code> is mostly terse one-liners, with detailed coumentation of function parameters and behaviors in the <code>.cpp</code> files.</p>
-<p>See below for</p>
-<ul>
-<li><a href="#install">Installation instructions</a></li>
-<li><a href="#usage">Usage info</a></li>
-</ul>
-<h2><a href="#install">Installation</a> </h2>
+<p>This page contains information on installing and using Camargue.</p>
+<p>See below for installation and usage.</p>
+<h2>Installation </h2>
 <p>To get started, you can clone the repository with </p><pre class="fragment">git clone https://github.com/cstratopoulos/camargue.git
 </pre><p>For users building the code on one of the UW Unix research servers, from the camargue main directory just do </p><pre class="fragment">cp scripts/Makefile.template.UWlinux Makefile
 </pre><p>The compiler and CPLEX directories are already specified, so you just need to do the steps below concerning symlinks to Concorde, and installing externals.</p>
@@ -104,14 +103,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </ul>
 <p>After installing Concorde, go into the directory <code>camargue/externals</code> and create a symlink to the <code>concorde</code> directory. That is, <code>concorde</code> must point to the folder containing the files <code>TSP</code>, <code>INCLUDE</code>, <code>CUT</code>, etc.</p>
 <p>After installing CPLEX, open the <code>Makefile</code> and edit the definitions <code>CPXDIR</code> and <code>CPX_LIB</code>. Details and examples are given in the <code>Makefile</code>.</p>
-<p>No further edits to the Makefile should be necessary. After that, you can run the script <code>cmr_install.sh</code> to configure and install Camargue. <code>cmr_install.sh</code> accepts flag arguments to configure the installation to your preferences, and to edit certain other files. Information on individual external dependences is at <a class="el" href="extdeps.html">External Dependencies</a>. The simplest options are <code>-F</code> and <code>-B</code>. So </p><pre class="fragment">./cmr_install.sh -F
+<p>No further edits to the Makefile should be necessary. After that, you can run the script <code>cmr_install.sh</code> to configure and install Camargue. <code>cmr_install.sh</code> accepts flag arguments to configure the installation to your preferences, and to edit certain other files. See <a class="el" href="extdeps.html">External Dependencies</a> for info on external dependencies.</p>
+<p>The simplest options are <code>-F</code> and <code>-B</code>. So </p><pre class="fragment">./cmr_install.sh -F
 </pre><p>will run a <code>F</code>ull install with all the external dependencies. Assuming you are connected to the internet, this will download, extract, and edit all the necessary external dependencies for a full install. This is recommended for best performance, and to observe all the features described in my thesis. The complementary option is </p><pre class="fragment">./cmr_install.sh -B
 </pre><p>which runs a <code>B</code>are install with nothing other than Concorde and CPLEX.</p>
 <p>In either case, <code>cmr_install.sh</code> will then invoke <code>configure.sh</code> to generate a <code><a class="el" href="config_8hpp.html" title="Configuration macros. ">config.hpp</a></code> file and make appropriate edits to the <code>Makefile</code>. You can double check both of these to see if everything looks right.</p>
 <p>If you went with a barebones install and later want to add some or all external enhancements, you should just be able to invoke <code>cmr_install.sh</code> again. For example to add just the safe Gomory code, you would do </p><pre class="fragment">./cmr_install.sh -s
 </pre><p>After performing all these steps, you should be able to compile and run Camargue by running <code>make</code> from the main directory, creating the <code>camargue</code> executable.</p>
-<p>Additionally, if you like, you can run the unit tests, benchmarks, and experiments that I used to develop Camargue (and write my thesis!) by using the recipe <code>make test</code>. This requires that the Catch unit testing framework be installed, which is done by running <code>cmr_install.sh</code> with the <code>-F</code> full install, or with the flag <code>-c</code>. See <a class="el" href="extdeps.html">External Dependencies</a> for install info, and  for specific info on unit tests.</p>
-<h2><a href="#usage">Usage</a> </h2>
+<p>Additionally, if you like, you can run the unit tests, benchmarks, and experiments that I used to develop Camargue (and write my thesis!) by using the recipe <code>make test</code>. This requires that the Catch unit testing framework be installed, which is done by running <code>cmr_install.sh</code> with the <code>-F</code> full install, or with the flag <code>-c</code>. Install info is in <a class="el" href="extdeps.html">External Dependencies</a>, with more specific info in <a class="el" href="utests.html">Catch Unit Tests</a>.</p>
+<h2>Usage </h2>
 <p>This heading is about standard command line usage of Camargue. For information on running tests/benchmarks, see <a class="el" href="utests.html">Catch Unit Tests</a>.</p>
 <p>This section will try to elaborate a bit on the terse documentation that you get from typing <code>./camargue</code> with no arguments.</p>
 <p>Camargue accepts problems in two formats: TSPLIB instances with a <code>.tsp</code> suffix, and randomly generated Euclidean instances. If you have a folder called <code>problems</code> in the Camargue directory with TSPLIB instances in it, you can run one with </p><pre class="fragment">./camargue problems/dantzig42.tsp
