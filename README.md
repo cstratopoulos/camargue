@@ -3,8 +3,11 @@ Camargue
 
 This is the README for Camargue, a TSP solver based on primal
 cutting plane methods. Camargue tries to move from tour to tour, either
-proving that a tour is optimal or finding a better one. This page contains
-information on installing and using Camargue. To get a sense of the
+proving that a tour is optimal or finding a better one. Camargue was
+developed in tandem with the research in my master's thesis, "Primal
+Cutting Plane Methods for the Traveling Salesman Problem".
+
+To get a sense of the
 layout of the code, a good starting point would be the documentation
 for CMR::Solver. To get an idea of how branching machinery is laid out, look at
 derived classes of CMR::ABC::Brancher, or the namespace CMR::ABC.
@@ -15,6 +18,16 @@ readable. Except for class/structure definitions, the
 documentation in a `.hpp` is mostly terse one-liners, with detailed
 coumentation of function parameters and behaviors in the `.cpp`
 files.
+
+This page contains information on installing and using Camargue. You
+can also view the GitHub pages version at
+
+https://cstratopoulos.github.io/camargue/index.html
+
+The text is mostly the same, but you will be able to navigate inline
+to the Camargue documentation, created with
+[Doxygen](http://www.stack.nl/~dimitri/doxygen/).
+
 
 See below for
 
