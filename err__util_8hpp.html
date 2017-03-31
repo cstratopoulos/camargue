@@ -202,7 +202,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">catch</span>(<span class="keyword">const</span> std::exception &amp;e)  \</div><div class="line">  { std::cerr &lt;&lt; e.what() &lt;&lt; <span class="stringliteral">&quot; &quot;</span> &lt;&lt; msg &lt;&lt; <span class="stringliteral">&quot;.\n&quot;</span>; <span class="keywordflow">throw</span> new_ex; }</div></div><!-- fragment -->
 <p>Macro for handling errors in function with multiple failure points. </p>
-<p>Suggested usage: This macro should be used in a function by initially declaring a runtime_error err("Function failed."). Then, for various smaller tasks within the function that may throw for distinct reasons (and which throw exceptions derived from std::exception), use a try block followed by CMR_CATCH_PRINT_THROW("description of failure in small task", err). </p>
+<p>Suggested usage: This macro should be used in a function by initially declaring a runtime_error new_ex("Function failed."). Then, for various smaller tasks within the function that may throw for distinct reasons (and which throw exceptions derived from std::exception), use a try block followed by CMR_CATCH_PRINT_THROW("description of failure in small task", new_ex). </p>
 
 </div>
 </div>

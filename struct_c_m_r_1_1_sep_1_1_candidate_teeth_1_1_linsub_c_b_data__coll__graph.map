@@ -1,5 +1,5 @@
 <map id="CMR::Sep::CandidateTeeth::LinsubCBData" name="CMR::Sep::CandidateTeeth::LinsubCBData">
 <area shape="rect" id="node2" href="$struct_c_m_r_1_1_graph_1_1_adj_list.html" title="Representation of a graph as an adjacency list. " alt="" coords="5,81,149,108"/>
-<area shape="rect" id="node3" href="$struct_c_m_r_1_1_sep_1_1_tooth_body.html" title="CMR::Sep::ToothBody" alt="" coords="173,81,328,108"/>
+<area shape="rect" id="node3" href="$struct_c_m_r_1_1_sep_1_1_tooth_body.html" title="Representing bodies of simple tooth inequalities with associated slack. " alt="" coords="173,81,328,108"/>
 <area shape="rect" id="node4" href="$struct_c_m_r_1_1_segment.html" title="Simple utility struct for storing an interval of nodes. " alt="" coords="194,5,307,32"/>
 </map>

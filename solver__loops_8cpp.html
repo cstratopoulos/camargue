@@ -151,10 +151,96 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespace_c_m_r"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_c_m_r.html">CMR</a></td></tr>
 <tr class="memdesc:namespace_c_m_r"><td class="mdescLeft">&#160;</td><td class="mdescRight">The namespace for this project. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Convenience macros for separation routines in Solver::cut_and_piv.</div></td></tr>
+<tr><td colspan="2"><div class="groupText"><p>These macros are meant to be used in the body of the main <code>while</code> loop in Solver::cut_and_piv to invoke a separation routine using Solver::call_separator, and then restart or advance the loop as needed.</p>
+<p>This saves the use of repetitive boilerplate which can make it hard to navigate the loop at a glance, given the <code>return</code> and <code>continue</code> statements which may not be easy to abstract into a real function template. </p>
+</div></td></tr>
+<tr class="memitem:af3da8fd5b1d9189f454ceb8d754f4ddd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solver__loops_8cpp.html#af3da8fd5b1d9189f454ceb8d754f4ddd">CUT_PIV_CALL</a>(sep_ptr,  find_fn,  cuts_q,  description)</td></tr>
+<tr class="memdesc:af3da8fd5b1d9189f454ceb8d754f4ddd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro for invoking a conventional separation routine.  <a href="#af3da8fd5b1d9189f454ceb8d754f4ddd">More...</a><br /></td></tr>
+<tr class="separator:af3da8fd5b1d9189f454ceb8d754f4ddd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03d84c56f8b622acf16549c1840bb126"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solver__loops_8cpp.html#a03d84c56f8b622acf16549c1840bb126">META_SEP_PIV_CALL</a>(meta_type,  description)</td></tr>
+<tr class="memdesc:a03d84c56f8b622acf16549c1840bb126"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro for invoking cut metamorphosis separation.  <a href="#a03d84c56f8b622acf16549c1840bb126">More...</a><br /></td></tr>
+<tr class="separator:a03d84c56f8b622acf16549c1840bb126"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Private Solver methods with recursive/loop calls. </p>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a class="anchor" id="af3da8fd5b1d9189f454ceb8d754f4ddd"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CUT_PIV_CALL</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">sep_ptr, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">find_fn, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">cuts_q, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">description&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">try</span> {                                                           \</div><div class="line">    reset_separator(sep_ptr);                                   \</div><div class="line">    if (call_separator([&amp;sep_ptr]()                             \</div><div class="line">                       { <span class="keywordflow">return</span> sep_ptr-&gt;find_fn(); },          \</div><div class="line">                       sep_ptr-&gt;cuts_q(), piv, piv_stats)) {    \</div><div class="line">        if (return_pivot(piv))                                  \</div><div class="line">            return piv;                                         \</div><div class="line">                                                                \</div><div class="line">        if (restart_loop(piv, piv_stats.delta_ratio))           \</div><div class="line">            continue;                                           \</div><div class="line">    }                                                           \</div><div class="line">} <a class="code" href="err__util_8hpp.html#af50b9f633159e11844412fd880630d99">CMR_CATCH_PRINT_THROW</a>(description, err);</div><div class="ttc" id="err__util_8hpp_html_af50b9f633159e11844412fd880630d99"><div class="ttname"><a href="err__util_8hpp.html#af50b9f633159e11844412fd880630d99">CMR_CATCH_PRINT_THROW</a></div><div class="ttdeci">#define CMR_CATCH_PRINT_THROW(msg, new_ex)</div><div class="ttdoc">Macro for handling errors in function with multiple failure points. </div><div class="ttdef"><b>Definition:</b> err_util.hpp:25</div></div>
+</div><!-- fragment -->
+<p>Macro for invoking a conventional separation routine. </p>
+<p>In the body of Solver::cut_and_piv, this can be used to invoke a straightforward separation routine which is just called and used to update stats. See below for example usage. </p>
+
+</div>
+</div>
+<a class="anchor" id="a03d84c56f8b622acf16549c1840bb126"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define META_SEP_PIV_CALL</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">meta_type, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">description&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">try</span> {                                                                   \</div><div class="line">    reset_separator(meta_sep);                                          \</div><div class="line">    meta_sep-&gt;set_type(meta_type);                                      \</div><div class="line">    if (call_separator([&amp;meta_sep]()                                    \</div><div class="line">                       { <span class="keywordflow">return</span> meta_sep-&gt;find_cuts(); },               \</div><div class="line">                       meta_sep-&gt;metacuts_q(), piv, piv_stats)) {       \</div><div class="line">        if (return_pivot(piv))                                          \</div><div class="line">            return piv;                                                 \</div><div class="line">                                                                        \</div><div class="line">        if (restart_loop(piv, piv_stats.delta_ratio))                   \</div><div class="line">            continue;                                                   \</div><div class="line">    }                                                                   \</div><div class="line">}  <a class="code" href="err__util_8hpp.html#af50b9f633159e11844412fd880630d99">CMR_CATCH_PRINT_THROW</a>(description, err);</div><div class="ttc" id="err__util_8hpp_html_af50b9f633159e11844412fd880630d99"><div class="ttname"><a href="err__util_8hpp.html#af50b9f633159e11844412fd880630d99">CMR_CATCH_PRINT_THROW</a></div><div class="ttdeci">#define CMR_CATCH_PRINT_THROW(msg, new_ex)</div><div class="ttdoc">Macro for handling errors in function with multiple failure points. </div><div class="ttdef"><b>Definition:</b> err_util.hpp:25</div></div>
+</div><!-- fragment -->
+<p>Macro for invoking cut metamorphosis separation. </p>
+<p>This can be used for a straightforward invocation of one of the Sep::MetaCuts separation routines. See below for example usage. </p>
+
+</div>
+</div>
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">
