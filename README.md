@@ -10,7 +10,7 @@ Cutting Plane Methods for the Traveling Salesman Problem".
 To get a sense of the
 layout of the code, a good starting point would be the documentation
 for CMR::Solver. To get an idea of how branching machinery is laid out, look at
-derived classes of CMR::ABC::Brancher, or the namespace CMR::ABC.
+derived classes of CMR::ABC::BaseBrancher, or the namespace CMR::ABC.
 
 If you wish to browse the source code manually, I have tried to
 document it in a way that keeps header files compact and
