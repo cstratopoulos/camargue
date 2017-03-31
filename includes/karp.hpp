@@ -20,9 +20,10 @@ namespace Data {
  * The Plane (Karp, 1977). Given geometric TSP data, it partitions the set
  * of nodes into rectangles containing at most some fixed number of nodes.
  * @remark This class is used exclusively in the separation
- * of simple domino parity inequalities, but it shall be owned by a
- * GraphGroup because it only needs to be computed once for a given instance
- * and it is invariant under changes to the active edge set/support graph.
+ * of simple domino parity inequalities, but also it only needs to be computed
+ * once for a given instance, because it is invariant under changes to the
+ * active edge set/support graph. Hence it should be owned by a Solver or
+ * similar.
  * @remark This is a highly limited interface to the Concorde function
  * CCutil_karp_partition and the Concorde structure CCsubdiv.
  */
