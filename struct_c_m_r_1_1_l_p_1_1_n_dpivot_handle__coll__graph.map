@@ -1,0 +1,4 @@
+<map id="CMR::LP::NDpivotHandle" name="CMR::LP::NDpivotHandle">
+<area shape="rect" id="node2" href="$struct_c_m_r_1_1_l_p_1_1_basis.html" title="Row and column basic statuses corresponding to some LP solution. " alt="" coords="5,5,124,32"/>
+<area shape="rect" id="node3" href="$class_c_m_r_1_1_l_p_1_1_relaxation.html" title="Class for storing an lp relaxation via interface to an lp solver. " alt="" coords="149,5,295,32"/>
+</map>

@@ -1,0 +1,22 @@
+\form#0:$ F $
+\form#1:$ A, B $
+\form#2:$ A $
+\form#3:$ B $
+\form#4:$ F(A, B) $
+\form#5:$ e $
+\form#6:$ x_e \ge 0 $
+\form#7:$ x $
+\form#8:$ \delta(x) $
+\form#9:$ G $
+\form#10:$ X $
+\form#11:$ \delta(X) $
+\form#12:\[ \frac{\gamma\min(v_0, v_1) + \max(v_0, v_1)}{\gamma + 1} \]
+\form#13:$ \gamma $
+\form#14:$ \bar x $
+\form#15:$ E^* $
+\form#16:$ E^0, E^1 $
+\form#17:$ H $
+\form#18:\[ e \cup \delta(H)\cap E^1 \]
+\form#19:$ e \in E^0 $
+\form#20:\[ \delta(H)\cap E^1 \setminus e \]
+\form#21:$ e \in E^1 $

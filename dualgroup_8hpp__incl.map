@@ -1,0 +1,12 @@
+<map id="includes/dualgroup.hpp" name="includes/dualgroup.hpp">
+<area shape="rect" id="node2" href="$lp__interface_8hpp.html" title="Interface to the LP solver. " alt="" coords="624,155,739,181"/>
+<area shape="rect" id="node18" href="$hypergraph_8hpp.html" title="Representing cuts outside the LP solver. " alt="" coords="1537,80,1647,107"/>
+<area shape="rect" id="node3" href="$config_8hpp.html" title="Configuration macros. " alt="" coords="555,311,637,338"/>
+<area shape="rect" id="node4" href="$lp__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for LPs. " alt="" coords="1319,311,1401,338"/>
+<area shape="rect" id="node10" href="$mirgroup_8hpp.html" title="Utility structures for running safe Gomory cut separation. " alt="" coords="489,229,586,256"/>
+<area shape="rect" id="node11" href="$util_8hpp.html" title="Utility functions, macros, and structures. " alt="" coords="1231,311,1295,338"/>
+<area shape="rect" id="node19" href="$cut__structs_8hpp_source.html" title="cut_structs.hpp" alt="" coords="864,229,976,256"/>
+<area shape="rect" id="node20" href="$cliq_8hpp.html" title="Reference counted storage of Cliques and Tooth objects. " alt="" coords="1256,155,1323,181"/>
+<area shape="rect" id="node23" href="$price__util_8hpp_source.html" title="price_util.hpp" alt="" coords="1739,229,1837,256"/>
+<area shape="rect" id="node24" href="$err__util_8hpp.html" title="ERROR HANDLING CLASSES AND ROUTINES. " alt="" coords="1909,311,1995,338"/>
+</map>

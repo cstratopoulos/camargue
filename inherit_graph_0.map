@@ -1,0 +1,6 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$class_c_m_r_1_1_a_b_c_1_1_base_brancher.html" title="Abstract base class for implementing a branching node selection rule. " alt="" coords="5,56,184,83"/>
+<area shape="rect" id="node2" href="$class_c_m_r_1_1_a_b_c_1_1_d_f_sbrancher.html" title="Depth&#45;first search branching. " alt="" coords="235,5,410,32"/>
+<area shape="rect" id="node3" href="$class_c_m_r_1_1_a_b_c_1_1_inter_brancher.html" title="Interleaved best&#45;estimate and best&#45;first search branching. " alt="" coords="235,56,410,83"/>
+<area shape="rect" id="node4" href="$class_c_m_r_1_1_a_b_c_1_1_qpref_brancher.html" title="Class template for branching with priority queue via some preference rule. " alt="" coords="232,107,413,149"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="CMR::ABC::BaseBrancher" name="CMR::ABC::BaseBrancher">
+<area shape="rect" id="node2" href="$class_c_m_r_1_1_a_b_c_1_1_d_f_sbrancher.html" title="Depth&#45;first search branching. " alt="" coords="5,87,180,114"/>
+<area shape="rect" id="node3" href="$class_c_m_r_1_1_a_b_c_1_1_inter_brancher.html" title="Interleaved best&#45;estimate and best&#45;first search branching. " alt="" coords="204,87,379,114"/>
+<area shape="rect" id="node4" href="$class_c_m_r_1_1_a_b_c_1_1_qpref_brancher.html" title="Class template for branching with priority queue via some preference rule. " alt="" coords="403,80,585,121"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="CMR::Sep::CandidateTeeth" name="CMR::Sep::CandidateTeeth">
+<area shape="rect" id="node2" href="$struct_c_m_r_1_1_data_1_1_support_group.html" title="Support graph data for an LP solution. " alt="" coords="5,95,183,121"/>
+<area shape="rect" id="node3" href="$struct_c_m_r_1_1_graph_1_1_adj_list.html" title="Representation of a graph as an adjacency list. " alt="" coords="22,5,166,32"/>
+<area shape="rect" id="node4" href="$class_c_m_r_1_1_timer.html" title="A class for recording CPU and wall clock time. " alt="" coords="207,95,301,121"/>
+<area shape="rect" id="node6" href="$class_c_m_r_1_1_l_p_1_1_active_tour.html" title="Information about the active tour in a CoreLP. " alt="" coords="415,95,563,121"/>
+<area shape="rect" id="node7" href="$struct_c_m_r_1_1_l_p_1_1_basis.html" title="Row and column basic statuses corresponding to some LP solution. " alt="" coords="429,5,548,32"/>
+</map>

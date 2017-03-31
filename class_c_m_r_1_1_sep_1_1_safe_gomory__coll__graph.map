@@ -1,0 +1,5 @@
+<map id="CMR::Sep::SafeGomory" name="CMR::Sep::SafeGomory">
+<area shape="rect" id="node2" href="$class_c_m_r_1_1_sep_1_1_cut_queue.html" title="CMR::Sep::CutQueue\l\&lt; LP::CMR::LP::SparseRow \&gt;" alt="" coords="5,5,207,47"/>
+<area shape="rect" id="node3" href="$struct_c_m_r_1_1_sep_1_1_m_i_rgroup.html" title="Memory&#45;managed access to classes needed during safe GMI separation. " alt="" coords="31,71,181,98"/>
+<area shape="rect" id="node4" href="$class_c_m_r_1_1_l_p_1_1_relaxation.html" title="Class for storing an lp relaxation via interface to an lp solver. " alt="" coords="33,122,179,149"/>
+</map>

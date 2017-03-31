@@ -1,0 +1,5 @@
+<map id="CMR::ABC::ScoreTuple" name="CMR::ABC::ScoreTuple">
+<area shape="rect" id="node2" href="$struct_c_m_r_1_1_l_p_1_1_basis.html" title="Row and column basic statuses corresponding to some LP solution. " alt="" coords="5,5,124,32"/>
+<area shape="rect" id="node3" href="$struct_c_m_r_1_1_l_p_1_1_estimate.html" title="Struct for storing info from branching estimates. " alt="" coords="148,5,285,32"/>
+<area shape="rect" id="node4" href="$struct_c_m_r_1_1_end_pts.html" title="Simple base class for storing edge of a graph as a sorted pair of nodes. " alt="" coords="310,5,414,32"/>
+</map>

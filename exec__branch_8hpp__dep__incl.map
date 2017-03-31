@@ -1,0 +1,9 @@
+<map id="includes/exec_branch.hpp" name="includes/exec_branch.hpp">
+<area shape="rect" id="node2" href="$base__brancher_8hpp.html" title="Abstract branching control. " alt="" coords="52,80,236,107"/>
+<area shape="rect" id="node3" href="$abc__nodesel_8hpp.html" title="Classes for node selection rules. " alt="" coords="58,229,230,256"/>
+<area shape="rect" id="node8" href="$qpref__brancher_8hpp.html" title="Template classes/methods for branching by priority queue. " alt="" coords="117,155,302,181"/>
+<area shape="rect" id="node4" href="$solver_8hpp.html" title="TSP Solver class header. " alt="" coords="157,304,291,331"/>
+<area shape="rect" id="node5" href="$camargue_8cpp.html" title="The camargue main program. " alt="" coords="5,379,152,405"/>
+<area shape="rect" id="node6" href="$solver_8cpp.html" title="Implementation of higher level or public Solver methods. " alt="" coords="176,379,301,405"/>
+<area shape="rect" id="node7" href="$solver__loops_8cpp.html" title="Private Solver methods with recursive/loop calls. " alt="" coords="325,379,488,405"/>
+</map>
