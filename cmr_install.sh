@@ -1,3 +1,4 @@
+#!/bin/sh
 # Installation script for Camargue
 # This script is meant to be used to automatically grab external dependencies
 # for a Camargue install. As per the README, you should first put a Makefile

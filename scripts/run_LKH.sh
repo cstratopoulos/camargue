@@ -1,3 +1,4 @@
+#!/bin/sh
 prob=$1
 opt=$(grep "$prob" test_data/opts.txt | cut -f2 -d: | tr -d -C '[0-9\n]')
 fname="$prob".par

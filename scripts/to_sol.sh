@@ -1,3 +1,4 @@
+#!/bin/sh
 # a script for converting TSPLIB 1-indexed .tour files to the 0-indexed .sol
 # file format used by Camargue and Concorde.
 # Input: instance_name.tour

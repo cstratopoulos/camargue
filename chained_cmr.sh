@@ -1,3 +1,4 @@
+#!/bin/sh
 if [ "$#" -ne 1 ]; then
     echo "Bad argument count: $#"
     exit 1

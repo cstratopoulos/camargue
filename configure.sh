@@ -1,3 +1,4 @@
+#!/bin/sh
 # Configuration script for Camargue
 # The script in this file runs a couple subroutine scripts to configure a fresh
 # install of Camargue. It should only have to be run once on a fresh download,
@@ -16,7 +17,9 @@ fi
 scripts/tsp_header.sh
 if [ "$?" -eq 1 ]
 then
-    (>&2 echo "Fatal error in configure.sh")
+    (>&2 echo "Editing concorde/INCLUDE/tsp.h failed, project may not compile")
+    (>&2 echo "Please see scripts/tsp_header.sh for intended modifications")
+    (>&2 echo "You can try modifying manually if the script didn't work.")
     exit 1
 fi
 

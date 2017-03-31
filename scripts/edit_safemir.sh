@@ -1,3 +1,4 @@
+#!/bin/sh
 # Script for modifying the safemir code
 # This script is meant to make some edits to the safe GMI code of Cook et al.
 # Without these, Camargue will almost certainly not compile.
