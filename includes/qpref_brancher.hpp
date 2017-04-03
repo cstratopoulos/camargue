@@ -1,10 +1,9 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/** @file
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
+ * @file
  * @brief Template classes/methods for branching by priority queue.
  * @see abc_nodesel.hpp for compile-time instantiations of best tour and best
  * bound branching.
- */
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_QPREF_BRANCHER_H
 #define CMR_QPREF_BRANCHER_H

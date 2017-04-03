@@ -176,7 +176,7 @@ void Pricer::elim_edges(bool make_opt)
         return;
 
     try {
-        core_lp.remove_edges(std::move(col_delset));
+        core_lp.remove_edges(std::move(col_delset), true);
     } CMR_CATCH_PRINT_THROW("adjusting CoreLP/CoreGraph stuff", err);
 }
 

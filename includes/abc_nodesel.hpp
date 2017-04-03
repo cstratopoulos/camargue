@@ -1,14 +1,13 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/** @file
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
+ * @file
  * @brief Classes for node selection rules.
  * This file contains class definitions for all implemented ABC node selection
  * rules. Implementations are in their own cpp files, indicated in the class
  * documentation.
  * @see CMR::ABC::BaseBrancher for the meaning of inherited virtual methods.
- */
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-#ifndef CMR_DFS_BRANCHER_H
-#define CMR_DFS_BRANCHER_H
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+#ifndef CMR_ABC_NODESEL_H
+#define CMR_ABC_NODESEL_H
 
 #include "datagroups.hpp"
 #include "active_tour.hpp"
