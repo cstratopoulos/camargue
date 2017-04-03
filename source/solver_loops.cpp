@@ -38,6 +38,11 @@ using std::runtime_error;
 using std::logic_error;
 using std::exception;
 
+/// Controls aggressive separation of simple DP cuts.
+/// If true, a loop of exact standard SECs will be added to the LP to pivot
+/// into the subtour polytope before calling simple DP sep.
+#define SIMPLE_DP_EXSUB
+
 namespace CMR {
 
 using CutType = Sep::HyperGraph::Type;
@@ -217,7 +222,7 @@ PivType Solver::cut_and_piv(bool do_price)
 
     PivType piv = PivType::Frac;
     int round = 0;
-    bool verbose = output_prefs.verbose;
+    bool &verbose = output_prefs.verbose;
 
     Data::SupportGroup &supp_data = core_lp.supp_data;
 
@@ -306,8 +311,41 @@ PivType Solver::cut_and_piv(bool do_price)
         if (cut_sel.ex2m)
             CUT_PIV_CALL(sep, exact2m_sep, exblossom_q, "doing exact 2m sep");
 
+#ifdef SIMPLE_DP_EXSUB
+        if (cut_sel.simpleDP) {
+            bool found_ex = false;
+            int exrounds = 0;
+
+            if (verbose)
+                cout << "\tAdding round of standard exact SECs..." << endl;
+
+            do {
+                ++exrounds;
+                try {
+                    reset_separator(sep);
+                    found_ex = call_separator([&sep]()
+                                              { return sep->exsub_sep(); },
+                                              sep->exact_sub_q(),
+                                              piv, piv_stats);
+                } CMR_CATCH_PRINT_THROW("doing exact subtour loop", err);
+            } while (found_ex);
+
+            if (return_pivot(piv)) {
+                if (verbose)
+                    cout << "\t...Tour pivot from " << exrounds
+                         << " rounds of exact SEC generation" << endl;
+                return piv;
+            } else if (verbose)
+                cout << "\t...Cut and pivoted for " << exrounds
+                     << " rounds, CC says pivot now in subtour polytope..."
+                     << endl;
+
+            CUT_PIV_CALL(sep, simpleDP_sep, simpleDP_q, "doing simple DP sep");
+        }
+#else
         if (cut_sel.simpleDP && supp_data.connected)
             CUT_PIV_CALL(sep, simpleDP_sep, simpleDP_q, "doing simple DP sep");
+#endif
 
         using MetaType = Sep::MetaCuts::Type;
 

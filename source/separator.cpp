@@ -141,7 +141,7 @@ bool Separator::exact2m_sep() try
 }
 
 bool Separator::simpleDP_sep() try {
-    if (supp_data.connected)
+    if (supp_data.connected) {
         if (supp_data.in_subtour_poly()) {
             SimpleDP dominos(karp_part, active_tour, supp_data,
                              dp_q);
@@ -149,6 +149,8 @@ bool Separator::simpleDP_sep() try {
 
             return dominos.find_cuts();
         }
+    }
+
     return false;
 } catch (const exception &e) {
     cerr << e.what() << "\n";
@@ -165,6 +167,25 @@ bool Separator::connect_sep() try
 
     if (verbose) {
         printf ("\t%d connect cuts\t%.2fs\n", connect_q.size(), cont);
+        cout << flush;
+    }
+
+    return result;
+} catch (const exception &e) {
+    cerr << e.what() << endl;
+    throw runtime_error("Separator::connect_sep failed.");
+}
+
+bool Separator::exsub_sep() try
+{
+    set_TG();
+    ExactSub subtour(perm_elist, supp_data.support_ecap, TG, exsub_q);
+    double exst = util::zeit();
+    bool result = subtour.find_cuts();
+    exst = util::zeit() - exst;
+
+    if (verbose) {
+        printf ("\t%d exact SECs\t%.2fs\n", exsub_q.size(), exst);
         cout << flush;
     }
 

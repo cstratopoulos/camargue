@@ -20,14 +20,10 @@ extern "C" {
 
 namespace CMR {
 
-/** Classes and functions related to cut separation. */
+/// Classes and functions related to cut separation.
 namespace Sep {
 
-/** Wrapper to the Concorde CCtsp_lpgraph structure.
- * This class constructs a CCtsp_lpgraph which corresponds to a tour specified
- * by the constructor arguments. It is used to check whether cuts found by
- * Concorde standard heuristics are tight at the current tour.
- */
+/// Wrapper to Concorde CCtsp_lpgraph for pricing cuts at tours.
 class TourGraph {
 public:
     TourGraph() noexcept;
@@ -126,7 +122,7 @@ protected:
     Sep::LPcutList &cutq;
 };
 
-/** Exact separation of segment cut subtours. */
+/// Exact separation of segment cut subtours.
 class SegmentCuts : public ConcordeSeparator {
 public:
     SegmentCuts(std::vector<int> &elist, std::vector<double> &ecap,
@@ -137,39 +133,43 @@ public:
     bool find_cuts();
 };
 
-/** Standard separation of connect cuts. */
+/// Standard separation of connect cuts.
 class ConnectCuts : public ConcordeSeparator {
 public:
     ConnectCuts(std::vector<int> &elist, std::vector<double> &ecap,
                 TourGraph &TG, Sep::LPcutList &cutq) :
         ConcordeSeparator(elist, ecap, TG, cutq) {}
 
-    /** Finds subtours arising from connected components. */
     bool find_cuts();
 };
 
-/** Primal separation of comb ineqalities via standard block comb heuristic. */
+/// Exact standard separation of subtour inequalities.
+class ExactSub : public ConcordeSeparator {
+public:
+    ExactSub(std::vector<int> &elist, std::vector<double> &ecap,
+             TourGraph &TG, Sep::LPcutList &cutq) :
+        ConcordeSeparator(elist, ecap, TG, cutq) {}
+
+    bool find_cuts(); //!< Find subtour cuts.
+};
+
+/// Separation of comb inequalities by block comb heuristic.
 class BlockCombs : public ConcordeSeparator {
 public:
     BlockCombs(std::vector<int> &elist, std::vector<double> &ecap,
                TourGraph &TG, Sep::LPcutList &cutq) :
         ConcordeSeparator(elist, ecap, TG, cutq) {}
 
-    /** Returns true if block combs are found and some are tight at tour. */
     bool find_cuts();
 };
 
-/** Primal separation of blossoms via standard fast blossom heuristics. */
+/// Separation of blossoms via fast odd-component based heuristics.
 class FastBlossoms : public ConcordeSeparator {
 public:
     FastBlossoms(std::vector<int> &elist, std::vector<double> &ecap,
                  TourGraph &TG, Sep::LPcutList &cutq) :
         ConcordeSeparator(elist, ecap, TG, cutq) {}
 
-    /** Returns true if blossoms are found and some are tight at best tour.
-     * First calls the Padberg-Hong odd component blossom heuristic, and then
-     * the Grotschell-Holland heuristic if no odd component blossoms are found.
-     */
     bool find_cuts();
 };
 

@@ -38,6 +38,7 @@ public:
     bool simpleDP_sep();
 
     bool connect_sep();
+    bool exsub_sep();
 
     bool local_sep();
 
@@ -49,6 +50,7 @@ public:
     CutQueue<dominoparity> &simpleDP_q()  { return dp_q; }
 
     LPcutList &connect_cuts_q()  { return connect_q; }
+    LPcutList &exact_sub_q() { return exsub_q; }
 
     LPcutList &local_cuts_q() { return local_q; }
 
@@ -80,6 +82,7 @@ private:
     CutQueue<dominoparity> dp_q;
 
     LPcutList connect_q;
+    LPcutList exsub_q;
 
     LPcutList local_q;
 };

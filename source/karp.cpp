@@ -45,8 +45,8 @@ KarpPartition::KarpPartition(const Instance &inst, bool make_dummy,
         cout << "Forcing a dummy partition" << endl;
 
     if (!dummy_part)
-        if (ncount < 300) {
-            cout << "Problem under 300 nodes, using trivial Karp partition"
+        if (ncount < 400) {
+            cout << "Problem under 400 nodes, using trivial Karp partition"
                  << endl;
             dummy_part = true;
         }

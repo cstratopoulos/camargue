@@ -47,7 +47,7 @@ TourGraph::TourGraph(const vector<double> &tour_edges,
 
 } catch (const std::exception &e) {
     cerr << e.what() << "\n";
-    throw std::runtime_error("TourGraph constructor failed.");
+    throw runtime_error("TourGraph constructor failed.");
 }
 
 TourGraph::TourGraph(TourGraph &&T) noexcept : d_tour(std::move(T.d_tour))
@@ -162,7 +162,7 @@ bool SegmentCuts::find_cuts()
 
   if (CCtsp_segment_cuts(&head, &cutcount, TG.node_count(), ecap.size(),
                          &elist[0], &ecap[0]))
-    throw std::runtime_error("CCtsp_segment_cuts failed.");
+    throw runtime_error("CCtsp_segment_cuts failed.");
 
   cutq = LPcutList(head, cutcount);
 
@@ -176,11 +176,25 @@ bool ConnectCuts::find_cuts()
 
   if (CCtsp_connect_cuts(&head, &cutcount, TG.node_count(), ecap.size(),
 			&elist[0], &ecap[0]))
-    throw std::runtime_error("CCtsp_segment_cuts failed.");
+    throw runtime_error("CCtsp_segment_cuts failed.");
 
   cutq = LPcutList(head, cutcount);
 
-  return(!cutq.empty());
+  return !cutq.empty();
+}
+
+bool ExactSub::find_cuts()
+{
+    int cutcount = 0;
+    lpcut_in *head = NULL;
+
+    if (CCtsp_exact_subtours(&head, &cutcount, TG.node_count(), ecap.size(),
+                             &elist[0], &ecap[0]))
+        throw runtime_error("CCtsp_exact_subtours failed.");
+
+    cutq = LPcutList(head, cutcount);
+
+    return !cutq.empty();
 }
 
 bool BlockCombs::find_cuts()
@@ -190,7 +204,7 @@ bool BlockCombs::find_cuts()
 
   if (CCtsp_block_combs(&head, &cutcount, TG.node_count(), ecap.size(),
 		       &elist[0], &ecap[0], 1))
-    throw std::runtime_error("CCtsp_block_combs failed.");
+    throw runtime_error("CCtsp_block_combs failed.");
 
   if (cutcount == 0)
       return false;
@@ -210,12 +224,12 @@ bool FastBlossoms::find_cuts()
 
   if (CCtsp_fastblossom(&head, &cutcount, TG.node_count(), ecap.size(),
 		       &elist[0], &ecap[0]))
-    throw std::runtime_error("CCtsp_fastblossom failed.");
+    throw runtime_error("CCtsp_fastblossom failed.");
 
   if (cutcount == 0) {
       if (CCtsp_ghfastblossom(&head, &cutcount, TG.node_count(), ecap.size(),
                               &elist[0], &ecap[0]))
-          throw std::runtime_error("CCtsp_ghfastblossom failed.");
+          throw runtime_error("CCtsp_ghfastblossom failed.");
   }
 
   cutq = LPcutList(head, cutcount);
@@ -254,7 +268,7 @@ bool LocalCuts::find_cuts()
     if (CCchunk_localcuts(&head, &cutcount, TG.node_count(), ecap.size(),
                           &elist[0], &ecap[0], 0.0, flags, &lc_timer, 1,
                           &rstate))
-        throw std::runtime_error("CCchunk_localcuts failed.");
+        throw runtime_error("CCchunk_localcuts failed.");
 
     if (cutcount == 0)
         return false;
