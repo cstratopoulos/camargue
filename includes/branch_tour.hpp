@@ -9,6 +9,7 @@
 #include "branch_node.hpp"
 #include "datagroups.hpp"
 #include "graph.hpp"
+#include "core_lp.hpp"
 #include "edgehash.hpp"
 
 #include <utility>
@@ -23,7 +24,18 @@ class BranchTourFind {
 public:
     BranchTourFind(const Data::Instance &inst,
                    Data::BestGroup &bestdata,
-                   Graph::CoreGraph &coregraph);
+                   Graph::CoreGraph &coregraph,
+                   LP::CoreLP &corelp);
+
+    /// Compute a tour to be instated at \p B, modifying the core LP if needed.
+    void instate_branch_tour(const BranchNode &B, bool &found_tour,
+                             std::vector<int> &tour);
+
+    /// Compute a branch tour estimate, returning feasibility and tour length.
+    void estimate_tour(const std::vector<EndsDir> &constraints,
+                       bool &feas, double &tour_val);
+
+    void prune_edges(); //!< Prune edges which were added by branch tours.
 
     /// Compute a list of common constraints for splitting on \p parent.
     std::vector<EndsDir> common_constraints(const BranchNode &parent,
@@ -39,6 +51,14 @@ public:
     /// Does \p constraints have obvious over-fixing infeasibilities.
     bool obvious_infeas(const std::vector<EndsDir> &constraints);
 
+    /// Call chained Lin-Kernighan to compute a branch tour.
+    void compute_tour(const std::vector<EndsDir> &edge_stats,
+                      bool &found_tour, bool &feas,
+                      std::vector<int> &tour, double &tour_val,
+                      bool for_use);
+
+    bool verbose = false;
+
 private:
 
     /// Construct a Graph::AdjList recording \p constraints.
@@ -48,12 +68,28 @@ private:
     const Data::Instance &tsp_inst;
     Data::BestGroup &best_data;
     Graph::CoreGraph &core_graph;
+    LP::CoreLP &core_lp;
 
-    std::vector<int> fix_degrees;
+    std::vector<int> fix_degrees; //!< Tracking degrees for fixed up edges.
+
+    /// Values to be assigned in the BranchTourFind#tour_edge_tracker.
+    /// These enum values will be used to monitor edges added by branch tours.
+    enum EdgeStats : int {
+        Core = 0, //!< Edge added to the core LP from starting set or pricing.
+        Supply = 1, //!< An edge from BranchTourFind#extra_edges.
+        Added = 2, //!< An edge added by chained LK in finding a branch tour.
+    };
 
     util::EdgeHash tour_edge_tracker; //!< Tracking edges added by branch tours.
     std::vector<Graph::Edge> extra_edges; //!< Extra edges for tour finding.
-    int default_length; //!< Default length for sparse instances.
+
+    /// Default length assigned to edges not explictly in sparse instances.
+    int default_length;
+
+    /// Large length for sparse instances.
+    /// This cost will be assigned to all 0-fixed edges, and `-large_length`
+    /// will be assigned to all 1-fixed edges.
+    int large_length;
 };
 
 }

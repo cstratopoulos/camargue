@@ -91,7 +91,7 @@ struct BranchNode {
 
     /// Returns true if \p A has a worse tour than \p B.
     static bool tour_worse(const std::list<BranchNode>::iterator &A,
-                             const std::list<BranchNode>::iterator &B);
+                           const std::list<BranchNode>::iterator &B);
 
     /// Returns true if \p A has a worse (higher) SB estimate than \p B.
     static bool bound_worse(const std::list<BranchNode>::iterator &A,
