@@ -374,10 +374,12 @@ BestGroup::BestGroup(const Instance &inst, Graph::CoreGraph &core_graph) try :
 
     int kicks = 1000;
     int trials = 10;
+    int kicktype = ((ncount < 10000) ? CC_LK_RANDOM_KICK :
+                    CC_LK_GEOMETRIC_KICK);
 
     if (CClinkern_tour(ncount, inst.ptr(), ecount, &elist[0], ncount, kicks,
                        (int *) NULL, &best_tour_nodes[0], &min_tour_value,
-                       1, 0.0, 0.0, (char *) NULL, CC_LK_GEOMETRIC_KICK,
+                       1, 0.0, 0.0, (char *) NULL, kicktype,
                        &rstate))
         throw runtime_error("CClinkern_tour failed.");
 
