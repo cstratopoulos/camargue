@@ -22,10 +22,8 @@ namespace ABC {
 /// Compute branch tours for estimation and instatement, managing their edges.
 class BranchTourFind {
 public:
-    BranchTourFind(const Data::Instance &inst,
-                   Data::BestGroup &bestdata,
-                   Graph::CoreGraph &coregraph,
-                   LP::CoreLP &corelp);
+    BranchTourFind(const Data::Instance &inst, const Data::BestGroup &bestdata,
+                   const Graph::CoreGraph &coregraph, LP::CoreLP &corelp);
 
     /// Compute a tour to be instated at \p B, modifying the core LP if needed.
     void instate_branch_tour(const BranchNode &B, bool &found_tour,
@@ -36,13 +34,6 @@ public:
                        bool &feas, double &tour_val);
 
     void prune_edges(); //!< Prune edges which were added by branch tours.
-
-    /// Compute a list of common constraints for splitting on \p parent.
-    std::vector<EndsDir> common_constraints(const BranchNode &parent,
-                                            const EndPts &branch_edge);
-
-    /// Compute a list of branch constraints for \p N and all its ancestors.
-    std::vector<EndsDir> branch_constraints(const BranchNode &N);
 
     /// Is the \p tour compliant with \p constraints.
     bool tour_compliant(const std::vector<int> &tour,
@@ -57,17 +48,23 @@ public:
                       std::vector<int> &tour, double &tour_val,
                       bool for_use);
 
-    bool verbose = false;
+    /// Compute a list of common constraints for splitting on \p parent.
+    std::vector<EndsDir> common_constraints(const BranchNode &parent,
+                                            const EndPts &branch_edge);
+
+    /// Compute a list of branch constraints for \p N and all its ancestors.
+    std::vector<EndsDir> branch_constraints(const BranchNode &N);
+
+    bool verbose = true;
 
 private:
-
     /// Construct a Graph::AdjList recording \p constraints.
     Graph::AdjList get_fixed_adj(const std::vector<EndsDir> &constraints);
 
 
     const Data::Instance &tsp_inst;
-    Data::BestGroup &best_data;
-    Graph::CoreGraph &core_graph;
+    const Data::BestGroup &best_data;
+    const Graph::CoreGraph &core_graph;
     LP::CoreLP &core_lp;
 
     std::vector<int> fix_degrees; //!< Tracking degrees for fixed up edges.

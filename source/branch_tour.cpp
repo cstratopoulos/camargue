@@ -28,8 +28,8 @@ namespace ABC {
 constexpr int IntMax = std::numeric_limits<int>::max();
 
 BranchTourFind::BranchTourFind(const Data::Instance &inst,
-                               Data::BestGroup &bestdata,
-                               Graph::CoreGraph &coregraph,
+                               const Data::BestGroup &bestdata,
+                               const Graph::CoreGraph &coregraph,
                                LP::CoreLP &corelp) try
     : tsp_inst(inst), best_data(bestdata), core_graph(coregraph),
       core_lp(corelp),
@@ -209,15 +209,22 @@ void BranchTourFind::prune_edges()
     try { delstat.resize(0, core_graph.edge_count()); }
     CMR_CATCH_PRINT_THROW("reserving delstat", err)
 
+    int num_prune = 0;
+
       for (int i = 0; i < ecount; ++i) {
           const Graph::Edge &e = core_graph.get_edge(i);
           int hval = tour_edge_tracker.get_val(e.end[0], e.end[1]);
-          if (hval == EdgeStats::Added)
+          if (hval == EdgeStats::Added) {
               delstat[i] = 1;
+              tour_edge_tracker.erase(e.end[0], e.end[1]);
+              ++num_prune;
+          }
       }
 
     try { core_lp.remove_edges(delstat, false); }
     CMR_CATCH_PRINT_THROW("modifying core LP", err);
+
+    cout << "Pruned " << num_prune << " branch tour edges" << endl;
 }
 
 /**

@@ -277,7 +277,6 @@ LP::PivType Solver::abc(bool do_price)
 
     try {
         branch_controller = util::make_unique<SelectionRule>(tsp_instance,
-                                                             active_tour(),
                                                              best_info(),
                                                              graph_info(),
                                                              core_lp);

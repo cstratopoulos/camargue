@@ -25,8 +25,7 @@ namespace ABC {
 /// examined first.
 class DFSbrancher : public BaseBrancher {
 public:
-    DFSbrancher(const Data::Instance &inst, const LP::ActiveTour &active_tour,
-                const Data::BestGroup &best_data,
+    DFSbrancher(const Data::Instance &inst, const Data::BestGroup &best_data,
                 const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp);
 
     BranchHistory::iterator next_prob();
@@ -50,9 +49,7 @@ using BoundBrancher = QprefBrancher<BranchNode::bound_worse>;
 /// best bound node selected every InterBrancher::BestFreq nodes.
 class InterBrancher : public BaseBrancher {
 public:
-    InterBrancher(const Data::Instance &inst,
-                  const LP::ActiveTour &active_tour,
-                  const Data::BestGroup &best_data,
+    InterBrancher(const Data::Instance &inst, const Data::BestGroup &best_data,
                   const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp);
 
     BranchHistory::iterator next_prob();

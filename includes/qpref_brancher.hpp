@@ -27,8 +27,7 @@ namespace ABC {
 template <BranchNode::Pref q_pref>
 class QprefBrancher : public BaseBrancher {
 public:
-    QprefBrancher(const Data::Instance &inst, const LP::ActiveTour &active_tour,
-                  const Data::BestGroup &best_data,
+    QprefBrancher(const Data::Instance &inst, const Data::BestGroup &best_data,
                   const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp);
 
     BranchHistory::iterator next_prob();
@@ -45,11 +44,10 @@ private:
 
 template<BranchNode::Pref q_pref>
 QprefBrancher<q_pref>::QprefBrancher(const Data::Instance &inst,
-                                     const LP::ActiveTour &active_tour,
                                      const Data::BestGroup &best_data,
                                      const Graph::CoreGraph &core_graph,
                                      LP::CoreLP &core_lp) try
-    : BaseBrancher(inst, active_tour, best_data, core_graph, core_lp),
+    : BaseBrancher(inst, best_data, core_graph, core_lp),
       prob_q(q_pref)
 {
     prob_q.push(branch_history.begin());
