@@ -555,7 +555,7 @@ void CoreLP::add_edges(const vector<Graph::Edge> &batch, bool reinstate)
  * with `delstat[i]` equal to one if the corresponding edge is to be removed
  * from the core_graph and the LP.
  */
-void CoreLP::remove_edges(vector<int> edge_delstat)
+void CoreLP::remove_edges(vector<int> edge_delstat, bool reinstate)
 {
     runtime_error err("Problem in CoreLP::add_edges");
 
@@ -592,8 +592,9 @@ void CoreLP::remove_edges(vector<int> edge_delstat)
 
     try {
         del_set_cols(delstat);
-        active_tour = ActiveTour(best_data.best_tour_nodes, *this,
-                                 core_graph);
+        if (reinstate)
+            active_tour = ActiveTour(best_data.best_tour_nodes, *this,
+                                     core_graph);
     } CMR_CATCH_PRINT_THROW("deleting cols from LP/reinstating", err);
 
 

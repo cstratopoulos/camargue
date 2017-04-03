@@ -53,15 +53,15 @@ public:
 
     ///@}
 
-    /// Add the edges in \p add_batch to the LP, modifying the core_graph.
+    /// Add the edges in \p add_batch to the LP, modifying CoreLP#core_graph.
     void add_edges(const std::vector<Graph::Edge> &add_batch,
                    bool reinstate);
 
-    /// Remove edges indicated by \p edge_delstat from LP, modifying core_graph.
-    void remove_edges(std::vector<int> edge_delstat);
+    /// Remove edges in by \p edge_delstat from LP, modifying CoreLP#core_graph.
+    void remove_edges(std::vector<int> edge_delstat, bool reinstate);
 
 
-    /// Returns true iff x_vec satisfies all constraints and column bounds.
+    /// Returns true iff \p x_vec satisfies all constraints and column bounds.
     template<typename numtype>
     bool check_feas(const std::vector<numtype> &x_vec);
 
