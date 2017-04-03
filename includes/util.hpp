@@ -98,6 +98,16 @@ void ptr_reset(std::unique_ptr<T> &target, Args&& ...args)
     target.reset(new T(std::forward<Args>(args)...));
 }
 
+/// Standardization of erase-remove idiom.
+/// @param[in, out] vec the vector to modify.
+/// @param[in] pred the predicate to apply.
+/// @post deletes all elements of \p vec for which \p pred returns true.
+template<typename ElemType, typename PredType>
+void erase_remove(std::vector<ElemType> &vec, PredType pred)
+{
+    vec.erase(std::remove_if(vec.begin(), vec.end(), pred), vec.end());
+}
+
 /** Class template for deleting resources allocated by C functions.
  * In calls to Concorde, memory allocation takes place through malloc and
  * free, and it can be dangerous to delete memory that was malloc'd. Thus,

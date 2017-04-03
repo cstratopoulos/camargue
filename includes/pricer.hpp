@@ -1,7 +1,7 @@
-/**
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
  * @file
  * @brief Pricing sets of edges.
- */
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_PRICER_H
 #define CMR_PRICER_H

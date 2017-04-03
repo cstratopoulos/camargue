@@ -1,8 +1,7 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/** @file
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
+ * @file
  * @brief Abstract branching control.
- */
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 #ifndef CMR_BASE_BRANCHER_H
 #define CMR_BASE_BRANCHER_H
 
@@ -20,8 +19,7 @@ namespace ABC {
 /// Abstract base class for implementing a branching node selection rule.
 class BaseBrancher {
 public:
-    BaseBrancher(const Data::Instance &inst, const LP::ActiveTour &activetour,
-                 const Data::BestGroup &bestdata,
+    BaseBrancher(const Data::Instance &inst, const Data::BestGroup &bestdata,
                  const Graph::CoreGraph &coregraph, LP::CoreLP &core);
 
     /// Return the next subproblem to be examined.
@@ -51,6 +49,10 @@ protected:
     /// Execute variable changes if \p done was just done and \p next is next.
     void common_prep_next(const BranchNode &done, const BranchNode &next);
 
+    /// Should branch tour edges be pruned before going to the next problem.
+    bool prune_btour_edges(const BranchNode &done, const BranchNode &next,
+                           const BranchNode &common_anc);
+
     /// Set next_itr to the next subproblem to be examined.
     /// This is effectively the implementation of the node selection rule.
     virtual void fetch_next() = 0;
@@ -59,6 +61,8 @@ protected:
     const Data::BestGroup &best_data;
     const Graph::CoreGraph &core_graph;
     LP::CoreLP &core_lp;
+
+    BranchTourFind btour_find;
 
     Executor exec;
     BranchHistory branch_history;

@@ -115,20 +115,26 @@ try : nodecount(ncount), random_seed(seed),
 }
 
 /**
+ * This constructor generates a sparse Instance which contains precisely the
+ * edges and lengths specified by \p elist and \p elen.
  * @param probname the name of the problem.
  * @param seed the random seed to store.
  * @param ncount the number of nodes.
  * @param elist a node-node elist of the sparse edges.
  * @param elen the edge capacities on the sparse edges.
+ * @param default_len the length to be assigned to edges not in the graph.
+ * If a non-positive value is selected, a large length on the order of
+ * \p ncount times the largest length in \p elen will be chosen.
  */
 Instance::Instance(const string &probname, int seed, int ncount,
-                   vector<int> &elist, vector<int> &elen)
+                   vector<int> &elist, vector<int> &elen, int default_len)
 try
     : nodecount(ncount), random_seed(seed), pname(probname)
 {
-    cout << "\tCreating sparse Instance...";
-    if (CCutil_graph2dat_sparse(ncount, elen.size(), &elist[0], &elen[0], 0,
-                                ptr()))
+    if (default_len <= 0)
+        cout << "\tCreating sparse Instance...";
+    if (CCutil_graph2dat_sparse(ncount, elen.size(), &elist[0], &elen[0],
+                                default_len, ptr()))
         throw runtime_error("CCutil_getdata failed.");
 
     cout << std::fixed;

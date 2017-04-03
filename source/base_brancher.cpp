@@ -20,11 +20,11 @@ namespace CMR {
 namespace ABC {
 
 BaseBrancher::BaseBrancher(const Data::Instance &inst,
-                         const LP::ActiveTour &activetour,
-                         const Data::BestGroup &bestdata,
-                         const Graph::CoreGraph &coregraph, LP::CoreLP &core)
+                           const Data::BestGroup &bestdata,
+                           const Graph::CoreGraph &coregraph, LP::CoreLP &core)
 try : instance(inst), best_data(bestdata), core_graph(coregraph), core_lp(core),
-      exec(inst, activetour, bestdata, coregraph, core),
+      btour_find(inst, bestdata, coregraph, core),
+      exec(inst, bestdata, coregraph, core, btour_find),
       next_itr(branch_history.end())
 {
     branch_history.emplace_front();
@@ -76,49 +76,8 @@ void BaseBrancher::do_branch(const BranchNode &B)
     vector<int> tour;
     bool found_tour = false;
 
-    try {
-        const BranchNode *iter = &B;
-        vector<EndsDir> edge_stats;
-
-        while(!iter->is_root()) {
-            edge_stats.emplace_back(iter->ends, iter->direction);
-            iter = iter->parent;
-        }
-
-        double tval = 0.0;
-        bool feas = true;
-
-        exec.branch_tour(edge_stats, core_lp.get_active_tour().nodes(),
-                         found_tour, feas,
-                         tour, tval, true);
-        if (!found_tour) {
-            cout << "No tour found, putting core in tourless mode" << endl;
-            core_lp.tourless_mode();
-        }
-    } CMR_CATCH_PRINT_THROW("building edge_stats/getting branch tour", err);
-
-    if (found_tour) {
-        int ncount = core_graph.node_count();
-        vector<Graph::Edge> missing_edges;
-
-        try {
-            for (int i = 0; i < ncount; ++i) {
-                int e0 = tour[i];
-                int e1 = tour[(i + 1) % ncount];
-                int ind = core_graph.find_edge_ind(e0, e1);
-                if (ind == -1)
-                    missing_edges.emplace_back(e0, e1,
-                                               instance.edgelen(e0, e1));
-            }
-            int num_new = missing_edges.size();
-            if (num_new > 0) {
-                cout << num_new << " new edges in branch tour"
-                     << endl;
-                core_lp.add_edges(missing_edges, false);
-            }
-        } CMR_CATCH_PRINT_THROW("finding add adding missing edges", err);
-    }
-
+    try { btour_find.instate_branch_tour(B, found_tour, tour); }
+    CMR_CATCH_PRINT_THROW("getting branch tour", err);
 
     try {
         exec.clamp(B);
@@ -149,6 +108,32 @@ void BaseBrancher::do_unbranch(const BranchNode &B)
     try {
         common_prep_next(B, *Bnext);
     } CMR_CATCH_PRINT_THROW("calling common_prep_next", err);
+}
+
+/**
+ * @param done the node that was just examined.
+ * @param next the next node as per the current node selection rule.
+ * @param common_anc the common ancestor of \p done and \p next.
+ * @returns true if, before examining the node \p next, edges added by
+ * branch tour computation should be removed.
+ * @remark This function assumes that \p next is not a child of \p done, since
+ * \p common_anc is known. Possible implementation choices include familial
+ * relationship (e.g., return true unless siblings or cousins), depth of
+ * \p common_anc (e.g., return true if common ancestor depth is lower than
+ * some fixed value), or a combination of both.
+ */
+bool BaseBrancher::prune_btour_edges(const BranchNode &done,
+                                     const BranchNode &next,
+                                     const BranchNode &common_anc)
+{
+    int ca_depth = common_anc.depth;
+    bool cousins = ((done.parent->parent == &common_anc) &&
+                    (next.parent->parent == &common_anc));
+
+    if (cousins && ca_depth > 2)
+        return false;
+    else
+        return true;
 }
 
 /**

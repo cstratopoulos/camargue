@@ -36,11 +36,10 @@ void InterBrancher::heap_pop(vector<BranchHistory::iterator> &target_q)
 }
 
 InterBrancher::InterBrancher(const Data::Instance &inst,
-                             const LP::ActiveTour &active_tour,
                              const Data::BestGroup &best_data,
                              const Graph::CoreGraph &core_graph,
                              LP::CoreLP &core_lp)
-try : BaseBrancher(inst, active_tour, best_data, core_graph, core_lp)
+try : BaseBrancher(inst, best_data, core_graph, core_lp)
 {
     heap_push(prob_q, branch_history.begin());
 } catch (const exception &e) {

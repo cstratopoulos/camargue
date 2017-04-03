@@ -72,8 +72,8 @@ struct Node {
     Node() : mark(0) {}
 
     int degree() const { return neighbors.size(); }
-    std::vector<AdjObj> neighbors; //!<
-    int mark;
+    std::vector<AdjObj> neighbors; //!< The nodes adjacent to this Node.
+    int mark; //!< A value to be used by pricing/delta routines.
 };
 
 /// Representation of a graph as an adjacency list.
@@ -108,6 +108,14 @@ struct AdjList {
     const AdjObj *find_edge(int end0, int end1) const
     {
         for (const AdjObj &a : nodelist[end0].neighbors)
+            if (a.other_end == end1)
+                return &a;
+        return nullptr;
+    }
+
+    AdjObj *find_edge(int end0, int end1)
+    {
+        for (AdjObj &a : nodelist[end0].neighbors)
             if (a.other_end == end1)
                 return &a;
         return nullptr;

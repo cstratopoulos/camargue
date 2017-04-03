@@ -45,7 +45,11 @@ public:
 
     /// Construct a sparse Instance with fixed edge set.
     Instance(const std::string &probname, int seed, int ncount,
-             std::vector<int> &elist, std::vector<int> &elen);
+             std::vector<int> &elist, std::vector<int> &elen, int default_len);
+
+    Instance(const std::string &probname, int seed, int ncount,
+             std::vector<int> &elist, std::vector<int> &elen)
+        : Instance(probname, seed, ncount, elist, elen, 0) {}
 
     Instance(Instance &&I) noexcept;
     Instance &operator=(Instance &&I) noexcept;

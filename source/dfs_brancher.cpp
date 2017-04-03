@@ -19,11 +19,10 @@ namespace CMR {
 namespace ABC {
 
 DFSbrancher::DFSbrancher(const Data::Instance &inst,
-                         const LP::ActiveTour &active_tour,
                          const Data::BestGroup &best_data,
                          const Graph::CoreGraph &core_graph,
                          LP::CoreLP &core_lp)
-try : BaseBrancher(inst, active_tour, best_data, core_graph, core_lp)
+try : BaseBrancher(inst, best_data, core_graph, core_lp)
 {} catch (const exception &e) {
     cerr << e.what() << endl;
     throw runtime_error("DFSbrancher constructor failed.");

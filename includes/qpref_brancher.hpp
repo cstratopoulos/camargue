@@ -1,10 +1,9 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/** @file
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
+ * @file
  * @brief Template classes/methods for branching by priority queue.
  * @see abc_nodesel.hpp for compile-time instantiations of best tour and best
  * bound branching.
- */
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_QPREF_BRANCHER_H
 #define CMR_QPREF_BRANCHER_H
@@ -28,17 +27,8 @@ namespace ABC {
 template <BranchNode::Pref q_pref>
 class QprefBrancher : public BaseBrancher {
 public:
-    QprefBrancher(const Data::Instance &inst, const LP::ActiveTour &active_tour,
-                  const Data::BestGroup &best_data,
-                  const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp) try
-        : BaseBrancher(inst, active_tour, best_data, core_graph, core_lp),
-          prob_q(q_pref)
-        {
-            prob_q.push(branch_history.begin());
-        } catch (const std::exception &e) {
-        std::cerr << e.what() << std::endl;
-        throw std::runtime_error("QprefBrancher constructor failed.");
-    }
+    QprefBrancher(const Data::Instance &inst, const Data::BestGroup &best_data,
+                  const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp);
 
     BranchHistory::iterator next_prob();
 
@@ -51,6 +41,20 @@ private:
                         std::vector<BranchHistory::iterator>,
                         BranchNode::Pref> prob_q;
 };
+
+template<BranchNode::Pref q_pref>
+QprefBrancher<q_pref>::QprefBrancher(const Data::Instance &inst,
+                                     const Data::BestGroup &best_data,
+                                     const Graph::CoreGraph &core_graph,
+                                     LP::CoreLP &core_lp) try
+    : BaseBrancher(inst, best_data, core_graph, core_lp),
+      prob_q(q_pref)
+{
+    prob_q.push(branch_history.begin());
+} catch (const std::exception &e) {
+    std::cerr << e.what() << std::endl;
+    throw std::runtime_error("QprefBrancher constructor failed.");
+}
 
 template <BranchNode::Pref q_pref>
 void QprefBrancher<q_pref>::enqueue_split(BranchNode::Split prob_array) try

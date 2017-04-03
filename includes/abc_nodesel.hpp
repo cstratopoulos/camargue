@@ -1,14 +1,13 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/** @file
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
+ * @file
  * @brief Classes for node selection rules.
  * This file contains class definitions for all implemented ABC node selection
  * rules. Implementations are in their own cpp files, indicated in the class
  * documentation.
  * @see CMR::ABC::BaseBrancher for the meaning of inherited virtual methods.
- */
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-#ifndef CMR_DFS_BRANCHER_H
-#define CMR_DFS_BRANCHER_H
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+#ifndef CMR_ABC_NODESEL_H
+#define CMR_ABC_NODESEL_H
 
 #include "datagroups.hpp"
 #include "active_tour.hpp"
@@ -26,8 +25,7 @@ namespace ABC {
 /// examined first.
 class DFSbrancher : public BaseBrancher {
 public:
-    DFSbrancher(const Data::Instance &inst, const LP::ActiveTour &active_tour,
-                const Data::BestGroup &best_data,
+    DFSbrancher(const Data::Instance &inst, const Data::BestGroup &best_data,
                 const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp);
 
     BranchHistory::iterator next_prob();
@@ -51,9 +49,7 @@ using BoundBrancher = QprefBrancher<BranchNode::bound_worse>;
 /// best bound node selected every InterBrancher::BestFreq nodes.
 class InterBrancher : public BaseBrancher {
 public:
-    InterBrancher(const Data::Instance &inst,
-                  const LP::ActiveTour &active_tour,
-                  const Data::BestGroup &best_data,
+    InterBrancher(const Data::Instance &inst, const Data::BestGroup &best_data,
                   const Graph::CoreGraph &core_graph, LP::CoreLP &core_lp);
 
     BranchHistory::iterator next_prob();

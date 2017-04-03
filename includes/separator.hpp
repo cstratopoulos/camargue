@@ -1,5 +1,10 @@
-#ifndef CMR_CUTCONTROL_H
-#define CMR_CUTCONTROL_H
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
+ * @file
+ * @brief Some straightforward separation routines.
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+#ifndef CMR_SEPARATOR_H
+#define CMR_SEPARATOR_H
 
 #include "active_tour.hpp"
 #include "process_cuts.hpp"
@@ -15,11 +20,7 @@ namespace CMR {
 /// Matters related to cuts and separation of cutting planes.
 namespace Sep {
 
-/** Class for separation of cutting planes.
- * This class is instantiated with data about active edges in a relaxation
- * and a current lp solution, then used to search for cuts violated by the
- * solution vector.
- */
+/// Management of basic separation routines.
 class Separator {
 public:
 
