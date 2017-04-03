@@ -113,9 +113,7 @@ ScoreTuple Executor::branch_edge()
     if (winner_ind == -1)
         throw runtime_error("Winning branch edge not in graph");
 
-    cout << "\n\t" << winner << endl;
-    cout << "\t\t Tour entry " << best_data.best_tour_edges[winner_ind]
-         << "\n";
+    cout << winner << endl;
 
     return winner;
 }

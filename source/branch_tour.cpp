@@ -158,7 +158,8 @@ void BranchTourFind::instate_branch_tour(const BranchNode &B,
             if (verbose)
                 cout << num_new << " new edges in branch tour" << endl;
             core_lp.add_edges(missing_edges, false);
-        }
+        } else if (verbose)
+            cout << "\tNo edges added by branch tour" << endl;
     } CMR_CATCH_PRINT_THROW("finding/adding missing edges", err);
 }
 
@@ -224,7 +225,7 @@ void BranchTourFind::prune_edges()
     try { core_lp.remove_edges(delstat, false); }
     CMR_CATCH_PRINT_THROW("modifying core LP", err);
 
-    cout << "Pruned " << num_prune << " branch tour edges" << endl;
+    cout << "\tPruned " << num_prune << " branch tour edges" << endl;
 }
 
 /**

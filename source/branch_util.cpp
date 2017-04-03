@@ -2,6 +2,7 @@
 #include "util.hpp"
 
 #include <algorithm>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 
@@ -114,6 +115,17 @@ ScoreTuple::ScoreTuple(EndPts e, LP::Estimate down, LP::Estimate up,
       score(var_score(mult, down_est.value, up_est.value)),
       contra_base(std::move(base))
 {}
+
+ostream &operator<<(ostream &os, const ScoreTuple &T)
+{
+    os << std::setprecision(2);
+    os << T.ends << " score: " << T.score << "\tDown: "
+       << T.down_est.value << "\tUp: " << T.up_est.value;
+    os << std::setprecision(6);
+    return os;
+}
+
+
 
 /**
  * @param[in] cand_inds the candidate indices to be ranked.

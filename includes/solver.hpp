@@ -271,7 +271,6 @@ LP::PivType Solver::abc(bool do_price)
 
 
     cout << "\tCommencing ABC search....\n";
-    cout << "Avg piv itcount " << core_lp.avg_itcount() << endl;
     Timer abct(tsp_instance.problem_name() + " ABC search");
     abct.start();
 
@@ -283,6 +282,7 @@ LP::PivType Solver::abc(bool do_price)
     } CMR_CATCH_PRINT_THROW("allocating/instantiating Brancher", err);
 
     branch_engaged = true;
+    branch_controller->verbose = output_prefs.verbose;
 
     if (cut_sel.safeGMI) {
         cout << "(Disabling GMI and purging cuts for branching.....)\n";
@@ -292,7 +292,7 @@ LP::PivType Solver::abc(bool do_price)
     }
 
     try { piv = abc_bcp(do_price); }
-    CMR_CATCH_PRINT_THROW("running abc_dfs", err);
+    CMR_CATCH_PRINT_THROW("running abc_bcp", err);
 
     abct.stop();
 

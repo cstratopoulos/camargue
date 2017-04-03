@@ -324,7 +324,9 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
 
         if (piv == PivType::FathomedTour) {
             if (do_price) {
-                cout << "\tTour optimal for edge set...\n";
+                if (pure_cut)
+                    cout << "\tTour optimal for edge set...\n";
+                edge_pricer->verbose = output_prefs.verbose + pure_cut;
                 try {
                     if (edge_pricer->gen_edges(piv,
                                                elim_during && pure_cut) ==

@@ -47,7 +47,7 @@ public:
 
     using HGitr = std::vector<HyperGraph>::const_iterator;
 
-    bool verbose = true;
+    bool verbose = false;
     bool filter_primal = true;
 
 private:

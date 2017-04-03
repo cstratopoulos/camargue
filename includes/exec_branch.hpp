@@ -45,7 +45,7 @@ public:
     /// Undo the clamp done on \p current_node.
     void unclamp(const BranchNode &current_node);
 
-    bool verbose = true;
+    int verbose = 0;
 
 private:
     const Data::Instance &instance;

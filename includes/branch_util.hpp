@@ -75,14 +75,8 @@ struct ScoreTuple {
     LP::Basis contra_base;
 };
 
-inline std::ostream &operator<<(std::ostream &os, const ScoreTuple &T)
-{
-    os << T.ends << "\n\tdown looks " << T.down_est.sol_stat << ", val "
-       << T.down_est.value << "\n\t";
-    os << "up looks " << T.up_est.sol_stat << ", val " << T.up_est.value;
-    os << "\n\tscore " << T.score;
-    return os;
-}
+std::ostream &operator<<(std::ostream &os, const ScoreTuple &T);
+
 
 /// Produce a list of fixed max size containing ranked scored branching edges.
 std::vector<ScoreTuple> ranked_cands(const std::vector<int> &cand_inds,

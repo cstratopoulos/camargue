@@ -64,10 +64,11 @@ void InterBrancher::enqueue_split(BranchNode::Split prob_array) try
 
 BranchHistory::iterator InterBrancher::next_prob()
 {
-    cout << "Calling InterBrancher::next_prob...." << endl;
+    if (verbose)
+        cout << "Calling InterBrancher::next_prob...." << endl;
     if (next_itr == branch_history.end()) {
         fetch_next();
-    } else {
+    } else if (verbose){
         cout << "...Already set." << endl;
     }
 

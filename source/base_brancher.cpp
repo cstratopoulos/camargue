@@ -39,12 +39,13 @@ void BaseBrancher::split_prob(BranchHistory::iterator &current)
 
     BranchNode::Split prob_array;
     ScoreTuple branch_tuple;
-    bool verbose = true;
 
     try {
-        cout << "Getting next branch edge...." << endl;
+        if (verbose)
+            cout << "Getting next branch edge...." << endl;
         branch_tuple = exec.branch_edge();
-        cout << "Splitting on edge...." << endl;
+        if (verbose)
+            cout << "Splitting on edge...." << endl;
         prob_array = exec.split_problem(branch_tuple, *current);
     } CMR_CATCH_PRINT_THROW("finding next edge and splitting", err);
 
@@ -54,15 +55,18 @@ void BaseBrancher::split_prob(BranchHistory::iterator &current)
 
     int num_remain = 0;
 
-    if (verbose) {
-        cout << "BaseBrancher::split_prob printing history thus far" << endl;
-        for (const auto &B : branch_history) {
+    if (verbose)
+        cout << "BaseBrancher::split_prob printing history thus far"
+             << endl;
+
+    for (const auto &B : branch_history) {
+        if (verbose)
             cout << B << "\n";
-            if (!B.visited())
-                ++num_remain;
-        }
-        cout << num_remain << " unvisited problems remain" << endl;
+        if (!B.visited())
+            ++num_remain;
     }
+
+    cout << num_remain << " unvisited problems remain" << endl;
 }
 
 void BaseBrancher::do_branch(const BranchNode &B)
@@ -70,7 +74,8 @@ void BaseBrancher::do_branch(const BranchNode &B)
     if (B.is_root())
         return;
 
-    cout << "Calling do_branch on " << bnode_brief(B) << "..." << endl;
+    if (verbose)
+        cout << "Calling do_branch on " << bnode_brief(B) << "..." << endl;
 
     runtime_error err("Problem in BaseBrancher::do_branch");
     vector<int> tour;
@@ -85,7 +90,8 @@ void BaseBrancher::do_branch(const BranchNode &B)
             core_lp.set_active_tour(std::move(tour));
     } CMR_CATCH_PRINT_THROW("clamping bound/instating branch tour", err);
 
-    cout << "\nBranched " << B << endl;
+    if (verbose)
+        cout << "\nBranched " << B << endl;
 }
 
 void BaseBrancher::do_unbranch(const BranchNode &B)
@@ -147,25 +153,32 @@ void BaseBrancher::common_prep_next(const BranchNode &done,
                                    const BranchNode &next)
 {
     runtime_error err("Problem in BaseBrancher::common_prep_next");
-    cout << "Calling common_prep next.\n The Done node:\n"
-         << done << "\nThe Next node:\n" << next << endl;
+
+    if (verbose > 1)
+        cout << "Calling common_prep next.\n The Done node:\n"
+             << done << "\nThe Next node:\n" << next << endl;
 
     if (next.parent == &done) {
-        cout << "next is child of done, returning" << endl;
+        if (verbose > 1)
+            cout << "next is child of done, returning" << endl;
         return;
     }
 
     try {
         exec.unclamp(done);
     } CMR_CATCH_PRINT_THROW("undoing done problem", err);
-    cout << "Undid clamp on done." << endl;
+
+    if (verbose > 1)
+        cout << "Undid clamp on done." << endl;
 
     if (done.parent->is_root()) {
-        cout << "done node is root child, common ancestor is root." << endl;
+        if (verbose > 1)
+            cout << "done node is root child, common ancestor is root." << endl;
     }
 
     if (done.parent == next.parent) {
-        cout << "done and next are siblings, returning" << endl;
+        if (verbose > 1)
+            cout << "done and next are siblings, returning" << endl;
         return;
     }
 
@@ -198,16 +211,19 @@ void BaseBrancher::common_prep_next(const BranchNode &done,
         }
     } CMR_CATCH_PRINT_THROW("finding common ancestor path", err);
 
-    cout << "Loop completed with common ancestor "
-         << bnode_brief(*(done_path.first)) << endl;
+    if (verbose > 1)
+        cout << "Loop completed with common ancestor "
+             << bnode_brief(*(done_path.first)) << endl;
 
     try {
-        cout << "Undoing clamps from done to ancestor..." << endl;
+        if (verbose > 1)
+            cout << "Undoing clamps from done to ancestor..." << endl;
         for (const BranchNode *b : done_path.second) {
             exec.unclamp(*b);
         }
 
-        cout << "Clamping from next to ancestor...." << endl;
+        if (verbose > 1)
+            cout << "Clamping from next to ancestor...." << endl;
         for (const BranchNode *b : next_path.second) {
             exec.clamp(*b);
         }

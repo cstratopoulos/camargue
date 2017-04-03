@@ -57,7 +57,7 @@ public:
                      std::unique_ptr<LP::DualGroup<numtype>> &duals,
                      bool include_len);
 
-    bool verbose = false;
+    int verbose = 0;
 
 private:
     std::vector<Graph::Edge> pool_chunk(std::vector<PrEdge<double>> &edge_q);

@@ -264,11 +264,14 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
         }
     }
 
-    cout << "Added " << total_added << " edges in "
-         << outercount << " passes, " << inner_total << " inner loops, "
-         << result << "\n\t"
-         << "Opt objval: " << core_lp.get_objval() << ", "
-         << core_lp.num_cols() << " columns" << endl;
+    if (verbose > 1)
+        cout << "Added " << total_added << " edges in "
+             << outercount << " passes, " << inner_total << " inner loops"
+             << endl;
+
+    if (verbose)
+        cout << "LP opt objval: " << core_lp.get_objval() << ", "
+             << core_lp.num_cols() << " columns" << endl;
 
     if (try_elim && result != ScanStat::FullOpt && core_lp.dual_feas()) {
         try { elim_edges(false); }

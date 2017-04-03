@@ -36,7 +36,7 @@ public:
 
     const BranchHistory &get_history() { return branch_history; }
 
-    bool verbose = true;
+    int verbose = 0;
 
 protected:
     /// Adding child subproblems to branch_history.
