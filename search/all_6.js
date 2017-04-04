@@ -14,6 +14,7 @@ var searchData=
   ['get_5fcol_5finfeas',['get_col_infeas',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#a3ff670ca181d2166f2f84ac9d74f4c53',1,'CMR::LP::Relaxation']]],
   ['get_5fcut',['get_cut',['../class_c_m_r_1_1_sep_1_1_external_cuts.html#a64dedc44ef51d9800397715da5621840',1,'CMR::Sep::ExternalCuts']]],
   ['get_5felist',['get_elist',['../namespace_c_m_r_1_1_graph.html#ab9362dd14365ca0e1b804e86a835016c',1,'CMR::Graph::get_elist(const std::vector&lt; Edge &gt; &amp;edges, std::vector&lt; int &gt; &amp;elist, std::vector&lt; int &gt; &amp;ecap)'],['../namespace_c_m_r_1_1_graph.html#a93c1da58aff77f8154c3dad19f073ef9',1,'CMR::Graph::get_elist(const vector&lt; Edge &gt; &amp;edges, vector&lt; int &gt; &amp;elist, vector&lt; int &gt; &amp;elen)']]],
+  ['get_5ffixed_5fadj',['get_fixed_adj',['../class_c_m_r_1_1_a_b_c_1_1_branch_tour_find.html#a69a76a38bcbf9ee59f5bb4ca738ad310',1,'CMR::ABC::BranchTourFind']]],
   ['get_5flp_5fsol',['get_lp_sol',['../namespace_c_m_r_1_1util.html#a21d808208dde9ae0898f00d30de34eae',1,'CMR::util']]],
   ['get_5fobjval',['get_objval',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#a368ca7ad25167c37d31f1ba280945133',1,'CMR::LP::Relaxation']]],
   ['get_5fpi',['get_pi',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#ab568c7d723fae96af455237ed3dabadb',1,'CMR::LP::Relaxation']]],

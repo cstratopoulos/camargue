@@ -18,6 +18,8 @@ var searchData=
   ['primal_5frecover',['primal_recover',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#a8beb0affea3ffb69ee766bc0f581791d',1,'CMR::LP::Relaxation']]],
   ['primal_5fstrong_5fbranch',['primal_strong_branch',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#aa717674a51813407684c92496d3c4c36',1,'CMR::LP::Relaxation']]],
   ['problem_5fname',['problem_name',['../class_c_m_r_1_1_data_1_1_instance.html#a48903d9645fbae3529a00e9d40743378',1,'CMR::Data::Instance']]],
+  ['prune_5fbtour_5fedges',['prune_btour_edges',['../class_c_m_r_1_1_a_b_c_1_1_base_brancher.html#adc37e26079cd94521ec285102cd6671d',1,'CMR::ABC::BaseBrancher']]],
+  ['prune_5fedges',['prune_edges',['../class_c_m_r_1_1_a_b_c_1_1_branch_tour_find.html#a25be5850c99b521236f6b4865df7e6a5',1,'CMR::ABC::BranchTourFind']]],
   ['prune_5fslacks',['prune_slacks',['../class_c_m_r_1_1_l_p_1_1_core_l_p.html#ae40a2dc4514999c38ed32e01c88ac974',1,'CMR::LP::CoreLP']]],
   ['ptr',['ptr',['../class_c_m_r_1_1_data_1_1_instance.html#a08cf21afffc3090d0ce17678b9a4e404',1,'CMR::Data::Instance']]],
   ['ptr_5freset',['ptr_reset',['../namespace_c_m_r_1_1util.html#af825b552f30d3ddd9a2fe0a725869957',1,'CMR::util']]],

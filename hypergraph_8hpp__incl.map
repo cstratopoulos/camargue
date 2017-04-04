@@ -3,7 +3,7 @@
 <area shape="rect" id="node12" href="$lp__interface_8hpp.html" title="Interface to the LP solver. " alt="" coords="592,80,707,107"/>
 <area shape="rect" id="node14" href="$lp__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for LPs. " alt="" coords="789,237,870,263"/>
 <area shape="rect" id="node19" href="$cliq_8hpp.html" title="Reference counted storage of Cliques and Tooth objects. " alt="" coords="1056,80,1123,107"/>
-<area shape="rect" id="node22" href="$price__util_8hpp_source.html" title="price_util.hpp" alt="" coords="1560,155,1659,181"/>
+<area shape="rect" id="node22" href="$price__util_8hpp.html" title="Constants and functions related to edge pricing. " alt="" coords="1560,155,1659,181"/>
 <area shape="rect" id="node23" href="$err__util_8hpp.html" title="ERROR HANDLING CLASSES AND ROUTINES. " alt="" coords="1749,237,1835,263"/>
 <area shape="rect" id="node3" href="$util_8hpp.html" title="Utility functions, macros, and structures. " alt="" coords="1127,237,1191,263"/>
 <area shape="rect" id="node13" href="$config_8hpp.html" title="Configuration macros. " alt="" coords="479,237,561,263"/>

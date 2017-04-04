@@ -1,7 +1,8 @@
 <map id="CMR::Sep::ConcordeSeparator" name="CMR::Sep::ConcordeSeparator">
-<area shape="rect" id="node2" href="$class_c_m_r_1_1_sep_1_1_block_combs.html" title="Primal separation of comb ineqalities via standard block comb heuristic. " alt="" coords="262,5,429,32"/>
+<area shape="rect" id="node2" href="$class_c_m_r_1_1_sep_1_1_block_combs.html" title="Separation of comb inequalities by block comb heuristic. " alt="" coords="262,5,429,32"/>
 <area shape="rect" id="node3" href="$class_c_m_r_1_1_sep_1_1_connect_cuts.html" title="Standard separation of connect cuts. " alt="" coords="261,56,430,83"/>
-<area shape="rect" id="node4" href="$class_c_m_r_1_1_sep_1_1_fast_blossoms.html" title="Primal separation of blossoms via standard fast blossom heuristics. " alt="" coords="257,107,433,133"/>
-<area shape="rect" id="node5" href="$class_c_m_r_1_1_sep_1_1_local_cuts.html" title="Primal separation of non&#45;template local cuts via standard heuristics. " alt="" coords="270,157,421,184"/>
-<area shape="rect" id="node6" href="$class_c_m_r_1_1_sep_1_1_segment_cuts.html" title="Exact separation of segment cut subtours. " alt="" coords="259,208,431,235"/>
+<area shape="rect" id="node4" href="$class_c_m_r_1_1_sep_1_1_exact_sub.html" title="Exact standard separation of subtour inequalities. " alt="" coords="271,107,420,133"/>
+<area shape="rect" id="node5" href="$class_c_m_r_1_1_sep_1_1_fast_blossoms.html" title="Separation of blossoms via fast odd&#45;component based heuristics. " alt="" coords="257,157,433,184"/>
+<area shape="rect" id="node6" href="$class_c_m_r_1_1_sep_1_1_local_cuts.html" title="Primal separation of non&#45;template local cuts via standard heuristics. " alt="" coords="270,208,421,235"/>
+<area shape="rect" id="node7" href="$class_c_m_r_1_1_sep_1_1_segment_cuts.html" title="Exact separation of segment cut subtours. " alt="" coords="259,259,431,285"/>
 </map>

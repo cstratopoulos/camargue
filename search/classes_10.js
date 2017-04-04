@@ -12,7 +12,6 @@ var searchData=
   ['solver_5fimpl',['solver_impl',['../struct_c_m_r_1_1_l_p_1_1_relaxation_1_1solver__impl.html',1,'CMR::LP::Relaxation']]],
   ['sparserow',['SparseRow',['../struct_c_m_r_1_1_l_p_1_1_sparse_row.html',1,'CMR::LP']]],
   ['squareut',['SquareUT',['../class_c_m_r_1_1util_1_1_square_u_t.html',1,'CMR::util']]],
-  ['squareut_3c_20char_20_3e',['SquareUT&lt; char &gt;',['../class_c_m_r_1_1util_1_1_square_u_t.html',1,'CMR::util']]],
   ['supportgroup',['SupportGroup',['../struct_c_m_r_1_1_data_1_1_support_group.html',1,'CMR::Data']]],
   ['systemdeleter',['SystemDeleter',['../struct_c_m_r_1_1_sep_1_1_system_deleter.html',1,'CMR::Sep']]]
 ];

@@ -107,11 +107,12 @@ Inheritance diagram for CMR::Sep::ConcordeSeparator:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_c_m_r_1_1_sep_1_1_concorde_separator__inherit__graph.png" border="0" usemap="#_c_m_r_1_1_sep_1_1_concorde_separator_inherit__map" alt="Inheritance graph"/></div>
 <map name="_c_m_r_1_1_sep_1_1_concorde_separator_inherit__map" id="_c_m_r_1_1_sep_1_1_concorde_separator_inherit__map">
-<area shape="rect" id="node2" href="class_c_m_r_1_1_sep_1_1_block_combs.html" title="Primal separation of comb ineqalities via standard block comb heuristic. " alt="" coords="262,5,429,32"/>
+<area shape="rect" id="node2" href="class_c_m_r_1_1_sep_1_1_block_combs.html" title="Separation of comb inequalities by block comb heuristic. " alt="" coords="262,5,429,32"/>
 <area shape="rect" id="node3" href="class_c_m_r_1_1_sep_1_1_connect_cuts.html" title="Standard separation of connect cuts. " alt="" coords="261,56,430,83"/>
-<area shape="rect" id="node4" href="class_c_m_r_1_1_sep_1_1_fast_blossoms.html" title="Primal separation of blossoms via standard fast blossom heuristics. " alt="" coords="257,107,433,133"/>
-<area shape="rect" id="node5" href="class_c_m_r_1_1_sep_1_1_local_cuts.html" title="Primal separation of non&#45;template local cuts via standard heuristics. " alt="" coords="270,157,421,184"/>
-<area shape="rect" id="node6" href="class_c_m_r_1_1_sep_1_1_segment_cuts.html" title="Exact separation of segment cut subtours. " alt="" coords="259,208,431,235"/>
+<area shape="rect" id="node4" href="class_c_m_r_1_1_sep_1_1_exact_sub.html" title="Exact standard separation of subtour inequalities. " alt="" coords="271,107,420,133"/>
+<area shape="rect" id="node5" href="class_c_m_r_1_1_sep_1_1_fast_blossoms.html" title="Separation of blossoms via fast odd&#45;component based heuristics. " alt="" coords="257,157,433,184"/>
+<area shape="rect" id="node6" href="class_c_m_r_1_1_sep_1_1_local_cuts.html" title="Primal separation of non&#45;template local cuts via standard heuristics. " alt="" coords="270,208,421,235"/>
+<area shape="rect" id="node7" href="class_c_m_r_1_1_sep_1_1_segment_cuts.html" title="Exact separation of segment cut subtours. " alt="" coords="259,259,431,285"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
@@ -119,7 +120,7 @@ Collaboration diagram for CMR::Sep::ConcordeSeparator:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_c_m_r_1_1_sep_1_1_concorde_separator__coll__graph.png" border="0" usemap="#_c_m_r_1_1_sep_1_1_concorde_separator_coll__map" alt="Collaboration graph"/></div>
 <map name="_c_m_r_1_1_sep_1_1_concorde_separator_coll__map" id="_c_m_r_1_1_sep_1_1_concorde_separator_coll__map">
-<area shape="rect" id="node2" href="class_c_m_r_1_1_sep_1_1_tour_graph.html" title="Wrapper to the Concorde CCtsp_lpgraph structure. " alt="" coords="5,5,159,32"/>
+<area shape="rect" id="node2" href="class_c_m_r_1_1_sep_1_1_tour_graph.html" title="Wrapper to Concorde CCtsp_lpgraph for pricing cuts at tours. " alt="" coords="5,5,159,32"/>
 <area shape="rect" id="node3" href="class_c_m_r_1_1_sep_1_1_l_pcut_list.html" title="Management of Concorde lpcut_in linked list. " alt="" coords="183,5,330,32"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
@@ -157,7 +158,7 @@ std::vector&lt; double &gt; &amp;&#160;</td><td class="memItemRight" valign="bot
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Abstract base class for calling Concorde separation routines. </p>
-<p><a class="el" href="class_c_m_r_1_1_sep_1_1_separator.html" title="Class for separation of cutting planes. ">Separator</a> classes based on separation routines from Concorde should derive from this class and provide an implementation of find_cuts which calls an appropriate separation routine or sequence of routines. See <a class="el" href="class_c_m_r_1_1_sep_1_1_fast_blossoms.html" title="Primal separation of blossoms via standard fast blossom heuristics. ">FastBlossoms</a>, <a class="el" href="class_c_m_r_1_1_sep_1_1_block_combs.html" title="Primal separation of comb ineqalities via standard block comb heuristic. ">BlockCombs</a>, or <a class="el" href="class_c_m_r_1_1_sep_1_1_segment_cuts.html" title="Exact separation of segment cut subtours. ">SegmentCuts</a> for examples. </p>
+<p><a class="el" href="class_c_m_r_1_1_sep_1_1_separator.html" title="Management of basic separation routines. ">Separator</a> classes based on separation routines from Concorde should derive from this class and provide an implementation of find_cuts which calls an appropriate separation routine or sequence of routines. See <a class="el" href="class_c_m_r_1_1_sep_1_1_fast_blossoms.html" title="Separation of blossoms via fast odd-component based heuristics. ">FastBlossoms</a>, <a class="el" href="class_c_m_r_1_1_sep_1_1_block_combs.html" title="Separation of comb inequalities by block comb heuristic. ">BlockCombs</a>, or <a class="el" href="class_c_m_r_1_1_sep_1_1_segment_cuts.html" title="Exact separation of segment cut subtours. ">SegmentCuts</a> for examples. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a3cebad7e3cfc9f6bb68547b4ee34faa8"></a>
 <div class="memitem">
@@ -189,7 +190,7 @@ std::vector&lt; double &gt; &amp;&#160;</td><td class="memItemRight" valign="bot
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="class_c_m_r_1_1_sep_1_1_local_cuts.html#a5327412ba961b7bc831aeced72b99051">CMR::Sep::LocalCuts</a>, <a class="el" href="class_c_m_r_1_1_sep_1_1_fast_blossoms.html#a324587b64dfe683d9f455f9a445bd96f">CMR::Sep::FastBlossoms</a>, <a class="el" href="class_c_m_r_1_1_sep_1_1_block_combs.html#acdb76ca9d1aa6ad35007aaef8fd5b6a9">CMR::Sep::BlockCombs</a>, <a class="el" href="class_c_m_r_1_1_sep_1_1_connect_cuts.html#a93e452e77c10cd232532c947b9e1432f">CMR::Sep::ConnectCuts</a>, and <a class="el" href="class_c_m_r_1_1_sep_1_1_segment_cuts.html#ab56980e7d021f95a66502f15edf6c0b6">CMR::Sep::SegmentCuts</a>.</p>
+<p>Implemented in <a class="el" href="class_c_m_r_1_1_sep_1_1_local_cuts.html#a5327412ba961b7bc831aeced72b99051">CMR::Sep::LocalCuts</a>, <a class="el" href="class_c_m_r_1_1_sep_1_1_fast_blossoms.html#a324587b64dfe683d9f455f9a445bd96f">CMR::Sep::FastBlossoms</a>, <a class="el" href="class_c_m_r_1_1_sep_1_1_block_combs.html#acdb76ca9d1aa6ad35007aaef8fd5b6a9">CMR::Sep::BlockCombs</a>, <a class="el" href="class_c_m_r_1_1_sep_1_1_exact_sub.html#a9be59920959a90a867c052b6634f610a">CMR::Sep::ExactSub</a>, <a class="el" href="class_c_m_r_1_1_sep_1_1_connect_cuts.html#a93e452e77c10cd232532c947b9e1432f">CMR::Sep::ConnectCuts</a>, and <a class="el" href="class_c_m_r_1_1_sep_1_1_segment_cuts.html#ab56980e7d021f95a66502f15edf6c0b6">CMR::Sep::SegmentCuts</a>.</p>
 
 </div>
 </div>

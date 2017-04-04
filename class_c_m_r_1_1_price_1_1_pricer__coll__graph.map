@@ -1,5 +1,5 @@
 <map id="CMR::Price::Pricer" name="CMR::Price::Pricer">
-<area shape="rect" id="node2" href="$class_c_m_r_1_1util_1_1_edge_hash.html" title="Mapping node pairs to edges via wrapper to Concorde data structure. " alt="" coords="584,5,731,32"/>
+<area shape="rect" id="node2" href="$class_c_m_r_1_1util_1_1_edge_hash.html" title="Hash map for node pairs representing edges. " alt="" coords="584,5,731,32"/>
 <area shape="rect" id="node3" href="$class_c_m_r_1_1_data_1_1_instance.html" title="Storing TSP instance data. " alt="" coords="584,56,731,83"/>
 <area shape="rect" id="node5" href="$class_c_m_r_1_1_l_p_1_1_core_l_p.html" title="Class for storing the core lp associated to a TSP instance and pivoting. " alt="" coords="593,267,722,293"/>
 <area shape="rect" id="node6" href="$class_c_m_r_1_1_l_p_1_1_relaxation.html" title="Class for storing an lp relaxation via interface to an lp solver. " alt="" coords="305,311,451,337"/>

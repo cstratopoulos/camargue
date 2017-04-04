@@ -143,14 +143,14 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a3315efec5b85d9e8fd5f2fa02423b8f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pivot back to active_tour.  <a href="#a3315efec5b85d9e8fd5f2fa02423b8f4">More...</a><br /></td></tr>
 <tr class="separator:a3315efec5b85d9e8fd5f2fa02423b8f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9f2cfa939fc4e68901c4eac0b1f649bc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_l_p_1_1_core_l_p.html#a9f2cfa939fc4e68901c4eac0b1f649bc">add_edges</a> (const std::vector&lt; <a class="el" href="struct_c_m_r_1_1_graph_1_1_edge.html">Graph::Edge</a> &gt; &amp;add_batch, bool reinstate)</td></tr>
-<tr class="memdesc:a9f2cfa939fc4e68901c4eac0b1f649bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add the edges in <code>add_batch</code> to the <a class="el" href="namespace_c_m_r_1_1_l_p.html" title="Manners related to LP relaxations and solver interfaces. ">LP</a>, modifying the core_graph.  <a href="#a9f2cfa939fc4e68901c4eac0b1f649bc">More...</a><br /></td></tr>
+<tr class="memdesc:a9f2cfa939fc4e68901c4eac0b1f649bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add the edges in <code>add_batch</code> to the <a class="el" href="namespace_c_m_r_1_1_l_p.html" title="Manners related to LP relaxations and solver interfaces. ">LP</a>, modifying CoreLP::core_graph.  <a href="#a9f2cfa939fc4e68901c4eac0b1f649bc">More...</a><br /></td></tr>
 <tr class="separator:a9f2cfa939fc4e68901c4eac0b1f649bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af3125b47c6675d3035191b1f0c0eb52d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_l_p_1_1_core_l_p.html#af3125b47c6675d3035191b1f0c0eb52d">remove_edges</a> (std::vector&lt; int &gt; edge_delstat)</td></tr>
-<tr class="memdesc:af3125b47c6675d3035191b1f0c0eb52d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove edges indicated by <code>edge_delstat</code> from <a class="el" href="namespace_c_m_r_1_1_l_p.html" title="Manners related to LP relaxations and solver interfaces. ">LP</a>, modifying core_graph.  <a href="#af3125b47c6675d3035191b1f0c0eb52d">More...</a><br /></td></tr>
-<tr class="separator:af3125b47c6675d3035191b1f0c0eb52d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac91ae50ebdc71a0b6ebb2f61c8c57f1f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_l_p_1_1_core_l_p.html#ac91ae50ebdc71a0b6ebb2f61c8c57f1f">remove_edges</a> (std::vector&lt; int &gt; edge_delstat, bool reinstate)</td></tr>
+<tr class="memdesc:ac91ae50ebdc71a0b6ebb2f61c8c57f1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove edges in by <code>edge_delstat</code> from <a class="el" href="namespace_c_m_r_1_1_l_p.html" title="Manners related to LP relaxations and solver interfaces. ">LP</a>, modifying CoreLP::core_graph.  <a href="#ac91ae50ebdc71a0b6ebb2f61c8c57f1f">More...</a><br /></td></tr>
+<tr class="separator:ac91ae50ebdc71a0b6ebb2f61c8c57f1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65c037855febf460f4360fd7c432a0a6"><td class="memTemplParams" colspan="2">template&lt;typename numtype &gt; </td></tr>
 <tr class="memitem:a65c037855febf460f4360fd7c432a0a6"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_l_p_1_1_core_l_p.html#a65c037855febf460f4360fd7c432a0a6">check_feas</a> (const std::vector&lt; numtype &gt; &amp;x_vec)</td></tr>
-<tr class="memdesc:a65c037855febf460f4360fd7c432a0a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true iff x_vec satisfies all constraints and column bounds.  <a href="#a65c037855febf460f4360fd7c432a0a6">More...</a><br /></td></tr>
+<tr class="memdesc:a65c037855febf460f4360fd7c432a0a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true iff <code>x_vec</code> satisfies all constraints and column bounds.  <a href="#a65c037855febf460f4360fd7c432a0a6">More...</a><br /></td></tr>
 <tr class="separator:a65c037855febf460f4360fd7c432a0a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a878b5310e6bb7eb7146a4d348041f345"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a878b5310e6bb7eb7146a4d348041f345"></a>
 const <a class="el" href="struct_c_m_r_1_1_data_1_1_support_group.html">Data::SupportGroup</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>support_data</b> () const </td></tr>
@@ -534,7 +534,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>CMR::Solver</b></td>
       </table>
 </div><div class="memdoc">
 
-<p>Add the edges in <code>add_batch</code> to the <a class="el" href="namespace_c_m_r_1_1_l_p.html" title="Manners related to LP relaxations and solver interfaces. ">LP</a>, modifying the core_graph. </p>
+<p>Add the edges in <code>add_batch</code> to the <a class="el" href="namespace_c_m_r_1_1_l_p.html" title="Manners related to LP relaxations and solver interfaces. ">LP</a>, modifying CoreLP::core_graph. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">reinstate</td><td>if true, method will attempt to reinstate the active_tour. </td></tr>
@@ -560,7 +560,7 @@ template&lt;typename numtype &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Returns true iff x_vec satisfies all constraints and column bounds. </p>
+<p>Returns true iff <code>x_vec</code> satisfies all constraints and column bounds. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">numtype</td><td>the number type for the vector to check. </td></tr>
@@ -697,7 +697,7 @@ template&lt;typename numtype &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="af3125b47c6675d3035191b1f0c0eb52d"></a>
+<a class="anchor" id="ac91ae50ebdc71a0b6ebb2f61c8c57f1f"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -705,13 +705,23 @@ template&lt;typename numtype &gt; </div>
           <td class="memname">void CMR::LP::CoreLP::remove_edges </td>
           <td>(</td>
           <td class="paramtype">std::vector&lt; int &gt;&#160;</td>
-          <td class="paramname"><em>edge_delstat</em></td><td>)</td>
+          <td class="paramname"><em>edge_delstat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>reinstate</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Remove edges indicated by <code>edge_delstat</code> from <a class="el" href="namespace_c_m_r_1_1_l_p.html" title="Manners related to LP relaxations and solver interfaces. ">LP</a>, modifying core_graph. </p>
+<p>Remove edges in by <code>edge_delstat</code> from <a class="el" href="namespace_c_m_r_1_1_l_p.html" title="Manners related to LP relaxations and solver interfaces. ">LP</a>, modifying CoreLP::core_graph. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">edge_delstat</td><td>a vector of length equal to <code>core_graph.edge_count()</code>, with <code>delstat[i]</code> equal to one if the corresponding edge is to be removed from the core_graph and the <a class="el" href="namespace_c_m_r_1_1_l_p.html" title="Manners related to LP relaxations and solver interfaces. ">LP</a>. </td></tr>

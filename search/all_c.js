@@ -2,6 +2,7 @@ var searchData=
 [
   ['ndpivothandle',['NDpivotHandle',['../struct_c_m_r_1_1_l_p_1_1_n_dpivot_handle.html',1,'CMR::LP']]],
   ['nearest',['Nearest',['../namespace_c_m_r_1_1_price.html#af2caf4b0bd031cdbb6cdf3fdba3c2df2',1,'CMR::Price']]],
+  ['neighbors',['neighbors',['../struct_c_m_r_1_1_graph_1_1_node.html#a99f9d49672d8c29bd8e48379fbd03384',1,'CMR::Graph::Node']]],
   ['new_5frow',['new_row',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#acef6c228ca89ce722685ab15189c9f94',1,'CMR::LP::Relaxation']]],
   ['new_5frows',['new_rows',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#abbd50b0cd9823362aadd9427f98f5168',1,'CMR::LP::Relaxation']]],
   ['next_5fprob',['next_prob',['../class_c_m_r_1_1_a_b_c_1_1_d_f_sbrancher.html#a7afb57c0df3d09425a37a7d5bcfa94b1',1,'CMR::ABC::DFSbrancher::next_prob()'],['../class_c_m_r_1_1_a_b_c_1_1_inter_brancher.html#ac502818ab36f4648e4e1e06a9d1023c4',1,'CMR::ABC::InterBrancher::next_prob()'],['../class_c_m_r_1_1_a_b_c_1_1_base_brancher.html#a295a83ae784fec324d60b348be81fa9f',1,'CMR::ABC::BaseBrancher::next_prob()'],['../class_c_m_r_1_1_a_b_c_1_1_qpref_brancher.html#a38645f727ddca0645b804d55884f6c77',1,'CMR::ABC::QprefBrancher::next_prob()']]],

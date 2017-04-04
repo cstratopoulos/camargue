@@ -1,5 +1,5 @@
 <map id="CMR::Sep::MetaCuts" name="CMR::Sep::MetaCuts">
-<area shape="rect" id="node2" href="$class_c_m_r_1_1_sep_1_1_tour_graph.html" title="Wrapper to the Concorde CCtsp_lpgraph structure. " alt="" coords="301,5,455,32"/>
+<area shape="rect" id="node2" href="$class_c_m_r_1_1_sep_1_1_tour_graph.html" title="Wrapper to Concorde CCtsp_lpgraph for pricing cuts at tours. " alt="" coords="301,5,455,32"/>
 <area shape="rect" id="node3" href="$struct_c_m_r_1_1_data_1_1_support_group.html" title="Support graph data for an LP solution. " alt="" coords="289,56,467,83"/>
 <area shape="rect" id="node4" href="$struct_c_m_r_1_1_graph_1_1_adj_list.html" title="Representation of a graph as an adjacency list. " alt="" coords="13,47,157,73"/>
 <area shape="rect" id="node5" href="$class_c_m_r_1_1_sep_1_1_external_cuts.html" title="The external storage of a collection of HyperGraph cuts in a Relaxation. " alt="" coords="294,107,462,133"/>

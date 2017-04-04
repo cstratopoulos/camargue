@@ -89,6 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#pri-methods">Private Member Functions</a> &#124;
@@ -108,7 +109,7 @@ Collaboration diagram for CMR::Price::Pricer:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_c_m_r_1_1_price_1_1_pricer__coll__graph.png" border="0" usemap="#_c_m_r_1_1_price_1_1_pricer_coll__map" alt="Collaboration graph"/></div>
 <map name="_c_m_r_1_1_price_1_1_pricer_coll__map" id="_c_m_r_1_1_price_1_1_pricer_coll__map">
-<area shape="rect" id="node2" href="class_c_m_r_1_1util_1_1_edge_hash.html" title="Mapping node pairs to edges via wrapper to Concorde data structure. " alt="" coords="584,5,731,32"/>
+<area shape="rect" id="node2" href="class_c_m_r_1_1util_1_1_edge_hash.html" title="Hash map for node pairs representing edges. " alt="" coords="584,5,731,32"/>
 <area shape="rect" id="node3" href="class_c_m_r_1_1_data_1_1_instance.html" title="Storing TSP instance data. " alt="" coords="584,56,731,83"/>
 <area shape="rect" id="node5" href="class_c_m_r_1_1_l_p_1_1_core_l_p.html" title="Class for storing the core lp associated to a TSP instance and pivoting. " alt="" coords="593,267,722,293"/>
 <area shape="rect" id="node6" href="class_c_m_r_1_1_l_p_1_1_relaxation.html" title="Class for storing an lp relaxation via interface to an lp solver. " alt="" coords="305,311,451,337"/>
@@ -124,15 +125,16 @@ Collaboration diagram for CMR::Price::Pricer:</div>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_c_m_r_1_1_price_1_1_pricer_1_1edgegen__impl.html">edgegen_impl</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ab13ad2cca947a8cd97901f59929492f1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_price_1_1_pricer.html#ab13ad2cca947a8cd97901f59929492f1">Pricer</a> (<a class="el" href="class_c_m_r_1_1_l_p_1_1_core_l_p.html">LP::CoreLP</a> &amp;core, const <a class="el" href="class_c_m_r_1_1_data_1_1_instance.html">Data::Instance</a> &amp;_inst, <a class="el" href="class_c_m_r_1_1_graph_1_1_core_graph.html">Graph::CoreGraph</a> &amp;core_graph_)</td></tr>
 <tr class="memdesc:ab13ad2cca947a8cd97901f59929492f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a <a class="el" href="class_c_m_r_1_1_price_1_1_pricer.html" title="Get reduced costs for edges not in the core lp. ">Pricer</a> using data from an ongoing solution process.  <a href="#ab13ad2cca947a8cd97901f59929492f1">More...</a><br /></td></tr>
 <tr class="separator:ab13ad2cca947a8cd97901f59929492f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca12003cf87da347de791a328df7f00b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aca12003cf87da347de791a328df7f00b"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_price_1_1_pricer.html#aca12003cf87da347de791a328df7f00b">~Pricer</a> ()</td></tr>
-<tr class="memdesc:aca12003cf87da347de791a328df7f00b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destruct and free resource handles. <br /></td></tr>
-<tr class="separator:aca12003cf87da347de791a328df7f00b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ebf73f963202db41c01aa3856871554"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespace_c_m_r_1_1_price.html#a8049715d11cfcaaa9ecfb3e63f311f35">ScanStat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_price_1_1_pricer.html#a7ebf73f963202db41c01aa3856871554">gen_edges</a> (<a class="el" href="namespace_c_m_r_1_1_l_p.html#afd00f2eef86a805578156cdd9422bcd8">LP::PivType</a> piv_stat, bool try_elim)</td></tr>
 <tr class="memdesc:a7ebf73f963202db41c01aa3856871554"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate/add edges to core.  <a href="#a7ebf73f963202db41c01aa3856871554">More...</a><br /></td></tr>
 <tr class="separator:a7ebf73f963202db41c01aa3856871554"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -158,9 +160,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a21ed3e0fb3cc3405f76d2d8f7047bf5a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a21ed3e0fb3cc3405f76d2d8f7047bf5a"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>verbose</b> = false</td></tr>
-<tr class="separator:a21ed3e0fb3cc3405f76d2d8f7047bf5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a280e9df01291431c2061224e6129bc1f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a280e9df01291431c2061224e6129bc1f"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>verbose</b> = 0</td></tr>
+<tr class="separator:a280e9df01291431c2061224e6129bc1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
@@ -213,14 +215,13 @@ std::unique_ptr&lt; <a class="el" href="struct_c_m_r_1_1_l_p_1_1_dual_group.html
 <tr class="memitem:a3d7f9292c59f2cf3234227a3dd511661"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3d7f9292c59f2cf3234227a3dd511661"></a>
 std::unique_ptr&lt; <a class="el" href="struct_c_m_r_1_1_l_p_1_1_dual_group.html">LP::DualGroup</a>&lt; <a class="el" href="class_c_m_r_1_1util_1_1_fixed64.html">util::Fixed64</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ex_duals</b></td></tr>
 <tr class="separator:a3d7f9292c59f2cf3234227a3dd511661"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0b70f22587f5a346fe2a1f88e825e8d9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0b70f22587f5a346fe2a1f88e825e8d9"></a>
-CCtsp_edgegenerator&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_price_1_1_pricer.html#a0b70f22587f5a346fe2a1f88e825e8d9">eg_inside</a></td></tr>
-<tr class="memdesc:a0b70f22587f5a346fe2a1f88e825e8d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Concorde 50-nearest edge generator. <br /></td></tr>
-<tr class="separator:a0b70f22587f5a346fe2a1f88e825e8d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5103d01b971eff2b0008f40cdacaba3b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5103d01b971eff2b0008f40cdacaba3b"></a>
-CCtsp_edgegenerator&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_price_1_1_pricer.html#a5103d01b971eff2b0008f40cdacaba3b">eg_full</a></td></tr>
-<tr class="memdesc:a5103d01b971eff2b0008f40cdacaba3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Concorde complete graph edge generator. <br /></td></tr>
-<tr class="separator:a5103d01b971eff2b0008f40cdacaba3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7753aacff67ba1aefb9dc8c861c5bac7"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="struct_c_m_r_1_1_price_1_1_pricer_1_1edgegen__impl.html">edgegen_impl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_price_1_1_pricer.html#a7753aacff67ba1aefb9dc8c861c5bac7">eg_inside</a></td></tr>
+<tr class="memdesc:a7753aacff67ba1aefb9dc8c861c5bac7"><td class="mdescLeft">&#160;</td><td class="mdescRight">The edge generator implementation.  <a href="#a7753aacff67ba1aefb9dc8c861c5bac7">More...</a><br /></td></tr>
+<tr class="separator:a7753aacff67ba1aefb9dc8c861c5bac7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68f75a8c64a5270ad4e1df411235e03c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a68f75a8c64a5270ad4e1df411235e03c"></a>
+std::unique_ptr&lt; <a class="el" href="struct_c_m_r_1_1_price_1_1_pricer_1_1edgegen__impl.html">edgegen_impl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_price_1_1_pricer.html#a68f75a8c64a5270ad4e1df411235e03c">eg_full</a></td></tr>
+<tr class="memdesc:a68f75a8c64a5270ad4e1df411235e03c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Complete graph generator. <br /></td></tr>
+<tr class="separator:a68f75a8c64a5270ad4e1df411235e03c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59fcaa26d2e98658f871729307f39583"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a59fcaa26d2e98658f871729307f39583"></a>
 <a class="el" href="class_c_m_r_1_1util_1_1_edge_hash.html">util::EdgeHash</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_price_1_1_pricer.html#a59fcaa26d2e98658f871729307f39583">edge_hash</a></td></tr>
 <tr class="memdesc:a59fcaa26d2e98658f871729307f39583"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hash table for tracking generated edges. <br /></td></tr>
@@ -375,9 +376,35 @@ template&lt;typename numtype &gt; </div>
 
 </div>
 </div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a class="anchor" id="a7753aacff67ba1aefb9dc8c861c5bac7"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unique_ptr&lt;<a class="el" href="struct_c_m_r_1_1_price_1_1_pricer_1_1edgegen__impl.html">edgegen_impl</a>&gt; CMR::Price::Pricer::eg_inside</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The edge generator implementation. </p>
+<p>50-nearest generator. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>includes/<a class="el" href="pricer_8hpp_source.html">pricer.hpp</a></li>
-<li>source/pricer.cpp</li>
+<li>source/<a class="el" href="price__exact_8cpp.html">price_exact.cpp</a></li>
+<li>source/<a class="el" href="price__gen_8cpp.html">price_gen.cpp</a></li>
+<li>source/<a class="el" href="price__recover_8cpp.html">price_recover.cpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

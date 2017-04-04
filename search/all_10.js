@@ -9,7 +9,7 @@ var searchData=
   ['relaxation',['Relaxation',['../class_c_m_r_1_1_l_p_1_1_relaxation.html',1,'CMR::LP']]],
   ['relaxation',['Relaxation',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#ad5bd743b15335bb9dd164d0ad0deba6c',1,'CMR::LP::Relaxation::Relaxation()'],['../class_c_m_r_1_1_l_p_1_1_relaxation.html#a2f73aada4f50881e2eebad069175ab05',1,'CMR::LP::Relaxation::Relaxation(Relaxation &amp;&amp;lp) noexcept']]],
   ['removable',['removable',['../struct_c_m_r_1_1_graph_1_1_edge.html#a71897218d02789ca8d53b000fd8ac820',1,'CMR::Graph::Edge']]],
-  ['remove_5fedges',['remove_edges',['../class_c_m_r_1_1_l_p_1_1_core_l_p.html#af3125b47c6675d3035191b1f0c0eb52d',1,'CMR::LP::CoreLP::remove_edges()'],['../class_c_m_r_1_1_graph_1_1_core_graph.html#ab9481b8c8bca8c8ebf238e9fd5103c99',1,'CMR::Graph::CoreGraph::remove_edges()']]],
+  ['remove_5fedges',['remove_edges',['../class_c_m_r_1_1_l_p_1_1_core_l_p.html#ac91ae50ebdc71a0b6ebb2f61c8c57f1f',1,'CMR::LP::CoreLP::remove_edges()'],['../class_c_m_r_1_1_graph_1_1_core_graph.html#ab9481b8c8bca8c8ebf238e9fd5103c99',1,'CMR::Graph::CoreGraph::remove_edges()']]],
   ['report',['report',['../class_c_m_r_1_1_timer.html#aa7835a0e816519767e6b7354a8847def',1,'CMR::Timer']]],
   ['report_5faug',['report_aug',['../class_c_m_r_1_1_solver.html#ad2f181d0c002deb8c914bf57d131cbff',1,'CMR::Solver']]],
   ['report_5fcuts',['report_cuts',['../class_c_m_r_1_1_solver.html#a5d3783354de408781561ed344eb1482c',1,'CMR::Solver']]],

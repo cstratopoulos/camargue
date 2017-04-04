@@ -1,24 +1,28 @@
 <map id="includes/mirgroup.hpp" name="includes/mirgroup.hpp">
-<area shape="rect" id="node2" href="$lp__interface_8hpp.html" title="Interface to the LP solver. " alt="" coords="1167,80,1334,107"/>
-<area shape="rect" id="node23" href="$safe_g_m_i_8hpp.html" title="Primal safe Gomory cut separation. " alt="" coords="1380,155,1529,181"/>
-<area shape="rect" id="node3" href="$active__tour_8hpp.html" title="Monitoring the active tour in the solution process. " alt="" coords="403,155,565,181"/>
-<area shape="rect" id="node12" href="$core__lp_8hpp.html" title="Managing Core LP relaxations of TSP instances. " alt="" coords="1049,229,1191,256"/>
-<area shape="rect" id="node21" href="$hypergraph_8hpp.html" title="Representing cuts outside the LP solver. " alt="" coords="1143,155,1305,181"/>
-<area shape="rect" id="node22" href="$dualgroup_8hpp.html" title="LP dual solutions. " alt="" coords="1265,229,1420,256"/>
-<area shape="rect" id="node4" href="$abc__nodesel_8hpp.html" title="Classes for node selection rules. " alt="" coords="386,528,558,555"/>
-<area shape="rect" id="node9" href="$exec__branch_8hpp.html" title="Branching execution. " alt="" coords="413,304,587,331"/>
-<area shape="rect" id="node10" href="$base__brancher_8hpp.html" title="Abstract branching control. " alt="" coords="351,379,535,405"/>
-<area shape="rect" id="node11" href="$qpref__brancher_8hpp.html" title="Template classes/methods for branching by priority queue. " alt="" coords="249,453,434,480"/>
-<area shape="rect" id="node14" href="$blossoms_8hpp.html" title="Exact primal blossom separation. " alt="" coords="464,229,619,256"/>
-<area shape="rect" id="node15" href="$meta__sep_8hpp.html" title="Separating with cut metamorphoses. " alt="" coords="869,229,1025,256"/>
-<area shape="rect" id="node16" href="$pool__sep_8hpp.html" title="Separating over a pool of cuts. " alt="" coords="694,229,845,256"/>
-<area shape="rect" id="node17" href="$separator_8hpp_source.html" title="includes/separator.hpp" alt="" coords="597,528,750,555"/>
-<area shape="rect" id="node18" href="$simple_d_p_8hpp.html" title="Primal light simple DP separation. " alt="" coords="138,379,294,405"/>
-<area shape="rect" id="node19" href="$tooth_8hpp_source.html" title="includes/tooth.hpp" alt="" coords="152,229,280,256"/>
-<area shape="rect" id="node5" href="$solver_8hpp.html" title="TSP Solver class header. " alt="" coords="761,603,895,629"/>
-<area shape="rect" id="node6" href="$camargue_8cpp.html" title="The camargue main program. " alt="" coords="416,677,563,704"/>
-<area shape="rect" id="node7" href="$solver_8cpp.html" title="Implementation of higher level or public Solver methods. " alt="" coords="779,677,904,704"/>
-<area shape="rect" id="node8" href="$solver__loops_8cpp.html" title="Private Solver methods with recursive/loop calls. " alt="" coords="592,677,755,704"/>
-<area shape="rect" id="node13" href="$pricer_8hpp_source.html" title="includes/pricer.hpp" alt="" coords="1160,304,1291,331"/>
-<area shape="rect" id="node20" href="$witness_8hpp_source.html" title="includes/witness.hpp" alt="" coords="144,304,288,331"/>
+<area shape="rect" id="node2" href="$lp__interface_8hpp.html" title="Interface to the LP solver. " alt="" coords="846,80,1013,107"/>
+<area shape="rect" id="node27" href="$safe_g_m_i_8hpp.html" title="Primal safe Gomory cut separation. " alt="" coords="733,155,883,181"/>
+<area shape="rect" id="node3" href="$active__tour_8hpp.html" title="Monitoring the active tour in the solution process. " alt="" coords="400,155,563,181"/>
+<area shape="rect" id="node12" href="$core__lp_8hpp.html" title="Managing Core LP relaxations of TSP instances. " alt="" coords="859,229,1000,256"/>
+<area shape="rect" id="node25" href="$hypergraph_8hpp.html" title="Representing cuts outside the LP solver. " alt="" coords="992,155,1155,181"/>
+<area shape="rect" id="node26" href="$dualgroup_8hpp.html" title="LP dual solutions. " alt="" coords="1251,229,1405,256"/>
+<area shape="rect" id="node4" href="$abc__nodesel_8hpp.html" title="Classes for node selection rules. " alt="" coords="425,603,597,629"/>
+<area shape="rect" id="node9" href="$exec__branch_8hpp.html" title="Branching execution. " alt="" coords="675,379,848,405"/>
+<area shape="rect" id="node10" href="$base__brancher_8hpp.html" title="Abstract branching control. " alt="" coords="416,453,600,480"/>
+<area shape="rect" id="node11" href="$qpref__brancher_8hpp.html" title="Template classes/methods for branching by priority queue. " alt="" coords="287,528,473,555"/>
+<area shape="rect" id="node18" href="$blossoms_8hpp.html" title="Exact primal blossom separation. " alt="" coords="347,229,501,256"/>
+<area shape="rect" id="node19" href="$meta__sep_8hpp.html" title="Separating with cut metamorphoses. " alt="" coords="678,229,834,256"/>
+<area shape="rect" id="node20" href="$pool__sep_8hpp.html" title="Separating over a pool of cuts. " alt="" coords="1025,229,1175,256"/>
+<area shape="rect" id="node21" href="$separator_8hpp.html" title="Some straightforward separation routines. " alt="" coords="247,603,401,629"/>
+<area shape="rect" id="node22" href="$simple_d_p_8hpp.html" title="Primal light simple DP separation. " alt="" coords="94,379,250,405"/>
+<area shape="rect" id="node23" href="$tooth_8hpp_source.html" title="includes/tooth.hpp" alt="" coords="144,229,272,256"/>
+<area shape="rect" id="node5" href="$solver_8hpp.html" title="TSP Solver class header. " alt="" coords="586,677,721,704"/>
+<area shape="rect" id="node6" href="$camargue_8cpp.html" title="The camargue main program. " alt="" coords="437,752,584,779"/>
+<area shape="rect" id="node7" href="$solver_8cpp.html" title="Implementation of higher level or public Solver methods. " alt="" coords="608,752,733,779"/>
+<area shape="rect" id="node8" href="$solver__loops_8cpp.html" title="Private Solver methods with recursive/loop calls. " alt="" coords="249,752,412,779"/>
+<area shape="rect" id="node13" href="$branch__tour_8hpp.html" title="Working with branch tours. " alt="" coords="845,304,1011,331"/>
+<area shape="rect" id="node14" href="$pricer_8hpp.html" title="Pricing sets of edges. " alt="" coords="1196,304,1327,331"/>
+<area shape="rect" id="node15" href="$price__exact_8cpp.html" title="Pricer implementations for exact lower bounds/edge elimination. " alt="" coords="1551,379,1708,405"/>
+<area shape="rect" id="node16" href="$price__gen_8cpp.html" title="Pricer implementations for generating negative reduced cost edges. " alt="" coords="1188,379,1335,405"/>
+<area shape="rect" id="node17" href="$price__recover_8cpp.html" title="Pricer implementations for recovering an infeasible LP. " alt="" coords="1359,379,1527,405"/>
+<area shape="rect" id="node24" href="$witness_8hpp_source.html" title="includes/witness.hpp" alt="" coords="195,304,339,331"/>
 </map>

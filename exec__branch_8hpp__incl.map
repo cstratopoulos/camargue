@@ -1,20 +1,22 @@
 <map id="includes/exec_branch.hpp" name="includes/exec_branch.hpp">
-<area shape="rect" id="node2" href="$active__tour_8hpp.html" title="Monitoring the active tour in the solution process. " alt="" coords="830,229,941,256"/>
-<area shape="rect" id="node3" href="$datagroups_8hpp.html" title="Data group structures. " alt="" coords="1571,304,1682,331"/>
-<area shape="rect" id="node21" href="$lp__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for LPs. " alt="" coords="1279,379,1361,405"/>
-<area shape="rect" id="node25" href="$core__lp_8hpp.html" title="Managing Core LP relaxations of TSP instances. " alt="" coords="1854,80,1943,107"/>
-<area shape="rect" id="node33" href="$cliq_8hpp.html" title="Reference counted storage of Cliques and Tooth objects. " alt="" coords="2953,304,3020,331"/>
-<area shape="rect" id="node37" href="$branch__node_8hpp.html" title="ABC search nodes. " alt="" coords="3871,304,3993,331"/>
-<area shape="rect" id="node38" href="$branch__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for branching. " alt="" coords="3331,304,3442,331"/>
-<area shape="rect" id="node19" href="$lp__interface_8hpp.html" title="Interface to the LP solver. " alt="" coords="655,304,769,331"/>
-<area shape="rect" id="node4" href="$util_8hpp.html" title="Utility functions, macros, and structures. " alt="" coords="2712,461,2776,487"/>
-<area shape="rect" id="node13" href="$err__util_8hpp.html" title="ERROR HANDLING CLASSES AND ROUTINES. " alt="" coords="2478,379,2565,405"/>
-<area shape="rect" id="node15" href="$graph_8hpp.html" title="Header for classes/structures/functions to work with graphs. " alt="" coords="1385,379,1463,405"/>
-<area shape="rect" id="node20" href="$config_8hpp.html" title="Configuration macros. " alt="" coords="144,461,227,487"/>
-<area shape="rect" id="node22" href="$mirgroup_8hpp.html" title="Utility structures for running safe Gomory cut separation. " alt="" coords="378,379,475,405"/>
-<area shape="rect" id="node26" href="$cc__lpcuts_8hpp.html" title="Wrappers for Concorde LP structures and separators. " alt="" coords="1286,229,1389,256"/>
-<area shape="rect" id="node28" href="$process__cuts_8hpp.html" title="Structures for storing and processing cuts. " alt="" coords="1493,155,1619,181"/>
-<area shape="rect" id="node32" href="$hypergraph_8hpp.html" title="Representing cuts outside the LP solver. " alt="" coords="2385,229,2495,256"/>
-<area shape="rect" id="node29" href="$cut__structs_8hpp_source.html" title="cut_structs.hpp" alt="" coords="2240,379,2352,405"/>
-<area shape="rect" id="node35" href="$price__util_8hpp_source.html" title="price_util.hpp" alt="" coords="3681,379,3780,405"/>
+<area shape="rect" id="node2" href="$active__tour_8hpp.html" title="Monitoring the active tour in the solution process. " alt="" coords="1065,304,1175,331"/>
+<area shape="rect" id="node3" href="$datagroups_8hpp.html" title="Data group structures. " alt="" coords="1995,379,2106,405"/>
+<area shape="rect" id="node21" href="$lp__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for LPs. " alt="" coords="994,453,1075,480"/>
+<area shape="rect" id="node25" href="$core__lp_8hpp.html" title="Managing Core LP relaxations of TSP instances. " alt="" coords="1885,155,1974,181"/>
+<area shape="rect" id="node33" href="$cliq_8hpp.html" title="Reference counted storage of Cliques and Tooth objects. " alt="" coords="2836,379,2903,405"/>
+<area shape="rect" id="node37" href="$branch__node_8hpp.html" title="ABC search nodes. " alt="" coords="3933,379,4054,405"/>
+<area shape="rect" id="node38" href="$branch__tour_8hpp.html" title="Working with branch tours. " alt="" coords="3545,80,3660,107"/>
+<area shape="rect" id="node40" href="$branch__util_8hpp.html" title="Functions, structs/enums, and constants for branching. " alt="" coords="313,379,423,405"/>
+<area shape="rect" id="node19" href="$lp__interface_8hpp.html" title="Interface to the LP solver. " alt="" coords="1465,379,1580,405"/>
+<area shape="rect" id="node4" href="$util_8hpp.html" title="Utility functions, macros, and structures. " alt="" coords="2437,535,2501,562"/>
+<area shape="rect" id="node13" href="$err__util_8hpp.html" title="ERROR HANDLING CLASSES AND ROUTINES. " alt="" coords="1099,453,1186,480"/>
+<area shape="rect" id="node15" href="$graph_8hpp.html" title="Header for classes/structures/functions to work with graphs. " alt="" coords="3506,453,3585,480"/>
+<area shape="rect" id="node20" href="$config_8hpp.html" title="Configuration macros. " alt="" coords="1312,535,1395,562"/>
+<area shape="rect" id="node22" href="$mirgroup_8hpp.html" title="Utility structures for running safe Gomory cut separation. " alt="" coords="1453,453,1550,480"/>
+<area shape="rect" id="node26" href="$cc__lpcuts_8hpp.html" title="Wrappers for Concorde LP structures and separators. " alt="" coords="3153,304,3255,331"/>
+<area shape="rect" id="node28" href="$process__cuts_8hpp.html" title="Structures for storing and processing cuts. " alt="" coords="2519,229,2644,256"/>
+<area shape="rect" id="node32" href="$hypergraph_8hpp.html" title="Representing cuts outside the LP solver. " alt="" coords="1199,304,1310,331"/>
+<area shape="rect" id="node29" href="$cut__structs_8hpp_source.html" title="cut_structs.hpp" alt="" coords="2479,453,2591,480"/>
+<area shape="rect" id="node35" href="$price__util_8hpp.html" title="Constants and functions related to edge pricing. " alt="" coords="769,453,868,480"/>
+<area shape="rect" id="node39" href="$edgehash_8hpp.html" title="Hash map for graph edges. " alt="" coords="3666,379,3769,405"/>
 </map>

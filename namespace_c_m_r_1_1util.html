@@ -104,7 +104,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class template for deleting resources allocated by C functions.  <a href="struct_c_m_r_1_1util_1_1_c__resource__deleter.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1util_1_1_edge_hash.html">EdgeHash</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mapping node pairs to edges via wrapper to Concorde data structure.  <a href="class_c_m_r_1_1util_1_1_edge_hash.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hash map for node pairs representing edges.  <a href="class_c_m_r_1_1util_1_1_edge_hash.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1util_1_1_fixed64.html">Fixed64</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A 64-bit fixed precision number type "implemented" as a wrapper to CCbigguy.  <a href="class_c_m_r_1_1util_1_1_fixed64.html#details">More...</a><br /></td></tr>
@@ -186,6 +186,10 @@ template&lt;typename T , typename... Args&gt; </td></tr>
 <tr class="memitem:af825b552f30d3ddd9a2fe0a725869957"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_c_m_r_1_1util.html#af825b552f30d3ddd9a2fe0a725869957">ptr_reset</a> (std::unique_ptr&lt; T &gt; &amp;target, Args &amp;&amp;...args)</td></tr>
 <tr class="memdesc:af825b552f30d3ddd9a2fe0a725869957"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adaptation of make_unique to reset a unique_ptr to an object.  <a href="#af825b552f30d3ddd9a2fe0a725869957">More...</a><br /></td></tr>
 <tr class="separator:af825b552f30d3ddd9a2fe0a725869957"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68a14ecf83e4c2554ed25307c619627b"><td class="memTemplParams" colspan="2">template&lt;typename ElemType , typename PredType &gt; </td></tr>
+<tr class="memitem:a68a14ecf83e4c2554ed25307c619627b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_c_m_r_1_1util.html#a68a14ecf83e4c2554ed25307c619627b">erase_remove</a> (std::vector&lt; ElemType &gt; &amp;vec, PredType pred)</td></tr>
+<tr class="memdesc:a68a14ecf83e4c2554ed25307c619627b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standardization of erase-remove idiom.  <a href="#a68a14ecf83e4c2554ed25307c619627b">More...</a><br /></td></tr>
+<tr class="separator:a68a14ecf83e4c2554ed25307c619627b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Utility functions/structures used miscellaneous places in the project. </p>
@@ -208,6 +212,44 @@ template&lt;typename numtype &gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="a68a14ecf83e4c2554ed25307c619627b"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ElemType , typename PredType &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void CMR::util::erase_remove </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; ElemType &gt; &amp;&#160;</td>
+          <td class="paramname"><em>vec</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">PredType&#160;</td>
+          <td class="paramname"><em>pred</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Standardization of erase-remove idiom. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">vec</td><td>the vector to modify. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pred</td><td>the predicate to apply. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section post"><dt>Postcondition</dt><dd>deletes all elements of <code>vec</code> for which <code>pred</code> returns true. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a21d808208dde9ae0898f00d30de34eae"></a>
 <div class="memitem">
 <div class="memproto">

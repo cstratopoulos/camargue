@@ -21,6 +21,8 @@ var searchData=
   ['tour',['Tour',['../namespace_c_m_r_1_1_l_p.html#afd00f2eef86a805578156cdd9422bcd8aed53248dcc1e5db0dfdf71a5c745a54f',1,'CMR::LP']]],
   ['tour_5fage_5fcuts',['tour_age_cuts',['../class_c_m_r_1_1_sep_1_1_external_cuts.html#a74c17f94406ded698ed5120ae48e93a0',1,'CMR::Sep::ExternalCuts']]],
   ['tour_5fbase',['tour_base',['../struct_c_m_r_1_1_l_p_1_1_n_dpivot_handle.html#a182401d3c500f9112892f333e1ba38d4',1,'CMR::LP::NDpivotHandle']]],
+  ['tour_5fcompliant',['tour_compliant',['../class_c_m_r_1_1_a_b_c_1_1_branch_tour_find.html#ab9c03f28d23efd08939da6e2f67d410b',1,'CMR::ABC::BranchTourFind']]],
+  ['tour_5fedge_5ftracker',['tour_edge_tracker',['../class_c_m_r_1_1_a_b_c_1_1_branch_tour_find.html#aafa4cbbdcc7fc6529003f7d19aacb74c',1,'CMR::ABC::BranchTourFind']]],
   ['tour_5fedge_5fvec',['tour_edge_vec',['../class_c_m_r_1_1_graph_1_1_core_graph.html#a6e1be61af7f0280c31ac437b0f499862',1,'CMR::Graph::CoreGraph']]],
   ['tour_5flength',['tour_length',['../class_c_m_r_1_1_data_1_1_instance.html#a68a4d75436392f73a8afaf9191d8dbef',1,'CMR::Data::Instance']]],
   ['tour_5fslacks',['tour_slacks',['../class_c_m_r_1_1_sep_1_1_pool_cuts.html#ae57a82e9af7a84405aed9c3f56942e92',1,'CMR::Sep::PoolCuts']]],

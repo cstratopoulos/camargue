@@ -1,4 +1,4 @@
 <map id="CMR::Sep::ConcordeSeparator" name="CMR::Sep::ConcordeSeparator">
-<area shape="rect" id="node2" href="$class_c_m_r_1_1_sep_1_1_tour_graph.html" title="Wrapper to the Concorde CCtsp_lpgraph structure. " alt="" coords="5,5,159,32"/>
+<area shape="rect" id="node2" href="$class_c_m_r_1_1_sep_1_1_tour_graph.html" title="Wrapper to Concorde CCtsp_lpgraph for pricing cuts at tours. " alt="" coords="5,5,159,32"/>
 <area shape="rect" id="node3" href="$class_c_m_r_1_1_sep_1_1_l_pcut_list.html" title="Management of Concorde lpcut_in linked list. " alt="" coords="183,5,330,32"/>
 </map>

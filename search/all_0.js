@@ -20,14 +20,14 @@ var searchData=
   ['add_5ftour_5fclique',['add_tour_clique',['../class_c_m_r_1_1_sep_1_1_clique_bank.html#a95b220dd62eb8a1e6a3cb487309902c7',1,'CMR::Sep::CliqueBank']]],
   ['add_5fweb_5fedges',['add_web_edges',['../class_c_m_r_1_1_sep_1_1_d_pwitness.html#a43a68e2633382105747e652cb1b71795',1,'CMR::Sep::DPwitness']]],
   ['addbatch',['AddBatch',['../namespace_c_m_r_1_1_price.html#a905f74f299c651bb76cf9e560e3a7a6d',1,'CMR::Price']]],
-  ['adjlist',['AdjList',['../struct_c_m_r_1_1_graph_1_1_adj_list.html',1,'CMR::Graph']]],
+  ['added',['Added',['../class_c_m_r_1_1_a_b_c_1_1_branch_tour_find.html#aa1db9cbb2a12f57557ec036d5d8df5dea0a29f508158a896e33e3711b1164c5fa',1,'CMR::ABC::BranchTourFind']]],
   ['adjlist',['AdjList',['../struct_c_m_r_1_1_graph_1_1_adj_list.html#a5f856e14a541d16261d14aea188ff3c3',1,'CMR::Graph::AdjList::AdjList(int ncount, const std::vector&lt; Edge &gt; &amp;ref_elist)'],['../struct_c_m_r_1_1_graph_1_1_adj_list.html#a03c62cd92cb833a2114d2f2d2cb2c4c1',1,'CMR::Graph::AdjList::AdjList(int ncount, const std::vector&lt; EndPt_type &gt; &amp;elist)'],['../struct_c_m_r_1_1_graph_1_1_adj_list.html#a654c5cf054b1538c2a3b941385afe19e',1,'CMR::Graph::AdjList::AdjList(int ncount, const std::vector&lt; Edge &gt; &amp;ref_elist, const std::vector&lt; double &gt; &amp;ref_elist_caps, const std::vector&lt; int &gt; &amp;keep_indices)']]],
+  ['adjlist',['AdjList',['../struct_c_m_r_1_1_graph_1_1_adj_list.html',1,'CMR::Graph']]],
   ['adjobj',['AdjObj',['../struct_c_m_r_1_1_graph_1_1_adj_obj.html',1,'CMR::Graph']]],
   ['aggressive',['Aggressive',['../struct_c_m_r_1_1_solver_1_1_cut_sel.html#a0f192db7af36974d2e61c59bd0ca3128a2cd2d25218c8a92d9e32f9c0e98be8ee',1,'CMR::Solver::CutSel']]],
   ['atlower',['AtLower',['../namespace_c_m_r_1_1_l_p.html#a7078a69375aa317c312aad266f39d467a3c32b1930a61042c3e8c0cd821661582',1,'CMR::LP']]],
   ['attempt_5fsep',['attempt_sep',['../class_c_m_r_1_1_sep_1_1_meta_cuts.html#a38ac6c058d70871b1d88f3c42458cb10',1,'CMR::Sep::MetaCuts']]],
   ['atupper',['AtUpper',['../namespace_c_m_r_1_1_l_p.html#a7078a69375aa317c312aad266f39d467af1a50f1f3b76a04fb9da8f5bd9e4b85e',1,'CMR::LP']]],
   ['aug',['Aug',['../class_c_m_r_1_1_solver.html#ab355d8b6f7cf1da03074a37441659043',1,'CMR::Solver']]],
-  ['avail_5fdegrees',['avail_degrees',['../class_c_m_r_1_1_a_b_c_1_1_executor.html#a806f4b12ad2094f68fa02917062f9e7a',1,'CMR::ABC::Executor']]],
   ['avg_5fitcount',['avg_itcount',['../class_c_m_r_1_1_l_p_1_1_core_l_p.html#aa2556c0f067e39d28da1072ff4accd96',1,'CMR::LP::CoreLP']]]
 ];

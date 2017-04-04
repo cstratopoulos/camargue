@@ -1,3 +1,4 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$struct_c_m_r_1_1_l_p_1_1_relaxation_1_1solver__impl.html" title="CMR::LP::Relaxation\l::solver_impl" alt="" coords="5,5,152,47"/>
+<area shape="rect" id="node1" href="$class_c_m_r_1_1_l_p_1_1_relaxation.html" title="Class for storing an lp relaxation via interface to an lp solver. " alt="" coords="5,5,152,32"/>
+<area shape="rect" id="node2" href="$class_c_m_r_1_1_l_p_1_1_core_l_p.html" title="Class for storing the core lp associated to a TSP instance and pivoting. " alt="" coords="200,5,329,32"/>
 </map>
