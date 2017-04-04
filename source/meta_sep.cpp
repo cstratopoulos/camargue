@@ -102,8 +102,16 @@ bool MetaCuts::tighten_cuts()
         const HyperGraph &H = *it;
         lpcut_in old;
         lpcut_in *tight = NULL;
-        auto lpcut_guard = util::make_guard([&old]
-                                            { CCtsp_free_lpcut_in(&old); });
+        bool want_cut = false;
+        auto cutsguard = util::make_guard([&old, &tight, &want_cut]
+                                          {
+                                              CCtsp_free_lpcut_in(&old);
+                                              if (!want_cut) {
+                                                  CCtsp_free_lpcut_in(tight);
+                                                  CC_IFFREE(tight,
+                                                            CCtsp_lpcut_in);
+                                              }
+                                          });
 
         tight = CC_SAFE_MALLOC(1, CCtsp_lpcut_in);
         if (tight == NULL) {
@@ -128,19 +136,17 @@ bool MetaCuts::tighten_cuts()
         double tour_slack = 0.0;
 
         if (improve != 0) {
-            lp_slack = CCtsp_cutprice(&lg, tight, &ecap[0]);;
+            lp_slack = CCtsp_cutprice(&lg, tight, &ecap[0]);
             if (lp_slack <= -Epsilon::CutViol) {
                 if (filter_primal)
                     tour_slack = CCtsp_cutprice(TG.pass_ptr(), tight,
                                                 TG.tour_array());
                 if (tour_slack == 0.0) {
+                    want_cut = true;
                     try { found_cuts.emplace_back(tight, lp_slack); }
                     CMR_CATCH_PRINT_THROW("emplacing cut", err);
                 }
             }
-        } else {
-            CCtsp_free_lpcut_in(tight);
-            CC_IFFREE(tight, CCtsp_lpcut_in);
         }
     }
 
@@ -197,11 +203,11 @@ bool MetaCuts::find_cuts(Type meta_type)
     vector<double> &ecap = supp_data.support_ecap;
     int ecount = ecap.size();
 
-    auto cleanup = util::make_guard([&lg, &gg]
-                                    {
-                                        CCtsp_free_lpgraph (&lg);
-                                        CCcombs_GC_free_graph (&gg);
-                                    });
+    auto graph_cleanup = util::make_guard([&lg, &gg]
+                                          {
+                                              CCtsp_free_lpgraph (&lg);
+                                              CCcombs_GC_free_graph (&gg);
+                                          });
 
     CCtsp_init_lpgraph_struct(&lg);
     CCcombs_GC_init_graph(&gg);
@@ -271,21 +277,30 @@ bool MetaCuts::find_cuts(Type meta_type)
         }
 
         while (dd) {
+            lpcut_in *old_dd = dd;
             lpcut_in *ddnext = dd->next;
             double lp_slack = CCtsp_cutprice(&lg, dd, &ecap[0]);
             double tour_slack = 0.0;
+            bool want_cut = false;
+
+            auto ddg = util::make_guard([&old_dd, &want_cut]
+                                        {
+                                            if (!want_cut) {
+                                                CCtsp_free_lpcut_in(old_dd);
+                                                CC_IFFREE(old_dd,
+                                                          CCtsp_lpcut_in);
+                                            }
+                                        });
 
             if (lp_slack <= -Epsilon::CutViol) {
                 if (filter_primal)
                     tour_slack = CCtsp_cutprice(TG.pass_ptr(), dd,
                                                 TG.tour_array());
                 if (tour_slack == 0.0) {
+                    want_cut = true;
                     try { found_cuts.emplace_back(dd, lp_slack); }
                     CMR_CATCH_PRINT_THROW("emplacing cut", err);
                 }
-            } else {
-                CCtsp_free_lpcut_in(dd);
-                CC_IFFREE(dd, CCtsp_lpcut_in);
             }
             dd = ddnext;
         }
