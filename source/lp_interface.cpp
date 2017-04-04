@@ -106,9 +106,9 @@ Relaxation::solver_impl::solver_impl() try
     if (rval)
         throw cpx_err(rval, "CPXsetintparam dual pricing");
 
-    char unused;
+    string pname("unused");
 
-    lp = CPXcreateprob(env, &rval, &unused);
+    lp = CPXcreateprob(env, &rval, pname.c_str());
 
     if (rval) {
         throw cpx_err(rval, "CPXcreateprob");
