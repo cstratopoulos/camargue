@@ -1,0 +1,15 @@
+<map id="includes/separator.hpp" name="includes/separator.hpp">
+<area shape="rect" id="node2" href="$active__tour_8hpp.html" title="Monitoring the active tour in the solution process. " alt="" coords="886,155,997,181"/>
+<area shape="rect" id="node3" href="$datagroups_8hpp.html" title="Data group structures. " alt="" coords="1450,229,1561,256"/>
+<area shape="rect" id="node15" href="$graph_8hpp.html" title="Header for classes/structures/functions to work with graphs. " alt="" coords="1870,304,1949,331"/>
+<area shape="rect" id="node25" href="$process__cuts_8hpp.html" title="Structures for storing and processing cuts. " alt="" coords="1923,80,2048,107"/>
+<area shape="rect" id="node31" href="$karp_8hpp.html" title="Karp partitions of TSP instances. " alt="" coords="739,155,811,181"/>
+<area shape="rect" id="node19" href="$lp__interface_8hpp.html" title="Interface to the LP solver. " alt="" coords="776,229,891,256"/>
+<area shape="rect" id="node21" href="$lp__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for LPs. " alt="" coords="1067,304,1149,331"/>
+<area shape="rect" id="node4" href="$util_8hpp.html" title="Utility functions, macros, and structures. " alt="" coords="2117,386,2181,413"/>
+<area shape="rect" id="node13" href="$err__util_8hpp.html" title="ERROR HANDLING CLASSES AND ROUTINES. " alt="" coords="1622,304,1709,331"/>
+<area shape="rect" id="node20" href="$config_8hpp.html" title="Configuration macros. " alt="" coords="707,386,789,413"/>
+<area shape="rect" id="node22" href="$mirgroup_8hpp.html" title="Utility structures for running safe Gomory cut separation. " alt="" coords="621,304,718,331"/>
+<area shape="rect" id="node26" href="$cc__lpcuts_8hpp.html" title="Wrappers for Concorde LP structures and separators. " alt="" coords="1501,155,1603,181"/>
+<area shape="rect" id="node28" href="$cut__structs_8hpp_source.html" title="cut_structs.hpp" alt="" coords="2221,304,2333,331"/>
+</map>

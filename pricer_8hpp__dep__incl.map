@@ -1,0 +1,9 @@
+<map id="includes/pricer.hpp" name="includes/pricer.hpp">
+<area shape="rect" id="node2" href="$solver_8hpp.html" title="TSP Solver class header. " alt="" coords="171,80,306,107"/>
+<area shape="rect" id="node6" href="$price__exact_8cpp.html" title="Pricer implementations for exact lower bounds/edge elimination. " alt="" coords="331,80,488,107"/>
+<area shape="rect" id="node7" href="$price__gen_8cpp.html" title="Pricer implementations for generating negative reduced cost edges. " alt="" coords="512,80,659,107"/>
+<area shape="rect" id="node8" href="$price__recover_8cpp.html" title="Pricer implementations for recovering an infeasible LP. " alt="" coords="683,80,851,107"/>
+<area shape="rect" id="node3" href="$camargue_8cpp.html" title="The camargue main program. " alt="" coords="5,155,152,181"/>
+<area shape="rect" id="node4" href="$solver_8cpp.html" title="Implementation of higher level or public Solver methods. " alt="" coords="176,155,301,181"/>
+<area shape="rect" id="node5" href="$solver__loops_8cpp.html" title="Private Solver methods with recursive/loop calls. " alt="" coords="325,155,488,181"/>
+</map>
