@@ -74,12 +74,12 @@ BranchHistory::iterator QprefBrancher<q_pref>::next_prob()
     using std::cout;
     using std::endl;
 
-    if (verbose)
+    if (verbose > 1)
         cout << "Calling QprefBrancher::next_prob...." << endl;
 
     if (next_itr == branch_history.end())
         fetch_next();
-    else if (verbose)
+    else if (verbose > 1)
         cout << "....already set." << endl;
 
     BranchHistory::iterator result = next_itr;
@@ -94,18 +94,17 @@ void QprefBrancher<q_pref>::fetch_next()
     using std::cout;
     using std::endl;
 
-    if (verbose)
+    if (verbose > 1)
         cout << "Calling QprefBrancher::fetch_next..." << endl;
     if (branch_history.empty() || prob_q.empty()) {
-        cout << "set to END" << endl;
+        if (verbose > 1)
+            cout << "set to END" << endl;
         next_itr = branch_history.end();
         return;
     }
 
     next_itr = prob_q.top();
     prob_q.pop();
-    cout << "Set next_itr to " << bnode_brief(*next_itr) << " and popped"
-         << endl;
 }
 
 
