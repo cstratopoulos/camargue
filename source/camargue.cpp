@@ -67,8 +67,6 @@ static void usage(const std::string &fname);
 
 int main(int argc, char** argv) try
 {
-    proc_label();
-
     OptData opt_dat;
     CMR::OutPrefs outprefs;
 
@@ -85,6 +83,8 @@ int main(int argc, char** argv) try
     int &seed = opt_dat.seed;
     int &rand_nodes = opt_dat.rand_nodes;
     int &rand_grid = opt_dat.rand_grid;
+
+    proc_label();
 
     if (!tsp_fname.empty()) {
         if (tour_fname.empty())
@@ -283,7 +283,7 @@ static void usage(const std::string &fname)
 {
     cerr << "Usage: " << fname << " [-see below-] [-prob_file-]\n";
     cerr << "\t\t FLAG OPTIONS\n"
-         << "-B \t Show a jittering progress bar for piv values "
+         << "-B \t Show an 80-column progress bar for piv values "
          << "(incompatible w verbose).\n"
          << "-E \t Write tour edges to file (in addition to nodes).\n"
          << "-G \t GIF output: write each new tour to a distinct file.\n"
