@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Private Solver methods with recursive/loop calls.
+ * @brief Private Solver methods with loop calls.
  */
 
 #include "config.hpp"
@@ -37,11 +37,6 @@ using std::endl;
 using std::runtime_error;
 using std::logic_error;
 using std::exception;
-
-/// Controls aggressive separation of simple DP cuts.
-/// If true, a loop of exact standard SECs will be added to the LP to pivot
-/// into the subtour polytope before calling simple DP sep.
-#define SIMPLE_DP_EXSUB
 
 namespace CMR {
 
@@ -178,8 +173,8 @@ inline void Solver::place_pivot(double low_lim, double best_tourlen,
 #define CUT_PIV_CALL(sep_ptr, find_fn, cuts_q, description)     \
 try {                                                           \
     reset_separator(sep_ptr);                                   \
-    if (call_separator([&sep_ptr]()                             \
-                       { return sep_ptr->find_fn(); },          \
+    if (call_separator([&sep_ptr, this]()                       \
+                       { return sep_ptr->find_fn; },            \
                        sep_ptr->cuts_q(), piv, piv_stats)) {    \
         if (return_pivot(piv))                                  \
             return piv;                                         \
@@ -196,9 +191,8 @@ try {                                                           \
 #define META_SEP_PIV_CALL(meta_type, description)                       \
 try {                                                                   \
     reset_separator(meta_sep);                                          \
-    meta_sep->set_type(meta_type);                                      \
     if (call_separator([&meta_sep]()                                    \
-                       { return meta_sep->find_cuts(); },               \
+                       { return meta_sep->find_cuts(meta_type); },      \
                        meta_sep->metacuts_q(), piv, piv_stats)) {       \
         if (return_pivot(piv))                                          \
             return piv;                                                 \
@@ -227,10 +221,7 @@ PivType Solver::cut_and_piv(bool do_price)
     Data::SupportGroup &supp_data = core_lp.supp_data;
 
     unique_ptr<Sep::Separator> sep;
-    unique_ptr<Sep::PoolCuts> pool_sep;
     unique_ptr<Sep::MetaCuts> meta_sep;
-
-    bool did_tighten_pool = false;
 
     if (output_prefs.prog_bar) {
         std::fill(p_bar.begin(), p_bar.end(), ' ');
@@ -256,20 +247,12 @@ PivType Solver::cut_and_piv(bool do_price)
                  << core_lp.num_cols() << " cols" << endl;
         }
 
-        if (cut_sel.cutpool && core_lp.external_cuts().pool_count() != 0)
-            CUT_PIV_CALL(pool_sep, find_cuts, pool_q, "doing pool sep");
-
-        // tighten pool can be very slow, so only call it right after an
-        // augmenting pivot.
-        if (cut_sel.tighten_pool && core_lp.external_cuts().pool_count() != 0
-            && !did_tighten_pool && aug_chart.size() > 1) {
-            did_tighten_pool = true;
-
-            CUT_PIV_CALL(pool_sep, tighten_pool, tighten_q, "tightening pool");
-        }
+        if (cut_sel.cutpool)
+            CUT_PIV_CALL(sep, pool_sep(core_lp.ext_cuts), cutpool_q,
+                         "doing pool sep");
 
         if (cut_sel.segment)
-            CUT_PIV_CALL(sep, segment_sep, segment_q, "doing segment sep");
+            CUT_PIV_CALL(sep, segment_sep(), segment_q, "doing segment sep");
 
         if (cut_sel.connect && !supp_data.connected) {
             if (verbose)
@@ -303,15 +286,14 @@ PivType Solver::cut_and_piv(bool do_price)
         }
 
         if (cut_sel.fast2m)
-            CUT_PIV_CALL(sep, fast2m_sep, fastblossom_q, "doing fast2m sep");
+            CUT_PIV_CALL(sep, fast2m_sep(), fastblossom_q, "doing fast2m sep");
 
         if (cut_sel.blkcomb)
-            CUT_PIV_CALL(sep, blkcomb_sep, blockcomb_q, "doing blkcomb sep");
+            CUT_PIV_CALL(sep, blkcomb_sep(), blockcomb_q, "doing blkcomb sep");
 
         if (cut_sel.ex2m)
-            CUT_PIV_CALL(sep, exact2m_sep, exblossom_q, "doing exact 2m sep");
+            CUT_PIV_CALL(sep, exact2m_sep(), exblossom_q, "doing exact 2m sep");
 
-#ifdef SIMPLE_DP_EXSUB
         if (cut_sel.simpleDP) {
             bool found_ex = false;
             int exrounds = 0;
@@ -340,17 +322,14 @@ PivType Solver::cut_and_piv(bool do_price)
                      << " rounds, CC says pivot now in subtour polytope..."
                      << endl;
 
-            CUT_PIV_CALL(sep, simpleDP_sep, simpleDP_q, "doing simple DP sep");
+            CUT_PIV_CALL(sep, simpleDP_sep(), simpleDP_q,
+                         "doing simple DP sep");
         }
-#else
-        if (cut_sel.simpleDP && supp_data.connected)
-            CUT_PIV_CALL(sep, simpleDP_sep, simpleDP_q, "doing simple DP sep");
-#endif
 
         using MetaType = Sep::MetaCuts::Type;
 
         if (cut_sel.tighten)
-            CUT_PIV_CALL(meta_sep, tighten_cuts, metacuts_q,
+            CUT_PIV_CALL(meta_sep, tighten_cuts(), metacuts_q,
                          "tightening cuts");
 
         if (cut_sel.decker)
@@ -361,6 +340,14 @@ PivType Solver::cut_and_piv(bool do_price)
 
         if (cut_sel.teething)
             META_SEP_PIV_CALL(MetaType::Teething, "doing Teething sep");
+
+        if (cut_sel.tighten_pool)
+            CUT_PIV_CALL(sep, tighten_pool(core_lp.ext_cuts), cutpool_q,
+                         "tightening cut pool");
+
+        if (cut_sel.consec1)
+            CUT_PIV_CALL(sep, consec1_sep(core_lp.ext_cuts), consec1_q,
+                         "doing consec1 comb sep");
 
         if (cut_sel.localcuts) {
             bool lc_restart = false;
@@ -408,7 +395,7 @@ PivType Solver::cut_and_piv(bool do_price)
         unique_ptr<Sep::SafeGomory> gmi_sep;
 
         if (cut_sel.safeGMI && !do_price)
-            CUT_PIV_CALL(gmi_sep, find_cuts, gomory_q, "doing safe GMI sep");
+            CUT_PIV_CALL(gmi_sep, find_cuts(), gomory_q, "doing safe GMI sep");
 
 #endif
         double ph_init_prev = piv_stats.first_last_ratio;
@@ -632,15 +619,6 @@ void Solver::reset_separator(unique_ptr<Sep::Separator> &S)
                     tsp_instance.seed());
     S->filter_primal = !active_tour().tourless();
     S->verbose = output_prefs.verbose;
-}
-
-void Solver::reset_separator(std::unique_ptr<Sep::PoolCuts> &PS)
-{
-    util::ptr_reset(PS, core_lp.ext_cuts,
-                    core_graph.get_edges(), active_tour(),
-                    core_lp.supp_data);
-    PS->filter_primal = !active_tour().tourless();
-    PS->verbose = output_prefs.verbose;
 }
 
 void Solver::reset_separator(std::unique_ptr<Sep::MetaCuts> &MS)

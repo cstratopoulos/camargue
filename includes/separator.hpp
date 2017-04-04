@@ -11,6 +11,7 @@
 #include "datagroups.hpp"
 #include "karp.hpp"
 #include "graph.hpp"
+#include "hypergraph.hpp"
 
 #include <memory>
 #include <vector>
@@ -23,7 +24,6 @@ namespace Sep {
 /// Management of basic separation routines.
 class Separator {
 public:
-
     /// Construct a Separator using problem data.
     Separator(const std::vector<Graph::Edge> &core_edges_,
               const LP::ActiveTour &active_tour_,
@@ -40,6 +40,10 @@ public:
     bool connect_sep();
     bool exsub_sep();
 
+    bool pool_sep(ExternalCuts &EC);
+    bool tighten_pool(ExternalCuts &EC);
+    bool consec1_sep(ExternalCuts &EC);
+
     bool local_sep(int chunk_sz, bool sphere);
 
     LPcutList &segment_q()  { return seg_q; }
@@ -51,6 +55,9 @@ public:
 
     LPcutList &connect_cuts_q()  { return connect_q; }
     LPcutList &exact_sub_q() { return exsub_q; }
+
+    LPcutList &cutpool_q() { return pool_q; }
+    LPcutList &consec1_q() { return con1_q; }
 
     LPcutList &local_cuts_q() { return local_q; }
 
@@ -82,6 +89,9 @@ private:
 
     LPcutList connect_q;
     LPcutList exsub_q;
+
+    LPcutList pool_q;
+    LPcutList con1_q;
 
     LPcutList local_q;
 };

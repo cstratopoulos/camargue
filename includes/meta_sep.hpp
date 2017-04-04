@@ -33,28 +33,20 @@ public:
         Decker,
         Handling,
         Teething,
-        Tighten,
     };
 
-    /// Choose what kind of cuts will be found by find_cuts.
-    void set_type(Type t) { meta_type = t; }
-
-    bool find_cuts();
+    bool find_cuts(Type meta_type);
 
     bool tighten_cuts();
 
     LPcutList &metacuts_q() { return meta_q; }
 
-    using HGitr = std::vector<HyperGraph>::const_iterator;
-
     bool verbose = false;
     bool filter_primal = true;
 
 private:
-    Type meta_type = Type::Decker;
-
     /// Price all comb-like cuts in LP; return true iff some are of interest.
-    bool price_combs();
+    bool price_combs(bool tighten);
 
     /// Used by attempt_sep to determine if \p num_paths is high enough.
     bool above_threshold(int num_paths);
@@ -66,6 +58,8 @@ private:
     bool pure_comb(CCtsp_lpcut_in &c); //!< Is \p c a pure comb.
 
     std::unordered_map<Clique, double> clique_vals;
+
+    using HGitr = std::vector<HyperGraph>::const_iterator;
     std::vector<HGitr> interest_combs;
 
     const ExternalCuts &EC;

@@ -1,5 +1,6 @@
 #include "separator.hpp"
 #include "cc_lpcuts.hpp"
+#include "pool_sep.hpp"
 #include "simpleDP.hpp"
 #include "blossoms.hpp"
 #include "err_util.hpp"
@@ -203,12 +204,82 @@ bool Separator::exsub_sep() try
     throw runtime_error("Separator::connect_sep failed.");
 }
 
+bool Separator::pool_sep(ExternalCuts &EC) try
+{
+    set_TG();
+
+    PoolCuts pool_cuts(perm_elist, supp_data.support_ecap, TG, pool_q,
+                       EC.cc_pool, random_seed);
+    pool_cuts.filter_primal = filter_primal;
+
+    double poolt = util::zeit();
+    bool result = pool_cuts.find_cuts();
+    poolt = util::zeit() - poolt;
+
+    if (verbose) {
+        printf("\t%d pool cuts\t%.2fs\n", pool_q.size(), poolt);
+        cout << flush;
+    }
+
+    return result;
+} catch (const exception &e) {
+    cerr << e.what() << endl;
+    throw runtime_error("Separator::pool_sep failed");
+}
+
+bool Separator::tighten_pool(ExternalCuts &EC) try
+{
+    set_TG();
+
+    PoolCuts pool_cuts(perm_elist, supp_data.support_ecap, TG, pool_q,
+                       EC.cc_pool, random_seed);
+    pool_cuts.filter_primal = filter_primal;
+
+    double tightt = util::zeit();
+    bool result = pool_cuts.tighten_pool();
+    tightt = util::zeit() - tightt;
+
+    if (result) {
+        printf("\t%d tighten pool cuts\t%.2fs\n", pool_q.size(), tightt);
+        cout << flush;
+    }
+
+    return result;
+} catch (const exception &e) {
+    cerr << e.what() << endl;
+    throw runtime_error("Separator::pool_sep failed");
+}
+
+bool Separator::consec1_sep(ExternalCuts &EC) try
+{
+    set_TG();
+
+    PoolCuts pool_cuts(perm_elist, supp_data.support_ecap, TG, pool_q,
+                       EC.cc_pool, random_seed);
+    pool_cuts.filter_primal = filter_primal;
+
+    double c1t = util::zeit();
+    bool result = pool_cuts.find_consec1(EC.tightcuts);
+    c1t = util::zeit() - c1t;
+
+    if (result){
+        printf("\t%d consec1 combs\t%.2fs\n", con1_q.size(), c1t);
+        cout << flush;
+    }
+
+    return result;
+} catch (const exception &e) {
+    cerr << e.what() << endl;
+    throw runtime_error("Separator::consec1_sep failed");
+}
+
 bool Separator::local_sep(int chunk_sz, bool sphere) try
 {
     set_TG();
 
     LocalCuts local_cuts(perm_elist, supp_data.support_ecap, TG, local_q,
                          random_seed);
+    local_cuts.filter_primal = filter_primal;
     local_cuts.current_max = chunk_sz;
     local_cuts.spheres = sphere;
 

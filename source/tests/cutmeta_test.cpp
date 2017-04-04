@@ -52,9 +52,6 @@ SCENARIO ("Searching for cut metamorphoses",
                       prob == "a280" ? 99 : 999, prefs);
 
         solver.cutting_loop(false, false, true);
-
-        cout << "Ran cutting loop, pool has size "
-             << solver.get_core_lp().external_cuts().pool_count() << endl;
     THEN ("We can search for cut metamorphoses") {
         const auto &core_graph = solver.graph_info();
         const auto &active_tour = solver.active_tour();
@@ -73,8 +70,7 @@ SCENARIO ("Searching for cut metamorphoses",
             Sep::MetaCuts mcuts(ext_cuts, core_graph.get_edges(), active_tour,
                                 s_dat);
             bool found_meta = false;
-            mcuts.set_type(m);
-            REQUIRE_NOTHROW(found_meta = mcuts.find_cuts());
+            REQUIRE_NOTHROW(found_meta = mcuts.find_cuts(m));
             if (!found_meta)
                 continue;
 
@@ -98,7 +94,6 @@ SCENARIO ("Searching for cut metamorphoses",
         bool found_tighten = false;
         Sep::MetaCuts mcuts(ext_cuts, core_graph.get_edges(), active_tour,
                             s_dat);
-        mcuts.set_type(MetaType::Tighten);
         REQUIRE_NOTHROW(found_tighten = mcuts.tighten_cuts());
 
         if (found_tighten) {

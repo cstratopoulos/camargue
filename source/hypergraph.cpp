@@ -1,5 +1,6 @@
 #include "hypergraph.hpp"
 #include "err_util.hpp"
+#include "util.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -345,6 +346,8 @@ try : node_count(tour.size()), clique_bank(tour, perm), tooth_bank(tour, perm),
     if (CCtsp_init_cutpool(&ncount, NULL, &cc_pool))
         throw runtime_error("CCtsp_init_cutpool failed");
 
+    CCpq_cuttree_init(&tightcuts);
+
     if (CCpq_cuttree_trivial(&tightcuts, ncount, 0)) {
         CCtsp_free_cutpool(&cc_pool);
         throw runtime_error("CCpq_cuttree_trivial failed");
@@ -460,8 +463,6 @@ void ExternalCuts::del_cuts(vector<int> &delset)
 {
     using CutType = HyperGraph::Type;
 
-    int poolcount = 0;
-
     for (int i = 0; i < cuts.size(); ++i) {
         HyperGraph &H = cuts[i];
         CutType Htype = H.cut_type();
@@ -470,23 +471,21 @@ void ExternalCuts::del_cuts(vector<int> &delset)
             continue;
 
         if (delset[i + node_count] == 3) {
-            if (Htype == CutType::Comb || Htype == CutType::Domino) {
-                H.t_age = LP::CutAge::Babby;
-                H.p_age = LP::CutAge::Babby;
-                H.transfer_source(pool_cliques);
-                cut_pool.emplace_back(std::move(H));
-                ++poolcount;
+            if (Htype == CutType::Domino) { //unimplemented for now
+                // H.t_age = LP::CutAge::Babby;
+                // H.p_age = LP::CutAge::Babby;
+                // H.transfer_source(pool_cliques);
+                // cut_pool.emplace_back(std::move(H));
+            } else if (Htype == CutType::Comb) {
+                pool_add(std::move(H));
             }
             delset[i + node_count] = 1;
         }
-
         H.sense = 'X';
     }
 
-    cuts.erase(std::remove_if(cuts.begin(), cuts.end(),
-                              [](const HyperGraph &H)
-                              { return H.sense == 'X'; }),
-               cuts.end());
+    util::erase_remove(cuts, [](const HyperGraph &H)
+                       { return H.sense == 'X'; });
 }
 
 
@@ -546,14 +545,13 @@ void ExternalCuts::pool_add(HyperGraph H)
     }
 
     CCtsp_lpcut_in c;
+    auto c_guard = util::make_guard([&c] { CCtsp_free_lpcut_in(&c); });
 
     try { c = H.to_lpcut_in(H.source_bank->ref_perm(), true); }
     CMR_CATCH_PRINT_THROW("getting lpcut_in from HyperGraph", err);
 
-    if (CCtsp_add_to_cutpool_lpcut_in(cc_pool, &c)) {
-        CCtsp_free_lpcut_in(&c);
+    if (CCtsp_add_to_cutpool_lpcut_in(cc_pool, &c))
         throw runtime_error("CCtsp_add_to_cutpool_lpcut_in failed");
-    }
 }
 
 

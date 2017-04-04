@@ -161,20 +161,19 @@ public:
     }
 
     const std::vector<HyperGraph> &get_cuts() const { return cuts; }
-    const std::vector<HyperGraph> &get_cutpool() const { return cut_pool; }
 
     int cut_count() const { return cuts.size(); }
-    int pool_count() const { return cut_pool.size(); }
+
+    int pool_count() const { return cc_pool ? cc_pool->cutcount : 0; }
 
     const CliqueBank &get_cbank() const { return clique_bank; }
-    const CliqueBank &get_pool_cbank() const { return pool_cliques; }
     const ToothBank &get_tbank() const { return tooth_bank; };
 
     /// Get the column associated with an edge to be added to the lp.
     void get_col(int end0, int end1, std::vector<int> &cmatind,
                  std::vector<double> &cmatval) const;
 
-    friend class PoolCuts;
+    friend class Separator;
 
 private:
     void pool_add(HyperGraph H);
@@ -193,6 +192,7 @@ private:
     std::vector<HyperGraph> cut_pool; //!< Pool of cuts pruned from CoreLP.
 
     CCtsp_lpcuts *cc_pool; //!< Concorde rep of cut pool.
+
     CCtsp_cuttree tightcuts; //!< Cut tree for separation routines.
 
 };

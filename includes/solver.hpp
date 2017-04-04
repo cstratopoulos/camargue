@@ -12,7 +12,6 @@
 #include "karp.hpp"
 #include "datagroups.hpp"
 #include "separator.hpp"
-#include "pool_sep.hpp"
 #include "meta_sep.hpp"
 #include "abc_nodesel.hpp"
 
@@ -106,6 +105,8 @@ public:
         bool handling = false;
         bool teething = false;
 
+        bool consec1 = false;
+
         bool tighten = false;
         bool tighten_pool = false;
         ///@}
@@ -157,7 +158,6 @@ private:
      */
     ///@{
     void reset_separator(std::unique_ptr<Sep::Separator> &S);
-    void reset_separator(std::unique_ptr<Sep::PoolCuts> &PS);
     void reset_separator(std::unique_ptr<Sep::MetaCuts> &MS);
 
 #if CMR_HAVE_SAFEGMI

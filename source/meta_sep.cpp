@@ -33,8 +33,6 @@ std::ostream &operator<<(std::ostream &os, MetaCuts::Type t)
         os << "Handling";
     else if (t == Mtype::Teething)
         os << "Teething";
-    else if (t == Mtype::Tighten)
-        os << "Tighten";
     else
         throw std::logic_error("Unimplemented MetaCuts::Type <<");
 
@@ -62,13 +60,12 @@ MetaCuts::MetaCuts(const ExternalCuts &EC_,
 
 bool MetaCuts::tighten_cuts()
 {
-    meta_type = Type::Tighten;
     double st = util::zeit();
 
     runtime_error err("Problem in MetaCuts::tighten_cuts");
 
     try {
-        if (!price_combs())
+        if (!price_combs(true))
             return false;
     } CMR_CATCH_PRINT_THROW("searching for combs within tolerance", err);
 
@@ -150,7 +147,7 @@ bool MetaCuts::tighten_cuts()
     if (found_cuts.empty()) {
         st = util::zeit() - st;
         if (verbose)
-            cout << "\tFound 0 " << meta_type << " cuts in "
+            cout << "\tFound 0 Tighten LP cuts in "
                  << setprecision(2) << st << "s" << setprecision(6) << endl;
         return false;
     }
@@ -173,28 +170,24 @@ bool MetaCuts::tighten_cuts()
     st = util::zeit() - st;
 
     if (verbose)
-        cout << "\tEnqueued " << meta_q.size() << " " << meta_type
-             << " cuts in " << setprecision(2) << st << "s" << setprecision(6)
-             << endl;
+        cout << "\tEnqueued " << meta_q.size() << " Tighten LP cuts in "
+             << setprecision(2) << st << "s" << setprecision(6) << endl;
 
     return true;
 }
 
-bool MetaCuts::find_cuts()
+bool MetaCuts::find_cuts(Type meta_type)
 {
-    if (meta_type == Type::Tighten)
-        throw logic_error("Invoked find_cuts with Tighten");
-
     runtime_error err("Problem in MetaCuts::find_cuts");
     double st = util::zeit();
 
-    try {
-        if (!attempt_sep())
-            return false;
+    try { //always attempt for Decker cuts
+        if (meta_type != Type::Decker && !attempt_sep())
+                return false;
     } CMR_CATCH_PRINT_THROW("testing LP solution", err);
 
     try {
-        if (!price_combs())
+        if (!price_combs(false))
             return false;
     } CMR_CATCH_PRINT_THROW("searching for combs within tolerance", err);
 
@@ -332,7 +325,7 @@ bool MetaCuts::find_cuts()
     return true;
 }
 
-bool MetaCuts::price_combs()
+bool MetaCuts::price_combs(bool tighten)
 {
     runtime_error err("Problem in MetaCuts::price_combs");
 
@@ -340,7 +333,7 @@ bool MetaCuts::price_combs()
 
     const vector<HyperGraph> &lp_cuts = EC.get_cuts();
 
-    double tolerance = (meta_type == Type::Tighten) ? 0.5 : 10;
+    double tolerance = tighten ? 0.5 : 10;
 
     for (HGitr it = lp_cuts.begin(); it != lp_cuts.end(); ++it) {
         const HyperGraph &H = *it;
@@ -376,9 +369,6 @@ bool MetaCuts::above_threshold(int num_paths)
 /// @remark A rewrite of static int no_tighten from concorde/TSP/control.c
 bool MetaCuts::attempt_sep()
 {
-    if (meta_type == Type::Decker)
-        return true;
-
     CC_SRKgraph G;
     auto cleanup = util::make_guard([&G]{ CCcut_SRK_free_graph(&G); });
 

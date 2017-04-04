@@ -2,6 +2,7 @@
 
 #ifdef CMR_DO_TESTS
 
+#include "separator.hpp"
 #include "pool_sep.hpp"
 #include "datagroups.hpp"
 #include "solver.hpp"
@@ -152,7 +153,7 @@ SCENARIO ("Experimenting with CutMonitor metrics",
 }
 
 SCENARIO ("Pricing cuts from a cutpool",
-          "[Sep][PoolCuts][price_cuts][tighten_pool]") {
+          "[Sep][PoolCuts][pool_sep][tighten_pool]") {
     using namespace CMR;
     using ProbPair = std::pair<string, int>;
 
@@ -187,27 +188,7 @@ SCENARIO ("Pricing cuts from a cutpool",
                 Sep::ExternalCuts &EC =
                 const_cast<Sep::ExternalCuts &>(core.external_cuts());
 
-
-                const vector<Sep::HyperGraph> &pool = EC.get_cutpool();
-                if (pool.empty())
-                    continue;
-
-                int numcomb = 0;
-                int numdp = 0;
-                bool found_other = false;
-                using CutType = Sep::HyperGraph::Type;
-                for (const Sep::HyperGraph &H : pool)
-                    if (H.cut_type() == CutType::Comb)
-                        ++ numcomb;
-                    else if (H.cut_type() == CutType::Domino)
-                        ++numdp;
-                    else
-                        found_other = true;
-
-                REQUIRE_FALSE(found_other);
-                cout << "\tPool has " << pool.size() << " cuts" << endl;
-                cout << "\t" << numcomb << " combs, " << numdp << " dominos."
-                     << endl;
+                core.primal_opt();
 
                 vector<double> lp_vec = core.lp_vec();
 
@@ -215,15 +196,13 @@ SCENARIO ("Pricing cuts from a cutpool",
                 vector<int> island;
 
                 Data::SupportGroup s_dat(edges, lp_vec, island, G.node_count());
-                Sep::PoolCuts pool_sep(EC, edges, solver.active_tour(),
-                                       s_dat);
-                pool_sep.verbose = 2;
+                Data::KarpPartition kpart;
+                Sep::Separator sep(G.get_edges(), solver.active_tour(),
+                                   s_dat, kpart, 99);
+                sep.verbose = true;
 
                 bool found_pool = false;
-                double pt = util::zeit();
-                REQUIRE_NOTHROW(found_pool = pool_sep.price_cuts(false));
-                pt = util::zeit() - pt;
-                cout << "\tPriced pool in " << pt << "s\n";
+                REQUIRE_NOTHROW(found_pool = sep.pool_sep(EC));
 
                 if (found_pool)
                     cout << "\tViolated primal cuts in pool.\n\n";
@@ -231,51 +210,13 @@ SCENARIO ("Pricing cuts from a cutpool",
                     cout << "\tNo violated primal cuts in pool.\n\n";
                 }
 
-                bool found_primal = false;
-                const vector<double> &lp_slacks = pool_sep.get_lp_slacks();
-                const vector<double> &tour_slacks = pool_sep.get_tour_slacks();
-
-                for (int i = 0; i < lp_slacks.size(); ++i) {
-                    const Sep::HyperGraph &H = pool[i];
-                    double pool_lp_slack = lp_slacks[i];
-                    double pool_tour_slack = tour_slacks[i];
-                    double rhs = H.get_rhs();
-                    LP::SparseRow R;
-
-                    H.get_coeffs(edges, R.rmatind, R.rmatval);
-
-                    double lp_activity = Sep::get_activity(s_dat.lp_vec, R);
-                    double tour_activity = Sep::get_activity(solver.best_info()
-                                                             .best_tour_edges,
-                                                             R);
-                    double manual_lp_slack;
-                    double manual_tour_slack;
-                    string sense_str = "\0";
-
-                    if (H.get_sense() == 'L') {
-                        manual_lp_slack = rhs - lp_activity;
-                        manual_tour_slack = rhs - tour_activity;
-                        sense_str = " <= ";
-                    } else if (H.get_sense() == 'G') {
-                        sense_str = " >= ";
-                        manual_lp_slack = lp_activity - rhs;
-                        manual_tour_slack = tour_activity - rhs;
-                    }
-
-                    INFO("Cut type " << H.cut_type());
-                    INFO("LP: " << lp_activity << sense_str << rhs) ;
-                    INFO("Tour: " << tour_activity << sense_str << rhs);
-                    CHECK(manual_lp_slack == Approx(pool_lp_slack));
-                    CHECK(manual_tour_slack == Approx(pool_tour_slack));
-                    CHECK(manual_tour_slack >= 0);
-                    if (manual_lp_slack <= -Epsilon::CutViol &&
-                        tour_activity == rhs)
-                        found_primal = true;
-                }
-                REQUIRE(found_primal == found_pool);
             AND_THEN("We can search for tighten pool cuts") {
                 bool found_tight = false;
-                REQUIRE_NOTHROW(found_tight = pool_sep.tighten_pool());
+                REQUIRE_NOTHROW(found_tight = sep.tighten_pool(EC));
+                AND_THEN("We can search for consec1s combs") {
+                    bool found_con1 = false;
+                    REQUIRE_NOTHROW(found_con1 = sep.consec1_sep(EC));
+                }
             }
             }
         }
