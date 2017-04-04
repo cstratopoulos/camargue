@@ -20,6 +20,10 @@
 #include <utility>
 #include <vector>
 
+extern "C" {
+#include <concorde/INCLUDE/tsp.h>
+}
+
 namespace CMR {
 namespace Sep {
 
@@ -124,6 +128,8 @@ public:
     /// Construct ExternalCuts with reference tour and perm.
     ExternalCuts(const std::vector<int> &tour, const std::vector<int> &perm);
 
+    ~ExternalCuts();
+
     /// Add a Concorde cut.
     void add_cut(const CCtsp_lpcut_in &cc_lpcut,
                  const std::vector<int> &current_tour);
@@ -171,6 +177,8 @@ public:
     friend class PoolCuts;
 
 private:
+    void pool_add(HyperGraph H);
+
     /// Number of nodes in the Instance being tracked.
     /// Used to compute offsets for indices of cuts from LP::Relaxation.
     const int node_count;
@@ -183,6 +191,9 @@ private:
     std::vector<HyperGraph> cuts; //!< List of the cuts in the CoreLP.
 
     std::vector<HyperGraph> cut_pool; //!< Pool of cuts pruned from CoreLP.
+
+    CCtsp_lpcuts *cc_pool; //!< Concorde rep of cut pool.
+    CCtsp_cuttree tightcuts; //!< Cut tree for separation routines.
 
 };
 

@@ -9,6 +9,10 @@
 
 #include <cmath>
 
+extern "C" {
+#include <concorde/INCLUDE/cuttree.h>
+}
+
 using std::unordered_map;
 using std::vector;
 using std::pair;
@@ -337,9 +341,23 @@ ExternalCuts::ExternalCuts(const vector<int> &tour, const vector<int> &perm)
 try : node_count(tour.size()), clique_bank(tour, perm), tooth_bank(tour, perm),
       pool_cliques(tour, perm)
 {
+    int ncount = node_count;
+    if (CCtsp_init_cutpool(&ncount, NULL, &cc_pool))
+        throw runtime_error("CCtsp_init_cutpool failed");
+
+    if (CCpq_cuttree_trivial(&tightcuts, ncount, 0)) {
+        CCtsp_free_cutpool(&cc_pool);
+        throw runtime_error("CCpq_cuttree_trivial failed");
+    }
 } catch (const exception &e) {
     cerr << e.what() << endl;
     throw runtime_error("ExternalCuts constructor failed.");
+}
+
+ExternalCuts::~ExternalCuts()
+{
+    CCtsp_free_cutpool(&cc_pool);
+    CCpq_cuttree_freetree(&tightcuts);
 }
 
 /**
@@ -515,6 +533,27 @@ void ExternalCuts::get_col(const int end0, const int end1,
             }
         }
     } CMR_CATCH_PRINT_THROW("Couldn't push back column coeffs/inds", err);
+}
+
+void ExternalCuts::pool_add(HyperGraph H)
+{
+    runtime_error err("Problem in ExternalCuts::pool_add");
+
+    if (H.cut_type() != HyperGraph::Type::Comb) {
+        cerr << "Tried to add cut of type " << H.cut_type() << " to CC pool"
+             << endl;
+        throw err;
+    }
+
+    CCtsp_lpcut_in c;
+
+    try { c = H.to_lpcut_in(H.source_bank->ref_perm(), true); }
+    CMR_CATCH_PRINT_THROW("getting lpcut_in from HyperGraph", err);
+
+    if (CCtsp_add_to_cutpool_lpcut_in(cc_pool, &c)) {
+        CCtsp_free_lpcut_in(&c);
+        throw runtime_error("CCtsp_add_to_cutpool_lpcut_in failed");
+    }
 }
 
 

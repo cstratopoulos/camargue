@@ -3,8 +3,8 @@
  * @brief Wrappers for Concorde cut structures/separators.
  */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef CMR_CC_LPCUTS_HPP
-#define CMR_CC_LPCUTS_HPP
+#ifndef CMR_CC_LPCUTS_H
+#define CMR_CC_LPCUTS_H
 
 #include "graph.hpp"
 #include "datagroups.hpp"
