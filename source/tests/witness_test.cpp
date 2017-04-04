@@ -84,7 +84,7 @@ SCENARIO("Finding simple DP inequalities via karp partition witnesses",
 
                 for (int i = 0; i < kpart.num_parts(); ++i) {
                     double sep = util::zeit();
-                    Sep::DPwitness dpgraph(cands, kpart[i]);
+                    Sep::DPwitness dpgraph(cands, kpart[i], 99);
                     Sep::CutQueue<Sep::dominoparity> dp_q(25);
 
                     REQUIRE_NOTHROW(dpgraph.simple_DP_sep(dp_q));

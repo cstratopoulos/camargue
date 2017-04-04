@@ -129,7 +129,7 @@ SCENARIO ("Comparing pivot protocols with round of cuts",
                 Data::KarpPartition kpart;
 
                 Sep::Separator sep(core_graph.get_edges(),
-                                   core.get_active_tour(), s_dat, kpart);
+                                   core.get_active_tour(), s_dat, kpart, 99);
 
                 core.pivot_back(false);
 

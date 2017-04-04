@@ -165,7 +165,7 @@ SCENARIO ("Benchmarking rounds of cuts",
                     unique_ptr<Sep::Separator> sep =
                     util::make_unique<Sep::Separator>(core_graph.get_edges(),
                                                       core.get_active_tour(),
-                                                      s_dat, kpart);
+                                                      s_dat, kpart, 99);
 
                     if (sep->connect_sep()) {
                         core.pivot_back(false);
@@ -187,7 +187,7 @@ SCENARIO ("Benchmarking rounds of cuts",
 
                         util::ptr_reset(sep, core_graph.get_edges(),
                                         core.get_active_tour(),
-                                        s_dat, kpart);
+                                        s_dat, kpart, 99);
                     }
 
                     if (sep->fast2m_sep()) {
@@ -211,7 +211,7 @@ SCENARIO ("Benchmarking rounds of cuts",
                                                    ncount);
                         util::ptr_reset(sep, core_graph.get_edges(),
                                         core.get_active_tour(),
-                                        s_dat, kpart);
+                                        s_dat, kpart, 99);
 
                     }
 
@@ -234,7 +234,7 @@ SCENARIO ("Benchmarking rounds of cuts",
                                                    ncount);
                         util::ptr_reset(sep, core_graph.get_edges(),
                                         core.get_active_tour(),
-                                        s_dat, kpart);
+                                        s_dat, kpart, 99);
                     }
             }
         }
@@ -281,7 +281,7 @@ SCENARIO ("Performing single pivots",
                             Data::KarpPartition kpart;
                             Sep::Separator sep(core_graph.get_edges(),
                                                core.get_active_tour(), s_dat,
-                                               kpart);
+                                               kpart, 99);
 
                             bool found_some = false;
 

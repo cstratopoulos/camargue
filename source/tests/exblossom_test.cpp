@@ -103,7 +103,7 @@ SCENARIO ("Primal exact blossom separation",
                     Data::KarpPartition kpart;
 
                     Sep::Separator sep(core_graph.get_edges(), act_tour, s_dat,
-                                       kpart);
+                                       kpart, 99);
 
                     int found_fast = sep.fast2m_sep();
                     INFO("Known issue: ExBlossoms misses some fast blossoms");
