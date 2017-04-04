@@ -366,9 +366,10 @@ PivType Solver::cut_and_piv(bool do_price)
             bool lc_restart = false;
             for (int chk = 8; chk <= Sep::LocalCuts::MaxChunkSize; ++chk) {
                 reset_separator(sep);
-                sep->lc_chunk = chk;
+                bool do_sphere = false;
 
-                if (call_separator([&sep]() { return sep->local_sep(); },
+                if (call_separator([&sep, chk, do_sphere]()
+                                   { return sep->local_sep(chk, do_sphere); },
                                    sep->local_cuts_q(), piv, piv_stats)) {
                     if (return_pivot(piv))
                         return piv;
@@ -384,10 +385,10 @@ PivType Solver::cut_and_piv(bool do_price)
 
             for (int chk = 8; chk <= Sep::LocalCuts::MaxChunkSize; ++chk) {
                 reset_separator(sep);
-                sep->lc_chunk = chk;
-                sep->lc_sphere = true;
+                bool do_sphere = true;
 
-                if (call_separator([&sep]() { return sep->local_sep(); },
+                if (call_separator([&sep, chk, do_sphere]()
+                                   { return sep->local_sep(chk, do_sphere); },
                                    sep->local_cuts_q(), piv, piv_stats)) {
                     if (return_pivot(piv))
                         return piv;
@@ -627,7 +628,8 @@ PivType Solver::frac_recover()
 void Solver::reset_separator(unique_ptr<Sep::Separator> &S)
 {
     util::ptr_reset(S, core_graph.get_edges(), active_tour(),
-                    core_lp.supp_data, karp_part);
+                    core_lp.supp_data, karp_part,
+                    tsp_instance.seed());
     S->filter_primal = !active_tour().tourless();
     S->verbose = output_prefs.verbose;
 }

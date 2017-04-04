@@ -22,10 +22,11 @@ using IntPair = std::pair<int, int>;
 namespace Sep {
 
 DPwitness::DPwitness(CandidateTeeth &cands,
-                     const vector<int> &partition_nodes)
+                     const vector<int> &partition_nodes, int seed)
 try :
 light_teeth(vector<vector<SimpleTooth>>(cands.light_teeth.size())),
-supp_dat(cands.supp_dat), perm(cands.active_tour.tour_perm()), CC_gh_q(1000)
+supp_dat(cands.supp_dat), perm(cands.active_tour.tour_perm()), CC_gh_q(1000),
+random_seed(seed)
 {
     CCcut_GHtreeinit(&gh_tree);
 
@@ -198,9 +199,7 @@ void DPwitness::build_gh_tree()
     int markcount = odd_nodes_list.size();
 
     CCrandstate rstate;
-    int seed = 99;
-
-    CCutil_sprand(seed, &rstate);
+    CCutil_sprand(random_seed, &rstate);
 
     if (CCcut_gomory_hu(&gh_tree, ncount, ecount, &cut_elist[0], &cut_ecap[0],
                         markcount, &odd_nodes_list[0], &rstate)) {

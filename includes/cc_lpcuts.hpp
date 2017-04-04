@@ -1,8 +1,7 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/** @file
- * @brief Wrappers for Concorde LP structures and separators.
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
+ * @file
+ * @brief Wrappers for Concorde cut structures/separators.
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_CC_LPCUTS_HPP
 #define CMR_CC_LPCUTS_HPP
@@ -10,12 +9,14 @@
 #include "graph.hpp"
 #include "datagroups.hpp"
 
+#include <stdexcept>
+#include <string>
+#include <memory>
+#include <vector>
+
 extern "C" {
 #include <concorde/INCLUDE/tsp.h>
 }
-
-#include <memory>
-#include <vector>
 
 
 namespace CMR {
@@ -47,8 +48,8 @@ public:
     int node_count() const { return L.ncount; }
 
 private:
-  std::vector<double> d_tour;
-  CCtsp_lpgraph L;
+    std::vector<double> d_tour;
+    CCtsp_lpgraph L;
 };
 
 /// Management of Concorde lpcut_in linked list.
@@ -92,23 +93,16 @@ private:
 };
 
 
-/** Abstract base class for calling Concorde separation routines.
- * Separator classes based on separation routines from Concorde should derive
- * from this class and provide an implementation of find_cuts which calls
- * an appropriate separation routine or sequence of routines. See FastBlossoms,
- * BlockCombs, or SegmentCuts for examples.
- */
-class ConcordeSeparator {
+/// Abstract base class for calling Concorde separation routines.
+/// See ConcordeSeparator and type aliases for sample usage, or LocalCuts.
+class CCsepBase {
 public:
-    ConcordeSeparator(std::vector<int> &supp_elist,
-                      std::vector<double> &supp_ecap,
-                      TourGraph &_TG, Sep::LPcutList &_cutq) :
+    CCsepBase(std::vector<int> &supp_elist,
+              std::vector<double> &supp_ecap,
+              TourGraph &_TG, Sep::LPcutList &_cutq) :
         elist(supp_elist), ecap(supp_ecap), TG(_TG), cutq(_cutq) {}
 
-    /** The call to the separation routine.
-     * @returns `true` if cuts are found, `false` otherwise.
-     * @throws std::runtime_error if a call to a concorde routine fails.
-     */
+    /// Call the separation routine, returning true iff cuts are found.
     virtual bool find_cuts() = 0;
 
     bool filter_primal = true; //!< Should only tight cuts be kept.
@@ -122,71 +116,112 @@ protected:
     Sep::LPcutList &cutq;
 };
 
-/// Exact separation of segment cut subtours.
-class SegmentCuts : public ConcordeSeparator {
-public:
-    SegmentCuts(std::vector<int> &elist, std::vector<double> &ecap,
-                TourGraph &TG, Sep::LPcutList &cutq) :
-        ConcordeSeparator(elist, ecap, TG, cutq) {}
-
-    /** Finds subtours arising from intervals of the current best tour. */
-    bool find_cuts();
-};
-
-/// Standard separation of connect cuts.
-class ConnectCuts : public ConcordeSeparator {
-public:
-    ConnectCuts(std::vector<int> &elist, std::vector<double> &ecap,
-                TourGraph &TG, Sep::LPcutList &cutq) :
-        ConcordeSeparator(elist, ecap, TG, cutq) {}
-
-    bool find_cuts();
-};
-
-/// Exact standard separation of subtour inequalities.
-class ExactSub : public ConcordeSeparator {
-public:
-    ExactSub(std::vector<int> &elist, std::vector<double> &ecap,
-             TourGraph &TG, Sep::LPcutList &cutq) :
-        ConcordeSeparator(elist, ecap, TG, cutq) {}
-
-    bool find_cuts(); //!< Find subtour cuts.
-};
-
-/// Separation of comb inequalities by block comb heuristic.
-class BlockCombs : public ConcordeSeparator {
-public:
-    BlockCombs(std::vector<int> &elist, std::vector<double> &ecap,
-               TourGraph &TG, Sep::LPcutList &cutq) :
-        ConcordeSeparator(elist, ecap, TG, cutq) {}
-
-    bool find_cuts();
-};
-
-/// Separation of blossoms via fast odd-component based heuristics.
-class FastBlossoms : public ConcordeSeparator {
-public:
-    FastBlossoms(std::vector<int> &elist, std::vector<double> &ecap,
-                 TourGraph &TG, Sep::LPcutList &cutq) :
-        ConcordeSeparator(elist, ecap, TG, cutq) {}
-
-    bool find_cuts();
-};
-
 /// Primal separation of non-template local cuts via standard heuristics.
-class LocalCuts : public ConcordeSeparator {
+class LocalCuts : public CCsepBase {
 public:
     LocalCuts(std::vector<int> &elist, std::vector<double> &ecap,
-              TourGraph &TG, Sep::LPcutList &cutq) :
-        ConcordeSeparator(elist, ecap, TG, cutq) {}
+              TourGraph &TG, Sep::LPcutList &cutq, int seed) :
+        CCsepBase(elist, ecap, TG, cutq), random_seed(seed) {}
 
     bool find_cuts(); //!< Returns true if tight local cuts are found.
 
     static constexpr int MaxChunkSize = 16;
     int current_max = 8;
-    int random_seed = 99;
+    int random_seed;
     bool spheres = false;
 };
+
+/// Alias declaration for Concorde separator call prototype.
+using CCsepCall = decltype(&CCtsp_segment_cuts);
+
+/** Class template for straightforward Concorde separation routines.
+ * @tparam sep_fn the Concorde function to call.
+ * @tparam check_filter_primal if false, the value CCsepBase#filter_primal
+ * will be disgregarded: no primal filtering ever takes place. Useful for
+ * SegmentCuts, where the separation routine is already primal, or for other
+ * SEC routines where we only invoke them if we want non-tight cuts.
+ * @tparam fn_name the name of the function, in case an error message needs
+ * to be printed.
+ * This class template can be used to add Concorde separators to Camargue
+ * in a simple way. See type aliases SegmentCuts, FastBlossoms, etc. for sample
+ * usage.
+ */
+template <CCsepCall sep_fn, bool check_filter_primal, const char *fn_name>
+class ConcordeSeparator : public CCsepBase {
+public:
+    ConcordeSeparator(std::vector<int> &elist, std::vector<double> &ecap,
+                      TourGraph &TG, Sep::LPcutList &cutq) :
+        CCsepBase(elist, ecap, TG, cutq) {}
+
+    bool find_cuts()
+        {
+            int cutcount = 0;
+            CCtsp_lpcut_in *head = NULL;
+            std::string err_msg(fn_name); err_msg += " failed";
+
+
+            if (sep_fn(&head, &cutcount, TG.node_count(), ecap.size(),
+                       &elist[0], &ecap[0]))
+                throw std::runtime_error(err_msg);
+
+            if (cutcount == 0)
+                return false;
+
+            cutq = LPcutList(head, cutcount);
+
+            if (check_filter_primal && filter_primal)
+                cutq.filter_primal(TG);
+
+            return !cutq.empty();
+        }
+};
+
+/**@name String names for ConcordeSeparator template instantiation.
+ * These need to be defined to pass a string literal as a template parameter,
+ * see eg http://www.comeaucomputing.com/techtalk/templates/#stringliteral
+ */
+///@{
+constexpr char seg_fname[] = "CCtsp_segment_cuts";
+constexpr char con_fname[] = "CCtsp_connect_cuts";
+constexpr char ex_fname[] = "CCtsp_exact_subtours";
+constexpr char f2m_fname[] = "CCtsp_fastblossom";
+constexpr char gh2m_fname[] = "CCtsp_ghfastblossom";
+constexpr char blk_fname[] = "CCtsp_block_combs";
+///@}
+
+/**@name ConcordeSeparator explicit instantiations.
+ * Except for SegmentCuts, all of these are standard heuristics.
+ */
+///@{
+
+/// Exact primal SEC separation.
+using SegmentCuts = ConcordeSeparator<CCtsp_segment_cuts, false, seg_fname>;
+
+/// Standard connected component SEC generation.
+using ConnectCuts = ConcordeSeparator<CCtsp_connect_cuts, false, con_fname>;
+
+/// Exact standard SEC separation.
+using ExactSub = ConcordeSeparator<CCtsp_exact_subtours, false, ex_fname>;
+
+/// Odd component fast blossoms.
+using FastBlossoms = ConcordeSeparator<CCtsp_fastblossom, true, f2m_fname>;
+
+/// Gr\"otschel-Holland blossom heuristic.
+using GHblossoms = ConcordeSeparator<CCtsp_ghfastblossom, true, gh2m_fname>;
+
+/// Wrapper function because CCtsp_block_combs takes a silent parameter.
+/// @remark All (?) sep routines have this prototype in later versions of
+/// Concorde.
+inline int BlkCombCall(CCtsp_lpcut_in **c, int *cutcount,
+                       int ncount, int ecount, int *elist, double *ecap)
+{
+    return CCtsp_block_combs(c, cutcount, ncount, ecount, elist, ecap, 1);
+}
+
+/// Block comb separation.
+using BlockCombs = ConcordeSeparator<BlkCombCall, true, blk_fname>;
+
+///@}
 
 }
 }

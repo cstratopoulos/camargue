@@ -31,9 +31,11 @@ namespace CMR {
 Sep::SimpleDP::SimpleDP(Data::KarpPartition &_kpart,
                         const LP::ActiveTour &active_tour,
                         Data::SupportGroup &supp_dat,
-                        Sep::CutQueue<dominoparity> &_dp_q) try :
-  candidates(active_tour, supp_dat), kpart(_kpart), dp_q(_dp_q)
-{} catch (const exception &e) {
+                        Sep::CutQueue<dominoparity> &_dp_q,
+                        int seed) try :
+    candidates(active_tour, supp_dat), kpart(_kpart), dp_q(_dp_q),
+    random_seed(seed)
+    {} catch (const exception &e) {
     cerr << e.what() << " constructing SimpleDP.\n";
     throw runtime_error("SimpleDP constructor failed.");
 }
@@ -76,7 +78,7 @@ bool Sep::SimpleDP::find_cuts()
 
 
         try {
-            DPwitness cutgraph(candidates, kpart[i]);
+            DPwitness cutgraph(candidates, kpart[i], random_seed);
             cutgraph.simple_DP_sep(mini_q);
         } CMR_CATCH_PRINT_THROW("making a mini cutgraph sep call", err);
 
@@ -146,7 +148,7 @@ bool Sep::SimpleDP::find_cuts()
         CutQueue<dominoparity> mini_q;
 
         try {
-            DPwitness cutgraph(candidates, kpart[i]);
+            DPwitness cutgraph(candidates, kpart[i], random_seed);
 
             cutgraph.simple_DP_sep(mini_q);
         } catch (const exception &e) {

@@ -28,10 +28,10 @@ namespace Sep {
 Separator::Separator(const vector<Graph::Edge> &core_edges_,
                      const LP::ActiveTour &active_tour_,
                      Data::SupportGroup &suppdata,
-                     Data::KarpPartition &kpart) try
+                     Data::KarpPartition &kpart, int seed) try
     : core_edges(core_edges_), active_tour(active_tour_), supp_data(suppdata),
       karp_part(kpart),
-      perm_elist(supp_data.support_elist)
+      perm_elist(supp_data.support_elist), random_seed(seed)
 {
     for (int i = 0; i < perm_elist.size(); ++i)
         perm_elist[i] = active_tour.tour_perm()[perm_elist[i]];
@@ -77,13 +77,21 @@ bool Separator::fast2m_sep() try
 
     fast2m.filter_primal = filter_primal;
 
+    double gh2mt = 0.0;
     double f2mt = util::zeit();
     bool result = fast2m.find_cuts();
     f2mt = util::zeit() - f2mt;
 
+    if (!result) {
+        GHblossoms gh2m(perm_elist, supp_data.support_ecap, TG, fast2m_q);
+        gh2mt = util::zeit();
+        result = gh2m.find_cuts();
+        gh2mt = util::zeit() - gh2mt;
+    }
+
     if (verbose) {
         printf("\t%d fast blossoms, primal %d\t%.2fs\n",
-               fast2m_q.size(), filter_primal, f2mt);
+               fast2m_q.size(), filter_primal, f2mt + gh2mt);
         cout << flush;
     }
 
@@ -144,7 +152,7 @@ bool Separator::simpleDP_sep() try {
     if (supp_data.connected) {
         if (supp_data.in_subtour_poly()) {
             SimpleDP dominos(karp_part, active_tour, supp_data,
-                             dp_q);
+                             dp_q, random_seed);
             dominos.verbose = verbose;
 
             return dominos.find_cuts();
@@ -195,26 +203,27 @@ bool Separator::exsub_sep() try
     throw runtime_error("Separator::connect_sep failed.");
 }
 
-bool Separator::local_sep() try
+bool Separator::local_sep(int chunk_sz, bool sphere) try
 {
     set_TG();
 
-    LocalCuts local_cuts(perm_elist, supp_data.support_ecap, TG, local_q);
-    local_cuts.current_max = lc_chunk;
-    local_cuts.spheres = lc_sphere;
+    LocalCuts local_cuts(perm_elist, supp_data.support_ecap, TG, local_q,
+                         random_seed);
+    local_cuts.current_max = chunk_sz;
+    local_cuts.spheres = sphere;
 
     double lct = util::zeit();
     bool result = local_cuts.find_cuts();
     lct = util::zeit() - lct;
 
     if (verbose) {
-        if (!lc_sphere) {
+        if (!sphere) {
             printf("\t%d chunk %d local cuts\t%.2fs\n",
-                   local_q.size(), lc_chunk, lct);
+                   local_q.size(), chunk_sz, lct);
             cout << flush;
         } else {
             printf("\t%d chunk %d local cuts spheres\t%.2fs\n",
-                   local_q.size(), lc_chunk, lct);
+                   local_q.size(), chunk_sz, lct);
             cout << flush;
         }
     }

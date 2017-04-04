@@ -125,11 +125,11 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
 
     if (piv_stat == PivType::FathomedTour){
         current_eg = eg_full.get();
-        if (verbose)
+        if (verbose > 1)
             cout << "\tRunning full eg\n";
     } else if (piv_stat == PivType::Tour){
         current_eg = eg_inside.get();
-        if (verbose)
+        if (verbose > 1)
             cout << "\tRunning inside eg\n";
     } else
         throw logic_error("Tried to run pricing on non tour.");

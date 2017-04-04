@@ -28,7 +28,7 @@ public:
     Separator(const std::vector<Graph::Edge> &core_edges_,
               const LP::ActiveTour &active_tour_,
               Data::SupportGroup &suppdata,
-              Data::KarpPartition &kpart);
+              Data::KarpPartition &kpart, int seed);
 
     bool segment_sep();
     bool fast2m_sep();
@@ -40,7 +40,7 @@ public:
     bool connect_sep();
     bool exsub_sep();
 
-    bool local_sep();
+    bool local_sep(int chunk_sz, bool sphere);
 
     LPcutList &segment_q()  { return seg_q; }
     LPcutList &fastblossom_q()  { return fast2m_q; }
@@ -59,9 +59,6 @@ public:
 
     bool verbose = false;
 
-    int lc_chunk = 8;
-    bool lc_sphere = false;
-
 private:
     void set_TG(); //!< Construct the TourGraph TG.
 
@@ -73,6 +70,8 @@ private:
     TourGraph TG;
 
     std::vector<int> perm_elist;
+
+    const int random_seed;
 
     LPcutList seg_q;
     LPcutList fast2m_q;
