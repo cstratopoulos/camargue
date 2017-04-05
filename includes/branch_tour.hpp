@@ -55,7 +55,7 @@ public:
     /// Compute a list of branch constraints for \p N and all its ancestors.
     std::vector<EndsDir> branch_constraints(const BranchNode &N);
 
-    int verbose = 1;
+    int verbose = 0;
 
 private:
     /// Construct a Graph::AdjList recording \p constraints.
