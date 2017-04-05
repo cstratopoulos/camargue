@@ -230,7 +230,7 @@ void BranchTourFind::prune_edges()
 
 /**
  * @param parent a BranchNode that is currently being split on.
- * @returns a vector of EndsDir objects corresponding to the branchiing
+ * @returns a vector of EndsDir objects corresponding to the branching
  * constraints for \p parent and all its ancestors.
  * When splitting a problem, we need to compute branch tours for both its
  * children, so we need a list of branch constraints for both of them. This
@@ -465,7 +465,7 @@ void BranchTourFind::compute_tour(const vector<EndsDir> &edge_stats,
 
     if (active_contra_count == 0) {
         if (verbose)
-            cout << "\tFixed edges affirm active tour, returniing it." << endl;
+            cout << "\tFixed edges affirm active tour, returning it." << endl;
         try { tour = core_lp.get_active_tour().nodes(); }
         CMR_CATCH_PRINT_THROW("copying active tour", err);
 

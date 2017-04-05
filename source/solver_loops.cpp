@@ -527,8 +527,8 @@ PivType Solver::abc_bcp(bool do_price)
                 cur->stat = BranchStat::NeedsBranch;
             else if (piv == PivType::FathomedTour) {
                 cur->stat = BranchStat::Pruned;
-                cout << "\tPruned with opt objval "
-                     << core_lp.get_objval() << endl;
+                printf("\tPruned with opt objval %.2f", core_lp.get_objval());
+                cout << endl;
                 if (lb_fathom()) {
                     cout << "Terminating ABC search by lower bound." << endl;
                     return piv;
