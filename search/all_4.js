@@ -35,7 +35,7 @@ var searchData=
   ['ex2m',['ex2m',['../struct_c_m_r_1_1_solver_1_1_cut_sel.html#a6578690dff862cfac73101999318c7c7',1,'CMR::Solver::CutSel']]],
   ['ex_5fblossom',['ex_blossom',['../struct_c_m_r_1_1_sep_1_1ex__blossom.html',1,'CMR::Sep']]],
   ['exact_5flb',['exact_lb',['../class_c_m_r_1_1_price_1_1_pricer.html#ada66fabc4a99018166416f76a11b0168',1,'CMR::Price::Pricer::exact_lb(bool full)'],['../class_c_m_r_1_1_price_1_1_pricer.html#abc7e68eac73f44a9b955a734f8f1f353',1,'CMR::Price::Pricer::exact_lb(bool full, std::vector&lt; PrEdge&lt; util::Fixed64 &gt;&gt; &amp;priced_edges)']]],
-  ['exactsub',['ExactSub',['../class_c_m_r_1_1_sep_1_1_exact_sub.html',1,'CMR::Sep']]],
+  ['exactsub',['ExactSub',['../namespace_c_m_r_1_1_sep.html#a1f709a6830abc9ef1abd7e8857f1473f',1,'CMR::Sep']]],
   ['exblossoms',['ExBlossoms',['../class_c_m_r_1_1_sep_1_1_ex_blossoms.html',1,'CMR::Sep']]],
   ['exec_5fbranch_2ehpp',['exec_branch.hpp',['../exec__branch_8hpp.html',1,'']]],
   ['executor',['Executor',['../class_c_m_r_1_1_a_b_c_1_1_executor.html',1,'CMR::ABC']]],
@@ -43,7 +43,7 @@ var searchData=
   ['expand_5fcut',['expand_cut',['../class_c_m_r_1_1_sep_1_1_d_pwitness.html#a297daa0e6c7dd2addd5d80e2fae7f420',1,'CMR::Sep::DPwitness']]],
   ['ext_5fcuts',['ext_cuts',['../class_c_m_r_1_1_price_1_1_pricer.html#ac2de76fdd430a7acd2d82d979f27665f',1,'CMR::Price::Pricer']]],
   ['external_20dependencies',['External Dependencies',['../extdeps.html',1,'']]],
-  ['externalcuts',['ExternalCuts',['../class_c_m_r_1_1_sep_1_1_external_cuts.html',1,'CMR::Sep']]],
   ['externalcuts',['ExternalCuts',['../class_c_m_r_1_1_sep_1_1_external_cuts.html#a2d164570c6688bafe6f315be45c86f5d',1,'CMR::Sep::ExternalCuts']]],
+  ['externalcuts',['ExternalCuts',['../class_c_m_r_1_1_sep_1_1_external_cuts.html',1,'CMR::Sep']]],
   ['extra_5fedges',['extra_edges',['../class_c_m_r_1_1_a_b_c_1_1_branch_tour_find.html#a8274d6bc4b2bb8ea11b43801ef45d920',1,'CMR::ABC::BranchTourFind']]]
 ];

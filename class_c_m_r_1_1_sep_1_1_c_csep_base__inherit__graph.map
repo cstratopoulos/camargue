@@ -1,0 +1,5 @@
+<map id="CMR::Sep::CCsepBase" name="CMR::Sep::CCsepBase">
+<area shape="rect" id="node2" href="$class_c_m_r_1_1_sep_1_1_concorde_separator.html" title="Class template for straightforward Concorde separation routines. " alt="" coords="216,5,420,61"/>
+<area shape="rect" id="node3" href="$class_c_m_r_1_1_sep_1_1_local_cuts.html" title="Primal separation of non&#45;template local cuts via standard heuristics. " alt="" coords="243,85,393,112"/>
+<area shape="rect" id="node4" href="$class_c_m_r_1_1_sep_1_1_pool_cuts.html" title="CMR::Sep::PoolCuts" alt="" coords="245,136,391,163"/>
+</map>

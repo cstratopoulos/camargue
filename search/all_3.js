@@ -24,7 +24,7 @@ var searchData=
   ['do_5funbranch',['do_unbranch',['../class_c_m_r_1_1_a_b_c_1_1_base_brancher.html#a5bbffd6bceea41ebe802c5bae7793f25',1,'CMR::ABC::BaseBrancher']]],
   ['domino',['Domino',['../class_c_m_r_1_1_sep_1_1_hyper_graph.html#a154e1960b9a7ab192cbee8f7c1d6a89aaf95da2c76afc9437526e9990bea89b24',1,'CMR::Sep::HyperGraph']]],
   ['dominoparity',['dominoparity',['../struct_c_m_r_1_1_sep_1_1dominoparity.html',1,'CMR::Sep']]],
-  ['dpwitness',['DPwitness',['../class_c_m_r_1_1_sep_1_1_d_pwitness.html#a35d27a0b7c1b8929009b9c4d82c9ebfc',1,'CMR::Sep::DPwitness']]],
+  ['dpwitness',['DPwitness',['../class_c_m_r_1_1_sep_1_1_d_pwitness.html#a129afb96965b800fcb45ff112b929f6f',1,'CMR::Sep::DPwitness']]],
   ['dpwitness',['DPwitness',['../class_c_m_r_1_1_sep_1_1_d_pwitness.html',1,'CMR::Sep']]],
   ['dual_5ffeas',['dual_feas',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#ace5b87439e354c1495a5613590cf5d97',1,'CMR::LP::Relaxation']]],
   ['dual_5fopt',['dual_opt',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#a220b1048aec809ba4fa74a506eb6898a',1,'CMR::LP::Relaxation']]],

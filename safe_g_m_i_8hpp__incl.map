@@ -1,13 +1,13 @@
 <map id="includes/safeGMI.hpp" name="includes/safeGMI.hpp">
-<area shape="rect" id="node2" href="$config_8hpp.html" title="Configuration macros. " alt="" coords="45,386,128,413"/>
-<area shape="rect" id="node3" href="$lp__interface_8hpp.html" title="Interface to the LP solver. " alt="" coords="475,229,589,256"/>
-<area shape="rect" id="node10" href="$mirgroup_8hpp.html" title="Utility structures for running safe Gomory cut separation. " alt="" coords="414,304,511,331"/>
-<area shape="rect" id="node18" href="$process__cuts_8hpp.html" title="Structures for storing and processing cuts. " alt="" coords="1132,80,1257,107"/>
-<area shape="rect" id="node4" href="$lp__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for LPs. " alt="" coords="1171,386,1253,413"/>
-<area shape="rect" id="node11" href="$util_8hpp.html" title="Utility functions, macros, and structures. " alt="" coords="1717,386,1781,413"/>
-<area shape="rect" id="node19" href="$datagroups_8hpp.html" title="Data group structures. " alt="" coords="1735,229,1846,256"/>
-<area shape="rect" id="node21" href="$graph_8hpp.html" title="Header for classes/structures/functions to work with graphs. " alt="" coords="1541,304,1619,331"/>
-<area shape="rect" id="node25" href="$cc__lpcuts_8hpp.html" title="Wrappers for Concorde LP structures and separators. " alt="" coords="1082,155,1185,181"/>
-<area shape="rect" id="node27" href="$cut__structs_8hpp_source.html" title="cut_structs.hpp" alt="" coords="1192,304,1304,331"/>
-<area shape="rect" id="node20" href="$err__util_8hpp.html" title="ERROR HANDLING CLASSES AND ROUTINES. " alt="" coords="2161,386,2247,413"/>
+<area shape="rect" id="node2" href="$config_8hpp.html" title="Configuration macros. " alt="" coords="456,386,539,413"/>
+<area shape="rect" id="node3" href="$lp__interface_8hpp.html" title="Interface to the LP solver. " alt="" coords="519,229,633,256"/>
+<area shape="rect" id="node10" href="$mirgroup_8hpp.html" title="Utility structures for running safe Gomory cut separation. " alt="" coords="339,304,437,331"/>
+<area shape="rect" id="node18" href="$process__cuts_8hpp.html" title="Structures for storing and processing cuts. " alt="" coords="1075,80,1200,107"/>
+<area shape="rect" id="node4" href="$lp__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for LPs. " alt="" coords="947,304,1029,331"/>
+<area shape="rect" id="node11" href="$util_8hpp.html" title="Utility functions, macros, and structures. " alt="" coords="1709,386,1773,413"/>
+<area shape="rect" id="node19" href="$datagroups_8hpp.html" title="Data group structures. " alt="" coords="1854,229,1965,256"/>
+<area shape="rect" id="node21" href="$graph_8hpp.html" title="Header for classes/structures/functions to work with graphs. " alt="" coords="1507,304,1586,331"/>
+<area shape="rect" id="node25" href="$cc__lpcuts_8hpp.html" title="Wrappers for Concorde cut structures/separators. " alt="" coords="1415,155,1518,181"/>
+<area shape="rect" id="node27" href="$cut__structs_8hpp_source.html" title="cut_structs.hpp" alt="" coords="1221,304,1333,331"/>
+<area shape="rect" id="node20" href="$err__util_8hpp.html" title="ERROR HANDLING CLASSES AND ROUTINES. " alt="" coords="2059,304,2146,331"/>
 </map>

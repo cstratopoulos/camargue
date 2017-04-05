@@ -1,9 +1,24 @@
 var searchData=
 [
-  ['ratio_5ftimer',['ratio_timer',['../class_c_m_r_1_1_timer.html#a7dc82b68c969a6f6869300939c3a4c9d',1,'CMR::Timer']]],
-  ['removable',['removable',['../struct_c_m_r_1_1_graph_1_1_edge.html#a71897218d02789ca8d53b000fd8ac820',1,'CMR::Graph::Edge']]],
-  ['rhs',['rhs',['../class_c_m_r_1_1_sep_1_1_hyper_graph.html#ad8990fd7dca1afb284d80e2dea93740d',1,'CMR::Sep::HyperGraph::rhs()'],['../struct_c_m_r_1_1_l_p_1_1_sparse_row.html#a011b8ccff28e5e0ce8a443aab4f0e305',1,'CMR::LP::SparseRow::rhs()']]],
-  ['rmatind',['rmatind',['../struct_c_m_r_1_1_l_p_1_1_sparse_row.html#aada5e801422d8717e7ec47c11597378d',1,'CMR::LP::SparseRow']]],
-  ['rmatval',['rmatval',['../struct_c_m_r_1_1_l_p_1_1_sparse_row.html#ae967253f76cf5d27033a8a0cd250fa4d',1,'CMR::LP::SparseRow']]],
-  ['rowstat',['rowstat',['../struct_c_m_r_1_1_l_p_1_1_basis.html#a57695f7f8869f4b87a08d123460ede44',1,'CMR::LP::Basis']]]
+  ['safegmi',['safeGMI',['../struct_c_m_r_1_1_solver_1_1_cut_sel.html#add4f1effe2c8e5ed160a77f21ef7e749',1,'CMR::Solver::CutSel']]],
+  ['save_5ftour',['save_tour',['../struct_c_m_r_1_1_out_prefs.html#a13adddc196d388ae72371891132bcf0c',1,'CMR::OutPrefs']]],
+  ['save_5ftour_5fedges',['save_tour_edges',['../struct_c_m_r_1_1_out_prefs.html#a5646a03bfa1adb66978a26dd2ae191e3',1,'CMR::OutPrefs']]],
+  ['saved_5fperm',['saved_perm',['../class_c_m_r_1_1_sep_1_1_clique_bank.html#a200b83a0092dcb0bf9da5fbf3a838f5d',1,'CMR::Sep::CliqueBank::saved_perm()'],['../class_c_m_r_1_1_sep_1_1_tooth_bank.html#a5aa90f353a24ef8041de1a015e888870',1,'CMR::Sep::ToothBank::saved_perm()']]],
+  ['saved_5ftour',['saved_tour',['../class_c_m_r_1_1_sep_1_1_clique_bank.html#a460bfcbbc5434140c3c407ccfe7dca68',1,'CMR::Sep::CliqueBank::saved_tour()'],['../class_c_m_r_1_1_sep_1_1_tooth_bank.html#aec7b41b5d55b349d294264cb173927d9',1,'CMR::Sep::ToothBank::saved_tour()']]],
+  ['sb_5fbase',['sb_base',['../struct_c_m_r_1_1_l_p_1_1_estimate.html#ad5aa8df6031c8a7bc37262d5f0fee5e0',1,'CMR::LP::Estimate']]],
+  ['scalebatch',['ScaleBatch',['../namespace_c_m_r_1_1_price.html#a738f17f4527c21b54333a139fcb2abb3',1,'CMR::Price']]],
+  ['seglist',['seglist',['../class_c_m_r_1_1_sep_1_1_clique.html#a845d632304ff1f7da5174eadc1182958',1,'CMR::Sep::Clique']]],
+  ['segment',['segment',['../struct_c_m_r_1_1_solver_1_1_cut_sel.html#a8016059740980e9dd554747315305381',1,'CMR::Solver::CutSel']]],
+  ['sense',['sense',['../class_c_m_r_1_1_sep_1_1_hyper_graph.html#a7066b13748c424eb07bc084e5d7cf4ef',1,'CMR::Sep::HyperGraph::sense()'],['../struct_c_m_r_1_1_l_p_1_1_sparse_row.html#a3b4237c282cb72a3609b816bcbf109fc',1,'CMR::LP::SparseRow::sense()']]],
+  ['sets',['sets',['../class_c_m_r_1_1_sep_1_1_tooth.html#a5598a30ce0001f13eaa2337604d59c27',1,'CMR::Sep::Tooth']]],
+  ['simpl_5fp',['simpl_p',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#adf555882443854e7ee24a7cbfe1096ee',1,'CMR::LP::Relaxation']]],
+  ['simpledp',['simpleDP',['../struct_c_m_r_1_1_solver_1_1_cut_sel.html#a552f8646b61d9e1d7c50425ca5d34046',1,'CMR::Solver::CutSel']]],
+  ['source_5fbank',['source_bank',['../class_c_m_r_1_1_sep_1_1_hyper_graph.html#a1e919b5fc335ede1444a5462fd47830e',1,'CMR::Sep::HyperGraph']]],
+  ['source_5ftoothbank',['source_toothbank',['../class_c_m_r_1_1_sep_1_1_hyper_graph.html#af16a34e8c0ea4eeb97c751d6c057baff',1,'CMR::Sep::HyperGraph']]],
+  ['start',['start',['../struct_c_m_r_1_1_segment.html#a76a70d74a6971a4c23245c9243bbfd47',1,'CMR::Segment']]],
+  ['stat',['stat',['../struct_c_m_r_1_1_a_b_c_1_1_branch_node.html#ac1cea1592fd1b93390724546c9076c9e',1,'CMR::ABC::BranchNode']]],
+  ['supp_5fgraph',['supp_graph',['../struct_c_m_r_1_1_data_1_1_support_group.html#af946e2786e81672b1e0726fc7bedd8c6',1,'CMR::Data::SupportGroup']]],
+  ['support_5fecap',['support_ecap',['../struct_c_m_r_1_1_data_1_1_support_group.html#a45cf19e299e57851d534641f03e4717b',1,'CMR::Data::SupportGroup']]],
+  ['support_5felist',['support_elist',['../struct_c_m_r_1_1_data_1_1_support_group.html#ad5676522fe5f5512573a8f3ec6ef4e7c',1,'CMR::Data::SupportGroup']]],
+  ['support_5findices',['support_indices',['../struct_c_m_r_1_1_data_1_1_support_group.html#af51a3fe2c0404762f366640a768624a6',1,'CMR::Data::SupportGroup']]]
 ];

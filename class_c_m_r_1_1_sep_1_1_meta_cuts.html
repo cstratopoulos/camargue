@@ -92,6 +92,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pri-types">Private Types</a> &#124;
 <a href="#pri-methods">Private Member Functions</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="class_c_m_r_1_1_sep_1_1_meta_cuts-members.html">List of all members</a>  </div>
@@ -125,27 +126,19 @@ Collaboration diagram for CMR::Sep::MetaCuts:</div>
 Public Types</h2></td></tr>
 <tr class="memitem:a08a0f9f0b3d954bc7ccd687f96a54d20"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a08a0f9f0b3d954bc7ccd687f96a54d20"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_meta_cuts.html#a08a0f9f0b3d954bc7ccd687f96a54d20">Type</a> { <b>Decker</b>, 
 <b>Handling</b>, 
-<b>Teething</b>, 
-<b>Tighten</b>
+<b>Teething</b>
  }<tr class="memdesc:a08a0f9f0b3d954bc7ccd687f96a54d20"><td class="mdescLeft">&#160;</td><td class="mdescRight">Categories of implemented cut metamorphoses. <br /></td></tr>
 </td></tr>
 <tr class="separator:a08a0f9f0b3d954bc7ccd687f96a54d20"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4aca5c941863fd10daa79a855d069ba1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4aca5c941863fd10daa79a855d069ba1"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><b>HGitr</b> = std::vector&lt; <a class="el" href="class_c_m_r_1_1_sep_1_1_hyper_graph.html">HyperGraph</a> &gt;::const_iterator</td></tr>
-<tr class="separator:a4aca5c941863fd10daa79a855d069ba1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a2eb546974160d1826c5f7eb84b870190"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2eb546974160d1826c5f7eb84b870190"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>MetaCuts</b> (const <a class="el" href="class_c_m_r_1_1_sep_1_1_external_cuts.html">ExternalCuts</a> &amp;EC_, const std::vector&lt; <a class="el" href="struct_c_m_r_1_1_graph_1_1_edge.html">Graph::Edge</a> &gt; &amp;core_edges_, const <a class="el" href="class_c_m_r_1_1_l_p_1_1_active_tour.html">LP::ActiveTour</a> &amp;active_tour_, <a class="el" href="struct_c_m_r_1_1_data_1_1_support_group.html">Data::SupportGroup</a> &amp;s_dat)</td></tr>
 <tr class="separator:a2eb546974160d1826c5f7eb84b870190"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63d9da66e5019828127c8fbea80c030a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a63d9da66e5019828127c8fbea80c030a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_meta_cuts.html#a63d9da66e5019828127c8fbea80c030a">set_type</a> (<a class="el" href="class_c_m_r_1_1_sep_1_1_meta_cuts.html#a08a0f9f0b3d954bc7ccd687f96a54d20">Type</a> t)</td></tr>
-<tr class="memdesc:a63d9da66e5019828127c8fbea80c030a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Choose what kind of cuts will be found by find_cuts. <br /></td></tr>
-<tr class="separator:a63d9da66e5019828127c8fbea80c030a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9708b0bfe6635e0368874f6f2261c2cf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9708b0bfe6635e0368874f6f2261c2cf"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>find_cuts</b> ()</td></tr>
-<tr class="separator:a9708b0bfe6635e0368874f6f2261c2cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80f09950a2d34b9b0b9ecdca1db9b6cf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a80f09950a2d34b9b0b9ecdca1db9b6cf"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>find_cuts</b> (<a class="el" href="class_c_m_r_1_1_sep_1_1_meta_cuts.html#a08a0f9f0b3d954bc7ccd687f96a54d20">Type</a> meta_type)</td></tr>
+<tr class="separator:a80f09950a2d34b9b0b9ecdca1db9b6cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3da8a63a77e65341a9a54a2238632474"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3da8a63a77e65341a9a54a2238632474"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>tighten_cuts</b> ()</td></tr>
 <tr class="separator:a3da8a63a77e65341a9a54a2238632474"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -162,12 +155,18 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>verbose</b> = false</
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>filter_primal</b> = true</td></tr>
 <tr class="separator:ab96cf9c13d16e6d4b00ded5f02649a4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-types"></a>
+Private Types</h2></td></tr>
+<tr class="memitem:a4aca5c941863fd10daa79a855d069ba1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4aca5c941863fd10daa79a855d069ba1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>HGitr</b> = std::vector&lt; <a class="el" href="class_c_m_r_1_1_sep_1_1_hyper_graph.html">HyperGraph</a> &gt;::const_iterator</td></tr>
+<tr class="separator:a4aca5c941863fd10daa79a855d069ba1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
-<tr class="memitem:a2cde3f161ffd4f777e86b70fcfab7907"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2cde3f161ffd4f777e86b70fcfab7907"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_meta_cuts.html#a2cde3f161ffd4f777e86b70fcfab7907">price_combs</a> ()</td></tr>
-<tr class="memdesc:a2cde3f161ffd4f777e86b70fcfab7907"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespace_c_m_r_1_1_price.html" title="Matters related to pricing sets of edges. ">Price</a> all comb-like cuts in <a class="el" href="namespace_c_m_r_1_1_l_p.html" title="Manners related to LP relaxations and solver interfaces. ">LP</a>; return true iff some are of interest. <br /></td></tr>
-<tr class="separator:a2cde3f161ffd4f777e86b70fcfab7907"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e6273695c1379d34712ef84fdd3e32d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6e6273695c1379d34712ef84fdd3e32d"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_meta_cuts.html#a6e6273695c1379d34712ef84fdd3e32d">price_combs</a> (bool tighten)</td></tr>
+<tr class="memdesc:a6e6273695c1379d34712ef84fdd3e32d"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespace_c_m_r_1_1_price.html" title="Matters related to pricing sets of edges. ">Price</a> all comb-like cuts in <a class="el" href="namespace_c_m_r_1_1_l_p.html" title="Manners related to LP relaxations and solver interfaces. ">LP</a>; return true iff some are of interest. <br /></td></tr>
+<tr class="separator:a6e6273695c1379d34712ef84fdd3e32d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae8bb16f53a10023e879da126d297704"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aae8bb16f53a10023e879da126d297704"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_meta_cuts.html#aae8bb16f53a10023e879da126d297704">above_threshold</a> (int num_paths)</td></tr>
 <tr class="memdesc:aae8bb16f53a10023e879da126d297704"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used by attempt_sep to determine if <code>num_paths</code> is high enough. <br /></td></tr>
@@ -186,9 +185,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
-<tr class="memitem:a98bc16ce69867b8ec24626b52a41575a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a98bc16ce69867b8ec24626b52a41575a"></a>
-<a class="el" href="class_c_m_r_1_1_sep_1_1_meta_cuts.html#a08a0f9f0b3d954bc7ccd687f96a54d20">Type</a>&#160;</td><td class="memItemRight" valign="bottom"><b>meta_type</b> = Type::Decker</td></tr>
-<tr class="separator:a98bc16ce69867b8ec24626b52a41575a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5952c5294ae7fabb99c4c81564edf886"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5952c5294ae7fabb99c4c81564edf886"></a>
 std::unordered_map&lt; <a class="el" href="class_c_m_r_1_1_sep_1_1_clique.html">Clique</a>, double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>clique_vals</b></td></tr>
 <tr class="separator:a5952c5294ae7fabb99c4c81564edf886"><td class="memSeparator" colspan="2">&#160;</td></tr>

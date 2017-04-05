@@ -12,7 +12,7 @@ var searchData=
   ['dismiss',['dismiss',['../class_c_m_r_1_1util_1_1_scope_guard.html#a17f0af7bfe9c32d5047491299b4dc3e0',1,'CMR::util::ScopeGuard']]],
   ['do_5fbranch',['do_branch',['../class_c_m_r_1_1_a_b_c_1_1_base_brancher.html#a2b674b1abedfb43bef43899e2badfed4',1,'CMR::ABC::BaseBrancher']]],
   ['do_5funbranch',['do_unbranch',['../class_c_m_r_1_1_a_b_c_1_1_base_brancher.html#a5bbffd6bceea41ebe802c5bae7793f25',1,'CMR::ABC::BaseBrancher']]],
-  ['dpwitness',['DPwitness',['../class_c_m_r_1_1_sep_1_1_d_pwitness.html#a35d27a0b7c1b8929009b9c4d82c9ebfc',1,'CMR::Sep::DPwitness']]],
+  ['dpwitness',['DPwitness',['../class_c_m_r_1_1_sep_1_1_d_pwitness.html#a129afb96965b800fcb45ff112b929f6f',1,'CMR::Sep::DPwitness']]],
   ['dual_5ffeas',['dual_feas',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#ace5b87439e354c1495a5613590cf5d97',1,'CMR::LP::Relaxation']]],
   ['dual_5fopt',['dual_opt',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#a220b1048aec809ba4fa74a506eb6898a',1,'CMR::LP::Relaxation']]],
   ['dualgroup',['DualGroup',['../struct_c_m_r_1_1_l_p_1_1_dual_group.html#a5a670dda6996066e727c12171a3cd145',1,'CMR::LP::DualGroup::DualGroup()=default'],['../struct_c_m_r_1_1_l_p_1_1_dual_group.html#a8e6a828a527d0613e0c50078908fbd10',1,'CMR::LP::DualGroup::DualGroup(bool remove_neg, const LP::Relaxation &amp;relax, const Sep::ExternalCuts &amp;ext_cuts)']]]

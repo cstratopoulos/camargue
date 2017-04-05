@@ -96,11 +96,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>Separating over a pool of cuts.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="active__tour_8hpp_source.html">active_tour.hpp</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="cc__lpcuts_8hpp_source.html">cc_lpcuts.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="hypergraph_8hpp_source.html">hypergraph.hpp</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="datagroups_8hpp_source.html">datagroups.hpp</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="process__cuts_8hpp_source.html">process_cuts.hpp</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="cc__lpcuts_8hpp_source.html">cc_lpcuts.hpp</a>&quot;</code><br />
 <code>#include &lt;unordered_map&gt;</code><br />
 <code>#include &lt;utility&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
@@ -109,32 +106,19 @@ Include dependency graph for pool_sep.hpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="pool__sep_8hpp__incl.png" border="0" usemap="#includes_2pool__sep_8hpp" alt=""/></div>
 <map name="includes_2pool__sep_8hpp" id="includes_2pool__sep_8hpp">
-<area shape="rect" id="node2" href="active__tour_8hpp.html" title="Monitoring the active tour in the solution process. " alt="" coords="837,155,947,181"/>
-<area shape="rect" id="node3" href="datagroups_8hpp.html" title="Data group structures. " alt="" coords="2430,229,2541,256"/>
-<area shape="rect" id="node25" href="hypergraph_8hpp.html" title="Representing cuts outside the LP solver. " alt="" coords="1530,155,1641,181"/>
-<area shape="rect" id="node32" href="process__cuts_8hpp.html" title="Structures for storing and processing cuts. " alt="" coords="1929,80,2055,107"/>
-<area shape="rect" id="node33" href="cc__lpcuts_8hpp.html" title="Wrappers for Concorde LP structures and separators. " alt="" coords="1890,155,1993,181"/>
-<area shape="rect" id="node19" href="lp__interface_8hpp.html" title="Interface to the LP solver. " alt="" coords="831,229,945,256"/>
-<area shape="rect" id="node21" href="lp__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for LPs. " alt="" coords="1314,304,1395,331"/>
-<area shape="rect" id="node4" href="util_8hpp.html" title="Utility functions, macros, and structures. " alt="" coords="2252,386,2316,413"/>
-<area shape="rect" id="node13" href="err__util_8hpp.html" title="ERROR HANDLING CLASSES AND ROUTINES. " alt="" coords="3138,304,3225,331"/>
-<area shape="rect" id="node15" href="graph_8hpp.html" title="Header for classes/structures/functions to work with graphs. " alt="" coords="2463,304,2542,331"/>
-<area shape="rect" id="node20" href="config_8hpp.html" title="Configuration macros. " alt="" coords="296,386,379,413"/>
-<area shape="rect" id="node22" href="mirgroup_8hpp.html" title="Utility structures for running safe Gomory cut separation. " alt="" coords="751,304,849,331"/>
-<area shape="rect" id="node26" href="cut__structs_8hpp_source.html" title="cut_structs.hpp" alt="" coords="1177,304,1289,331"/>
-<area shape="rect" id="node27" href="cliq_8hpp.html" title="Reference counted storage of Cliques and Tooth objects. " alt="" coords="1552,229,1619,256"/>
-<area shape="rect" id="node30" href="price__util_8hpp.html" title="Constants and functions related to edge pricing. " alt="" coords="2567,304,2665,331"/>
-</map>
-</div>
-</div><div class="textblock"><div class="dynheader">
-This graph shows which files directly or indirectly include this file:</div>
-<div class="dyncontent">
-<div class="center"><img src="pool__sep_8hpp__dep__incl.png" border="0" usemap="#includes_2pool__sep_8hppdep" alt=""/></div>
-<map name="includes_2pool__sep_8hppdep" id="includes_2pool__sep_8hppdep">
-<area shape="rect" id="node2" href="solver_8hpp.html" title="TSP Solver class header. " alt="" coords="171,80,306,107"/>
-<area shape="rect" id="node3" href="camargue_8cpp.html" title="The camargue main program. " alt="" coords="5,155,152,181"/>
-<area shape="rect" id="node4" href="solver_8cpp.html" title="Implementation of higher level or public Solver methods. " alt="" coords="176,155,301,181"/>
-<area shape="rect" id="node5" href="solver__loops_8cpp.html" title="Private Solver methods with recursive/loop calls. " alt="" coords="325,155,488,181"/>
+<area shape="rect" id="node2" href="cc__lpcuts_8hpp.html" title="Wrappers for Concorde cut structures/separators. " alt="" coords="918,80,1021,107"/>
+<area shape="rect" id="node20" href="hypergraph_8hpp.html" title="Representing cuts outside the LP solver. " alt="" coords="1549,80,1659,107"/>
+<area shape="rect" id="node3" href="graph_8hpp.html" title="Header for classes/structures/functions to work with graphs. " alt="" coords="915,229,994,256"/>
+<area shape="rect" id="node16" href="datagroups_8hpp.html" title="Data group structures. " alt="" coords="497,155,607,181"/>
+<area shape="rect" id="node4" href="util_8hpp.html" title="Utility functions, macros, and structures. " alt="" coords="1053,311,1117,338"/>
+<area shape="rect" id="node17" href="err__util_8hpp.html" title="ERROR HANDLING CLASSES AND ROUTINES. " alt="" coords="182,229,269,256"/>
+<area shape="rect" id="node21" href="cut__structs_8hpp_source.html" title="cut_structs.hpp" alt="" coords="1779,229,1891,256"/>
+<area shape="rect" id="node22" href="lp__interface_8hpp.html" title="Interface to the LP solver. " alt="" coords="2152,155,2267,181"/>
+<area shape="rect" id="node24" href="lp__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for LPs. " alt="" coords="1571,229,1653,256"/>
+<area shape="rect" id="node28" href="cliq_8hpp.html" title="Reference counted storage of Cliques and Tooth objects. " alt="" coords="1683,155,1749,181"/>
+<area shape="rect" id="node30" href="price__util_8hpp.html" title="Constants and functions related to edge pricing. " alt="" coords="792,229,891,256"/>
+<area shape="rect" id="node23" href="config_8hpp.html" title="Configuration macros. " alt="" coords="2616,311,2699,338"/>
+<area shape="rect" id="node25" href="mirgroup_8hpp.html" title="Utility structures for running safe Gomory cut separation. " alt="" coords="2203,229,2301,256"/>
 </map>
 </div>
 </div>
@@ -143,7 +127,6 @@ This graph shows which files directly or indirectly include this file:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_pool_cuts.html">CMR::Sep::PoolCuts</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class for cut pool separation.  <a href="class_c_m_r_1_1_sep_1_1_pool_cuts.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -157,9 +140,6 @@ Namespaces</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Separating over a pool of cuts. </p>
-<ul>
-<li>* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * </li>
-</ul>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

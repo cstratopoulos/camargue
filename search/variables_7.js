@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['hg_5fq',['hg_q',['../class_c_m_r_1_1_sep_1_1_pool_cuts.html#aec33664e496864b352311acd9bb8a787',1,'CMR::Sep::PoolCuts']]]
+  ['initial_5fpiv',['initial_piv',['../struct_c_m_r_1_1_solver_1_1_piv_stats.html#a9bdd1255f415c8fabfd080bf0fa1dcbd',1,'CMR::Solver::PivStats']]],
+  ['inst',['inst',['../class_c_m_r_1_1_price_1_1_pricer.html#ae7f71cb7136c7f1be0b421593f85c0f3',1,'CMR::Price::Pricer']]],
+  ['integral',['integral',['../struct_c_m_r_1_1_data_1_1_support_group.html#ac4afe3d6087d4711adf303e8ff986dcc',1,'CMR::Data::SupportGroup']]]
 ];

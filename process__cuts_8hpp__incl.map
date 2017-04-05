@@ -1,9 +1,9 @@
 <map id="includes/process_cuts.hpp" name="includes/process_cuts.hpp">
-<area shape="rect" id="node2" href="$datagroups_8hpp.html" title="Data group structures. " alt="" coords="294,155,405,181"/>
-<area shape="rect" id="node3" href="$util_8hpp.html" title="Utility functions, macros, and structures. " alt="" coords="466,304,530,331"/>
-<area shape="rect" id="node14" href="$graph_8hpp.html" title="Header for classes/structures/functions to work with graphs. " alt="" coords="658,229,737,256"/>
-<area shape="rect" id="node18" href="$cc__lpcuts_8hpp.html" title="Wrappers for Concorde LP structures and separators. " alt="" coords="864,80,966,107"/>
-<area shape="rect" id="node20" href="$cut__structs_8hpp_source.html" title="cut_structs.hpp" alt="" coords="1290,229,1402,256"/>
-<area shape="rect" id="node21" href="$lp__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for LPs. " alt="" coords="941,304,1022,331"/>
-<area shape="rect" id="node12" href="$err__util_8hpp.html" title="ERROR HANDLING CLASSES AND ROUTINES. " alt="" coords="48,304,134,331"/>
+<area shape="rect" id="node2" href="$datagroups_8hpp.html" title="Data group structures. " alt="" coords="381,155,492,181"/>
+<area shape="rect" id="node3" href="$util_8hpp.html" title="Utility functions, macros, and structures. " alt="" coords="521,304,585,331"/>
+<area shape="rect" id="node14" href="$graph_8hpp.html" title="Header for classes/structures/functions to work with graphs. " alt="" coords="649,229,728,256"/>
+<area shape="rect" id="node18" href="$cc__lpcuts_8hpp.html" title="Wrappers for Concorde cut structures/separators. " alt="" coords="844,80,947,107"/>
+<area shape="rect" id="node20" href="$cut__structs_8hpp_source.html" title="cut_structs.hpp" alt="" coords="1371,229,1483,256"/>
+<area shape="rect" id="node21" href="$lp__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for LPs. " alt="" coords="1047,304,1128,331"/>
+<area shape="rect" id="node12" href="$err__util_8hpp.html" title="ERROR HANDLING CLASSES AND ROUTINES. " alt="" coords="103,304,189,331"/>
 </map>

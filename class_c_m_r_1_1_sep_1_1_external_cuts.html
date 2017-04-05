@@ -90,6 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pri-methods">Private Member Functions</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="#friends">Friends</a> &#124;
 <a href="class_c_m_r_1_1_sep_1_1_external_cuts-members.html">List of all members</a>  </div>
@@ -158,9 +159,6 @@ const <a class="el" href="class_c_m_r_1_1_sep_1_1_hyper_graph.html">HyperGraph</
 <tr class="memitem:a42be711a15dc1d0234f0a8ee8327c979"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a42be711a15dc1d0234f0a8ee8327c979"></a>
 const std::vector&lt; <a class="el" href="class_c_m_r_1_1_sep_1_1_hyper_graph.html">HyperGraph</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_cuts</b> () const </td></tr>
 <tr class="separator:a42be711a15dc1d0234f0a8ee8327c979"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa9471d87fe3f2890586c099a4fe37a92"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa9471d87fe3f2890586c099a4fe37a92"></a>
-const std::vector&lt; <a class="el" href="class_c_m_r_1_1_sep_1_1_hyper_graph.html">HyperGraph</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_cutpool</b> () const </td></tr>
-<tr class="separator:aa9471d87fe3f2890586c099a4fe37a92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad1cfbe03d43a7857284c3b1a559a037b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad1cfbe03d43a7857284c3b1a559a037b"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>cut_count</b> () const </td></tr>
 <tr class="separator:ad1cfbe03d43a7857284c3b1a559a037b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -170,15 +168,18 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>pool_count</b> () cons
 <tr class="memitem:ac4d7846550f6407a40dccf1d14118e5f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac4d7846550f6407a40dccf1d14118e5f"></a>
 const <a class="el" href="class_c_m_r_1_1_sep_1_1_clique_bank.html">CliqueBank</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_cbank</b> () const </td></tr>
 <tr class="separator:ac4d7846550f6407a40dccf1d14118e5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ade00ca37997430ac71132c0016e70681"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ade00ca37997430ac71132c0016e70681"></a>
-const <a class="el" href="class_c_m_r_1_1_sep_1_1_clique_bank.html">CliqueBank</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_pool_cbank</b> () const </td></tr>
-<tr class="separator:ade00ca37997430ac71132c0016e70681"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5cc3f8baab1bdb8b122e3e7390025e39"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5cc3f8baab1bdb8b122e3e7390025e39"></a>
 const <a class="el" href="class_c_m_r_1_1_sep_1_1_tooth_bank.html">ToothBank</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_tbank</b> () const </td></tr>
 <tr class="separator:a5cc3f8baab1bdb8b122e3e7390025e39"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa75933999760f63f23942bc20e5740fb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_external_cuts.html#aa75933999760f63f23942bc20e5740fb">get_col</a> (int end0, int end1, std::vector&lt; int &gt; &amp;cmatind, std::vector&lt; double &gt; &amp;cmatval) const </td></tr>
 <tr class="memdesc:aa75933999760f63f23942bc20e5740fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the column associated with an edge to be added to the lp.  <a href="#aa75933999760f63f23942bc20e5740fb">More...</a><br /></td></tr>
 <tr class="separator:aa75933999760f63f23942bc20e5740fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
+Private Member Functions</h2></td></tr>
+<tr class="memitem:a6aca67022a0ad2e6678c3f1c7c0ee2c4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6aca67022a0ad2e6678c3f1c7c0ee2c4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pool_add</b> (<a class="el" href="class_c_m_r_1_1_sep_1_1_hyper_graph.html">HyperGraph</a> H)</td></tr>
+<tr class="separator:a6aca67022a0ad2e6678c3f1c7c0ee2c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
@@ -205,12 +206,20 @@ std::vector&lt; <a class="el" href="class_c_m_r_1_1_sep_1_1_hyper_graph.html">Hy
 std::vector&lt; <a class="el" href="class_c_m_r_1_1_sep_1_1_hyper_graph.html">HyperGraph</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_external_cuts.html#adc73b2f3a5b5fe57d570dc2d71a2af6a">cut_pool</a></td></tr>
 <tr class="memdesc:adc73b2f3a5b5fe57d570dc2d71a2af6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pool of cuts pruned from CoreLP. <br /></td></tr>
 <tr class="separator:adc73b2f3a5b5fe57d570dc2d71a2af6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6974d69d5236e8822b3180e48601775"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa6974d69d5236e8822b3180e48601775"></a>
+CCtsp_lpcuts *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_external_cuts.html#aa6974d69d5236e8822b3180e48601775">cc_pool</a></td></tr>
+<tr class="memdesc:aa6974d69d5236e8822b3180e48601775"><td class="mdescLeft">&#160;</td><td class="mdescRight">Concorde rep of cut pool. <br /></td></tr>
+<tr class="separator:aa6974d69d5236e8822b3180e48601775"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa1424d1ddc136b7969ace75a5316e58"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaa1424d1ddc136b7969ace75a5316e58"></a>
+CCtsp_cuttree&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_external_cuts.html#aaa1424d1ddc136b7969ace75a5316e58">tightcuts</a></td></tr>
+<tr class="memdesc:aaa1424d1ddc136b7969ace75a5316e58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cut tree for separation routines. <br /></td></tr>
+<tr class="separator:aaa1424d1ddc136b7969ace75a5316e58"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
-<tr class="memitem:a38f04bb04e4aac9d83f31c08078fc948"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a38f04bb04e4aac9d83f31c08078fc948"></a>
-class&#160;</td><td class="memItemRight" valign="bottom"><b>PoolCuts</b></td></tr>
-<tr class="separator:a38f04bb04e4aac9d83f31c08078fc948"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8bf88ca6f1676c8305438acaa7aa8b2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af8bf88ca6f1676c8305438acaa7aa8b2"></a>
+class&#160;</td><td class="memItemRight" valign="bottom"><b>Separator</b></td></tr>
+<tr class="separator:af8bf88ca6f1676c8305438acaa7aa8b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The external storage of a collection of <a class="el" href="class_c_m_r_1_1_sep_1_1_hyper_graph.html" title="External representation of a cut added to the lp relaxation. ">HyperGraph</a> cuts in a Relaxation. </p>

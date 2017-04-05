@@ -1,8 +1,8 @@
 var searchData=
 [
+  ['cc_5fpool',['cc_pool',['../class_c_m_r_1_1_sep_1_1_external_cuts.html#aa6974d69d5236e8822b3180e48601775',1,'CMR::Sep::ExternalCuts']]],
   ['clique_5fbank',['clique_bank',['../class_c_m_r_1_1_sep_1_1_external_cuts.html#afd78d8fa06b0af1f6e1030a23d402652',1,'CMR::Sep::ExternalCuts']]],
   ['clique_5fpi',['clique_pi',['../struct_c_m_r_1_1_l_p_1_1_dual_group.html#aeb2d5040c37a69d2dc9ef08d0440b188',1,'CMR::LP::DualGroup']]],
-  ['clique_5fvals',['clique_vals',['../class_c_m_r_1_1_sep_1_1_pool_cuts.html#ade2e812b3359e00e09580cdc9be9dd40',1,'CMR::Sep::PoolCuts']]],
   ['cliques',['cliques',['../class_c_m_r_1_1_sep_1_1_hyper_graph.html#ae2c8b0bf2170036a5a9259a1c9258ae0',1,'CMR::Sep::HyperGraph']]],
   ['colstat',['colstat',['../struct_c_m_r_1_1_l_p_1_1_basis.html#a9b239721017290aa4daaa0f6746eb1b0',1,'CMR::LP::Basis']]],
   ['connect',['connect',['../struct_c_m_r_1_1_solver_1_1_cut_sel.html#abf65e0d8ea690a38f61a69028ee1158a',1,'CMR::Solver::CutSel']]],

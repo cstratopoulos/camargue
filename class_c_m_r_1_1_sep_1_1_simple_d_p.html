@@ -120,9 +120,9 @@ Collaboration diagram for CMR::Sep::SimpleDP:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aad54314cfe086a6b61e28d33e1fc16f9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_simple_d_p.html#aad54314cfe086a6b61e28d33e1fc16f9">SimpleDP</a> (<a class="el" href="class_c_m_r_1_1_data_1_1_karp_partition.html">Data::KarpPartition</a> &amp;_kpart, const <a class="el" href="class_c_m_r_1_1_l_p_1_1_active_tour.html">LP::ActiveTour</a> &amp;active_tour, <a class="el" href="struct_c_m_r_1_1_data_1_1_support_group.html">Data::SupportGroup</a> &amp;supp_dat, <a class="el" href="class_c_m_r_1_1_sep_1_1_cut_queue.html">Sep::CutQueue</a>&lt; <a class="el" href="struct_c_m_r_1_1_sep_1_1dominoparity.html">dominoparity</a> &gt; &amp;_dp_q)</td></tr>
-<tr class="memdesc:aad54314cfe086a6b61e28d33e1fc16f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a separator to separate over partitioned <a class="el" href="class_c_m_r_1_1_sep_1_1_d_pwitness.html" title="Class for building miniature simple DP witness cutgraphs. ">DPwitness</a> graphs.  <a href="#aad54314cfe086a6b61e28d33e1fc16f9">More...</a><br /></td></tr>
-<tr class="separator:aad54314cfe086a6b61e28d33e1fc16f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44c01799145ed25c3d544315545dbb20"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_simple_d_p.html#a44c01799145ed25c3d544315545dbb20">SimpleDP</a> (<a class="el" href="class_c_m_r_1_1_data_1_1_karp_partition.html">Data::KarpPartition</a> &amp;_kpart, const <a class="el" href="class_c_m_r_1_1_l_p_1_1_active_tour.html">LP::ActiveTour</a> &amp;active_tour, <a class="el" href="struct_c_m_r_1_1_data_1_1_support_group.html">Data::SupportGroup</a> &amp;supp_dat, <a class="el" href="class_c_m_r_1_1_sep_1_1_cut_queue.html">Sep::CutQueue</a>&lt; <a class="el" href="struct_c_m_r_1_1_sep_1_1dominoparity.html">dominoparity</a> &gt; &amp;_dp_q, int seed)</td></tr>
+<tr class="memdesc:a44c01799145ed25c3d544315545dbb20"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a separator to separate over partitioned <a class="el" href="class_c_m_r_1_1_sep_1_1_d_pwitness.html" title="Class for building miniature simple DP witness cutgraphs. ">DPwitness</a> graphs.  <a href="#a44c01799145ed25c3d544315545dbb20">More...</a><br /></td></tr>
+<tr class="separator:a44c01799145ed25c3d544315545dbb20"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a77622ff278260c92fb54bf8f28f786d1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a77622ff278260c92fb54bf8f28f786d1"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_simple_d_p.html#a77622ff278260c92fb54bf8f28f786d1">find_cuts</a> ()</td></tr>
 <tr class="memdesc:a77622ff278260c92fb54bf8f28f786d1"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_c_m_r_1_1_sep_1_1_separator.html" title="Management of basic separation routines. ">Separator</a> invocation, returns true iff cuts found. <br /></td></tr>
@@ -145,11 +145,14 @@ Private Attributes</h2></td></tr>
 <tr class="memitem:ae83e86085a6a82d20be2193c8cdcc894"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae83e86085a6a82d20be2193c8cdcc894"></a>
 <a class="el" href="class_c_m_r_1_1_sep_1_1_cut_queue.html">CutQueue</a>&lt; <a class="el" href="struct_c_m_r_1_1_sep_1_1dominoparity.html">dominoparity</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>dp_q</b></td></tr>
 <tr class="separator:ae83e86085a6a82d20be2193c8cdcc894"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2c6ae45aeab08c6787375ab9697c848"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa2c6ae45aeab08c6787375ab9697c848"></a>
+const int&#160;</td><td class="memItemRight" valign="bottom"><b>random_seed</b></td></tr>
+<tr class="separator:aa2c6ae45aeab08c6787375ab9697c848"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Separating primal simple domino parity inequalities. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="aad54314cfe086a6b61e28d33e1fc16f9"></a>
+<a class="anchor" id="a44c01799145ed25c3d544315545dbb20"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -175,7 +178,13 @@ Private Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="class_c_m_r_1_1_sep_1_1_cut_queue.html">Sep::CutQueue</a>&lt; <a class="el" href="struct_c_m_r_1_1_sep_1_1dominoparity.html">dominoparity</a> &gt; &amp;&#160;</td>
-          <td class="paramname"><em>_dp_q</em>&#160;</td>
+          <td class="paramname"><em>_dp_q</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>seed</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

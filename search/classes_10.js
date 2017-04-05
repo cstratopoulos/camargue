@@ -4,7 +4,6 @@ var searchData=
   ['scopeguard',['ScopeGuard',['../class_c_m_r_1_1util_1_1_scope_guard.html',1,'CMR::util']]],
   ['scoretuple',['ScoreTuple',['../struct_c_m_r_1_1_a_b_c_1_1_score_tuple.html',1,'CMR::ABC']]],
   ['segment',['Segment',['../struct_c_m_r_1_1_segment.html',1,'CMR']]],
-  ['segmentcuts',['SegmentCuts',['../class_c_m_r_1_1_sep_1_1_segment_cuts.html',1,'CMR::Sep']]],
   ['separator',['Separator',['../class_c_m_r_1_1_sep_1_1_separator.html',1,'CMR::Sep']]],
   ['simpledp',['SimpleDP',['../class_c_m_r_1_1_sep_1_1_simple_d_p.html',1,'CMR::Sep']]],
   ['simpletooth',['SimpleTooth',['../struct_c_m_r_1_1_sep_1_1_simple_tooth.html',1,'CMR::Sep']]],

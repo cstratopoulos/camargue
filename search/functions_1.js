@@ -6,6 +6,7 @@ var searchData=
   ['best_5fupdate',['best_update',['../class_c_m_r_1_1_l_p_1_1_active_tour.html#a20099b4e7d300123631e179d20f4ef23',1,'CMR::LP::ActiveTour']]],
   ['bestgroup',['BestGroup',['../struct_c_m_r_1_1_data_1_1_best_group.html#ae67d81ee1c2cccc9ea9a1e57a0515adb',1,'CMR::Data::BestGroup::BestGroup(const Instance &amp;inst, Graph::CoreGraph &amp;core_graph)'],['../struct_c_m_r_1_1_data_1_1_best_group.html#a92847ed4efda165efa612f4e67937584',1,'CMR::Data::BestGroup::BestGroup(const Instance &amp;inst, Graph::CoreGraph &amp;core_graph, const std::string &amp;tourfile)']]],
   ['better_5fbound',['better_bound',['../class_c_m_r_1_1_a_b_c_1_1_inter_brancher.html#a2f024f2b16f671542733df88c8c6a621',1,'CMR::ABC::InterBrancher']]],
+  ['blkcombcall',['BlkCombCall',['../namespace_c_m_r_1_1_sep.html#a3df6fcd43a83c674569aec47416f0b81',1,'CMR::Sep']]],
   ['bnode_5fbrief',['bnode_brief',['../namespace_c_m_r_1_1_a_b_c.html#a123d60e6e952ccd026778100545d275e',1,'CMR::ABC']]],
   ['bound_5fworse',['bound_worse',['../struct_c_m_r_1_1_a_b_c_1_1_branch_node.html#a2a68cc95ca1a1c6bdf225301752afb54',1,'CMR::ABC::BranchNode']]],
   ['branch_5fconstraints',['branch_constraints',['../class_c_m_r_1_1_a_b_c_1_1_branch_tour_find.html#a8b721679acac9bcbb9b841bafb1e9662',1,'CMR::ABC::BranchTourFind']]],

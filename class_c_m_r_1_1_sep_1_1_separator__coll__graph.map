@@ -4,8 +4,8 @@
 <area shape="rect" id="node4" href="$class_c_m_r_1_1_sep_1_1_tour_graph.html" title="Wrapper to Concorde CCtsp_lpgraph for pricing cuts at tours. " alt="" coords="288,122,441,149"/>
 <area shape="rect" id="node5" href="$struct_c_m_r_1_1_data_1_1_support_group.html" title="Support graph data for an LP solution. " alt="" coords="276,173,453,199"/>
 <area shape="rect" id="node6" href="$struct_c_m_r_1_1_graph_1_1_adj_list.html" title="Representation of a graph as an adjacency list. " alt="" coords="5,173,149,199"/>
-<area shape="rect" id="node7" href="$class_c_m_r_1_1_sep_1_1_l_pcut_list.html" title="Management of Concorde lpcut_in linked list. " alt="" coords="291,279,438,306"/>
-<area shape="rect" id="node8" href="$class_c_m_r_1_1_sep_1_1_cut_queue.html" title="CMR::Sep::CutQueue\l\&lt; CMR::Sep::dominoparity \&gt;" alt="" coords="269,331,460,372"/>
-<area shape="rect" id="node9" href="$class_c_m_r_1_1_l_p_1_1_active_tour.html" title="Information about the active tour in a CoreLP. " alt="" coords="291,397,439,423"/>
-<area shape="rect" id="node10" href="$struct_c_m_r_1_1_l_p_1_1_basis.html" title="Row and column basic statuses corresponding to some LP solution. " alt="" coords="18,397,137,423"/>
+<area shape="rect" id="node7" href="$class_c_m_r_1_1_sep_1_1_l_pcut_list.html" title="Management of Concorde lpcut_in linked list. " alt="" coords="291,309,438,335"/>
+<area shape="rect" id="node8" href="$class_c_m_r_1_1_sep_1_1_cut_queue.html" title="CMR::Sep::CutQueue\l\&lt; CMR::Sep::dominoparity \&gt;" alt="" coords="269,360,460,401"/>
+<area shape="rect" id="node9" href="$class_c_m_r_1_1_l_p_1_1_active_tour.html" title="Information about the active tour in a CoreLP. " alt="" coords="291,426,439,453"/>
+<area shape="rect" id="node10" href="$struct_c_m_r_1_1_l_p_1_1_basis.html" title="Row and column basic statuses corresponding to some LP solution. " alt="" coords="18,426,137,453"/>
 </map>
