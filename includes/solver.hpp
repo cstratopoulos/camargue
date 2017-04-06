@@ -147,6 +147,9 @@ private:
     /// A loop of primal pivoting and cutting plane generation.
     LP::PivType cut_and_piv(bool do_price);
 
+    /// Check if \p prob is prunable based on an optimize/price estimate.
+    bool opt_check_prunable(bool do_price, ABC::BranchNode &prob);
+
     LP::PivType abc_bcp(bool do_price); //!< The branch-cut-price loop.
 
     LP::PivType frac_recover(); //!< Use x-tour heuristic on fractional pivot.

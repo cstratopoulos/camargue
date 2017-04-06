@@ -1,9 +1,11 @@
 #include "pool_sep.hpp"
 #include "err_util.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 #include <cstdio>
 
@@ -18,6 +20,8 @@ using std::endl;
 
 using std::runtime_error;
 using std::exception;
+
+using std::vector;
 
 namespace CMR {
 
@@ -114,6 +118,64 @@ bool PoolCuts::find_consec1(CCtsp_cuttree &tight_cuts)
         cutq.filter_primal(TG);
 
     return !cutq.empty();
+}
+
+bool PoolCuts::find_tour_tight()
+{
+    runtime_error err("Problem in PoolCuts::find_tour_tight");
+
+    int ncount = TG.node_count();
+    CCtsp_lpgraph *tour_lpg = TG.pass_ptr();
+    int ecount = tour_lpg->ecount;
+
+    vector<int> tour_elist;
+
+    try { tour_elist.reserve(ecount); }
+    CMR_CATCH_PRINT_THROW("reserving tour elist", err);
+
+    for (int i = 0; i < ecount; ++i) {
+        tour_elist.push_back(tour_lpg->edges[i].ends[0]);
+        tour_elist.push_back(tour_lpg->edges[i].ends[1]);
+    }
+
+    vector<double> cutvals;
+
+    try { cutvals.resize(pool->cutcount); }
+    CMR_CATCH_PRINT_THROW("allocating cutvals", err);
+
+    if (CCtsp_price_cuts(pool, ncount, ecount, &tour_elist[0],
+                         TG.tour_array(), &cutvals[0]))
+        throw runtime_error("CCtsp_search_cutpool failed");
+
+    int num_tight = std::count(cutvals.begin(), cutvals.end(), 0.0);
+    if (num_tight == 0) {
+        cout << "No tight cuts found : (" << endl;
+        return false;
+    } else {
+        cout << num_tight << " cuts are tight at tour" << endl;
+    }
+
+    int num_added = 0;
+
+    for (int i = 0; i < pool->cutcount && num_added <= 500; ++i)
+        if (cutvals[i] == 0.0) {
+            CCtsp_lpcut_in *newc = CC_SAFE_MALLOC(1, CCtsp_lpcut_in);
+            if (newc == NULL) {
+                cerr << "Out of memory for new cut" << endl;
+                throw err;
+            }
+
+            if (CCtsp_lpcut_to_lpcut_in(pool, &pool->cuts[i], newc)) {
+                cerr << "CCtsp_lpcut_to_lpcut_in failed" << endl;
+                CC_FREE(newc, CCtsp_lpcut_in);
+                throw err;
+            }
+
+            cutq.push_front(newc);
+            ++num_added;
+        }
+
+    return true;
 }
 
 bool PoolCuts::above_threshold(int num_paths)

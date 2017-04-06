@@ -419,6 +419,11 @@ PivType Solver::cut_and_piv(bool do_price)
     return piv;
 }
 
+bool Solver::opt_check_prunable(bool do_price, ABC::BranchNode &prob)
+{
+    runtime_error err("Problem in Solver::opt_check_prunable");
+}
+
 PivType Solver::abc_bcp(bool do_price)
 {
     using BranchStat = ABC::BranchNode::Status;
@@ -503,6 +508,7 @@ PivType Solver::abc_bcp(bool do_price)
                     cout << "\tSparse problem prunable." << endl;
                     cur->stat = BranchStat::Pruned;
                 } else {
+                    int coladd = core_lp.num_cols();
                     Price::ScanStat pstat = Price::ScanStat::Full;
                     try {
                         pstat = edge_pricer->gen_edges(PivType::FathomedTour,
@@ -512,6 +518,10 @@ PivType Solver::abc_bcp(bool do_price)
                     if (pstat == Price::ScanStat::FullOpt) {
                         cur->stat = BranchStat::Pruned;
                         cout << "Problem pruned by LB, do not cut." << endl;
+                    } else {
+                        coladd = core_lp.num_cols() - coladd;
+                        cout << "Problem NOT pruned, and "
+                             << coladd << " cols were added!!!!" << endl;
                     }
                 }
             }
