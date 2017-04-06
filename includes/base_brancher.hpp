@@ -22,6 +22,8 @@ public:
     BaseBrancher(const Data::Instance &inst, const Data::BestGroup &bestdata,
                  const Graph::CoreGraph &coregraph, LP::CoreLP &core);
 
+    virtual ~BaseBrancher() = default;
+
     /// Return the next subproblem to be examined.
     virtual BranchHistory::iterator next_prob() = 0;
 
