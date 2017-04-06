@@ -273,6 +273,30 @@ bool Separator::consec1_sep(ExternalCuts &EC) try
     throw runtime_error("Separator::consec1_sep failed");
 }
 
+bool Separator::pool_tour_tight(ExternalCuts &EC) try
+{
+    cout << "Calling Separator::pool_tour_tight" << endl;
+    set_TG();
+
+    PoolCuts pool_cuts(perm_elist, supp_data.support_ecap, TG, pool_q,
+                       EC.cc_pool, random_seed);
+
+    double ptt = util::zeit();
+    bool result = pool_cuts.find_tour_tight();
+    ptt = util::zeit() - ptt;
+
+    if (verbose) {
+        printf("\t%d pool cuts tight at active tour\t%.2fs\n", pool_q.size(),
+               ptt);
+        cout << flush;
+    }
+
+    return result;
+} catch (const exception &e) {
+    cerr << e.what() << endl;
+    throw runtime_error("Separator::pool_tour_tight failed");
+}
+
 bool Separator::local_sep(int chunk_sz, bool sphere) try
 {
     set_TG();

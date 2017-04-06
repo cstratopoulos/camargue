@@ -122,6 +122,7 @@ bool PoolCuts::find_consec1(CCtsp_cuttree &tight_cuts)
 
 bool PoolCuts::find_tour_tight()
 {
+    cout << "Calling PoolCuts::find_tour_tight" << endl;
     runtime_error err("Problem in PoolCuts::find_tour_tight");
 
     int ncount = TG.node_count();

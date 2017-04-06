@@ -43,6 +43,7 @@ public:
     bool pool_sep(ExternalCuts &EC);
     bool tighten_pool(ExternalCuts &EC);
     bool consec1_sep(ExternalCuts &EC);
+    bool pool_tour_tight(ExternalCuts &EC);
 
     bool local_sep(int chunk_sz, bool sphere);
 

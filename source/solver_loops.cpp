@@ -419,9 +419,73 @@ PivType Solver::cut_and_piv(bool do_price)
     return piv;
 }
 
-bool Solver::opt_check_prunable(bool do_price, ABC::BranchNode &prob)
+void Solver::opt_check_prunable(bool do_price, ABC::BranchNode &prob)
 {
     runtime_error err("Problem in Solver::opt_check_prunable");
+
+    using BranchStat = ABC::BranchNode::Status;
+    int verbose = 2;
+
+    if (verbose)
+        cout << "Price check: " << ABC::bnode_brief(prob) << " based on ";
+
+    double opt_time = util::zeit();
+    try {
+        if (prob.price_basis) {
+            if (verbose)
+                cout << "optimal estimate";
+            core_lp.copy_base(prob.price_basis->colstat,
+                              prob.price_basis->rowstat);
+        } else {
+            if (verbose)
+                cout << "high estimate";
+            core_lp.copy_start(core_lp.active_tour.edges());
+        }
+        cout << endl;
+
+        unique_ptr<Sep::Separator> sep;
+
+        reset_separator(sep);
+
+        if (sep->pool_tour_tight(core_lp.ext_cuts))
+            core_lp.add_cuts(sep->cutpool_q());
+
+        core_lp.primal_opt();
+    } CMR_CATCH_PRINT_THROW("pool adding/optimizing for pricing", err);
+    opt_time = util::zeit() - opt_time;
+
+    double objval = core_lp.get_objval();
+
+    if (verbose) {
+        printf("\tPrimal opt objval %.2f in %.2fs", objval, opt_time);
+        cout << endl;
+    }
+
+    prob.stat = BranchStat::NeedsCut;
+
+    if (objval >= core_lp.global_ub() - 0.9) {
+        if (!do_price) {
+            cout << "\tSparse problem prunable." << endl;
+            prob.stat = BranchStat::Pruned;
+        } else {
+            int coladd = core_lp.num_cols();
+            Price::ScanStat pstat = Price::ScanStat::Full;
+            try {
+                pstat = edge_pricer->gen_edges(PivType::FathomedTour,
+                                               false);
+            } CMR_CATCH_PRINT_THROW("pricing edges", err);
+
+            if (pstat == Price::ScanStat::FullOpt) {
+                prob.stat = BranchStat::Pruned;
+                cout << "Problem pruned by LB, do not cut." << endl;
+            } else {
+                coladd = core_lp.num_cols() - coladd;
+                cout << "Problem NOT pruned, and "
+                     << coladd << " cols were added!!!!" << endl;
+            }
+        }
+    }
+
 }
 
 PivType Solver::abc_bcp(bool do_price)
@@ -475,57 +539,10 @@ PivType Solver::abc_bcp(bool do_price)
                 }
             } CMR_CATCH_PRINT_THROW("branching on current problem", err);
 
-        if (cur->stat == BranchStat::NeedsPrice) {
-            cout << "Price check: "
-                 << ABC::bnode_brief(*cur) << " based on ";
-            double opt_time = util::zeit();
+        if (cur->stat == BranchStat::NeedsPrice)
             try {
-                if (cur->price_basis) {
-                    cout << "optimal estimate";
-                    core_lp.copy_base(cur->price_basis->colstat,
-                                      cur->price_basis->rowstat);
-                } else {
-                    cout << "high estimate";
-                    core_lp.copy_start(core_lp.active_tour.edges());
-                }
-                cout << endl;
-
-                core_lp.primal_opt();
-            } CMR_CATCH_PRINT_THROW("optimizing for pricing", err);
-            opt_time = util::zeit() - opt_time;
-
-            double objval = core_lp.get_objval();
-
-            if (output_prefs.verbose) {
-                printf("\tPrimal opt objval %.2f in %.2fs", objval, opt_time);
-                cout << endl;
-            }
-
-            cur->stat = BranchStat::NeedsCut;
-
-            if (objval >= core_lp.global_ub() - 0.9) {
-                if (!do_price) {
-                    cout << "\tSparse problem prunable." << endl;
-                    cur->stat = BranchStat::Pruned;
-                } else {
-                    int coladd = core_lp.num_cols();
-                    Price::ScanStat pstat = Price::ScanStat::Full;
-                    try {
-                        pstat = edge_pricer->gen_edges(PivType::FathomedTour,
-                                                       false);
-                    } CMR_CATCH_PRINT_THROW("pricing edges", err);
-
-                    if (pstat == Price::ScanStat::FullOpt) {
-                        cur->stat = BranchStat::Pruned;
-                        cout << "Problem pruned by LB, do not cut." << endl;
-                    } else {
-                        coladd = core_lp.num_cols() - coladd;
-                        cout << "Problem NOT pruned, and "
-                             << coladd << " cols were added!!!!" << endl;
-                    }
-                }
-            }
-        }
+                opt_check_prunable(do_price, *cur);
+            } CMR_CATCH_PRINT_THROW("doing opt price check", err);
 
         if (cur->stat == BranchStat::NeedsCut) {
             cout << "Cutting on " << ABC::bnode_brief(*cur) << endl;
