@@ -424,21 +424,18 @@ void Solver::opt_check_prunable(bool do_price, ABC::BranchNode &prob)
     runtime_error err("Problem in Solver::opt_check_prunable");
 
     using BranchStat = ABC::BranchNode::Status;
-    int verbose = 2;
+    int verbose = output_prefs.verbose;
 
-    if (verbose)
-        cout << "Price check: " << ABC::bnode_brief(prob) << " based on ";
+    cout << "Price check: " << ABC::bnode_brief(prob) << " based on ";
 
     double opt_time = util::zeit();
     try {
-        if (prob.price_basis) {
-            if (verbose)
-                cout << "optimal estimate";
+        if (prob.price_basis && !prob.price_basis->empty()) {
+            cout << "optimal estimate";
             core_lp.copy_base(prob.price_basis->colstat,
                               prob.price_basis->rowstat);
         } else {
-            if (verbose)
-                cout << "high estimate";
+            cout << "high estimate";
             core_lp.copy_start(core_lp.active_tour.edges());
         }
         cout << endl;
@@ -468,7 +465,6 @@ void Solver::opt_check_prunable(bool do_price, ABC::BranchNode &prob)
             cout << "\tSparse problem prunable." << endl;
             prob.stat = BranchStat::Pruned;
         } else {
-            int coladd = core_lp.num_cols();
             Price::ScanStat pstat = Price::ScanStat::Full;
             try {
                 pstat = edge_pricer->gen_edges(PivType::FathomedTour,
@@ -478,10 +474,6 @@ void Solver::opt_check_prunable(bool do_price, ABC::BranchNode &prob)
             if (pstat == Price::ScanStat::FullOpt) {
                 prob.stat = BranchStat::Pruned;
                 cout << "Problem pruned by LB, do not cut." << endl;
-            } else {
-                coladd = core_lp.num_cols() - coladd;
-                cout << "Problem NOT pruned, and "
-                     << coladd << " cols were added!!!!" << endl;
             }
         }
     }

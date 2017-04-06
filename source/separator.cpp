@@ -275,7 +275,6 @@ bool Separator::consec1_sep(ExternalCuts &EC) try
 
 bool Separator::pool_tour_tight(ExternalCuts &EC) try
 {
-    cout << "Calling Separator::pool_tour_tight" << endl;
     set_TG();
 
     PoolCuts pool_cuts(perm_elist, supp_data.support_ecap, TG, pool_q,
@@ -286,8 +285,7 @@ bool Separator::pool_tour_tight(ExternalCuts &EC) try
     ptt = util::zeit() - ptt;
 
     if (verbose) {
-        printf("\t%d pool cuts tight at active tour\t%.2fs\n", pool_q.size(),
-               ptt);
+        printf("\t%d tour-tight pool cuts\t%.2fs\n", pool_q.size(), ptt);
         cout << flush;
     }
 
