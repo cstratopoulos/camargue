@@ -122,7 +122,6 @@ bool PoolCuts::find_consec1(CCtsp_cuttree &tight_cuts)
 
 bool PoolCuts::find_tour_tight()
 {
-    cout << "Calling PoolCuts::find_tour_tight" << endl;
     runtime_error err("Problem in PoolCuts::find_tour_tight");
 
     int ncount = TG.node_count();
@@ -150,30 +149,37 @@ bool PoolCuts::find_tour_tight()
 
     int num_tight = std::count(cutvals.begin(), cutvals.end(), 0.0);
     if (num_tight == 0) {
-        cout << "No tight cuts found : (" << endl;
         return false;
-    } else {
-        cout << num_tight << " cuts are tight at tour" << endl;
     }
 
-    int num_added = 0;
+    vector<int> indices;
+    try { indices.reserve(pool->cutcount); }
+    CMR_CATCH_PRINT_THROW("allocating indices", err);
 
-    for (int i = 0; i < pool->cutcount && num_added <= 500; ++i)
-        if (cutvals[i] == 0.0) {
+    for (int i = 0; i < pool->cutcount; ++i)
+        indices.push_back(i);
+
+    CCrandstate rstate;
+    CCutil_sprand(random_seed, &rstate);
+
+    CCutil_rselect(&indices[0], 0, pool->cutcount - 1, 500, &cutvals[0],
+                   &rstate);
+
+    for (int i = 0; i < pool->cutcount && i < 500; ++i)
+        if (cutvals[indices[i]] == 0.0) {
             CCtsp_lpcut_in *newc = CC_SAFE_MALLOC(1, CCtsp_lpcut_in);
             if (newc == NULL) {
                 cerr << "Out of memory for new cut" << endl;
                 throw err;
             }
 
-            if (CCtsp_lpcut_to_lpcut_in(pool, &pool->cuts[i], newc)) {
+            if (CCtsp_lpcut_to_lpcut_in(pool, &pool->cuts[indices[i]], newc)) {
                 cerr << "CCtsp_lpcut_to_lpcut_in failed" << endl;
                 CC_FREE(newc, CCtsp_lpcut_in);
                 throw err;
             }
 
             cutq.push_front(newc);
-            ++num_added;
         }
 
     return true;
