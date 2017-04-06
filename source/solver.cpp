@@ -3,7 +3,6 @@
  * @brief Implementation of higher level or public Solver methods.
  */
 
-#include "config.hpp"
 #include "solver.hpp"
 #include "io_util.hpp"
 #include "timer.hpp"

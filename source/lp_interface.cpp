@@ -1,6 +1,7 @@
 #include "lp_interface.hpp"
 #include "err_util.hpp"
 #include "util.hpp"
+#include "config.hpp"
 
 #include <algorithm>
 #include <stdexcept>
@@ -16,6 +17,7 @@
 
 #if CMR_HAVE_SAFEGMI
 
+#include "mirgroup.hpp"
 #include <safemir/src/cplex_slvr.cpp>
 #include <safemir/src/ds_slvr.cpp>
 
@@ -1086,9 +1088,8 @@ void Relaxation::change_obj(const int index, const double val)
         throw cpx_err(rval, "CPXchgobj");
 }
 
-#if CMR_HAVE_SAFEGMI
-
 void Relaxation::init_mir_data(Sep::MIRgroup &mir_data)
+#if CMR_HAVE_SAFEGMI
 {
     runtime_error err("Problem in Relaxation::init_mir_data.");
 
@@ -1213,8 +1214,11 @@ void Relaxation::init_mir_data(Sep::MIRgroup &mir_data)
     mir_data.tableau_rows = unique_ptr<mir_system,
                                        Sep::SystemDeleter>(tab_rows);
 }
-
-#endif //CMR_HAVE_SAFEGMI
+#else //CMR_HAVE_SAFEGMI
+{
+    throw logic_error("called init_mir_data with CMR_HAVE_SAFEGMI undef'd");
+}
+#endif
 
 
 }

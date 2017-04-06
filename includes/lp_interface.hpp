@@ -1,24 +1,28 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/** @file
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
+ * @file
  * @brief Interface to the LP solver.
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * The class and prototypes in this file define operations that need to be
+ * supported by an LP solver for use with Camargue, with an opaque
+ * implementation pointer for the solver being used. Thus, this header is
+ * open for re-implementation in other solvers, although only CPLEX is
+ * supported for now.
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_LP_INTERFACE_H
 #define CMR_LP_INTERFACE_H
 
-#include "config.hpp"
 #include "lp_util.hpp"
-
-#if CMR_HAVE_SAFEGMI
-#include "mirgroup.hpp"
-#endif
 
 #include <utility>
 #include <vector>
 #include <memory>
 
 namespace CMR {
+
+namespace Sep {
+class MIRgroup;
+}
+
 namespace LP {
 
 /** Class for storing an lp relaxation via interface to an lp solver.
@@ -226,15 +230,7 @@ public:
 
     ///@}
 
-
-    /**@name Safe GMI initializer. */
-    ///@{
-
-#if CMR_HAVE_SAFEGMI
     void init_mir_data(Sep::MIRgroup &mir_data); //!< Construct a Sep::MirGroup.
-#endif
-
-    ///@}
 
 private:
     struct solver_impl; //!< Implementation hiding for solver.

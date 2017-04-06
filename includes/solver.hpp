@@ -15,12 +15,6 @@
 #include "meta_sep.hpp"
 #include "abc_nodesel.hpp"
 
-#if CMR_HAVE_SAFEGMI
-
-#include "safeGMI.hpp"
-
-#endif
-
 #include "pricer.hpp"
 #include "err_util.hpp"
 #include "util.hpp"
@@ -34,6 +28,10 @@
 #include <stdexcept>
 
 namespace CMR {
+
+namespace Sep {
+class SafeGomory;
+}
 
 /// Solution of TSP instances.
 class Solver {
@@ -160,9 +158,7 @@ private:
     void reset_separator(std::unique_ptr<Sep::Separator> &S);
     void reset_separator(std::unique_ptr<Sep::MetaCuts> &MS);
 
-#if CMR_HAVE_SAFEGMI
     void reset_separator(std::unique_ptr<Sep::SafeGomory> &GS);
-#endif
     ///@}
 
     /// Tracking objective values of pivots within a cut_and_piv loop.

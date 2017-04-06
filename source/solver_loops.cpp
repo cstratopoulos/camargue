@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Private Solver methods with loop calls.
+ * @brief Private Solver methods with loop calls or utility functions.
  */
 
 #include "config.hpp"
@@ -629,16 +629,18 @@ void Solver::reset_separator(std::unique_ptr<Sep::MetaCuts> &MS)
     MS->verbose = output_prefs.verbose;
 }
 
-#if CMR_HAVE_SAFEGMI
-
 void Solver::reset_separator(std::unique_ptr<Sep::SafeGomory> &GS)
+#if CMR_HAVE_SAFEGMI
 {
     util::ptr_reset(GS, core_lp, active_tour().edges(),
                     core_lp.lp_edges);
     GS->filter_primal = !active_tour().tourless();
     GS->verbose = output_prefs.verbose;
 }
-
+#else
+{
+    throw logic_error("called gmi reset_separator but CMR_HAVE_SAFEGMI undef'd")
+}
 #endif
 
 }
