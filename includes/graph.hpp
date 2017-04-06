@@ -27,7 +27,7 @@ namespace Graph {
 
 /// Representing graph edges and costs.
 struct Edge : EndPts {
-    Edge() : removable(false) {}
+    Edge() : len(0), removable(false) {}
 
     /// Construct by endpoints and length.
     Edge(int e0, int e1, int _len) :

@@ -234,7 +234,7 @@ struct Segment {
 
 /// Simple base class for storing edge of a graph as a sorted pair of nodes.
 struct EndPts {
-    EndPts() = default;
+    EndPts()  : end{{-1, -1}} {}
     EndPts(int e0, int e1) : end{{e0, e1}}
         { if (end[0] > end[1]) std::swap(end[0], end[1]); }
 
