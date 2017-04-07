@@ -314,8 +314,6 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
     PivType piv = PivType::Frac;
     bool elim_during = true;
 
-    time_overall.resume();
-
     int rounds = 0;
 
     while (!lb_fathom()) {
