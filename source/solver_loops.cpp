@@ -61,7 +61,9 @@ bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
                             const std::string sep_name,
                             PivType &piv, PivStats &piv_stats)
 {
-    Timer &sep_timer = sep_times[sep_name];
+    TimerCalled &tpair = sep_times[sep_name];
+    Timer &sep_timer = tpair.first;
+    tpair.second = true;
 
     sep_timer.resume();
     bool result = sepcall();
@@ -457,10 +459,10 @@ void Solver::opt_check_prunable(bool do_price, ABC::BranchNode &prob)
         unique_ptr<Sep::Separator> sep;
         reset_separator(sep);
 
-        sep_times["CutPool"].resume();
+        sep_times["CutPool"].first.resume();
         if (sep->pool_tour_tight(core_lp.ext_cuts))
             core_lp.add_cuts(sep->cutpool_q());
-        sep_times["CutPool"].stop();
+        sep_times["CutPool"].first.stop();
 
         core_lp.primal_opt();
     } CMR_CATCH_PRINT_THROW("pool adding/optimizing for pricing", err);

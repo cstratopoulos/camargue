@@ -7,6 +7,7 @@
 #include "io_util.hpp"
 #include "timer.hpp"
 #include "err_util.hpp"
+#include "config.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -224,8 +225,8 @@ void Solver::initial_prints()
     time_branch.start(); time_branch.stop();
 
     for (auto &kv : sep_times) {
-        kv.second.start();
-        kv.second.stop();
+        kv.second.first.start();
+        kv.second.first.stop();
     }
 
     bool want_xy = output_prefs.dump_xy;
@@ -415,18 +416,34 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
 
 Solver::~Solver()
 {
+    bool want_cpu = false;
+#ifdef CMR_USE_OMP
+    want_cpu = true;
+#endif
+
     time_overall.stop();
     cout << "\n";
     time_piv.report(false);
     time_price.report(false);
-    time_branch.report(false);
+    if (branch_engaged)
+        time_branch.report(false);
     cout << "\n";
-    for(const auto &kv : sep_times)
-        kv.second.report(false);
+    for(const auto &kv : sep_times) {
+        if (kv.second.second == false)
+            continue;
+
+        const string &name = kv.first;
+        const Timer &T = kv.second.first;
+
+        if (name == "ExactBlossoms" || name == "SimpleDP")
+            T.report(want_cpu);
+        else
+            T.report(false);
+    }
 
     cout << "\n";
 
-    time_overall.report(false);
+    time_overall.report(want_cpu);
 }
 
 }

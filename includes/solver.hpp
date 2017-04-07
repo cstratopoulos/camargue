@@ -222,23 +222,25 @@ private:
     Timer time_price{"Pricing", &time_overall};
     Timer time_branch{"Branching", &time_overall};
 
-    std::map<std::string, Timer> sep_times{
-        {"CutPool", Timer("CutPool", &time_overall)},
-        {"SegmentCuts", Timer("SegmentCuts", &time_overall)},
-        {"ConnectCuts", Timer("ConnectCuts", &time_overall)},
-        {"ExactSub", Timer("ExactSub", &time_overall)},
-        {"FastBlossoms", Timer("FastBlossoms", &time_overall)},
-        {"ExactBlossoms", Timer("FastBlossoms", &time_overall)},
-        {"BlockCombs", Timer("BlockCombs", &time_overall)},
-        {"SimpleDP", Timer("SimpleDP", &time_overall)},
-        {"LocalCuts", Timer("LocalCuts", &time_overall)},
-        {"Decker", Timer("Decker", &time_overall)},
-        {"Handling", Timer("Handling", &time_overall)},
-        {"Teething", Timer("Teething", &time_overall)},
-        {"Consec1", Timer("Consec1", &time_overall)},
-        {"Tighten", Timer("Tighten", &time_overall)},
-        {"TightenPool", Timer("TightenPool", &time_overall)},
-        {"SafeGMI", Timer("SafeGMI", &time_overall)},
+    using TimerCalled = std::pair<Timer, bool>;
+
+    std::map<std::string, TimerCalled> sep_times{
+        {"CutPool", {Timer("CutPool", &time_overall), false}},
+        {"SegmentCuts", {Timer("SegmentCuts", &time_overall), false}},
+        {"ConnectCuts", {Timer("ConnectCuts", &time_overall), false}},
+        {"ExactSub", {Timer("ExactSub", &time_overall), false}},
+        {"FastBlossoms", {Timer("FastBlossoms", &time_overall), false}},
+        {"ExactBlossoms", {Timer("FastBlossoms", &time_overall), false}},
+        {"BlockCombs", {Timer("BlockCombs", &time_overall), false}},
+        {"SimpleDP", {Timer("SimpleDP", &time_overall), false}},
+        {"LocalCuts", {Timer("LocalCuts", &time_overall), false}},
+        {"Decker", {Timer("Decker", &time_overall), false}},
+        {"Handling", {Timer("Handling", &time_overall), false}},
+        {"Teething", {Timer("Teething", &time_overall), false}},
+        {"Consec1", {Timer("Consec1", &time_overall), false}},
+        {"Tighten", {Timer("Tighten", &time_overall), false}},
+        {"TightenPool", {Timer("TightenPool", &time_overall), false}},
+        {"SafeGMI", {Timer("SafeGMI", &time_overall), false}},
     };
 };
 
