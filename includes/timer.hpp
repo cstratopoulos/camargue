@@ -10,7 +10,7 @@ namespace CMR {
 class Timer {
 public:
     Timer(); /**< Construct unnamed timer. */
-  
+
     Timer(const std::string &tname); /**< Construct a named timer. */
 
     /** Construct a named timer with ratio timer.
@@ -28,17 +28,17 @@ public:
     /** Start accumulating time without resetting elapsed times. */
     void resume();
 
-    /** Reports the elapsed times and ratios if applicable. 
+    /** Reports the elapsed times and ratios if applicable.
      * If \p show_cpu is true, cpu_elapsed will be reported as well. If not,
      * only wall_elapsed will be reported. Generally show_cpu should be `false`
-     * unless the process spawns multiple threads. 
+     * unless the process spawns multiple threads.
      */
-    void report(bool show_cpu);
+    void report(bool show_cpu) const;
 
 private:
 
     /** The name of the Timer.
-     * timer_name will be used by @ref report to identify the time(s) printed. 
+     * timer_name will be used by @ref report to identify the time(s) printed.
      * For most nicely formatted output, keep timer_name at 20 chars or less.
      */
     std::string timer_name;
@@ -64,7 +64,7 @@ private:
     /** For use by @ref report to report elapsed times as ratio of other timer.
      * If \p ratio_timer is not `nullptr`, then a call to @ref report will
      * also report wall_elapsed and cpu_elapsed as a ratio of those respective
-     * values from ratio_timer. 
+     * values from ratio_timer.
      */
     const Timer *ratio_timer;
 };

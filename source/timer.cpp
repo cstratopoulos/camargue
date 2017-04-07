@@ -58,19 +58,19 @@ void Timer::stop()
 }
 
 void Timer::resume()
-{  
+{
   cpu_start = std::clock();
   wall_start = system_clock::now();
 }
 
-void Timer::report(bool show_cpu)
+void Timer::report(bool show_cpu) const
 {
     string name_pad;
-    
+
     if (timer_name.length() <= 20)
         name_pad = string(20 - timer_name.length(), ' ');
     cout << name_pad << timer_name << ": ";
-  
+
     printf("%.6fs wall \t", wall_elapsed.count());
     if (ratio_timer)
         printf("(%04.1f%% of %s)",

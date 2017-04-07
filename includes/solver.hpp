@@ -23,6 +23,7 @@
 #include <array>
 #include <functional>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <stdexcept>
@@ -55,6 +56,8 @@ public:
            OutPrefs outprefs);
     Solver(int seed, int node_count, int gridsize, OutPrefs outprefs);
     ///@}
+
+    ~Solver();
 
     void set_lowerbound(double lb); //!< Set a target for early termination.
 
@@ -188,7 +191,8 @@ private:
     /// Method template for calling a separation routine in cut_and_piv.
     template <typename Qtype>
     bool call_separator(const std::function<bool()> &sepcall,
-                        Qtype &sep_q, LP::PivType &piv, PivStats &piv_stats);
+                        Qtype &sep_q, const std::string sep_name,
+                        LP::PivType &piv, PivStats &piv_stats);
 
     double target_lb{-std::numeric_limits<double>::max() + 1.0};
 
@@ -212,6 +216,30 @@ private:
 
     std::array<char, 80> p_bar;
     void place_pivot(double low_limit, double best_tourlen, double piv_val);
+
+    Timer time_overall{"Solver Overall"};
+    Timer time_piv{"Pivoting", &time_overall};
+    Timer time_price{"Pricing", &time_overall};
+    Timer time_branch{"Branching", &time_overall};
+
+    std::map<std::string, Timer> sep_times{
+        {"CutPool", Timer("CutPool", &time_overall)},
+        {"SegmentCuts", Timer("SegmentCuts", &time_overall)},
+        {"ConnectCuts", Timer("ConnectCuts", &time_overall)},
+        {"ExactSub", Timer("ExactSub", &time_overall)},
+        {"FastBlossoms", Timer("FastBlossoms", &time_overall)},
+        {"ExactBlossoms", Timer("FastBlossoms", &time_overall)},
+        {"BlockCombs", Timer("BlockCombs", &time_overall)},
+        {"SimpleDP", Timer("SimpleDP", &time_overall)},
+        {"LocalCuts", Timer("LocalCuts", &time_overall)},
+        {"Decker", Timer("Decker", &time_overall)},
+        {"Handling", Timer("Handling", &time_overall)},
+        {"Teething", Timer("Teething", &time_overall)},
+        {"Consec1", Timer("Consec1", &time_overall)},
+        {"Tighten", Timer("Tighten", &time_overall)},
+        {"TightenPool", Timer("TightenPool", &time_overall)},
+        {"SafeGMI", Timer("SafeGMI", &time_overall)},
+    };
 };
 
 std::ostream &operator<<(std::ostream &os, Solver::Aug aug);
@@ -255,8 +283,10 @@ LP::PivType Solver::abc(bool do_price)
 
     if (do_price) {
         try {
+            time_price.resume();
             edge_pricer->elim_edges(true);
             core_lp.primal_opt();
+            time_price.stop();
             cout << "\tcol count " << core_lp.num_cols()
                  << ", opt objval " << core_lp.get_objval() << endl;
         } CMR_CATCH_PRINT_THROW("eliminating and optimizing", err);
@@ -270,8 +300,6 @@ LP::PivType Solver::abc(bool do_price)
 
 
     cout << "\tCommencing ABC search....\n";
-    Timer abct(tsp_instance.problem_name() + " ABC search");
-    abct.start();
 
     try {
         branch_controller = util::make_unique<SelectionRule>(tsp_instance,
@@ -293,8 +321,6 @@ LP::PivType Solver::abc(bool do_price)
     try { piv = abc_bcp(do_price); }
     CMR_CATCH_PRINT_THROW("running abc_bcp", err);
 
-    abct.stop();
-
     cout << "\n\tABC search completed, optimal tour has length "
          << best_data.min_tour_value << endl;
 
@@ -309,8 +335,6 @@ LP::PivType Solver::abc(bool do_price)
          << max_depth << endl;
 
     report_cuts();
-
-    abct.report(true);
 
     return piv;
 }

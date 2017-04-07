@@ -58,13 +58,21 @@ namespace Eps = Epsilon;
  */
 template<typename Qtype>
 bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
+                            const std::string sep_name,
                             PivType &piv, PivStats &piv_stats)
 {
+    Timer &sep_timer = sep_times[sep_name];
+
+    sep_timer.resume();
     bool result = sepcall();
+    sep_timer.stop();
+
     if (result) {
+        time_piv.resume();
         core_lp.pivot_back(true);
         core_lp.add_cuts(sep_q);
         piv = core_lp.primal_pivot();
+        time_piv.stop();
 
         double prev_val = piv_stats.prev_val;
         double new_val = core_lp.get_objval();
@@ -170,37 +178,38 @@ inline void Solver::place_pivot(double low_lim, double best_tourlen,
  * invoke a straightforward separation routine which is just called and used
  * to update stats. See below for example usage.
  */
-#define CUT_PIV_CALL(sep_ptr, find_fn, cuts_q, description)     \
-try {                                                           \
-    reset_separator(sep_ptr);                                   \
-    if (call_separator([&sep_ptr, this]()                       \
-                       { return sep_ptr->find_fn; },            \
-                       sep_ptr->cuts_q(), piv, piv_stats)) {    \
-        if (return_pivot(piv))                                  \
-            return piv;                                         \
-                                                                \
-        if (restart_loop(piv, piv_stats.delta_ratio))           \
-            continue;                                           \
-    }                                                           \
-} CMR_CATCH_PRINT_THROW(description, err);
-
-/** Macro for invoking cut metamorphosis separation.
- * This can be used for a straightforward invocation of one of the
- * Sep::MetaCuts separation routines. See below for example usage.
- */
-#define META_SEP_PIV_CALL(meta_type, description)                       \
+#define CUT_PIV_CALL(sep_ptr, find_fn, cuts_q, sep_name)                \
 try {                                                                   \
-    reset_separator(meta_sep);                                          \
-    if (call_separator([&meta_sep]()                                    \
-                       { return meta_sep->find_cuts(meta_type); },      \
-                       meta_sep->metacuts_q(), piv, piv_stats)) {       \
+    reset_separator(sep_ptr);                                           \
+    if (call_separator([&sep_ptr, this]()                               \
+                       { return sep_ptr->find_fn; },                    \
+                       sep_ptr->cuts_q(), sep_name, piv, piv_stats)) {  \
         if (return_pivot(piv))                                          \
             return piv;                                                 \
                                                                         \
         if (restart_loop(piv, piv_stats.delta_ratio))                   \
             continue;                                                   \
     }                                                                   \
-}  CMR_CATCH_PRINT_THROW(description, err);
+} CMR_CATCH_PRINT_THROW(sep_name, err);
+
+/** Macro for invoking cut metamorphosis separation.
+ * This can be used for a straightforward invocation of one of the
+ * Sep::MetaCuts separation routines. See below for example usage.
+ */
+#define META_SEP_PIV_CALL(meta_type, sep_name)                          \
+try {                                                                   \
+    reset_separator(meta_sep);                                          \
+    if (call_separator([&meta_sep]()                                    \
+                       { return meta_sep->find_cuts(meta_type); },      \
+                       meta_sep->metacuts_q(), sep_name, piv,           \
+                       piv_stats)) {                                    \
+        if (return_pivot(piv))                                          \
+            return piv;                                                 \
+                                                                        \
+        if (restart_loop(piv, piv_stats.delta_ratio))                   \
+            continue;                                                   \
+    }                                                                   \
+}  CMR_CATCH_PRINT_THROW(sep_name, err);
 
 ///@}
 
@@ -238,6 +247,7 @@ PivType Solver::cut_and_piv(bool do_price)
 
         PivStats piv_stats(core_lp.get_objval());
         double &delta_ratio = piv_stats.delta_ratio;
+        bool called_ptight = false;
 
         ++round;
         if (verbose) {
@@ -249,10 +259,10 @@ PivType Solver::cut_and_piv(bool do_price)
 
         if (cut_sel.cutpool)
             CUT_PIV_CALL(sep, pool_sep(core_lp.ext_cuts), cutpool_q,
-                         "doing pool sep");
+                         "CutPool");
 
         if (cut_sel.segment)
-            CUT_PIV_CALL(sep, segment_sep(), segment_q, "doing segment sep");
+            CUT_PIV_CALL(sep, segment_sep(), segment_q, "SegmentCuts");
 
         if (cut_sel.connect && !supp_data.connected) {
             if (verbose)
@@ -265,7 +275,8 @@ PivType Solver::cut_and_piv(bool do_price)
                     reset_separator(sep);
                     bool found_con =
                     call_separator([&sep]() { return sep->connect_sep(); },
-                                   sep->connect_cuts_q(), piv, piv_stats);
+                                   sep->connect_cuts_q(), "ConnectCuts",
+                                   piv, piv_stats);
                     if (!found_con)
                         throw logic_error("Disconnected w no connect cuts??");
                 } CMR_CATCH_PRINT_THROW("doing connect cut loop", err);
@@ -286,13 +297,13 @@ PivType Solver::cut_and_piv(bool do_price)
         }
 
         if (cut_sel.fast2m)
-            CUT_PIV_CALL(sep, fast2m_sep(), fastblossom_q, "doing fast2m sep");
+            CUT_PIV_CALL(sep, fast2m_sep(), fastblossom_q, "FastBlossoms");
 
         if (cut_sel.blkcomb)
-            CUT_PIV_CALL(sep, blkcomb_sep(), blockcomb_q, "doing blkcomb sep");
+            CUT_PIV_CALL(sep, blkcomb_sep(), blockcomb_q, "BlockCombs");
 
         if (cut_sel.ex2m)
-            CUT_PIV_CALL(sep, exact2m_sep(), exblossom_q, "doing exact 2m sep");
+            CUT_PIV_CALL(sep, exact2m_sep(), exblossom_q, "ExactBlossoms");
 
         if (cut_sel.simpleDP) {
             bool found_ex = false;
@@ -308,7 +319,7 @@ PivType Solver::cut_and_piv(bool do_price)
                     found_ex = call_separator([&sep]()
                                               { return sep->exsub_sep(); },
                                               sep->exact_sub_q(),
-                                              piv, piv_stats);
+                                              "ExactSub", piv, piv_stats);
                 } CMR_CATCH_PRINT_THROW("doing exact subtour loop", err);
             } while (found_ex);
 
@@ -322,32 +333,33 @@ PivType Solver::cut_and_piv(bool do_price)
                      << " rounds, CC says pivot now in subtour polytope..."
                      << endl;
 
-            CUT_PIV_CALL(sep, simpleDP_sep(), simpleDP_q,
-                         "doing simple DP sep");
+            CUT_PIV_CALL(sep, simpleDP_sep(), simpleDP_q, "SimpleDP");
         }
 
         using MetaType = Sep::MetaCuts::Type;
 
         if (cut_sel.tighten)
             CUT_PIV_CALL(meta_sep, tighten_cuts(), metacuts_q,
-                         "tightening cuts");
+                         "Tighten");
 
         if (cut_sel.decker)
-            META_SEP_PIV_CALL(MetaType::Decker, "doing Double Decker sep");
+            META_SEP_PIV_CALL(MetaType::Decker, "Decker");
 
         if (cut_sel.handling)
-            META_SEP_PIV_CALL(MetaType::Handling, "doing Handling sep");
+            META_SEP_PIV_CALL(MetaType::Handling, "Handling");
 
         if (cut_sel.teething)
-            META_SEP_PIV_CALL(MetaType::Teething, "doing Teething sep");
+            META_SEP_PIV_CALL(MetaType::Teething, "Teething");
 
-        if (cut_sel.tighten_pool)
+        if (cut_sel.tighten_pool && !called_ptight) {
+            //called_ptight = true;
             CUT_PIV_CALL(sep, tighten_pool(core_lp.ext_cuts), cutpool_q,
-                         "tightening cut pool");
+                         "TightenPool");
+        }
 
         if (cut_sel.consec1)
             CUT_PIV_CALL(sep, consec1_sep(core_lp.ext_cuts), consec1_q,
-                         "doing consec1 comb sep");
+                         "Consec1");
 
         if (cut_sel.localcuts) {
             bool lc_restart = false;
@@ -357,7 +369,8 @@ PivType Solver::cut_and_piv(bool do_price)
 
                 if (call_separator([&sep, chk, do_sphere]()
                                    { return sep->local_sep(chk, do_sphere); },
-                                   sep->local_cuts_q(), piv, piv_stats)) {
+                                   sep->local_cuts_q(), "LocalCuts", piv,
+                                   piv_stats)) {
                     if (return_pivot(piv))
                         return piv;
 
@@ -376,7 +389,8 @@ PivType Solver::cut_and_piv(bool do_price)
 
                 if (call_separator([&sep, chk, do_sphere]()
                                    { return sep->local_sep(chk, do_sphere); },
-                                   sep->local_cuts_q(), piv, piv_stats)) {
+                                   sep->local_cuts_q(), "LocalCuts",
+                                   piv, piv_stats)) {
                     if (return_pivot(piv))
                         return piv;
 
@@ -395,7 +409,7 @@ PivType Solver::cut_and_piv(bool do_price)
         unique_ptr<Sep::SafeGomory> gmi_sep;
 
         if (cut_sel.safeGMI && !do_price)
-            CUT_PIV_CALL(gmi_sep, find_cuts(), gomory_q, "doing safe GMI sep");
+            CUT_PIV_CALL(gmi_sep, find_cuts(), gomory_q, "safeGMI");
 
 #endif
         double ph_init_prev = piv_stats.first_last_ratio;
@@ -441,11 +455,12 @@ void Solver::opt_check_prunable(bool do_price, ABC::BranchNode &prob)
         cout << endl;
 
         unique_ptr<Sep::Separator> sep;
-
         reset_separator(sep);
 
+        sep_times["CutPool"].resume();
         if (sep->pool_tour_tight(core_lp.ext_cuts))
             core_lp.add_cuts(sep->cutpool_q());
+        sep_times["CutPool"].stop();
 
         core_lp.primal_opt();
     } CMR_CATCH_PRINT_THROW("pool adding/optimizing for pricing", err);
@@ -467,8 +482,10 @@ void Solver::opt_check_prunable(bool do_price, ABC::BranchNode &prob)
         } else {
             Price::ScanStat pstat = Price::ScanStat::Full;
             try {
+                time_price.resume();
                 pstat = edge_pricer->gen_edges(PivType::FathomedTour,
                                                false);
+                time_price.stop();
             } CMR_CATCH_PRINT_THROW("pricing edges", err);
 
             if (pstat == Price::ScanStat::FullOpt) {
@@ -499,7 +516,11 @@ PivType Solver::abc_bcp(bool do_price)
             if (do_price) {
                 bool feasible = false;
 
-                try { feasible = edge_pricer->feas_recover(); }
+                try {
+                    time_price.resume();
+                    feasible = edge_pricer->feas_recover();
+                    time_price.stop();
+                }
                 CMR_CATCH_PRINT_THROW("doing feas_recover on node", err);
 
                 if (feasible) {
@@ -517,7 +538,9 @@ PivType Solver::abc_bcp(bool do_price)
 
         if (cur->stat != BranchStat::Pruned)
             try {
+                time_branch.resume();
                 branch_controller->do_branch(*cur);
+                time_branch.stop();
                 if (core_lp.active_tourlen() < best_data.min_tour_value) {
                     cout << "Instated branch tour improves on best tour"
                          << endl;
@@ -533,7 +556,9 @@ PivType Solver::abc_bcp(bool do_price)
 
         if (cur->stat == BranchStat::NeedsPrice)
             try {
+                time_price.resume();
                 opt_check_prunable(do_price, *cur);
+                time_price.stop();
             } CMR_CATCH_PRINT_THROW("doing opt price check", err);
 
         if (cur->stat == BranchStat::NeedsCut) {
@@ -561,16 +586,20 @@ PivType Solver::abc_bcp(bool do_price)
         if (cur->stat == BranchStat::NeedsBranch) {
             cout << "Branching on " << ABC::bnode_brief(*cur) << endl;
             try {
+                time_branch.resume();
                 branch_controller->split_prob(cur);
+                time_branch.stop();
             } CMR_CATCH_PRINT_THROW("splitting branch problem", err);
 
             cur->stat = BranchStat::Done;
         }
 
+        time_branch.resume();
         try { branch_controller->do_unbranch(*cur); }
         CMR_CATCH_PRINT_THROW("unbranching pruned problem", err);
 
         cur = branch_controller->next_prob();
+        time_branch.stop();
     }
 
     return piv;

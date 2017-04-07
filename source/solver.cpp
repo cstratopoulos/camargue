@@ -218,6 +218,16 @@ void Solver::report_cuts()
 
 void Solver::initial_prints()
 {
+    time_overall.start();
+    time_piv.start(); time_piv.stop();
+    time_price.start(); time_price.stop();
+    time_branch.start(); time_branch.stop();
+
+    for (auto &kv : sep_times) {
+        kv.second.start();
+        kv.second.stop();
+    }
+
     bool want_xy = output_prefs.dump_xy;
     bool want_tour = output_prefs.save_tour;
     bool want_edges = output_prefs.save_tour_edges;
@@ -290,9 +300,11 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
 
     if (do_price)
         try {
+            time_price.resume();
             edge_pricer = util::make_unique<Price::Pricer>(core_lp,
                                                            tsp_instance,
                                                            core_graph);
+            time_price.stop();
             edge_pricer->verbose = output_prefs.verbose;
         } CMR_CATCH_PRINT_THROW("instantiating/allocating Pricer", err);
 
@@ -301,11 +313,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
     PivType piv = PivType::Frac;
     bool elim_during = true;
 
-
-
-    CMR::Timer timer(tsp_instance.problem_name() + " pure cut");
-
-    timer.start();
+    time_overall.resume();
 
     int rounds = 0;
 
@@ -315,7 +323,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
             cout << "|| Cutting loop pass " << rounds << endl;
 
         try {
-            piv = cut_and_piv(do_price);//(round, do_price);
+            piv = cut_and_piv(do_price);
         } CMR_CATCH_PRINT_THROW("invoking cut and piv", err);
 
         if (piv == PivType::Subtour && cut_sel.connect)
@@ -327,10 +335,15 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
                     cout << "\tTour optimal for edge set...\n";
                 edge_pricer->verbose = output_prefs.verbose + pure_cut;
                 try {
-                    if (edge_pricer->gen_edges(piv,
-                                               elim_during && pure_cut) ==
-                        Price::ScanStat::Full) {
+                    time_price.resume();
+                    Price::ScanStat scan_stat =
+                    edge_pricer->gen_edges(piv, elim_during &&pure_cut);
+                    time_price.stop();
+
+                    if (scan_stat == Price::ScanStat::Full) {
+                        time_piv.resume();
                         core_lp.pivot_back(false);
+                        time_piv.stop();
                         continue;
                     } else
                         break;
@@ -354,7 +367,11 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
             }
 
             if (do_price) {
-                try { edge_pricer->gen_edges(piv, false); }
+                try {
+                    time_price.resume();
+                    edge_pricer->gen_edges(piv, false);
+                    time_price.stop();
+                }
                 CMR_CATCH_PRINT_THROW("adding edges to core", err);
             }
 
@@ -388,16 +405,28 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
         break;
     }
 
-    timer.stop();
-
     if (pure_cut) {
         cout << "\tPivot status " << piv << ", obj val "
              << core_lp.get_objval() << endl;
         report_cuts();
-
-        timer.report(true);
     }
     return piv;
+}
+
+Solver::~Solver()
+{
+    time_overall.stop();
+    cout << "\n";
+    time_piv.report(false);
+    time_price.report(false);
+    time_branch.report(false);
+    cout << "\n";
+    for(const auto &kv : sep_times)
+        kv.second.report(false);
+
+    cout << "\n";
+
+    time_overall.report(false);
 }
 
 }

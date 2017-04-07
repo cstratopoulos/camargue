@@ -86,6 +86,10 @@ int main(int argc, char** argv) try
 
     proc_label();
 
+
+    CMR::Timer t("Ctors/Solution");
+    t.start();
+
     if (!tsp_fname.empty()) {
         if (tour_fname.empty())
             tsp_solver = CMR::util::make_unique<CMR::Solver>(tsp_fname, seed,
@@ -117,9 +121,6 @@ int main(int argc, char** argv) try
     } else
         throw logic_error("Unimplemented CutSel preset val");
 
-    CMR::Timer t(tsp_solver->inst_info().problem_name() + " overall");
-    t.start();
-
     bool do_price = !sparse;
 
     if (opt_dat.branch) {
@@ -148,6 +149,7 @@ int main(int argc, char** argv) try
     }
 
     t.stop();
+    cout << "\n";
     t.report(true);
 
     return 0;
