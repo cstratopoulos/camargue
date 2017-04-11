@@ -69,6 +69,16 @@ clean: undeftest
 	@$(RM) -f $(BUILDDIR)/tests/*.d
 	@$(RM) -f $(TARGET)
 
+distclean:
+	@$(RM) -f $(BUILDDIR)/*.o
+	@$(RM) -f $(BUILDDIR)/*.d
+	@$(RM) -f $(BUILDDIR)/tests/*.o
+	@$(RM) -f $(BUILDDIR)/tests/*.d
+	@$(RM) -f $(TARGET)
+	@$(RM) -f $(INCDIR)/config.hpp
+	@$(RM) -f $(INCDIR)/_cfg_prefs.txt
+	@$(RM) -f Makefile
+
 deftest:
 	@scripts/gen_config.py --test
 
