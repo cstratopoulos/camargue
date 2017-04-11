@@ -11,18 +11,16 @@ import re
 from check_cc import ConfigExcept
 
 # valid keys for a configuration dictionary
-valid_keys = {"CMR_USE_OMP",
-              "CMR_HAVE_CATCH",
-              "CMR_HAVE_OMP",
-              "CMR_DO_TESTS",
-              "CMR_HAVE_SAFEGMI"}
+valid_keys = set(["CMR_USE_OMP", "CMR_HAVE_CATCH", "CMR_HAVE_OMP",
+                  "CMR_DO_TESTS", "CMR_HAVE_SAFEGMI"])
 
-# preferences for a bare install with no unit tests or externals
-bare_prefs = {"CMR_USE_OMP" : 0,
-              "CMR_HAVE_CATCH" : 0,
-              "CMR_HAVE_OMP" : 0,
-              "CMR_DO_TESTS" : 0,
+bare_prefs = {"CMR_USE_OMP" : 0, \
+              "CMR_HAVE_CATCH" : 0, \
+              "CMR_HAVE_OMP" : 0, \
+              "CMR_DO_TESTS" : 0, \
               "CMR_HAVE_SAFEGMI" : 0}
+
+
 
 def valid_prefs(pref_dict):
     """Returns true if pref_dict is a dictionary of valid preferences.
@@ -40,10 +38,11 @@ def valid_prefs(pref_dict):
         return False
 
     valuset = set(pref_dict.values())
-    if not valuset <= {0, 1}:
-        print "Dictionary contains nonbinary values: "
-        print valuset
-        return False
+    for val in valuset:
+        if val != 0 and val != 1:
+            print "Dictionary contains nonbinary values: "
+            print valuset
+            return False
 
     if pref_dict["CMR_USE_OMP"] and not pref_dict["CMR_HAVE_OMP"]:
         print "Preference dictionary uses OpenMP but doesn't have it"
@@ -189,31 +188,32 @@ instead of manually editing\n"]
 
     print "Reading from blank and prefs to generate config.hpp...."
     try:
-        with open(cfg_blank) as read_blank, open(cfg_hpp, "w") as write_hpp:
-            for msg in polite_warn:
-                write_hpp.write(msg)
+        with open(cfg_blank) as read_blank:
+            with open(cfg_hpp, "w") as write_hpp:
+                for msg in polite_warn:
+                    write_hpp.write(msg)
 
-            for line in read_blank:
-                if ">>>" in line:
-                    continue
+                for line in read_blank:
+                    if ">>>" in line:
+                        continue
 
-                if re.match("#define", line) or re.match("#undef", line):
-                    param = None
-                    for par in valid_keys:
-                        if par in line:
-                            param = par
-                            break
-                    if param is not None:
-                        parval = prefs_dict[param]
-                        if parval == 0:
-                            write_hpp.write("#undef %s\n" % param)
+                    if re.match("#define", line) or re.match("#undef", line):
+                        param = None
+                        for par in valid_keys:
+                            if par in line:
+                                param = par
+                                break
+                        if param is not None:
+                            parval = prefs_dict[param]
+                            if parval == 0:
+                                write_hpp.write("#undef %s\n" % param)
+                            else:
+                                write_hpp.write("#define %s 1\n" % param)
                         else:
-                            write_hpp.write("#define %s 1\n" % param)
+                            write_hpp.write(line)
+
                     else:
                         write_hpp.write(line)
-
-                else:
-                    write_hpp.write(line)
     except IOError as ie:
         raise ConfigExcept(str(ie) + " writing to new config.hpp")
     else:

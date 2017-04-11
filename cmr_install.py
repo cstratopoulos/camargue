@@ -157,13 +157,14 @@ if want_omp:
                 else:
                     print "Editing Makefile to add flag"
                     try:
-                        with open("Makefile") as read_make, \
-                             open("Makefile.new", "w") as new_make:
-                            for line in read_make:
-                                if re.match("FOMP +:=", line):
-                                    new_make.write("FOMP        := -fopenmp\n")
-                                else:
-                                    new_make.write(line)
+                        with open("Makefile") as read_make:
+                            with open("Makefile.new", "w") as new_make:
+                                for line in read_make:
+                                    if re.match("FOMP +:=", line):
+                                        new_make.write("FOMP        \
+:= -fopenmp\n")
+                                    else:
+                                        new_make.write(line)
                     except IOError:
                         print "Error adding OMP flag to Makefile, \
 building without it"
