@@ -59,7 +59,8 @@ namespace Eps = Epsilon;
 template<typename Qtype>
 bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
                             const std::string sep_name,
-                            PivType &piv, PivStats &piv_stats)
+                            PivType &piv, PivStats &piv_stats,
+                            bool pivback_prune)
 {
     TimerCalled &tpair = sep_times[sep_name];
     Timer &sep_timer = tpair.first;
@@ -71,7 +72,7 @@ bool Solver::call_separator(const function<bool()> &sepcall, Qtype &sep_q,
 
     if (result) {
         time_piv.resume();
-        core_lp.pivot_back(true);
+        core_lp.pivot_back(pivback_prune);
         core_lp.add_cuts(sep_q);
         piv = core_lp.primal_pivot();
         time_piv.stop();
@@ -185,7 +186,8 @@ try {                                                                   \
     reset_separator(sep_ptr);                                           \
     if (call_separator([&sep_ptr, this]()                               \
                        { return sep_ptr->find_fn; },                    \
-                       sep_ptr->cuts_q(), sep_name, piv, piv_stats)) {  \
+                       sep_ptr->cuts_q(), sep_name, piv, piv_stats,     \
+                       true)) {                                         \
         if (return_pivot(piv))                                          \
             return piv;                                                 \
                                                                         \
@@ -204,7 +206,7 @@ try {                                                                   \
     if (call_separator([&meta_sep]()                                    \
                        { return meta_sep->find_cuts(meta_type); },      \
                        meta_sep->metacuts_q(), sep_name, piv,           \
-                       piv_stats)) {                                    \
+                       piv_stats, true)) {                              \
         if (return_pivot(piv))                                          \
             return piv;                                                 \
                                                                         \
@@ -212,6 +214,36 @@ try {                                                                   \
             continue;                                                   \
     }                                                                   \
 }  CMR_CATCH_PRINT_THROW(sep_name, err);
+
+#define STD_SEC_PIV_LOOP(sec_name, sec_call, sec_q)                     \
+if (verbose)                                                            \
+    cout << "\tAdding round of " << sec_name << " SECs...\n";           \
+                                                                        \
+int numrounds = 0;                                                      \
+bool found_cuts = true;                                                 \
+                                                                        \
+while (found_cuts) {                                                    \
+    ++numrounds;                                                        \
+    try {                                                               \
+        reset_separator(sep);                                           \
+        found_cuts = call_separator([&sep]() { return sep->sec_call(); }, \
+                                    sep->sec_q(), sec_name, piv, piv_stats, \
+                                    false);                             \
+    } CMR_CATCH_PRINT_THROW(sec_name, err);                             \
+}                                                                       \
+                                                                        \
+if (return_pivot(piv)) {                                                \
+    if (verbose)                                                        \
+        cout << "\t...Tour pivot from " << numrounds << " rounds of "   \
+             << sec_name << " SECs" << endl;                            \
+    return piv;                                                         \
+} else {                                                                \
+    if (verbose)                                                        \
+        cout << "\t...Generated " << sec_name << " SECs for " << numrounds \
+             << " rounds, none remain" << endl;                         \
+}
+
+
 
 ///@}
 
@@ -267,35 +299,8 @@ PivType Solver::cut_and_piv(bool do_price)
             CUT_PIV_CALL(sep, segment_sep(), segment_q, "SegmentCuts");
 
         if (cut_sel.connect && !supp_data.connected) {
-            if (verbose)
-                cout << "\tAdding round of standard connect cuts...\n";
-            int conrounds = 0;
-
-            while (!supp_data.connected) {
-                ++conrounds;
-                try {
-                    reset_separator(sep);
-                    bool found_con =
-                    call_separator([&sep]() { return sep->connect_sep(); },
-                                   sep->connect_cuts_q(), "ConnectCuts",
-                                   piv, piv_stats);
-                    if (!found_con)
-                        throw logic_error("Disconnected w no connect cuts??");
-                } CMR_CATCH_PRINT_THROW("doing connect cut loop", err);
-            }
-
-            if (return_pivot(piv)) {
-                if (verbose)
-                    cout << "\t...Tour pivot from "
-                         << conrounds << " rounds of connect cuts" << endl;
-                return piv;
-            } else {
-                if (verbose)
-                    cout << "\t...Cut and pivoted for "
-                         << conrounds << " rounds, solution now connected."
-                         << endl;
-                continue;
-            }
+            STD_SEC_PIV_LOOP("ConnectCuts", connect_sep, connect_cuts_q);
+            continue;
         }
 
         if (cut_sel.fast2m)
@@ -308,41 +313,14 @@ PivType Solver::cut_and_piv(bool do_price)
             CUT_PIV_CALL(sep, exact2m_sep(), exblossom_q, "ExactBlossoms");
 
         if (cut_sel.simpleDP) {
-            bool found_ex = false;
-            int exrounds = 0;
-
-            if (verbose)
-                cout << "\tAdding round of standard exact SECs..." << endl;
-
-            do {
-                ++exrounds;
-                try {
-                    reset_separator(sep);
-                    found_ex = call_separator([&sep]()
-                                              { return sep->exsub_sep(); },
-                                              sep->exact_sub_q(),
-                                              "ExactSub", piv, piv_stats);
-                } CMR_CATCH_PRINT_THROW("doing exact subtour loop", err);
-            } while (found_ex);
-
-            if (return_pivot(piv)) {
-                if (verbose)
-                    cout << "\t...Tour pivot from " << exrounds
-                         << " rounds of exact SEC generation" << endl;
-                return piv;
-            } else if (verbose)
-                cout << "\t...Cut and pivoted for " << exrounds
-                     << " rounds, CC says pivot now in subtour polytope..."
-                     << endl;
-
+            STD_SEC_PIV_LOOP("ExactSub", exsub_sep, exact_sub_q);
             CUT_PIV_CALL(sep, simpleDP_sep(), simpleDP_q, "SimpleDP");
         }
 
         using MetaType = Sep::MetaCuts::Type;
 
         if (cut_sel.tighten)
-            CUT_PIV_CALL(meta_sep, tighten_cuts(), metacuts_q,
-                         "Tighten");
+            CUT_PIV_CALL(meta_sep, tighten_cuts(), metacuts_q, "Tighten");
 
         if (cut_sel.decker)
             META_SEP_PIV_CALL(MetaType::Decker, "Decker");
@@ -372,7 +350,7 @@ PivType Solver::cut_and_piv(bool do_price)
                 if (call_separator([&sep, chk, do_sphere]()
                                    { return sep->local_sep(chk, do_sphere); },
                                    sep->local_cuts_q(), "LocalCuts", piv,
-                                   piv_stats)) {
+                                   piv_stats, true)) {
                     if (return_pivot(piv))
                         return piv;
 
@@ -392,7 +370,7 @@ PivType Solver::cut_and_piv(bool do_price)
                 if (call_separator([&sep, chk, do_sphere]()
                                    { return sep->local_sep(chk, do_sphere); },
                                    sep->local_cuts_q(), "LocalCuts",
-                                   piv, piv_stats)) {
+                                   piv, piv_stats, true)) {
                     if (return_pivot(piv))
                         return piv;
 

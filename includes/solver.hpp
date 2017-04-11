@@ -1,8 +1,7 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/** @file
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
+ * @file
  * @brief TSP Solver class header.
- */
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_SOLVER_H
 #define CMR_SOLVER_H
@@ -191,7 +190,8 @@ private:
     template <typename Qtype>
     bool call_separator(const std::function<bool()> &sepcall,
                         Qtype &sep_q, const std::string sep_name,
-                        LP::PivType &piv, PivStats &piv_stats);
+                        LP::PivType &piv, PivStats &piv_stats,
+                        bool pivback_prune);
 
     double target_lb{-std::numeric_limits<double>::max() + 1.0};
 
