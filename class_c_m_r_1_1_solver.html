@@ -93,6 +93,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pri-types">Private Types</a> &#124;
 <a href="#pri-methods">Private Member Functions</a> &#124;
 <a href="#pri-static-methods">Static Private Member Functions</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
@@ -111,21 +112,22 @@ Collaboration diagram for CMR::Solver:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_c_m_r_1_1_solver__coll__graph.png" border="0" usemap="#_c_m_r_1_1_solver_coll__map" alt="Collaboration graph"/></div>
 <map name="_c_m_r_1_1_solver_coll__map" id="_c_m_r_1_1_solver_coll__map">
-<area shape="rect" id="node2" href="class_c_m_r_1_1_data_1_1_karp_partition.html" title="Class for computing and storing Karp partitions. " alt="" coords="584,5,756,32"/>
-<area shape="rect" id="node3" href="class_c_m_r_1_1_data_1_1_instance.html" title="Storing TSP instance data. " alt="" coords="597,56,743,83"/>
-<area shape="rect" id="node17" href="struct_c_m_r_1_1_out_prefs.html" title="Preferences related to tour file output and verbosity. " alt="" coords="613,107,727,133"/>
-<area shape="rect" id="node5" href="class_c_m_r_1_1_l_p_1_1_core_l_p.html" title="Class for storing the core lp associated to a TSP instance and pivoting. " alt="" coords="605,284,735,311"/>
-<area shape="rect" id="node6" href="class_c_m_r_1_1_l_p_1_1_relaxation.html" title="Class for storing an lp relaxation via interface to an lp solver. " alt="" coords="305,328,451,355"/>
-<area shape="rect" id="node7" href="class_c_m_r_1_1_sep_1_1_external_cuts.html" title="The external storage of a collection of HyperGraph cuts in a Relaxation. " alt="" coords="294,379,462,405"/>
-<area shape="rect" id="node8" href="class_c_m_r_1_1_sep_1_1_clique_bank.html" title="Storage of a repository of Cliques, for use in building a HyperGraph. " alt="" coords="5,357,164,384"/>
-<area shape="rect" id="node9" href="class_c_m_r_1_1_sep_1_1_tooth_bank.html" title="Storage of a repository of Teeth, for use in building a HyperGraph. " alt="" coords="7,408,162,435"/>
-<area shape="rect" id="node10" href="struct_c_m_r_1_1_data_1_1_support_group.html" title="Support graph data for an LP solution. " alt="" coords="289,227,467,253"/>
-<area shape="rect" id="node11" href="struct_c_m_r_1_1_graph_1_1_adj_list.html" title="Representation of a graph as an adjacency list. " alt="" coords="13,203,157,229"/>
-<area shape="rect" id="node12" href="class_c_m_r_1_1_graph_1_1_core_graph.html" title="Graph structures for the edges currently in a CoreLP::Relaxation. " alt="" coords="295,176,461,203"/>
-<area shape="rect" id="node13" href="class_c_m_r_1_1_l_p_1_1_active_tour.html" title="Information about the active tour in a CoreLP. " alt="" coords="304,277,452,304"/>
-<area shape="rect" id="node14" href="struct_c_m_r_1_1_l_p_1_1_basis.html" title="Row and column basic statuses corresponding to some LP solution. " alt="" coords="25,277,144,304"/>
-<area shape="rect" id="node15" href="struct_c_m_r_1_1_data_1_1_best_group.html" title="Information about the current best tour. " alt="" coords="299,440,457,467"/>
-<area shape="rect" id="node16" href="struct_c_m_r_1_1_solver_1_1_cut_sel.html" title="Which separation routines should be called. " alt="" coords="597,513,743,540"/>
+<area shape="rect" id="node2" href="class_c_m_r_1_1_data_1_1_karp_partition.html" title="Class for computing and storing Karp partitions. " alt="" coords="588,8,760,35"/>
+<area shape="rect" id="node3" href="class_c_m_r_1_1_data_1_1_instance.html" title="Storing TSP instance data. " alt="" coords="601,516,747,543"/>
+<area shape="rect" id="node17" href="class_c_m_r_1_1_timer.html" title="A class for recording CPU and wall clock time. " alt="" coords="627,605,721,632"/>
+<area shape="rect" id="node18" href="struct_c_m_r_1_1_out_prefs.html" title="Preferences related to tour file output and verbosity. " alt="" coords="617,415,731,441"/>
+<area shape="rect" id="node5" href="class_c_m_r_1_1_l_p_1_1_core_l_p.html" title="Class for storing the core lp associated to a TSP instance and pivoting. " alt="" coords="609,231,739,257"/>
+<area shape="rect" id="node6" href="class_c_m_r_1_1_l_p_1_1_relaxation.html" title="Class for storing an lp relaxation via interface to an lp solver. " alt="" coords="305,281,451,308"/>
+<area shape="rect" id="node7" href="class_c_m_r_1_1_sep_1_1_external_cuts.html" title="The external storage of a collection of HyperGraph cuts in a Relaxation. " alt="" coords="294,129,462,156"/>
+<area shape="rect" id="node8" href="class_c_m_r_1_1_sep_1_1_clique_bank.html" title="Storage of a repository of Cliques, for use in building a HyperGraph. " alt="" coords="5,79,164,105"/>
+<area shape="rect" id="node9" href="class_c_m_r_1_1_sep_1_1_tooth_bank.html" title="Storage of a repository of Teeth, for use in building a HyperGraph. " alt="" coords="7,129,162,156"/>
+<area shape="rect" id="node10" href="struct_c_m_r_1_1_data_1_1_support_group.html" title="Support graph data for an LP solution. " alt="" coords="289,231,467,257"/>
+<area shape="rect" id="node11" href="struct_c_m_r_1_1_graph_1_1_adj_list.html" title="Representation of a graph as an adjacency list. " alt="" coords="13,267,157,293"/>
+<area shape="rect" id="node12" href="class_c_m_r_1_1_graph_1_1_core_graph.html" title="Graph structures for the edges currently in a CoreLP::Relaxation. " alt="" coords="295,332,461,359"/>
+<area shape="rect" id="node13" href="class_c_m_r_1_1_l_p_1_1_active_tour.html" title="Information about the active tour in a CoreLP. " alt="" coords="304,180,452,207"/>
+<area shape="rect" id="node14" href="struct_c_m_r_1_1_l_p_1_1_basis.html" title="Row and column basic statuses corresponding to some LP solution. " alt="" coords="25,180,144,207"/>
+<area shape="rect" id="node15" href="struct_c_m_r_1_1_data_1_1_best_group.html" title="Information about the current best tour. " alt="" coords="299,69,457,96"/>
+<area shape="rect" id="node16" href="struct_c_m_r_1_1_solver_1_1_cut_sel.html" title="Which separation routines should be called. " alt="" coords="601,465,747,492"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -187,10 +189,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a9a816ba9f0e3e3d5a6fc0065ee3b1ec8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9a816ba9f0e3e3d5a6fc0065ee3b1ec8"></a>
 const std::vector&lt; AugObj &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_aug_chart</b> () const </td></tr>
 <tr class="separator:a9a816ba9f0e3e3d5a6fc0065ee3b1ec8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8cca8bb280a2cf6d4c7e20d44085af7a"><td class="memTemplParams" colspan="2">template&lt;typename Qtype &gt; </td></tr>
-<tr class="memitem:a8cca8bb280a2cf6d4c7e20d44085af7a"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_solver.html#a8cca8bb280a2cf6d4c7e20d44085af7a">call_separator</a> (const function&lt; bool()&gt; &amp;sepcall, Qtype &amp;sep_q, <a class="el" href="namespace_c_m_r_1_1_l_p.html#afd00f2eef86a805578156cdd9422bcd8">PivType</a> &amp;piv, <a class="el" href="struct_c_m_r_1_1_solver_1_1_piv_stats.html">PivStats</a> &amp;piv_stats)</td></tr>
-<tr class="memdesc:a8cca8bb280a2cf6d4c7e20d44085af7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function template is used to add one class of cuts at a time, attempt to measure progress obtained, and return information on whether a further separation routine should be called.  <a href="#a8cca8bb280a2cf6d4c7e20d44085af7a">More...</a><br /></td></tr>
-<tr class="separator:a8cca8bb280a2cf6d4c7e20d44085af7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe30113c1f67849af2a092f2527a7f18"><td class="memTemplParams" colspan="2">template&lt;typename Qtype &gt; </td></tr>
+<tr class="memitem:afe30113c1f67849af2a092f2527a7f18"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_solver.html#afe30113c1f67849af2a092f2527a7f18">call_separator</a> (const function&lt; bool()&gt; &amp;sepcall, Qtype &amp;sep_q, const std::string sep_name, <a class="el" href="namespace_c_m_r_1_1_l_p.html#afd00f2eef86a805578156cdd9422bcd8">PivType</a> &amp;piv, <a class="el" href="struct_c_m_r_1_1_solver_1_1_piv_stats.html">PivStats</a> &amp;piv_stats)</td></tr>
+<tr class="memdesc:afe30113c1f67849af2a092f2527a7f18"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function template is used to add one class of cuts at a time, attempt to measure progress obtained, and return information on whether a further separation routine should be called.  <a href="#afe30113c1f67849af2a092f2527a7f18">More...</a><br /></td></tr>
+<tr class="separator:afe30113c1f67849af2a092f2527a7f18"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">TSPLIB constructors, each with or without specifying EdgePlan.</div></td></tr>
 <tr class="memitem:a603257fe5101a1443a2f39339805dcd2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a603257fe5101a1443a2f39339805dcd2"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Solver</b> (const std::string &amp;tsp_fname, int seed, <a class="el" href="namespace_c_m_r_1_1_graph.html#ab1e3896d6da8c9672d595c5a0c77f751">Graph::EdgePlan</a> eplan, <a class="el" href="struct_c_m_r_1_1_out_prefs.html">OutPrefs</a> outprefs)</td></tr>
@@ -218,6 +220,12 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:aba4516b7ed97f075c777ee3440beb094"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aba4516b7ed97f075c777ee3440beb094"></a>
 struct <a class="el" href="struct_c_m_r_1_1_solver_1_1_cut_sel.html">CMR::Solver::CutSel</a>&#160;</td><td class="memItemRight" valign="bottom"><b>cut_sel</b></td></tr>
 <tr class="separator:aba4516b7ed97f075c777ee3440beb094"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-types"></a>
+Private Types</h2></td></tr>
+<tr class="memitem:a4f4cbfe9f9b0fc79f0a1372ae47e57b4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4f4cbfe9f9b0fc79f0a1372ae47e57b4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>TimerCalled</b> = std::pair&lt; <a class="el" href="class_c_m_r_1_1_timer.html">Timer</a>, bool &gt;</td></tr>
+<tr class="separator:a4f4cbfe9f9b0fc79f0a1372ae47e57b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
@@ -254,6 +262,10 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a78aac3d3fada87f21db3225e885803bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespace_c_m_r_1_1_l_p.html#afd00f2eef86a805578156cdd9422bcd8">LP::PivType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_solver.html#a78aac3d3fada87f21db3225e885803bf">cut_and_piv</a> (bool do_price)</td></tr>
 <tr class="memdesc:a78aac3d3fada87f21db3225e885803bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">A loop of primal pivoting and cutting plane generation.  <a href="#a78aac3d3fada87f21db3225e885803bf">More...</a><br /></td></tr>
 <tr class="separator:a78aac3d3fada87f21db3225e885803bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7004373258c1b036ccd061f71892ffe4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7004373258c1b036ccd061f71892ffe4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_solver.html#a7004373258c1b036ccd061f71892ffe4">opt_check_prunable</a> (bool do_price, <a class="el" href="struct_c_m_r_1_1_a_b_c_1_1_branch_node.html">ABC::BranchNode</a> &amp;prob)</td></tr>
+<tr class="memdesc:a7004373258c1b036ccd061f71892ffe4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if <code>prob</code> is prunable based on an optimize/price estimate. <br /></td></tr>
+<tr class="separator:a7004373258c1b036ccd061f71892ffe4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a95c27cd5b41db679dce984d42813aded"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a95c27cd5b41db679dce984d42813aded"></a>
 <a class="el" href="namespace_c_m_r_1_1_l_p.html#afd00f2eef86a805578156cdd9422bcd8">LP::PivType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_solver.html#a95c27cd5b41db679dce984d42813aded">abc_bcp</a> (bool do_price)</td></tr>
 <tr class="memdesc:a95c27cd5b41db679dce984d42813aded"><td class="mdescLeft">&#160;</td><td class="mdescRight">The branch-cut-price loop. <br /></td></tr>
@@ -262,11 +274,11 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <a class="el" href="namespace_c_m_r_1_1_l_p.html#afd00f2eef86a805578156cdd9422bcd8">LP::PivType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_solver.html#a61b9da9b0aff99fd7ec554ebedbb80d9">frac_recover</a> ()</td></tr>
 <tr class="memdesc:a61b9da9b0aff99fd7ec554ebedbb80d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Use x-tour heuristic on fractional pivot. <br /></td></tr>
 <tr class="separator:a61b9da9b0aff99fd7ec554ebedbb80d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaecc72bd5be8d872c030b74042a6d96a"><td class="memTemplParams" colspan="2"><a class="anchor" id="aaecc72bd5be8d872c030b74042a6d96a"></a>
+<tr class="memitem:a765e072eced89d68443b6758d1d77858"><td class="memTemplParams" colspan="2"><a class="anchor" id="a765e072eced89d68443b6758d1d77858"></a>
 template&lt;typename Qtype &gt; </td></tr>
-<tr class="memitem:aaecc72bd5be8d872c030b74042a6d96a"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_solver.html#aaecc72bd5be8d872c030b74042a6d96a">call_separator</a> (const std::function&lt; bool()&gt; &amp;sepcall, Qtype &amp;sep_q, <a class="el" href="namespace_c_m_r_1_1_l_p.html#afd00f2eef86a805578156cdd9422bcd8">LP::PivType</a> &amp;piv, <a class="el" href="struct_c_m_r_1_1_solver_1_1_piv_stats.html">PivStats</a> &amp;piv_stats)</td></tr>
-<tr class="memdesc:aaecc72bd5be8d872c030b74042a6d96a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method template for calling a separation routine in cut_and_piv. <br /></td></tr>
-<tr class="separator:aaecc72bd5be8d872c030b74042a6d96a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a765e072eced89d68443b6758d1d77858"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_solver.html#a765e072eced89d68443b6758d1d77858">call_separator</a> (const std::function&lt; bool()&gt; &amp;sepcall, Qtype &amp;sep_q, const std::string sep_name, <a class="el" href="namespace_c_m_r_1_1_l_p.html#afd00f2eef86a805578156cdd9422bcd8">LP::PivType</a> &amp;piv, <a class="el" href="struct_c_m_r_1_1_solver_1_1_piv_stats.html">PivStats</a> &amp;piv_stats)</td></tr>
+<tr class="memdesc:a765e072eced89d68443b6758d1d77858"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method template for calling a separation routine in cut_and_piv. <br /></td></tr>
+<tr class="separator:a765e072eced89d68443b6758d1d77858"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab387c33cda9743294f7b38fc8cde4ed0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab387c33cda9743294f7b38fc8cde4ed0"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>place_pivot</b> (double low_limit, double best_tourlen, double piv_val)</td></tr>
 <tr class="separator:ab387c33cda9743294f7b38fc8cde4ed0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -332,6 +344,20 @@ std::vector&lt; AugObj &gt;&#160;</td><td class="memItemRight" valign="bottom"><
 <tr class="memitem:aab4037ec20766aa8e6960a4c2d0b722e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aab4037ec20766aa8e6960a4c2d0b722e"></a>
 std::array&lt; char, 80 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>p_bar</b></td></tr>
 <tr class="separator:aab4037ec20766aa8e6960a4c2d0b722e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a6dea22e6ec697a7ea3493621cd7540"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9a6dea22e6ec697a7ea3493621cd7540"></a>
+<a class="el" href="class_c_m_r_1_1_timer.html">Timer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>time_overall</b> {&quot;Solver Overall&quot;}</td></tr>
+<tr class="separator:a9a6dea22e6ec697a7ea3493621cd7540"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19cfc19b9e6f97f5114d515b1085ea30"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a19cfc19b9e6f97f5114d515b1085ea30"></a>
+<a class="el" href="class_c_m_r_1_1_timer.html">Timer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>time_piv</b> {&quot;Pivoting&quot;, &amp;time_overall}</td></tr>
+<tr class="separator:a19cfc19b9e6f97f5114d515b1085ea30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acbc63b341b32a5bc36ca87770f551126"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acbc63b341b32a5bc36ca87770f551126"></a>
+<a class="el" href="class_c_m_r_1_1_timer.html">Timer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>time_price</b> {&quot;Pricing&quot;, &amp;time_overall}</td></tr>
+<tr class="separator:acbc63b341b32a5bc36ca87770f551126"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef7817c53dd017bba466bb104085b81f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aef7817c53dd017bba466bb104085b81f"></a>
+<a class="el" href="class_c_m_r_1_1_timer.html">Timer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>time_branch</b> {&quot;Branching&quot;, &amp;time_overall}</td></tr>
+<tr class="separator:aef7817c53dd017bba466bb104085b81f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a48eca94ca28e266685c59145728af1"><td class="memItemLeft" align="right" valign="top">std::map&lt; std::string, TimerCalled &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>sep_times</b></td></tr>
+<tr class="separator:a2a48eca94ca28e266685c59145728af1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Solution of TSP instances. </p>
@@ -397,7 +423,7 @@ template&lt;typename SelectionRule &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a8cca8bb280a2cf6d4c7e20d44085af7a"></a>
+<a class="anchor" id="afe30113c1f67849af2a092f2527a7f18"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -414,6 +440,12 @@ template&lt;typename Qtype &gt; </div>
           <td></td>
           <td class="paramtype">Qtype &amp;&#160;</td>
           <td class="paramname"><em>sep_q</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string&#160;</td>
+          <td class="paramname"><em>sep_name</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -560,6 +592,27 @@ template&lt;typename Qtype &gt; </div>
   </dd>
 </dl>
 
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a class="anchor" id="a2a48eca94ca28e266685c59145728af1"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::map&lt;std::string, TimerCalled&gt; CMR::Solver::sep_times</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div><div class="line">        {<span class="stringliteral">&quot;CutPool&quot;</span>, {Timer(<span class="stringliteral">&quot;CutPool&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;SegmentCuts&quot;</span>, {Timer(<span class="stringliteral">&quot;SegmentCuts&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;ConnectCuts&quot;</span>, {Timer(<span class="stringliteral">&quot;ConnectCuts&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;ExactSub&quot;</span>, {Timer(<span class="stringliteral">&quot;ExactSub&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;FastBlossoms&quot;</span>, {Timer(<span class="stringliteral">&quot;FastBlossoms&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;ExactBlossoms&quot;</span>, {Timer(<span class="stringliteral">&quot;FastBlossoms&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;BlockCombs&quot;</span>, {Timer(<span class="stringliteral">&quot;BlockCombs&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;SimpleDP&quot;</span>, {Timer(<span class="stringliteral">&quot;SimpleDP&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;LocalCuts&quot;</span>, {Timer(<span class="stringliteral">&quot;LocalCuts&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;Decker&quot;</span>, {Timer(<span class="stringliteral">&quot;Decker&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;Handling&quot;</span>, {Timer(<span class="stringliteral">&quot;Handling&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;Teething&quot;</span>, {Timer(<span class="stringliteral">&quot;Teething&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;Consec1&quot;</span>, {Timer(<span class="stringliteral">&quot;Consec1&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;Tighten&quot;</span>, {Timer(<span class="stringliteral">&quot;Tighten&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;TightenPool&quot;</span>, {Timer(<span class="stringliteral">&quot;TightenPool&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">        {<span class="stringliteral">&quot;SafeGMI&quot;</span>, {Timer(<span class="stringliteral">&quot;SafeGMI&quot;</span>, &amp;time_overall), <span class="keyword">false</span>}},</div><div class="line">    }</div></div><!-- fragment -->
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>

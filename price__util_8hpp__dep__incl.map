@@ -14,7 +14,7 @@
 <area shape="rect" id="node11" href="$qpref__brancher_8hpp.html" title="Template classes/methods for branching by priority queue. " alt="" coords="61,453,246,480"/>
 <area shape="rect" id="node8" href="$camargue_8cpp.html" title="The camargue main program. " alt="" coords="495,677,641,704"/>
 <area shape="rect" id="node9" href="$solver_8cpp.html" title="Implementation of higher level or public Solver methods. " alt="" coords="801,677,927,704"/>
-<area shape="rect" id="node10" href="$solver__loops_8cpp.html" title="Private Solver methods with loop calls. " alt="" coords="951,677,1113,704"/>
+<area shape="rect" id="node10" href="$solver__loops_8cpp.html" title="Private Solver methods with loop calls or utility functions. " alt="" coords="951,677,1113,704"/>
 <area shape="rect" id="node14" href="$price__exact_8cpp.html" title="Pricer implementations for exact lower bounds/edge elimination. " alt="" coords="684,304,841,331"/>
 <area shape="rect" id="node15" href="$price__gen_8cpp.html" title="Pricer implementations for generating negative reduced cost edges. " alt="" coords="321,304,468,331"/>
 <area shape="rect" id="node16" href="$price__recover_8cpp.html" title="Pricer implementations for recovering an infeasible LP. " alt="" coords="492,304,660,331"/>

@@ -11,6 +11,7 @@ var searchData=
   ['operator_3d_3d',['operator==',['../class_c_m_r_1_1_sep_1_1_clique.html#a19d24e9165919a5c35350020ae0de691',1,'CMR::Sep::Clique::operator==()'],['../class_c_m_r_1_1_sep_1_1_tooth.html#a9a0e2b52f9b68554810220ba756a5236',1,'CMR::Sep::Tooth::operator==()'],['../struct_c_m_r_1_1_segment.html#a8f304cdf5665d90f353d7b8f56c4aad1',1,'CMR::Segment::operator==()']]],
   ['operator_3e',['operator&gt;',['../struct_c_m_r_1_1_segment.html#ab2c2bc72b0fcfc41c84d1fec4268e7bf',1,'CMR::Segment']]],
   ['operator_5b_5d',['operator[]',['../class_c_m_r_1_1_data_1_1_karp_partition.html#a135a5155e22ed8b47b7c6bdbc3d0e9e6',1,'CMR::Data::KarpPartition']]],
+  ['opt_5fcheck_5fprunable',['opt_check_prunable',['../class_c_m_r_1_1_solver.html#a7004373258c1b036ccd061f71892ffe4',1,'CMR::Solver']]],
   ['optdata',['OptData',['../struct_opt_data.html',1,'']]],
   ['optimal',['Optimal',['../namespace_c_m_r_1_1_l_p.html#a53db58585c279468b943fc20d5c2c2deacb61fef1e5e79e07a80421cb9a073a80',1,'CMR::LP']]],
   ['other_5fend',['other_end',['../struct_c_m_r_1_1_graph_1_1_adj_obj.html#af42261d6b21e64632429adb217666fc0',1,'CMR::Graph::AdjObj']]],

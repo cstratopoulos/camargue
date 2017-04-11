@@ -127,9 +127,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3bfdeae45ed36c52e19f18e05c9783e9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_timer.html#a3bfdeae45ed36c52e19f18e05c9783e9">resume</a> ()</td></tr>
 <tr class="memdesc:a3bfdeae45ed36c52e19f18e05c9783e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start accumulating time without resetting elapsed times.  <a href="#a3bfdeae45ed36c52e19f18e05c9783e9">More...</a><br /></td></tr>
 <tr class="separator:a3bfdeae45ed36c52e19f18e05c9783e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa7835a0e816519767e6b7354a8847def"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_timer.html#aa7835a0e816519767e6b7354a8847def">report</a> (bool show_cpu)</td></tr>
-<tr class="memdesc:aa7835a0e816519767e6b7354a8847def"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reports the elapsed times and ratios if applicable.  <a href="#aa7835a0e816519767e6b7354a8847def">More...</a><br /></td></tr>
-<tr class="separator:aa7835a0e816519767e6b7354a8847def"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa523e321640fc7acdf7da9974081f1ad"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_timer.html#aa523e321640fc7acdf7da9974081f1ad">report</a> (bool show_cpu) const </td></tr>
+<tr class="memdesc:aa523e321640fc7acdf7da9974081f1ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reports the elapsed times and ratios if applicable.  <a href="#aa523e321640fc7acdf7da9974081f1ad">More...</a><br /></td></tr>
+<tr class="separator:aa523e321640fc7acdf7da9974081f1ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
@@ -155,7 +155,7 @@ Private Attributes</h2></td></tr>
 <tr class="memdesc:ad72159f697b28cbd1542389a5d538d59"><td class="mdescLeft">&#160;</td><td class="mdescRight">CPU clock end time.  <a href="#ad72159f697b28cbd1542389a5d538d59">More...</a><br /></td></tr>
 <tr class="separator:ad72159f697b28cbd1542389a5d538d59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7dc82b68c969a6f6869300939c3a4c9d"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="class_c_m_r_1_1_timer.html">Timer</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_timer.html#a7dc82b68c969a6f6869300939c3a4c9d">ratio_timer</a></td></tr>
-<tr class="memdesc:a7dc82b68c969a6f6869300939c3a4c9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">For use by <a class="el" href="class_c_m_r_1_1_timer.html#aa7835a0e816519767e6b7354a8847def">report</a> to report elapsed times as ratio of other timer.  <a href="#a7dc82b68c969a6f6869300939c3a4c9d">More...</a><br /></td></tr>
+<tr class="memdesc:a7dc82b68c969a6f6869300939c3a4c9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">For use by <a class="el" href="class_c_m_r_1_1_timer.html#aa523e321640fc7acdf7da9974081f1ad">report</a> to report elapsed times as ratio of other timer.  <a href="#a7dc82b68c969a6f6869300939c3a4c9d">More...</a><br /></td></tr>
 <tr class="separator:a7dc82b68c969a6f6869300939c3a4c9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -226,7 +226,7 @@ Private Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="aa7835a0e816519767e6b7354a8847def"></a>
+<a class="anchor" id="aa523e321640fc7acdf7da9974081f1ad"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -235,7 +235,7 @@ Private Attributes</h2></td></tr>
           <td>(</td>
           <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>show_cpu</em></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -381,8 +381,8 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>For use by <a class="el" href="class_c_m_r_1_1_timer.html#aa7835a0e816519767e6b7354a8847def">report</a> to report elapsed times as ratio of other timer. </p>
-<p>If <code>ratio_timer</code> is not <code>nullptr</code>, then a call to <a class="el" href="class_c_m_r_1_1_timer.html#aa7835a0e816519767e6b7354a8847def">report</a> will also report wall_elapsed and cpu_elapsed as a ratio of those respective values from ratio_timer. </p>
+<p>For use by <a class="el" href="class_c_m_r_1_1_timer.html#aa523e321640fc7acdf7da9974081f1ad">report</a> to report elapsed times as ratio of other timer. </p>
+<p>If <code>ratio_timer</code> is not <code>nullptr</code>, then a call to <a class="el" href="class_c_m_r_1_1_timer.html#aa523e321640fc7acdf7da9974081f1ad">report</a> will also report wall_elapsed and cpu_elapsed as a ratio of those respective values from ratio_timer. </p>
 
 </div>
 </div>
@@ -405,7 +405,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>The name of the <a class="el" href="class_c_m_r_1_1_timer.html" title="A class for recording CPU and wall clock time. ">Timer</a>. </p>
-<p>timer_name will be used by <a class="el" href="class_c_m_r_1_1_timer.html#aa7835a0e816519767e6b7354a8847def">report</a> to identify the time(s) printed. For most nicely formatted output, keep timer_name at 20 chars or less. </p>
+<p>timer_name will be used by <a class="el" href="class_c_m_r_1_1_timer.html#aa523e321640fc7acdf7da9974081f1ad">report</a> to identify the time(s) printed. For most nicely formatted output, keep timer_name at 20 chars or less. </p>
 
 </div>
 </div>

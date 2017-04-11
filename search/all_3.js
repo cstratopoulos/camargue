@@ -14,6 +14,7 @@ var searchData=
   ['delta_5finds',['delta_inds',['../namespace_c_m_r_1_1_graph.html#a325b48be843f2694717985f76952401c',1,'CMR::Graph::delta_inds(const std::vector&lt; int &gt; &amp;node_list, const std::vector&lt; Edge &gt; &amp;edges, int ncount)'],['../namespace_c_m_r_1_1_graph.html#ab045651ee2045ce615888e981fa60c3f',1,'CMR::Graph::delta_inds(const std::vector&lt; int &gt; &amp;node_list, const std::vector&lt; int &gt; &amp;elist, int ncount)']]],
   ['delta_5fratio',['delta_ratio',['../struct_c_m_r_1_1_solver_1_1_piv_stats.html#a31b14f8d55d4fce38ea8093468fa130b',1,'CMR::Solver::PivStats']]],
   ['depth',['depth',['../struct_c_m_r_1_1_a_b_c_1_1_branch_node.html#ae43778e741d52c77ebf931ce7f2fffcb',1,'CMR::ABC::BranchNode']]],
+  ['detailed_5fstats',['detailed_stats',['../struct_c_m_r_1_1_out_prefs.html#acc17b14505865fa257ffb48bec565d24',1,'CMR::OutPrefs']]],
   ['dfs',['dfs',['../struct_c_m_r_1_1_graph_1_1_adj_list.html#a3da913fc8a5a9a51b4a433e1eff85b3e',1,'CMR::Graph::AdjList']]],
   ['dfs_5fodd_5fcuts',['dfs_odd_cuts',['../class_c_m_r_1_1_sep_1_1_d_pwitness.html#ad22a71e40af3a1f39f257b2b583e3de0',1,'CMR::Sep::DPwitness']]],
   ['dfsbrancher',['DFSbrancher',['../class_c_m_r_1_1_a_b_c_1_1_d_f_sbrancher.html',1,'CMR::ABC']]],

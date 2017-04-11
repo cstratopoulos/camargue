@@ -15,6 +15,7 @@ var searchData=
   ['lp_5futil_2ehpp',['lp_util.hpp',['../lp__util_8hpp.html',1,'']]],
   ['lp_5fvec',['lp_vec',['../struct_c_m_r_1_1_data_1_1_support_group.html#ad28a5d395e6835f8ab125221afcd9320',1,'CMR::Data::SupportGroup::lp_vec()'],['../class_c_m_r_1_1_l_p_1_1_relaxation.html#ac049c7d486477e0832118c0735476859',1,'CMR::LP::Relaxation::lp_vec()']]],
   ['lp_5fviol',['lp_viol',['../struct_c_m_r_1_1_l_p_1_1_sparse_row.html#af2b54cd3bf29273d8ecae717c8963c48',1,'CMR::LP::SparseRow']]],
+  ['lpcutlist',['LPcutList',['../class_c_m_r_1_1_sep_1_1_l_pcut_list.html#a13a300cc4c8590d243472297d0c3069d',1,'CMR::Sep::LPcutList']]],
   ['lpcutlist',['LPcutList',['../class_c_m_r_1_1_sep_1_1_l_pcut_list.html',1,'CMR::Sep']]],
-  ['lpcutlist',['LPcutList',['../class_c_m_r_1_1_sep_1_1_l_pcut_list.html#a13a300cc4c8590d243472297d0c3069d',1,'CMR::Sep::LPcutList']]]
+  ['license',['LICENSE',['../md_LICENSE.html',1,'']]]
 ];

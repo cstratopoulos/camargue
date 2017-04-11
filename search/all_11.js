@@ -18,7 +18,7 @@ var searchData=
   ['seg_5flist',['seg_list',['../class_c_m_r_1_1_sep_1_1_clique.html#aaac6296adc45032c29c4d219684c357e',1,'CMR::Sep::Clique']]],
   ['seglist',['seglist',['../class_c_m_r_1_1_sep_1_1_clique.html#a845d632304ff1f7da5174eadc1182958',1,'CMR::Sep::Clique']]],
   ['segment',['Segment',['../struct_c_m_r_1_1_segment.html',1,'CMR']]],
-  ['segment',['Segment',['../struct_c_m_r_1_1_segment.html#a418666242c4d8a5482822a7d56986ee4',1,'CMR::Segment::Segment()=default'],['../struct_c_m_r_1_1_segment.html#abf024b09ae2b2c49fedbc4eaae98c551',1,'CMR::Segment::Segment(int lo, int hi)'],['../struct_c_m_r_1_1_solver_1_1_cut_sel.html#a8016059740980e9dd554747315305381',1,'CMR::Solver::CutSel::segment()']]],
+  ['segment',['segment',['../struct_c_m_r_1_1_solver_1_1_cut_sel.html#a8016059740980e9dd554747315305381',1,'CMR::Solver::CutSel::segment()'],['../struct_c_m_r_1_1_segment.html#a418666242c4d8a5482822a7d56986ee4',1,'CMR::Segment::Segment()=default'],['../struct_c_m_r_1_1_segment.html#abf024b09ae2b2c49fedbc4eaae98c551',1,'CMR::Segment::Segment(int lo, int hi)']]],
   ['segmentcuts',['SegmentCuts',['../namespace_c_m_r_1_1_sep.html#aa34a1a1bfbbb38b56c21f30500df3238',1,'CMR::Sep']]],
   ['sense',['sense',['../class_c_m_r_1_1_sep_1_1_hyper_graph.html#a7066b13748c424eb07bc084e5d7cf4ef',1,'CMR::Sep::HyperGraph::sense()'],['../struct_c_m_r_1_1_l_p_1_1_sparse_row.html#a3b4237c282cb72a3609b816bcbf109fc',1,'CMR::LP::SparseRow::sense()']]],
   ['senses',['senses',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#ae0cb18bcb582548825bf187f21cba463',1,'CMR::LP::Relaxation']]],

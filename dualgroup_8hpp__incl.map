@@ -1,12 +1,10 @@
 <map id="includes/dualgroup.hpp" name="includes/dualgroup.hpp">
-<area shape="rect" id="node2" href="$lp__interface_8hpp.html" title="Interface to the LP solver. " alt="" coords="672,155,787,181"/>
-<area shape="rect" id="node18" href="$hypergraph_8hpp.html" title="Representing cuts outside the LP solver. " alt="" coords="1645,80,1755,107"/>
-<area shape="rect" id="node3" href="$config_8hpp.html" title="Configuration macros. " alt="" coords="605,311,688,338"/>
-<area shape="rect" id="node4" href="$lp__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for LPs. " alt="" coords="1017,311,1098,338"/>
-<area shape="rect" id="node10" href="$mirgroup_8hpp.html" title="Utility structures for running safe Gomory cut separation. " alt="" coords="519,229,617,256"/>
-<area shape="rect" id="node11" href="$util_8hpp.html" title="Utility functions, macros, and structures. " alt="" coords="1569,311,1633,338"/>
-<area shape="rect" id="node19" href="$cut__structs_8hpp_source.html" title="cut_structs.hpp" alt="" coords="1067,229,1179,256"/>
-<area shape="rect" id="node20" href="$cliq_8hpp.html" title="Reference counted storage of Cliques and Tooth objects. " alt="" coords="1233,155,1300,181"/>
-<area shape="rect" id="node23" href="$price__util_8hpp.html" title="Constants and functions related to edge pricing. " alt="" coords="1788,229,1887,256"/>
-<area shape="rect" id="node24" href="$err__util_8hpp.html" title="ERROR HANDLING CLASSES AND ROUTINES. " alt="" coords="1962,311,2049,338"/>
+<area shape="rect" id="node2" href="$lp__interface_8hpp.html" title="Interface to the LP solver. " alt="" coords="280,229,395,256"/>
+<area shape="rect" id="node9" href="$hypergraph_8hpp.html" title="Representing cuts outside the LP solver. " alt="" coords="839,80,950,107"/>
+<area shape="rect" id="node3" href="$lp__util_8hpp.html" title="Miscellaneous functions, structs/enums, and constants for LPs. " alt="" coords="499,304,581,331"/>
+<area shape="rect" id="node10" href="$cut__structs_8hpp_source.html" title="cut_structs.hpp" alt="" coords="419,229,531,256"/>
+<area shape="rect" id="node16" href="$cliq_8hpp.html" title="Reference counted storage of Cliques and Tooth objects. " alt="" coords="687,155,753,181"/>
+<area shape="rect" id="node19" href="$price__util_8hpp.html" title="Constants and functions related to edge pricing. " alt="" coords="1192,229,1291,256"/>
+<area shape="rect" id="node20" href="$err__util_8hpp.html" title="ERROR HANDLING CLASSES AND ROUTINES. " alt="" coords="1330,304,1417,331"/>
+<area shape="rect" id="node11" href="$util_8hpp.html" title="Utility functions, macros, and structures. " alt="" coords="707,304,771,331"/>
 </map>

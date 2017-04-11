@@ -97,6 +97,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">CMR::Sep::PoolCuts Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Cut pool separation.  
+ <a href="class_c_m_r_1_1_sep_1_1_pool_cuts.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="pool__sep_8hpp_source.html">pool_sep.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for CMR::Sep::PoolCuts:</div>
 <div class="dyncontent">
@@ -123,14 +128,20 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aa84d5b80634dbbec1935d785308011e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afaed421230eaf9455b98e5b9699a48e0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afaed421230eaf9455b98e5b9699a48e0"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_pool_cuts.html#afaed421230eaf9455b98e5b9699a48e0">find_cuts</a> ()</td></tr>
-<tr class="memdesc:afaed421230eaf9455b98e5b9699a48e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Call the separation routine, returning true iff cuts are found. <br /></td></tr>
+<tr class="memdesc:afaed421230eaf9455b98e5b9699a48e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Search the pool for violated cuts. <br /></td></tr>
 <tr class="separator:afaed421230eaf9455b98e5b9699a48e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c059ee9f8d056caae06d15a37787fcd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2c059ee9f8d056caae06d15a37787fcd"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>tighten_pool</b> ()</td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_pool_cuts.html#a2c059ee9f8d056caae06d15a37787fcd">tighten_pool</a> ()</td></tr>
+<tr class="memdesc:a2c059ee9f8d056caae06d15a37787fcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Try to obtain violated cuts by tightening cuts in the pool. <br /></td></tr>
 <tr class="separator:a2c059ee9f8d056caae06d15a37787fcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae816d3e977f08c7180e12d7ae3e085ac"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae816d3e977f08c7180e12d7ae3e085ac"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>find_consec1</b> (CCtsp_cuttree &amp;tightcuts)</td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_pool_cuts.html#ae816d3e977f08c7180e12d7ae3e085ac">find_consec1</a> (CCtsp_cuttree &amp;tightcuts)</td></tr>
+<tr class="memdesc:ae816d3e977f08c7180e12d7ae3e085ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find combs from consecutive ones. <br /></td></tr>
 <tr class="separator:ae816d3e977f08c7180e12d7ae3e085ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf0f6e49efe83b2ca033c950a1cb961d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abf0f6e49efe83b2ca033c950a1cb961d"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_pool_cuts.html#abf0f6e49efe83b2ca033c950a1cb961d">find_tour_tight</a> ()</td></tr>
+<tr class="memdesc:abf0f6e49efe83b2ca033c950a1cb961d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Search the pool just for cuts that are tight at the current tour. <br /></td></tr>
+<tr class="separator:abf0f6e49efe83b2ca033c950a1cb961d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_c_m_r_1_1_sep_1_1_c_csep_base"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_c_m_r_1_1_sep_1_1_c_csep_base')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_c_m_r_1_1_sep_1_1_c_csep_base.html">CMR::Sep::CCsepBase</a></td></tr>
 <tr class="memitem:aad07c41bc66f6736fccc563b6aa7697a inherit pub_methods_class_c_m_r_1_1_sep_1_1_c_csep_base"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aad07c41bc66f6736fccc563b6aa7697a"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>CCsepBase</b> (std::vector&lt; int &gt; &amp;supp_elist, std::vector&lt; double &gt; &amp;supp_ecap, <a class="el" href="class_c_m_r_1_1_sep_1_1_tour_graph.html">TourGraph</a> &amp;_TG, <a class="el" href="class_c_m_r_1_1_sep_1_1_l_pcut_list.html">Sep::LPcutList</a> &amp;_cutq)</td></tr>
@@ -139,10 +150,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>find_consec1</b> (CCt
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
 <tr class="memitem:a1b3b65ac2f1d8f1a371dbdc23a5f03de"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b3b65ac2f1d8f1a371dbdc23a5f03de"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>attempt_tighten</b> ()</td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_pool_cuts.html#a1b3b65ac2f1d8f1a371dbdc23a5f03de">attempt_tighten</a> ()</td></tr>
+<tr class="memdesc:a1b3b65ac2f1d8f1a371dbdc23a5f03de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Based on the ecap vector, should we attempt tightening. <br /></td></tr>
 <tr class="separator:a1b3b65ac2f1d8f1a371dbdc23a5f03de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a131784809d79b3d7831dd72b7a0901"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1a131784809d79b3d7831dd72b7a0901"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>above_threshold</b> (int num_paths)</td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_m_r_1_1_sep_1_1_pool_cuts.html#a1a131784809d79b3d7831dd72b7a0901">above_threshold</a> (int num_paths)</td></tr>
+<tr class="memdesc:a1a131784809d79b3d7831dd72b7a0901"><td class="mdescLeft">&#160;</td><td class="mdescRight">Threshold used by <a class="el" href="class_c_m_r_1_1_sep_1_1_pool_cuts.html#a1b3b65ac2f1d8f1a371dbdc23a5f03de" title="Based on the ecap vector, should we attempt tightening. ">PoolCuts::attempt_tighten</a>. <br /></td></tr>
 <tr class="separator:a1a131784809d79b3d7831dd72b7a0901"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
@@ -175,7 +188,9 @@ std::vector&lt; double &gt; &amp;&#160;</td><td class="memItemRight" valign="bot
 <a class="el" href="class_c_m_r_1_1_sep_1_1_l_pcut_list.html">Sep::LPcutList</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>cutq</b></td></tr>
 <tr class="separator:a4159b336eb9b3cef708b22156610ec51 inherit pro_attribs_class_c_m_r_1_1_sep_1_1_c_csep_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this class was generated from the following files:<ul>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Cut pool separation. </p>
+</div><hr/>The documentation for this class was generated from the following files:<ul>
 <li>includes/<a class="el" href="pool__sep_8hpp_source.html">pool_sep.hpp</a></li>
 <li>source/pool_sep.cpp</li>
 </ul>

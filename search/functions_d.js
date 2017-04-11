@@ -9,5 +9,6 @@ var searchData=
   ['operator_3d',['operator=',['../class_c_m_r_1_1util_1_1_edge_hash.html#a9e61553669f0de5de43a550f30f62f82',1,'CMR::util::EdgeHash::operator=()'],['../class_c_m_r_1_1util_1_1_scope_guard.html#a29996ea508a4dfd5b91ebfbec0edb2ce',1,'CMR::util::ScopeGuard::operator=()'],['../class_c_m_r_1_1_sep_1_1_hyper_graph.html#a768b500874e7133eb809368d62cc2c6d',1,'CMR::Sep::HyperGraph::operator=()'],['../class_c_m_r_1_1_l_p_1_1_relaxation.html#abf61d57c92698b2bf6ecbc88cd6209bf',1,'CMR::LP::Relaxation::operator=()'],['../class_c_m_r_1_1util_1_1_square_u_t.html#ad7d9e4575e83ed27df8c450dd78595d8',1,'CMR::util::SquareUT::operator=()']]],
   ['operator_3d_3d',['operator==',['../class_c_m_r_1_1_sep_1_1_clique.html#a19d24e9165919a5c35350020ae0de691',1,'CMR::Sep::Clique::operator==()'],['../class_c_m_r_1_1_sep_1_1_tooth.html#a9a0e2b52f9b68554810220ba756a5236',1,'CMR::Sep::Tooth::operator==()'],['../struct_c_m_r_1_1_segment.html#a8f304cdf5665d90f353d7b8f56c4aad1',1,'CMR::Segment::operator==()']]],
   ['operator_3e',['operator&gt;',['../struct_c_m_r_1_1_segment.html#ab2c2bc72b0fcfc41c84d1fec4268e7bf',1,'CMR::Segment']]],
-  ['operator_5b_5d',['operator[]',['../class_c_m_r_1_1_data_1_1_karp_partition.html#a135a5155e22ed8b47b7c6bdbc3d0e9e6',1,'CMR::Data::KarpPartition']]]
+  ['operator_5b_5d',['operator[]',['../class_c_m_r_1_1_data_1_1_karp_partition.html#a135a5155e22ed8b47b7c6bdbc3d0e9e6',1,'CMR::Data::KarpPartition']]],
+  ['opt_5fcheck_5fprunable',['opt_check_prunable',['../class_c_m_r_1_1_solver.html#a7004373258c1b036ccd061f71892ffe4',1,'CMR::Solver']]]
 ];

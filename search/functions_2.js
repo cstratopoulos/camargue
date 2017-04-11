@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['call_5fseparator',['call_separator',['../class_c_m_r_1_1_solver.html#aaecc72bd5be8d872c030b74042a6d96a',1,'CMR::Solver::call_separator(const std::function&lt; bool()&gt; &amp;sepcall, Qtype &amp;sep_q, LP::PivType &amp;piv, PivStats &amp;piv_stats)'],['../class_c_m_r_1_1_solver.html#a8cca8bb280a2cf6d4c7e20d44085af7a',1,'CMR::Solver::call_separator(const function&lt; bool()&gt; &amp;sepcall, Qtype &amp;sep_q, PivType &amp;piv, PivStats &amp;piv_stats)']]],
+  ['call_5fseparator',['call_separator',['../class_c_m_r_1_1_solver.html#a765e072eced89d68443b6758d1d77858',1,'CMR::Solver::call_separator(const std::function&lt; bool()&gt; &amp;sepcall, Qtype &amp;sep_q, const std::string sep_name, LP::PivType &amp;piv, PivStats &amp;piv_stats)'],['../class_c_m_r_1_1_solver.html#afe30113c1f67849af2a092f2527a7f18',1,'CMR::Solver::call_separator(const function&lt; bool()&gt; &amp;sepcall, Qtype &amp;sep_q, const std::string sep_name, PivType &amp;piv, PivStats &amp;piv_stats)']]],
   ['cb_5fnondegen_5fpivot',['cb_nondegen_pivot',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#a75ec9151a5668c834056917c55bde016',1,'CMR::LP::Relaxation']]],
   ['ceil',['ceil',['../class_c_m_r_1_1util_1_1_fixed64.html#ad959d1d136b9fef406c612223e47a391',1,'CMR::util::Fixed64']]],
   ['change_5fobj',['change_obj',['../class_c_m_r_1_1_l_p_1_1_relaxation.html#afae774d20f154e2a33996df576ec7101',1,'CMR::LP::Relaxation']]],
