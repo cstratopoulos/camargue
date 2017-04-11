@@ -20,7 +20,7 @@
 namespace CMR {
 
 namespace Sep {
-class MIRgroup;
+struct MIRgroup;
 }
 
 namespace LP {
