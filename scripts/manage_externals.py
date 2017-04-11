@@ -58,6 +58,7 @@ def clean_GMI():
         edit_safemir.fix_minmax()
         edit_safemir.fix_const()
         edit_safemir.fix_braced()
+        edit_safemir.fix_undeclared()
     except OSError:
         print "Error with some of the directory creation/extraction"
         raise

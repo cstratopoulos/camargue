@@ -117,6 +117,11 @@ def fix_const():
                 print "Changes made, old file at %s" % bak_target
 
 def fix_braced():
+    """Fixes braced groups in macros in slmem.h
+    According to g++, ISO C++ forbids macro definitions of the style in this
+    header. The project will probably still compile, but this function
+    removes them."""
+
     print "Checking for braced groups in malloc macros...."
     open_target = MIR_full_path("slmem.h")
     with open(open_target) as read_mem:
@@ -143,6 +148,43 @@ def fix_braced():
             except IOError:
                 print "Error editing macros, project may still compile " \
                     "but with warnings"
+                pass
+            else:
+                os.rename(open_target, bak_target)
+                os.rename(new_target, open_target)
+                print "Changes made, old file at %s" % bak_target
+
+def fix_undeclared():
+    """Fixes goto to an undeclared label in cplex_slvr.hpp
+    In the function template for SLVRgetObjVal, a macro uses a goto CLEANUP
+    statement with no CLEANUP label defined. g++ accepts this, but with clang++
+    it may fail (and also it is poor form) so we remove it"""
+
+    print "Checking for undeclared goto CLEANUP in cplex_slvr.hpp...."
+    open_target = MIR_full_path("cplex_slvr.hpp")
+    badline = 'DBG_IF_GOTO(rval, CLEANUP, "error in SLVRgetObjVal<double>")'
+    with open(open_target) as read_cpxs:
+        found_bad = False
+        for line in read_cpxs:
+            if badline in line:
+                found_bad = True
+                read_cpxs.seek(0)
+                break
+
+        if found_bad is False:
+            print "cplex_slvr.hpp macros already look fine"
+        else:
+            (new_target, bak_target) = temp_file_tuple(open_target)
+            try:
+                with open(new_target, "w") as write_cpxs:
+                    for line in read_cpxs:
+                        if badline in line:
+                            line = line.replace('GOTO', 'RETURN')
+                            line = line.replace('CLEANUP', '1')
+                        write_cpxs.write(line)
+            except IOError:
+                print "Error writing new file, project may still compile if \
+not using clang++"
                 pass
             else:
                 os.rename(open_target, bak_target)
