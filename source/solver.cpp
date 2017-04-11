@@ -416,9 +416,11 @@ Solver::~Solver()
 {
     if (!output_prefs.detailed_stats)
         return;
+
+#if CMR_USE_OMP
+    bool want_cpu = true;
+#else
     bool want_cpu = false;
-#ifdef CMR_USE_OMP
-    want_cpu = true;
 #endif
 
     time_overall.stop();

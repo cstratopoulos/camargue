@@ -7,7 +7,6 @@
 #ifndef CMR_SOLVER_H
 #define CMR_SOLVER_H
 
-#include "config.hpp"
 #include "core_lp.hpp"
 #include "karp.hpp"
 #include "datagroups.hpp"

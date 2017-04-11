@@ -40,7 +40,7 @@ Sep::SimpleDP::SimpleDP(Data::KarpPartition &_kpart,
     throw runtime_error("SimpleDP constructor failed.");
 }
 
-#ifndef CMR_USE_OMP
+#if !(CMR_USE_OMP)
 /////////////////////// SERIAL IMPLEMENTATION //////////////////////////////////
 bool Sep::SimpleDP::find_cuts()
 {

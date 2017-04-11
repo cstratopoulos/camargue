@@ -32,7 +32,7 @@ ExBlossoms::ExBlossoms(const vector<Graph::Edge> &_edges,
     active_tour(active_tour_), supp_data(s_dat), blossom_q(_blossom_q) {}
 
 
-#ifndef CMR_USE_OMP
+#if !(CMR_USE_OMP)
 ///////////////////////// SERIAL IMPLEMENTATION ///////////////////////////////
 bool ExBlossoms::find_cuts() {
     runtime_error err("Problem in ExBlossoms::find_cuts");

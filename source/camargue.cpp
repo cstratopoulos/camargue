@@ -4,7 +4,7 @@
  */
 #include "config.hpp"
 
-#ifndef CMR_DO_TESTS
+#if !(CMR_DO_TESTS)
 
 #include "solver.hpp"
 #include "abc_nodesel.hpp"
