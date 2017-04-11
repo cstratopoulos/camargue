@@ -73,8 +73,10 @@ else:
 
 print "Performing basic checks/edits...."
 
+cpp_comp = None
 try:
-    check_cc.smoke_test()
+    cpp_comp = check_cc.get_CC_name()
+    check_cc.smoke_test(cpp_comp)
     check_cc.CPX_defs()
     tsp_header.do_edits()
 except ConfigExcept as ce:
@@ -129,7 +131,7 @@ editing the source manually based on scripts/edit_safemir.py"
 
 if want_omp:
     try:
-        got_omp = check_cc.omp_test()
+        got_omp = check_cc.omp_test(cpp_comp)
     except Exception as e:
         print "%s checking for OpenMP support, building without it" % str(e)
         pass
