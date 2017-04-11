@@ -2,7 +2,7 @@
 
 #Compiler and Linker
 # The compiler must support most of the C++11 standard. For most Mac or Linux
-# users, 
+# users,
 # CC := g++.
 # should be fine.
 # The default version of gcc on UW Linux machines is a bit old, use this
@@ -68,16 +68,10 @@ clean: undeftest
 	@$(RM) -f $(TARGET)
 
 deftest:
-	@if [ -f includes/config.hpp ]; then \
-sed 's/#undef CMR_DO_TESTS/#define CMR_DO_TESTS/' \
-includes/config.hpp > includes/tmp_config && \
-mv includes/tmp_config includes/config.hpp; fi
+	@scripts/gen_config.py --test
 
 undeftest:
-	@if [ -f includes/config.hpp ]; then \
-sed 's/#define CMR_DO_TESTS/#undef CMR_DO_TESTS/' \
-includes/config.hpp >includes/tmp_config && \
-mv includes/tmp_config includes/config.hpp; fi
+	@scripts/gen_config.py --solve
 
 test: deftest all undeftest
 
