@@ -7,14 +7,28 @@ proving that a tour is optimal or finding a better one. Camargue was
 developed in tandem with the research in my master's thesis, "Primal
 Cutting Plane Methods for the Traveling Salesman Problem".
 
-To get a sense of the
-layout of the code, a good starting point would be the documentation
-for CMR::Solver. To get an idea of how branching machinery is laid out, look at
-derived classes of CMR::ABC::BaseBrancher, or the namespace CMR::ABC.
+The most effective TSP solvers, such
+as [Concorde](http://www.math.uwaterloo.ca/tsp/concorde), are based on
+a _dual fractional_ approach, which moves from one lower bound to the
+next. Camargue is not competitive with Concorde, although it gives
+respectable performance on small- and medium-sized instances. Rather,
+Camargue functions as a proof of concept for primal cutting plane
+methods. Its development has been a rich ground of testing and
+experimentation, showing how well-studied dual fractional methods can
+be adapted to handle large, highly degenerate linear programming
+problems in the primal case.
 
-If you wish to browse the source code manually, I have tried to
-document it in a way that keeps header files compact and
-readable. Except for class/structure definitions, the
+To explore the code, a good starting point would be the header and
+documentation for CMR::Solver. As the name suggests, this object
+manages the primal cutting plane solution process. As for the
+branching machinery, you may want to look at derived classes of
+CMR::ABC::BaseBrancher: these are used to implement node selection
+rules which guide primal branch-and-cut searches. For an even broader
+view of branching machinery, look in the namespace CMR::ABC.
+
+
+I have tried to document the source in a way that keeps header files
+compact and readable. Except for class/structure definitions, the
 documentation in a `.hpp` is mostly terse one-liners, with detailed
 coumentation of function parameters and behaviors in the `.cpp`
 files.
@@ -38,29 +52,9 @@ See below for
 [Installation](#install)
 ------------
 
-To get started, you can clone the repository with
+We now discuss how to install Camargue. Camargue makes very heavy use
+of two external dependencies. These are
 
-    git clone https://github.com/cstratopoulos/camargue.git
-
-For users building the code on one of the UW Unix research servers,
-from the camargue main directory just do
-
-    cp scripts/Makefile.template.UWlinux Makefile
-
-The compiler and CPLEX directories are already specified, so you just
-need to do the steps below concerning symlinks to Concorde, and
-installing externals.
-
-Camargue is a C++11 application, so most importantly you will need a
-compiler that is compliant with most of the C++11 standard. In fact the code
-has been developed and tested with GCC 4.7, which technically does
-*not* support the C++11 standard in full. Anything after 4.7 or later
-should be fine, and `g++` on a Mac (which is actually an alias of
-Apple `clang`) should be fine too; this is the preset option.
-Your compiler is specified by editing the `CC` definition in the `Makefile`.
-A bit more detail and example options are given there.
-
-Camargue relies heavily on two main external dependencies:
 - The TSP solver/combinatorial optimization library
 [Concorde](http://www.math.uwaterloo.ca/tsp/concorde/downloads/downloads.htm).
 
@@ -81,40 +75,60 @@ and create a symlink to the `concorde` directory. That is, `concorde`
 must point to the folder containing the files `TSP`, `INCLUDE`,
 `CUT`, etc.
 
-After installing CPLEX, open the `Makefile` and edit the definitions
-`CPXDIR` and `CPX_LIB`. Details and examples are given in the
-`Makefile`.
+After installing CPLEX, we take care of the `Makefile`. A template is
+provided in the `scripts` folder; move it into the Camargue directory
+with
+
+    cp scripts/Makefile.template Makefile
+
+(For users on the University of Waterloo Linux servers, do
+
+    cp scripts/Makefile.template.UWlinux Makefile
+
+These are already specified with a path to CPLEX and a C++ compiler,
+so you can skip to the steps below about running the install script.)
+
+Open the `Makefile` and edit the definitions `CPXDIR` and
+`CPX_LIB`. Details and examples are given in the `Makefile`. Also, if
+necessary, you can change the `CC :=` definition to specify a C++
+compiler. Camargue is a C++11 application, so the compiler must be
+compliant with (most of) the C++11 standard. Camargue has been developed and
+tested on various Linux and Mac machines, using `g++ >= 4.7` (which
+does _not_ support the standard in full) and `clang++ >= 3.8.0`.
 
 No further edits to the Makefile should be necessary. After that, you
-can run the script `cmr_install.sh` to configure and install
-Camargue. `cmr_install.sh` accepts flag arguments to configure the
-installation to your preferences, and to edit certain other
-files. Information on individual external dependences is [here](externals/extdeps.md). The simplest options are `-F` and `-B`. So
+can run
 
-    ./cmr_install.sh -F
+    ./cmr_install.py
 
-will run a `F`ull install with all the external dependencies. Assuming
-you are connected to the internet, this will download, extract, and
-edit all the necessary external dependencies for a full install. This is
-recommended for best performance, and to observe all the features
-described in my thesis. The complementary option is
+from the `camargue/` directory to configure and install Camargue.
+The install script uses flag arguments to configure the installation to
+your preferences, and to edit some other files. Running it with no
+arguments, or with the flag `-h` or `--help` will print some usage
+info, but we will do a bit more discussion here.
 
-    ./cmr_install.sh -B
+Information on external dependencies (other than Concorde and CPLEX)
+is [here](externals/extdeps.md). When running `cmr_install.py`, the
+simplest options are the two catch-all (or catch-none) flags, `-F,
+--full` and `-B, --bare`. Doing
 
-which runs a `B`are install with nothing other than Concorde and
-CPLEX.
+    ./cmr_install.py --full
 
-In either case, `cmr_install.sh` will then invoke
-`configure.sh` to generate a `config.hpp` file and make appropriate
-edits to the `Makefile`. You can double check both of these to see if
-everything looks right.
+will attempt to configure Camargue for a `full` install which uses all
+of the external dependencies. If you are connected to the internet,
+this will download and extract any externals not already present (or
+symlink'd) in the `externals/` directory. This is recommended for best
+performance, and to observe all the features described in my
+thesis. The `--bare` option is the complementary flag: it will use no
+externals besides Concorde and CPLEX. For an in-between approach, you
+can explicitly specify one or more of `catch, safemir,` or `omp` with
+the `-W` flag.
 
-If you went with a barebones install and later want to add some or all
-external enhancements, you should just be able to invoke
-`cmr_install.sh` again. For example to add just the safe Gomory code,
-you would do
-
-    ./cmr_install.sh -s
+This script, and the ones it invokes, will generate a `config.hpp`
+header, performing diagnostics on the specified C++ compiler and the
+presence or absence of external dependencies. You can double check
+`config.hpp`, and the `Makefile` (which may be edited too if `-W omp`
+or `--full` is used) to make sure everything looks right.
 
 After performing all these steps, you should be able to compile and
 run Camargue by running `make` from the main directory, creating the
@@ -123,18 +137,18 @@ run Camargue by running `make` from the main directory, creating the
 Additionally, if you like, you can run the unit
 tests, benchmarks, and experiments that I used to develop
 Camargue (and write my thesis!) by using the recipe `make test`. This
-requires that the Catch unit testing framework be
-installed, which is done by running `cmr_install.sh` with the `-F`
-full install, or with the flag `-c`. Install info is
+requires downloading the [Catch](https://github.com/philsquared/Catch)
+unit testing header is downloaded, and that you requested Catch in the
+install script with either `--full` or `-W catch`. Install info is
 [here](externals/extdeps.md), with specific
-information on invoking the unit tests
-[here](source/tests/unittests.md).
+information on invoking the unit tests [here](source/tests/unittests.md).
 
 [Usage](#usage)
 ------
 
 This heading is about standard command line usage of Camargue. For
-information on running tests/benchmarks, see [their documentation](source/tests/unittests.md).
+information on running tests/benchmarks,
+see [their documentation](source/tests/unittests.md).
 
 This section will try to elaborate a bit on the terse documentation
 that you get from typing `./camargue` with no arguments.
@@ -153,12 +167,16 @@ Lin-Kernighan. You can also specify a starting tour with the '-t' flag:
     ./camargue problems/dantzig42.tsp -t test_data/tours/dantzig42.sol
 
 will run the solver with the starting tour `dantzig42.sol`. The format
-of solution files supported is *not* the TSPLIB `.tour` format. Rather,
+of solution files supported is _not_ the TSPLIB `.tour` format. Rather,
 it should be a file whose first line is the instance node count, with
 the following lines (with arbitrary spacing/indentation) giving
 zero-indexed ordering of the nodes. If you would like to use a tour in the
-TSPLIB `.tour` format, there is a simple script at `scripts/to_sol.sh` that
-will convert a `.tour` file to a `.sol` file for you.
+TSPLIB `.tour` format, I have included a simple script for this
+purpose. Given a tour file like `pr2392.tour`, running
+
+    scripts/tour_to_sol.py pr2392.tour
+
+will generate a file called `pr2392.sol` in the format just described.
 
 When loading a starting tour, Camargue will make sure no obvious
 mistakes are present, checking that no node appears twice and that the
@@ -196,8 +214,12 @@ search. The flag option `-P` will disable branching, attempting a "pure"
 primal cutting plane solution method instead.
 
 Camargue implements several different node selection rules for guiding
-the ABC search -- these can be specified by passing options to `-b`;
-see the usage info from running `./camargue` for more info.
+the ABC search -- these can be specified by passing options to
+`-b`. For example, `-b 3` will run a depth-first search traversal of
+the ABC tree, whereas `-b 2` will do a primal variant of the familiar
+best-bound, or best-first, search. The default option is specified
+with `-b 0`: a best-bound search will be interleaved into a so-called
+best-tour search. A pure best-tour search is selected with `-b 1`.
 
 The flag option `-S` is available to specify sparse solution
 mode. In this mode, Camargue will run no edge pricing of any kind; it

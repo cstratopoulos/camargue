@@ -9,21 +9,18 @@ been implemented on an as-you-like basis.
 
 As mentioned in the README,
 
-    ./cmr_install.sh -F
+    ./cmr_install.py --full
 
 does a full install with all the dependencies described below. To add
 individual ones, it should be sufficient to run `make clean` and then
-`cmr_install.sh` with a flag option. The flags are indicated below in
-corresponding sections, with a brief mention of what the install
-script does.
+pass additional flags to the install script with the `-W` flag. The
+add-ons, and their corresponding flags, are as follows:
 
-The add-ons are:
+- Primal separation of safe Gomory cuts, `-W safemir`
+- Unit tests and benchmarks with Catch, `-W catch`
+- Shared-memory parallelism with OpenMP, `-W omp`
 
-- [Primal separation of safe Gomory cuts](#gmi)
-- [Unit tests and benchmarks with Catch](#catch)
-- [Shared-memory parallelism with OpenMP](#omp)
-
-[Safe Gomory Cuts](#gmi)
+Safe Gomory Cuts
 -------------------------
 
 In "Primal Cutting Plane Algorithms Revisted", Letchford and Lodi
@@ -40,25 +37,21 @@ Safe Gomory Mixed-Integer Cuts" in the Informs Journal of
 Computing. The code is available as a supplement from the publisher
 [here](https://www.informs.org/Pubs/IJOC/Online-Supplements/Volume-21-2009/Cook-Dash-Fukasawa-Goycoolea).
 
-If you do not already have the code, running
-
-    `./cmr_install.sh -s`
-
-will download the gzipped tarball at the link above. It will then be
-extracted and placed in `camargue/externals`. The script will then
-make some minor edits to some files in `safemir/src`. Some of the
-edits just prevent compiler warnings, but others are required for the
-project to compile.
+If requested, the Camargue install script will downloaded the gzipped
+tarball at the link above, extracting it to `camargue/externals`. The
+script will then make some minor edits to some files in
+`safemir/src`. Some of the edits just prevent compiler warnings, but
+others are required for the project to compile.
 
 If you have already downloaded the code with the link above, create a
-softlink to the directory `safemir` in the `camargue/externals`
+symlink to the directory `safemir` in the `camargue/externals`
 folder. So `safemir` must be the name of the file containing the
 folder `src`. If you already had the code downloaded, you will still
-need to make the automated changes just described. Running
-`./cmr_install.sh -s` should do these, but you can also call
-`scripts/edit_safemir.sh` from the camargue directory.
+need to make the automated changes just described. The Camargue
+install script will check if the folder is already present, in which
+case it will only make the edits, rather than re-downloading and extracting.
 
-[Catch Unit Tests](#catch)
+Catch Unit Tests
 ---------------------------
 
 This section just describes installation of the Catch unit testing
@@ -71,20 +64,16 @@ fashion with the help of the unit testing framework
 Cases in Headers. To use it with Camargue, just put the
 [Catch
 header](https://raw.githubusercontent.com/philsquared/Catch/master/include/catch.hpp)
-(or a symlink to it) in the 'camargue/externals' folder. Running
-
-    ./cmr_install.sh -c
-
-will place the actual header there directly with a simple `curl`
-script, as will the `-F` full install option.
+(or a symlink to it) in the 'camargue/externals' folder.
 
 To compile Camargue in testing mode, use the recipe `make test`. This
 edits a line in config.hpp to enable testing, `make`s the project,
 then reverts config.hpp afterward. Thus, subsequent calls to `make`
-should just build the normal command line executable. This will *not*
+should just build the normal command line executable. This will _not_
 happen if, for some reason, the compilation process is killed midway
-through `make test`. In this case, `make remake` should revert
-config.hpp and allow the normal Camargue main to be built.
+through `make test`. In this case, `make remake` or `make undeftest
+all` will revert `config.hpp`, again allowing the Camargue solver to
+be built.
 
 If you want to run the tests, there are some requirements on
 what your `camargue` directory has to look like. Most importantly, all
@@ -92,7 +81,7 @@ the tests search for TSPLIB instances in a folder called `problems` in
 the Camargue directory, so at `camargue/problems`. Thus, if you
 have a folder containing the TSPLIB instances from
 [here](http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/),
-and you have extracted all problems, just create a symlink to the
+and you have extracted the problems, just create a symlink to the
 containing folder in the `camargue/` directory. The other requirement
 is the `test_data`
 folder. This folder contains three subdirectories:
@@ -102,9 +91,8 @@ folder. This folder contains three subdirectories:
 - `blossom_lp` for files with names like `d493.2m.x`
 
 The latter two are cases where Concorde was used with the flag `-i` or
-`-I` to solve over the blossom or subtour polytope, respectively. If
-you don't have these files, the script `make_test_data.sh` can be used
-to generate them, provided
+`-I` to solve over the blossom or subtour polytope, respectively.
+Running `scripts/make_test_data.py` will generate these files for you.
 
 - you have linked to a working build of Concorde in `externals`, and
 - you have created the `problems` symlink in the camargue directory.
@@ -112,17 +100,16 @@ to generate them, provided
 If you have some files but not others, the script will do a simple
 check before actually invoking Concorde.
 
-Be warned that the tests contain examples of size up to and including
-the largest instance, `pla85900`, so the test script may take a little
-while to run (although Concorde still finds the subtour polytope
-optimum extremely quickly). If you would rather not run this or other
-giant instances, you can just remove them from the problems
-folder. The script will still show "file not found" error from
-Concorde, and an error will be reported on the corresponding unit
-tests, but everything else will proceed as usual.
+The tests used to develop Camargue, and to write my thesis, contain
+examples of size up to and including the largest TSPLIB instance,
+`pla85900`. Although Concorde can very quickly compute subtour
+polytope optima for such instances, you may want to skip them for
+quicker generation of the majority of test cases. By default,
+`make_test_data.py` skips examples of size bigger than 15,000 nodes,
+but you can override this behaviour with the flag `--large`.
 
-The exception to these are a family of extremely tiny examples that I
-created, `blossom6.tsp`, `comb9.tsp`, `fleisA9.tsp` and
+The exception to the cases described are a family of extremely tiny
+examples that I created, `blossom6.tsp`, `comb9.tsp`, `fleisA9.tsp` and
 `fleisB9.tsp`. The instances `blossom6` and `comb9` are familiar
 blackboard examples used to illustrate subtour and comb
 inequalities. The instances `fleisA9` and `fleisB9` are an attempt to
@@ -131,21 +118,23 @@ DP inequalities. These TSP instances have been placed in the
 `test_data` directory, with tours and LP solutions in subdirectories
 as appropriate.
 
-If you want to develop or modify tests, repeatedly calling `make test`
-will cause slower compile times, so it would be better to manually
-change the `CMR_DO_TESTS` line in config.hpp and change it back when
-you are done.
+If you want to develop or modify tests (or do the special tests with
+`pla85900`), `make test` will cause slow compile times, and it will
+not be possible to manually enable OpenMP, if desired. For this, I
+have provided the recipe `make develop_test`, which modifies
+`config.hpp` to build tests, without changing it back after. To go
+back to normal from this, you can use `make undeftest all` or `make remake`.
 
 
-[OpenMP Parallelism](#omp)
+OpenMP Parallelism
 ---------------------------
 
 There are a few separation routines in the code that can be
 implemented to run in parallel. I have chosen to implement this using
 the [OpenMP](http://www.openmp.org/) standard for an extremely simple
 approach. Unlike the other external dependencies, this one is not a
-download. Rather, the `configure.sh` script will try to test if your
-compiler supports OpenMP (OMP), and edit the `Makefile`
+download. Rather, if requested, `cmr_install.py` will try to test if
+your compiler supports OpenMP (OMP), editing the `Makefile`
 accordingly. Unlike the other examples, there is no script that will
 download anything: if your compiler doesn't support OMP it is probably
 not worth it to download and install a new one just for that.

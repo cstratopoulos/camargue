@@ -79,6 +79,7 @@ with open(ex_txt) as read_examples:
         size = int(re.sub('[^0-9]', '', prob))
         if size > 15000 and not args.large:
             print "Skipping large instance %s" % prob
+            print "(Run again with '-L, --large' to include)"
             continue
         prob = re.sub('[^0-9a-zA-Z]', '', prob)
         lp_dest = sublp_dir + prob + ".sub.x"

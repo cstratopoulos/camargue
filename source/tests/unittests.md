@@ -8,7 +8,7 @@ documentation](../../externals/extdeps.md). Henceforth we'll assume
 Catch is installed, and that all the test data has been generated with
 a call to
 
-    ./make_test_data.sh
+    ./scripts/make_test_data.py
 
 Running the tests
 ------------------
@@ -18,9 +18,9 @@ that is provided by Catch. You can run
 
     ./camargue
 
-but this might not be what you want: this runs *every single* test
-case programmed, and will probably take 20-40 minutes to run. More
-likely, you want to examine tests for smaller chunks of code.
+but this might not be what you want: this runs _every single_ test
+case programmed, and will probably take around an hour to run. More
+likely, you would want to examine tests for smaller chunks of code.
 
 Catch offers a tagging system to label test cases, and I have used
 this to indicate logical units of the code that
@@ -111,8 +111,12 @@ These tests mostly consist of cases where I have deliberately caused
 constructor errors in classes which manage C resources and are
 responsible for freeing managed memory upon destruction. As the name
 suggests, you are invited to run them with
-[Valgrind](http://valgrind.org/) to see that no memory is leaked
-during exception conditions.
+[Valgrind](http://valgrind.org/), or some other heap profiling tool,
+to see that no memory is leaked during exception conditions. (NB:
+Concorde uses an external implementation of Delaunay triangulation
+edge sets, and the code contains a memory leak, so Valgrind will
+report leaked memory when testing branching machinery, or if a
+Delaunay starting edge set is used.)
 
 Similarly, tests with the tag `[!shouldfail]` are marked by Catch as
 hidden by default. As the name suggests, these are tests of the error
@@ -147,7 +151,7 @@ browse the source of the test case as well to determine which summary
 statistic was being used.
 
 Note the `.` prefix on all the test cases: they are all hidden by
-default because many of them run *extremely* slowly, given that they
+default because many of them run _extremely_ slowly, given that they
 try to provide empirical evidence for one approach being faster than
 another. On top of this, some of them run these slow trials 5 or 10 or
 20+ times, so as to record mean CPU times.
@@ -157,7 +161,9 @@ different experiments with the TSPLIB instance pla85900. A bit more
 work is required with these, since they involve modifying parameters
 which are determined at compile time. They are associated to the tags
 `'[.sdp-pla85]'` and such, and more detailed instructions for running
-them are given in `simpleDP_test.cpp`.
+them are given in `simpleDP_test.cpp`. To build and run these tests,
+you would want to use `make develop_test` so as to manually modify the
+`Makefile` as prescribed in `simpleDP_test.cpp`.
 
 The tag `'[experiment]'` is also employed in a very limited fashion:
 tests with this tag were used to get a sense of the workings of
