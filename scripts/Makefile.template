@@ -87,6 +87,8 @@ undeftest:
 
 test: deftest all undeftest
 
+develop_test: deftest all
+
 #Pull in dependency info for *existing* .o files
 -include $(OBJECTS:.$(OBJEXT)=.$(DEPEXT))
 
