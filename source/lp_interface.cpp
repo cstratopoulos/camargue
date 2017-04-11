@@ -271,7 +271,7 @@ class CPXparamGuard {
 public:
     /// Construct a parameter guard. See private members for arguments.
     CPXparamGuard(int which, numtype new_value, CPXENVptr env,
-                  const string p_desc)
+                  const string p_desc) try
         : which_param(which), cplex_env(env), param_desc(p_desc)
     {
         int rval = GetP(cplex_env, which_param, &old_value);
