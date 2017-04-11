@@ -1,9 +1,13 @@
 #git shouldn't track personal config stuff
 Makefile
 includes/config.hpp
+includes/_cfg_prefs.txt
 
 *.o
 objects
+
+#python bytecode
+*.pyc
 
 *.dSYM
 
