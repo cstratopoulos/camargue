@@ -206,6 +206,13 @@ bool Separator::exsub_sep() try
 
 bool Separator::pool_sep(ExternalCuts &EC) try
 {
+
+    if (EC.pool_count() == 0) {
+        if (verbose)
+            cout << "\tEmpty cutpool, not separating" << endl;
+        return false;
+    }
+
     set_TG();
 
     PoolCuts pool_cuts(perm_elist, supp_data.support_ecap, TG, pool_q,
@@ -229,6 +236,12 @@ bool Separator::pool_sep(ExternalCuts &EC) try
 
 bool Separator::tighten_pool(ExternalCuts &EC) try
 {
+    if (EC.pool_count() == 0) {
+        if (verbose)
+            cout << "\tEmpty cutpool, not separating" << endl;
+        return false;
+    }
+
     set_TG();
 
     PoolCuts pool_cuts(perm_elist, supp_data.support_ecap, TG, pool_q,
@@ -275,6 +288,12 @@ bool Separator::consec1_sep(ExternalCuts &EC) try
 
 bool Separator::pool_tour_tight(ExternalCuts &EC) try
 {
+    if (EC.pool_count() == 0) {
+        if (verbose)
+            cout << "\tEmpty cutpool, not separating" << endl;
+        return false;
+    }
+
     set_TG();
 
     PoolCuts pool_cuts(perm_elist, supp_data.support_ecap, TG, pool_q,
