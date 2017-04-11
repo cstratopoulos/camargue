@@ -26,8 +26,9 @@ LKH
 #no compile commands
 .clang_complete
 
-#no temporary files created by emacs
+#no temporary files created by emacs or backup files from scripts
 *~
+*.bak
 
 #none of the doxygen output
 docs
