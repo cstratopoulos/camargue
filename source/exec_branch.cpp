@@ -23,10 +23,6 @@ using std::exception;
 namespace CMR {
 namespace ABC {
 
-constexpr int IntMax = std::numeric_limits<int>::max();
-constexpr double DoubleMax = std::numeric_limits<double>::max();
-
-
 Executor::Executor(const Data::Instance &inst,
                    const Data::BestGroup &bestdata,
                    const Graph::CoreGraph &coregraph,

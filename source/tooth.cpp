@@ -232,7 +232,7 @@ IntPair CandidateTeeth::get_range(ToothBody s,
     //now different endpoints
     if (start < 0) {
         range.first = -start; //first definitely start
-        range.second = fabs(end);
+        range.second = std::abs(end);
         return range;
     }
 
