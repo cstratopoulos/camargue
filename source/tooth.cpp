@@ -38,12 +38,6 @@ using IteratorMat = CandidateTeeth::IteratorMat;
 static inline bool ptr_cmp(const SimpleTooth::Ptr &S, const SimpleTooth::Ptr &T)
 { return S->body_size() < T->body_size(); }
 
-static inline bool elim_less_tie(const SimpleTooth::Ptr &S,
-				 const SimpleTooth::Ptr &T)
-{
-    return std::make_tuple(S->slack, S->body_size()) <
-        std::make_tuple(T->slack, T->body_size());
-}
 
 static void tlist_sort(ToothList &T)
 {
