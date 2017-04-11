@@ -1,3 +1,5 @@
+// >>> This file is used by Camargue installation scripts to generate config.hpp
+// >>> Please do not edit it directly.
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
  * @file
  * @brief Configuration macros.
@@ -5,14 +7,13 @@
  * This header file contains macro definitions that are used to conditionally
  * compile sections of the code based on presence or absence of certain
  * external dependences.
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_CONFIG_H
 #define CMR_CONFIG_H
 
 /** @name Existence macros
- * These govern indicate certain features are downloaded or supported by the
+ * These indicate certain features that are downloaded or supported by the
  * compiler. See @ref extdeps for info on all of them.
  */
 ///@{
@@ -21,7 +22,7 @@
 #undef CMR_HAVE_CATCH
 
 /// Define if your compiler supports OpenMP.
-#undef CMR_HAVE_OPENMP
+#undef CMR_HAVE_OMP
 
 /// Define if you have the Cook et al. code for generating safe GMI cuts.
 #undef CMR_HAVE_SAFEGMI
@@ -50,10 +51,10 @@
 
 
 #ifndef CMR_DO_TESTS
-#if CMR_HAVE_OPENMP
+#if CMR_HAVE_OMP
 
 /// Define if OMP parallelism will actually be used in the code.
-#define CMR_USE_OMP
+#undef CMR_USE_OMP
 
 #endif //CMR_HAVE_OPENMP
 #endif //CMR_DO_TESTS
