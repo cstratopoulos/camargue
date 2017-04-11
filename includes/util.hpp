@@ -49,6 +49,9 @@ struct OutPrefs {
 
     /// A jittering progress bar for pivot values.
     bool prog_bar = false;
+
+    /// Detailed timer/profiling of the code.
+    bool detailed_stats = false;
 };
 
 

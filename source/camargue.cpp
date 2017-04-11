@@ -171,7 +171,7 @@ static void initial_parse(int ac, char **av, OptData &opt_dat,
         throw logic_error("No arguments specified");
     }
 
-    while ((c = getopt(ac, av, "aBEGPRSVXb:c:e:l:n:g:s:t:")) != EOF) {
+    while ((c = getopt(ac, av, "aBEGPRSTVXb:c:e:l:n:g:s:t:")) != EOF) {
         switch (c) {
         case 'B':
             outprefs.prog_bar = true;
@@ -191,8 +191,12 @@ static void initial_parse(int ac, char **av, OptData &opt_dat,
         case 'S':
             opt_dat.sparse = true;
             break;
+        case 'T':
+            outprefs.detailed_stats = true;
+            break;
         case 'V':
             outprefs.verbose = true;
+            outprefs.detailed_stats = true;
             break;
         case 'X':
             outprefs.dump_xy = true;
@@ -295,7 +299,8 @@ static void usage(const std::string &fname)
          << "   \t       \t Must be set to specify -n, -g below\n"
          << "-S \t Sparse mode: solve over a sparse edge set, no pricing\n"
          << "   \t Notes:\t Must be set for safe Gomory cuts to be used.\n"
-         << "-V \t Verbose: print lots of messages.\n"
+         << "-T \t Timer detail: do limited profile of code at completion.\n"
+         << "-V \t Verbose: print lots of messages (implies -T).\n"
          << "-X \t Dump XY: If applicable, write x-y coords to file.\n"
          << "    \t Notes:\t Works for random instances and most TSPLIB "
          << "instances,\n"

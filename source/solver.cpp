@@ -414,6 +414,8 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
 
 Solver::~Solver()
 {
+    if (!output_prefs.detailed_stats)
+        return;
     bool want_cpu = false;
 #ifdef CMR_USE_OMP
     want_cpu = true;
