@@ -21,7 +21,6 @@ using std::min;
 using std::max;
 
 using std::runtime_error;
-using std::logic_error;
 using std::exception;
 
 using lpcut_in = CCtsp_lpcut_in;
@@ -65,7 +64,7 @@ CoreLP::CoreLP(Graph::CoreGraph &core_graph_,
     get_x(lp_edges);
 
     if (lp_edges != active_tour.edges())
-        throw logic_error("Mismatched lp solution vec.");
+        throw runtime_error("Mismatched lp solution vec.");
 } catch (const exception &e) {
     cerr << e.what() << "\n";
     throw runtime_error("Problem in CoreLP constructor.");
@@ -90,7 +89,6 @@ PivType CoreLP::primal_pivot()
     try {
         bas = basis_obj();
         nondegen_pivot(active_tourlen());
-        //cb_nondegen_pivot(active_tourlen(), bas, 1);
         get_x(lp_edges);
         supp_data = Data::SupportGroup(core_graph.get_edges(),
                                        lp_edges, dfs_island,
@@ -102,7 +100,7 @@ PivType CoreLP::primal_pivot()
     sum_it_count += piv_ic;
 
     if (!steepest_engaged)
-        if (piv_ic > std::max(3 * core_graph.node_count(), 500)) {
+        if (piv_ic > std::max(3 * core_graph.node_count(), 1000)) {
             try { switch_steepest(); } CMR_CATCH_PRINT_THROW("", err);
             steepest_engaged = true;
         }

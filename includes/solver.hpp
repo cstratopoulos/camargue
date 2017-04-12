@@ -261,7 +261,6 @@ LP::PivType Solver::abc(bool do_price)
     using std::cerr;
     using std::endl;
     using std::runtime_error;
-    using std::logic_error;
 
     using LP::PivType;
 
@@ -278,7 +277,7 @@ LP::PivType Solver::abc(bool do_price)
         }
         else {
             cerr << "Pivot status " << piv << " in abc.\n";
-            throw logic_error("Invalid pivot type for running Solver::abc.");
+            throw runtime_error("Invalid pivot type for running Solver::abc.");
         }
     }
 

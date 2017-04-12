@@ -176,7 +176,7 @@ void Pricer::price_edges(std::vector<PrEdge<numtype>> &target_edges,
         const Sep::HyperGraph &H = cutlist[i];
 
         if (H.cut_type() == CutType::Non)
-            throw std::logic_error("Called pricing w Non HyperGraph present.");
+            throw std::runtime_error("Called pricing w Non HyperGraph present.");
 
         if (H.cut_type() != CutType::Domino)
             continue;

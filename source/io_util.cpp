@@ -102,7 +102,7 @@ void write_tour_edges(const std::vector<int> &tour_edges,
     throw logic_error("Tried to specify empty filename. ");
 
   if (tour_edges.size() != edges.size())
-    throw logic_error("Sizes of edges and tour_edges incompatible. ");
+    throw runtime_error("Sizes of edges and tour_edges incompatible. ");
 
   try {
     tour_out.open(tour_edges_fname);

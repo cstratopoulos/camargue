@@ -35,8 +35,8 @@ using std::min;
 using std::max;
 
 using std::exception;
-using std::runtime_error;
 using std::logic_error;
+using std::runtime_error;
 
 namespace CMR {
 
@@ -313,7 +313,7 @@ int CoreGraph::find_edge_ind(int end0, int end1) const
     if (result > edge_count()) {
         cerr << end0 << ", " << end1 << " found with index "
              << result << " but " << edge_count() << " edges" << endl;
-        throw logic_error("Result out of bounds in CoreGraph::find_edge_ind");
+        throw runtime_error("Result out of bounds in CoreGraph::find_edge_ind");
     }
 
     return adj_ptr->edge_index;

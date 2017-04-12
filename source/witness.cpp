@@ -13,7 +13,6 @@ using std::string;
 
 using std::exception;
 using std::runtime_error;
-using std::logic_error;
 
 namespace CMR {
 

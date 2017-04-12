@@ -22,7 +22,6 @@ using std::endl;
 
 using std::exception;
 using std::runtime_error;
-using std::logic_error;
 
 namespace CMR {
 
@@ -132,7 +131,7 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
         if (verbose > 1)
             cout << "\tRunning inside eg\n";
     } else
-        throw logic_error("Tried to run pricing on non tour.");
+        throw runtime_error("Tried to run pricing on non tour.");
 
     try { current_eg->gen_reset(reg_duals->node_pi_est); }
     CMR_CATCH_PRINT_THROW("resetting generator", err);

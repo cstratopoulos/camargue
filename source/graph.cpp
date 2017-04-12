@@ -9,7 +9,6 @@ using std::cerr;
 using std::endl;
 
 using std::runtime_error;
-using std::logic_error;
 using std::exception;
 
 namespace CMR {
@@ -67,7 +66,7 @@ vector<int> delta_inds(const vector<int> &node_list, const vector<int> &elist,
         node_marks[n] = true;
 
     if (elist.size() % 2 != 0)
-        throw logic_error("Odd number of nodes in elist for delta_inds");
+        throw runtime_error("Odd number of nodes in elist for delta_inds");
 
     int ecount = elist.size() / 2;
 
@@ -117,7 +116,7 @@ AdjList::AdjList(int  ncount,
     if (edge_caps.size() != ref_elist.size()) {
         cerr << "Edge caps size " << edge_caps.size() << " vs ref elist size "
              << ref_elist.size() << endl;
-        throw logic_error("Mismatch in support graph AdjList constructor");
+        throw runtime_error("Mismatch in support graph AdjList constructor");
     }
 
     for (int index : keep_indices) {

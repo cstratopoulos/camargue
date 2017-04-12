@@ -19,7 +19,6 @@ using std::endl;
 
 using std::exception;
 using std::runtime_error;
-using std::logic_error;
 
 namespace CMR {
 
@@ -42,7 +41,7 @@ f64 Pricer::exact_lb(bool full,
 {
     for (const Sep::HyperGraph &H : ext_cuts.get_cuts())
         if (H.cut_type() == CutType::Non)
-            throw logic_error("Pricer::exact_lb was called w non cut present");
+            throw runtime_error("Pricer::exact_lb was called w non cut present");
 
     runtime_error err("Problem in Pricer::exact_lb");
 
@@ -184,7 +183,7 @@ bool Pricer::scan_edges(vector<PrEdge<f64>> &gen_edges, int &loop1,
                         int &loop2)
 {
     if (!ex_duals)
-        throw logic_error("Tried to scan edges without exact duals.");
+        throw runtime_error("Tried to scan edges without exact duals.");
 
     const vector<f64> &node_pi_est = ex_duals->node_pi_est;
     const Graph::AdjList &alist = core_graph.get_adj();

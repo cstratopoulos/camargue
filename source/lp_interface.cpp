@@ -204,42 +204,6 @@ static int pfeas_cb(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
     return pfeas;
 }
 
-/// Relaxation::cb_nondegen_pivot.
-static int ndpiv_cb(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
-    void *cbhandle)
-{
-    int pfeas = 0;
-    get_callback_info(cpx_env, cbdata, wherefrom,
-                      CPX_CALLBACK_INFO_PRIMAL_FEAS, &pfeas,
-                      "primal feas callback");
-    if (!pfeas)
-        return 0;
-
-    NDpivotHandle &handle = *(static_cast<NDpivotHandle *>(cbhandle));
-    int &pfeas_ic = handle.pfeas_itcount;
-
-    ++pfeas_ic;
-
-    double upper_bound = handle.upper_bound;
-    double objval = 0.0;
-
-    get_callback_info(cpx_env, cbdata, wherefrom, CPX_CALLBACK_INFO_PRIMAL_OBJ,
-                      &objval, "primal objval callback");
-
-    if (objval != upper_bound)
-        return 0;
-
-    int basis_freq = handle.basis_freq;
-
-    if (basis_freq <= 0)
-        throw logic_error("Non-positive basis_freq in ndpiv_cb");
-
-    if ((pfeas_ic % basis_freq) == 0)
-        handle.tour_base = handle.rel.basis_obj();
-
-    return 0;
-}
-
 ///@}
 
 
@@ -730,54 +694,6 @@ void Relaxation::nondegen_pivot(double upper_bound)
     }
 }
 
-
-/**
- * This method computes a non-degenerate pivot with a callback that copies
- * the tour basis at each degenerate pivot.
- * @warning This may be illegal CPLEX callback behavior, so it is not used
- * by default.
- */
-void Relaxation::cb_nondegen_pivot(double upper_bound, Basis &base,
-                                   int bas_freq)
-{
-    runtime_error err("Problem in Relaxation::cb_nondegen_pivot.");
-
-    double lowlimit = upper_bound - Eps::Zero;
-    CPXdblParamGuard obj_ll(CPX_PARAM_OBJLLIM, lowlimit, simpl_p->env,
-                            "nondegen_pivot obj limit");
-
-    int rval = 0;
-    NDpivotHandle piv_handle(*this, upper_bound, bas_freq);
-
-    if (bas_freq > 0) {
-        rval = CPXsetlpcallbackfunc(simpl_p->env, ndpiv_cb, &piv_handle);
-        if (rval)
-            throw cpx_err(rval, "Setting nondegen_pivot callback");
-    }
-
-    primal_opt();
-
-    if (bas_freq > 0) {
-        rval = CPXsetlpcallbackfunc(simpl_p->env, NULL, NULL);
-        if (rval)
-            throw cpx_err(rval, "Removing nondegen_pivot callback ");
-    }
-
-    int solstat = CPXgetstat(simpl_p->env, simpl_p->lp);
-    if (solstat == CPX_STAT_INFEASIBLE) {
-        cerr << "Relaxation is infeasible.\n";
-        throw err;
-    }
-
-    if (solstat != CPX_STAT_OPTIMAL &&
-        solstat != CPX_STAT_OPTIMAL_INFEAS &&
-        solstat != CPX_STAT_ABORT_OBJ_LIM &&
-        solstat != CPX_STAT_ABORT_USER) {
-        cerr << "Solstat: " << solstat << "\n";
-        throw err;
-    }
-}
-
 void Relaxation::one_primal_pivot()
 {
     CPXlongParamGuard it_clamp(CPX_PARAM_ITLIM, 1, simpl_p->env,
@@ -1073,7 +989,7 @@ void Relaxation::tighten_bound(int index, char sense, double val)
 {
     if (sense != 'L' && sense != 'U' && sense != 'B') {
         cout << "Called tighten_bound with sense " << sense << endl;
-        throw logic_error("Invalid sense in Relaxation::tighten_bound");
+        throw runtime_error("Invalid sense in Relaxation::tighten_bound");
     }
     int rval = CPXtightenbds(simpl_p->env, simpl_p->lp, 1, &index, &sense,
                              &val);
@@ -1185,7 +1101,7 @@ void Relaxation::init_mir_data(Sep::MIRgroup &mir_data)
     }
 
     if (frac_basic_vars.empty())
-        throw logic_error("Tried init_mir_data w no fractional basic vars.");
+        throw runtime_error("Tried init_mir_data w no fractional basic vars.");
 
     std::sort(frac_basic_vars.begin(), frac_basic_vars.end(),
               [](VarPair a, VarPair b)

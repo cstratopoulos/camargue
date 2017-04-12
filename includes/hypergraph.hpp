@@ -215,7 +215,7 @@ void HyperGraph::get_coeffs(const std::vector<EndPt_type> &edges,
     using std::vector;
 
     if (cut_type() == Type::Non)
-        throw std::logic_error("Tried HyperGraph::get_coeffs on Non cut.");
+        throw std::runtime_error("Tried HyperGraph::get_coeffs on Non cut.");
 
     rmatind.clear();
     rmatval.clear();

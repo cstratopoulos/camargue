@@ -16,7 +16,6 @@ using std::cerr;
 using std::endl;
 
 using std::runtime_error;
-using std::logic_error;
 
 using std::vector;
 

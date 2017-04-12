@@ -20,7 +20,6 @@ using std::vector;
 using std::unique_ptr;
 
 using std::runtime_error;
-using std::logic_error;
 using std::exception;
 
 namespace CMR {

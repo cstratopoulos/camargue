@@ -18,7 +18,6 @@ using std::cerr;
 
 using std::exception;
 using std::runtime_error;
-using std::logic_error;
 
 namespace CMR {
 
@@ -237,11 +236,6 @@ vector<int> teeth_inds(const ex_blossom &B, const vector<double> &tour_edges,
 {
     vector<int> result = handle_delta;
 
-    // cout << "Handle delta\n";
-    // for (int ind : result)
-    //     cout << ((EndPts) edges[ind]) << ", tour " << tour_edges[ind] << ", "
-    //          << "lp " << lp_vec[ind] << "\n";
-
     // base teeth are delta(handle) intersect edges equal to one in tour.
     result.erase(std::remove_if(result.begin(), result.end(),
                                 [&lp_vec, &tour_edges](int ind)
@@ -250,8 +244,6 @@ vector<int> teeth_inds(const ex_blossom &B, const vector<double> &tour_edges,
                                             tour_edges[ind] < Eps::Zero);
                                 }),
                  result.end());
-
-    //cout << "Result size after erase remove: " << result.size() << "\n";
 
     int cut_ind = B.cut_edge;
     auto it = std::find(result.begin(), result.end(), cut_ind);
@@ -264,7 +256,7 @@ vector<int> teeth_inds(const ex_blossom &B, const vector<double> &tour_edges,
         if (it != result.end())
             result.erase(it);
     } else
-        throw logic_error("Non-binary tour entry");
+        throw runtime_error("Non-binary tour entry");
 
     return result;
 }

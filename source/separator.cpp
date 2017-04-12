@@ -15,7 +15,6 @@ using std::vector;
 
 using std::exception;
 using std::runtime_error;
-using std::logic_error;
 
 using std::cout;
 using std::cerr;

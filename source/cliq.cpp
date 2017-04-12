@@ -13,7 +13,6 @@ using std::unordered_map;
 using std::vector;
 
 using std::runtime_error;
-using std::logic_error;
 using std::exception;
 
 using lpclique = CCtsp_lpclique;
@@ -144,7 +143,7 @@ Clique::Clique(const std::vector<int> &nodes, const std::vector<int> &perm,
 try
 {
     if (nodes.empty())
-        throw logic_error("Tried to construct empty clique.");
+        throw runtime_error("Tried to construct empty clique.");
 
     vector<int> target_nodes = nodes;
 
@@ -276,7 +275,7 @@ Clique::Ptr CliqueBank::add_tour_clique(const vector<int> &tour_nodes)
 void CliqueBank::steal_clique(Clique::Ptr &clq_ptr, CliqueBank &from_bank)
 {
     if (!clq_ptr)
-        throw logic_error("Called steal_clique on null Clique");
+        throw runtime_error("Called steal_clique on null Clique");
 
     Clique::Ptr new_clq = add_clique(*clq_ptr);
     from_bank.del_clique(clq_ptr);

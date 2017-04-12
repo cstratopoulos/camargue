@@ -17,7 +17,6 @@ using std::cerr;
 using std::endl;
 
 using std::runtime_error;
-using std::logic_error;
 using std::exception;
 
 namespace CMR {
@@ -57,7 +56,7 @@ ActiveTour::ActiveTour(const Graph::CoreGraph &graph,
 
         if (find_ind == -1) {
             cerr << e << " not in core graph." << endl;
-            throw logic_error ("CoreGraph does not contain all edges in tour.");
+            throw runtime_error ("CoreGraph does not contain all edges in tour.");
         }
 
         colstat[find_ind] = BStat::Basic;
@@ -74,7 +73,7 @@ ActiveTour::ActiveTour(const Graph::CoreGraph &graph,
 
         if (basis_ind == -1) {
             cerr << f << " not in core graph." << endl;
-            throw logic_error("Graph does not contain extra basis edge.");
+            throw runtime_error("Graph does not contain extra basis edge.");
         }
 
         colstat[basis_ind] = BStat::Basic;

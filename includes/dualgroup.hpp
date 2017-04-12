@@ -87,7 +87,7 @@ DualGroup<numtype>::DualGroup(bool remove_neg, const LP::Relaxation &relax,
         cerr << "Relaxation row count: " << relax.num_rows() << ", "
              << "ExternalCuts expects: "
              << (node_count + cuts.size()) << "\n";
-        throw std::logic_error("Size mismatch.");
+        throw std::runtime_error("Size mismatch.");
     }
 
     clique_pi.reserve(clique_bank.size());
@@ -100,7 +100,7 @@ DualGroup<numtype>::DualGroup(bool remove_neg, const LP::Relaxation &relax,
         cut_pi = vector<numtype>(full_pi.begin() + node_count, full_pi.end());
 
     if (node_pi.size() != node_count || cut_pi.size() != cuts.size())
-        throw std::logic_error("Node pi or cut pi size mismatch");
+        throw std::runtime_error("Node pi or cut pi size mismatch");
 
     if (remove_neg) {
         for (int i = 0; i < cuts.size(); ++i) {
@@ -125,7 +125,7 @@ DualGroup<numtype>::DualGroup(bool remove_neg, const LP::Relaxation &relax,
         const HyperGraph &H = cuts[i];
 
         if (H.cut_type() == CutType::Non)
-            throw std::logic_error("Tried to get_duals with Non cut present.");
+            throw std::runtime_error("Tried to get_duals with Non cut present.");
 
         if (H.cut_type() == CutType::Domino)
             continue;

@@ -23,7 +23,6 @@ using std::cerr;
 using std::endl;
 
 using std::runtime_error;
-using std::logic_error;
 using std::exception;
 
 using lpcut_in = CCtsp_lpcut_in;
@@ -161,7 +160,7 @@ HyperGraph &HyperGraph::operator=(Sep::HyperGraph &&H) noexcept
 void HyperGraph::transfer_source(CliqueBank &new_source_bank) try
 {
     if (cut_type() == Type::Non || cut_type() == Type::Branch)
-        throw logic_error("Tried to transfer_source on Non cut");
+        throw runtime_error("Tried to transfer_source on Non cut");
 
     for (Clique::Ptr &clq_ptr : cliques)
         new_source_bank.steal_clique(clq_ptr, *source_bank);
@@ -260,10 +259,10 @@ HyperGraph::Type HyperGraph::cut_type() const
 double HyperGraph::get_coeff(int end0, int end1) const
 {
     if (end0 == end1)
-        throw logic_error("Edge has same endpoints in HyperGraph::get_coeff.");
+        throw runtime_error("Edge has same endpoints in HyperGraph::get_coeff.");
 
     if (cut_type() == Type::Non)
-        throw logic_error("Tried HyperGraph::get_coeff on Non cut.");
+        throw runtime_error("Tried HyperGraph::get_coeff on Non cut.");
 
     double result = 0.0;
 

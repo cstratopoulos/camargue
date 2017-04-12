@@ -220,9 +220,6 @@ public:
     void dual_opt(); //!< Optimize the relaxation with dual simplex.
     void nondegen_pivot(double upper_bound); //!< Primal non-degenerate pivot.
 
-    /// Do a primal non-degenerate pivot with a callback to record a basis.
-    void cb_nondegen_pivot(double upper_bound, Basis &base, int bas_freq);
-
     void one_primal_pivot(); //!< Perform exactly one primal simplex pivot.
     void one_dual_pivot(); //!< Perform exactly one dual simplex pivot.
 
@@ -235,25 +232,6 @@ public:
 private:
     struct solver_impl; //!< Implementation hiding for solver.
     std::unique_ptr<solver_impl> simpl_p; //!< Pointer to solver implementation.
-};
-
-/// Handle for data during a non-degenerate pivot callback.
-struct NDpivotHandle {
-    NDpivotHandle(Relaxation &_rel, double ub, int bfreq)
-        : rel(_rel), tour_base(), upper_bound(ub), basis_freq(bfreq) {}
-
-    Relaxation &rel;
-    Basis tour_base; //!< A new basis for the tour to be set by the callback.
-
-    double upper_bound; //!< Value of best primal feasible solution.
-
-    /// How often to copy a basis.
-    /// Zero for only the first primal feasible basis.
-    /// One for every new primal feasible basis.
-    /// `n > 1` for only when `pfeas_itcount % n == 0`
-    int basis_freq;
-
-    int pfeas_itcount = 0; //!< Number of pivots since becoming primal feasible.
 };
 
 }

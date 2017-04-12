@@ -326,7 +326,7 @@ PivType Solver::cutting_loop(bool do_price, bool try_recover, bool pure_cut)
         } CMR_CATCH_PRINT_THROW("invoking cut and piv", err);
 
         if (piv == PivType::Subtour && cut_sel.connect)
-            throw logic_error("Left cut and piv with integral subtour");
+            throw runtime_error("Left cut and piv with integral subtour");
 
         if (piv == PivType::FathomedTour) {
             if (do_price) {
