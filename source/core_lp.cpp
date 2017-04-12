@@ -166,7 +166,8 @@ void CoreLP::pivot_back(bool prune_slacks)
 
     runtime_error err(error_string);
 
-    int delct = 0;
+    int age_delct = 0;
+    int slack_delct = 0;
     int numrows = num_rows();
     int rowdiff = numrows - prev_numrows;
 
@@ -177,26 +178,35 @@ void CoreLP::pivot_back(bool prune_slacks)
         try { delset = vector<int>(numrows, 0); }
         CMR_CATCH_PRINT_THROW("allocating delset", err);
 
+        // checking old cuts
         for (int i = core_graph.node_count(); i < prev_numrows; ++i) {
-            const Sep::HyperGraph &H = ext_cuts.get_cut(i);
-            if (H.fresh_cut())
-                continue;
-
-            if (H.tour_age() >= CutAge::TourOld &&
-                H.piv_age() >= CutAge::PivOld) {
-                delset[i] = 3;
-                ++delct;
+            if (ext_cuts.get_cut(i).old_cut()) {
+                delset[i] = 1;
+                ++age_delct;
             }
         }
 
-        for (int i = prev_numrows; i < numrows; ++i)
+        // checking new cuts for basic slacks
+        for (int i = prev_numrows; i < numrows; ++i) {
+            const Sep::HyperGraph &H = ext_cuts.get_cut(i);
             if (cut_stats[i] == 1) {
                 delset[i] = 1;
-                ++delct;
+                ++slack_delct;
+            } else if (H.cut_type() == Sep::HyperGraph::Type::Comb) {
+                try { ext_cuts.pool_add(H); }
+                CMR_CATCH_PRINT_THROW("adding new cut to pool", err);
             }
+        }
+
+        if (slack_delct == rowdiff) {
+            std::fill(delset.begin() + prev_numrows, delset.end(), 0);
+            slack_delct = 0;
+        }
     }
 
-    if (delct > 0 && delct != rowdiff) {
+    int delct = age_delct + slack_delct;
+
+    if (delct > 0) {
         try {
             ext_cuts.del_cuts(delset);
             del_set_rows(delset);
@@ -373,7 +383,7 @@ void CoreLP::prune_slacks()
 
     for (double slack : slacks) {
         if (slack) {
-            delrows[rownum] = 3;
+            delrows[rownum] = 1;
             ++delcount;
         }
         ++rownum;

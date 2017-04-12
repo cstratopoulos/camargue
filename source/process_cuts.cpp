@@ -283,27 +283,11 @@ bool bad_blossom(const ex_blossom &B, const vector<double> &tour_edges,
                  const vector<double> &lp_vec,
                  const vector<Graph::Edge> &edges, int ncount)
 {
-    // int ce = B.cut_edge;
-    // cout << "\nCut edge " << ((EndPts) edges[ce]) << ", entry "
-    //      << tour_edges[ce] << "\n";
-
     const vector<int> &handle = B.handle;
-
-    // cout << "Handle nodes\n";
-    // for (int i : handle)
-    //     cout << i << ", ";
-    // cout << "\n";
-
     if (handle.size() < 3 || handle.size() > ncount - 3)
         return true;
 
     vector<int> teeth = teeth_inds(B, tour_edges, lp_vec, edges, ncount);
-
-    // cout << "Teeth\n";
-    // for (int ind : teeth)
-    //     cout << ((EndPts) edges[ind]) << ", ";
-    // cout << "\n";
-
     if ((teeth.size() % 2) == 0)
         return true;
 

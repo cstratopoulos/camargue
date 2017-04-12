@@ -453,35 +453,13 @@ void ExternalCuts::piv_age_cuts(vector<double> duals)
 /**
  * @param delset vector with nonzero entries indicating cuts to be deleted
  * from an LP::Relaxation.
- * @pre `delset[i] == 1` if `get_cut(i)` is to be deleted immediately, and
- * `delset[i] == 3` if `get_cut(i)` should be considered for addition to the
- * cut pool.
- * @post \p delset will be binary valued with all 3's changed to 1's.
+ * @post The cut `get_cut(i)` is deleted for all `i` with `delset[i] == 1`.
  */
 void ExternalCuts::del_cuts(vector<int> &delset)
 {
-    using CutType = HyperGraph::Type;
-
-    for (int i = 0; i < cuts.size(); ++i) {
-        HyperGraph &H = cuts[i];
-        CutType Htype = H.cut_type();
-
-        if (delset[i + node_count] == 0)
-            continue;
-
-        if (delset[i + node_count] == 3) {
-            if (Htype == CutType::Domino) { //unimplemented for now
-                // H.t_age = LP::CutAge::Babby;
-                // H.p_age = LP::CutAge::Babby;
-                // H.transfer_source(pool_cliques);
-                // cut_pool.emplace_back(std::move(H));
-            } else if (Htype == CutType::Comb) {
-                pool_add(std::move(H));
-            }
-            delset[i + node_count] = 1;
-        }
-        H.sense = 'X';
-    }
+    for (int i = 0; i < cuts.size(); ++i)
+        if (delset[i + node_count] == 1)
+            cuts[i].sense = 'X';
 
     util::erase_remove(cuts, [](const HyperGraph &H)
                        { return H.sense == 'X'; });
@@ -533,7 +511,7 @@ void ExternalCuts::get_col(const int end0, const int end1,
     } CMR_CATCH_PRINT_THROW("Couldn't push back column coeffs/inds", err);
 }
 
-void ExternalCuts::pool_add(HyperGraph H)
+void ExternalCuts::pool_add(const HyperGraph &H)
 {
     runtime_error err("Problem in ExternalCuts::pool_add");
 

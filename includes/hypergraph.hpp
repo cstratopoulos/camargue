@@ -72,10 +72,18 @@ public:
 
     Type cut_type() const;
 
+    /// The LP::CutAge with respect to the tour.
     int tour_age() const { return t_age; }
+
+    /// The LP::CutAge with respect to pivots.
     int piv_age() const { return p_age; }
 
+    /// Is the cut new with respect to one or both ages.
     bool fresh_cut() const { return t_age <= 0 || p_age <= 0; }
+
+    /// Is the cut old with respect to both ages.
+    bool old_cut() const
+        { return t_age >= LP::CutAge::TourOld && p_age >= LP::CutAge::PivOld; }
 
     /// Get the coefficient of an edge specified by endpoints.
     double get_coeff(int end0, int end1) const;
@@ -148,7 +156,7 @@ public:
     /// Add a Non HyperGraph cut.
     void add_cut();
 
-    void pool_add(HyperGraph H); //!< Add a cut to the pool.
+    void pool_add(const HyperGraph &H); //!< Add a cut to the pool.
 
     void reset_ages(); //!< Reset the ages of all cuts to zero.
     void tour_age_cuts(std::vector<double> duals); //!< Update tour ages.
