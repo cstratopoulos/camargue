@@ -148,6 +148,8 @@ public:
     /// Add a Non HyperGraph cut.
     void add_cut();
 
+    void pool_add(HyperGraph H); //!< Add a cut to the pool.
+
     void reset_ages(); //!< Reset the ages of all cuts to zero.
     void tour_age_cuts(std::vector<double> duals); //!< Update tour ages.
     void piv_age_cuts(std::vector<double> duals); //!< Update pivot ages.
@@ -176,8 +178,6 @@ public:
     friend class Separator;
 
 private:
-    void pool_add(HyperGraph H);
-
     /// Number of nodes in the Instance being tracked.
     /// Used to compute offsets for indices of cuts from LP::Relaxation.
     const int node_count;

@@ -23,6 +23,83 @@ using std::endl;
 using std::string;
 using std::vector;
 
+SCENARIO ("Adding duplicate cuts to the pool",
+          "[Sep][ExternalCuts][pool_add]") {
+    using namespace CMR;
+    vector<string> probs{
+        "pr76",
+        "d493",
+        "rl1304",
+        };
+
+    for (string &prob : probs) {
+    GIVEN ("Subtour LP data for " + prob) {
+        string
+        probfile = "problems/" + prob + ".tsp",
+        solfile = "test_data/tours/" + prob + ".sol",
+        subtourfile = "test_data/subtour_lp/" + prob + ".sub.x";
+
+        Graph::CoreGraph core_graph;
+        Data::BestGroup b_dat;
+        Data::SupportGroup s_dat;
+        std::vector<double> lp_edges;
+        Sep::LPcutList cutq;
+        Data::make_cut_test(probfile, solfile, subtourfile, core_graph, b_dat,
+                            lp_edges, s_dat);
+
+    WHEN ("Cuts are found") {
+        vector<double> d_tour_edges(b_dat.best_tour_edges.begin(),
+                                    b_dat.best_tour_edges.end());
+        Sep::TourGraph TG(d_tour_edges,
+                          core_graph.get_edges(),
+                          b_dat.perm);
+        for (int &i : s_dat.support_elist) i = b_dat.perm[i];
+
+        Sep::FastBlossoms fb_sep(s_dat.support_elist,
+                                 s_dat.support_ecap, TG, cutq);
+        if (!fb_sep.find_cuts())
+            continue;
+
+        THEN ("Adding the same cut twice doesn't increase pool size") {
+            CCtsp_lpcuts *cc_pool;
+            auto pguard = util::make_guard([&cc_pool]()
+                                           { CCtsp_free_cutpool(&cc_pool); });
+
+            int ncount = core_graph.node_count();
+            REQUIRE_FALSE(CCtsp_init_cutpool(&ncount, NULL, &cc_pool));
+            REQUIRE(cc_pool->cutcount == 0);
+
+            for (CCtsp_lpcut_in *c = cutq.begin(); c; c = c->next)
+                REQUIRE_FALSE(CCtsp_add_to_cutpool_lpcut_in(cc_pool, c));
+
+
+            REQUIRE(cc_pool->cutcount == cutq.size());
+
+            for (CCtsp_lpcut_in *c = cutq.begin(); c; c = c->next)
+                REQUIRE_FALSE(CCtsp_add_to_cutpool_lpcut_in(cc_pool, c));
+
+
+            REQUIRE(cc_pool->cutcount == cutq.size());
+
+            AND_THEN ("Re-separating from pool also doesn't increase size") {
+                Sep::LPcutList poolq;
+                Sep::PoolCuts pool_sep(s_dat.support_elist, s_dat.support_ecap,
+                                       TG, poolq, cc_pool, 99);
+                if (!pool_sep.find_cuts())
+                    continue;
+
+                for (CCtsp_lpcut_in *c = poolq.begin(); c; c = c->next)
+                    REQUIRE_FALSE(CCtsp_add_to_cutpool_lpcut_in(cc_pool, c));
+
+                REQUIRE(cc_pool->cutcount == cutq.size());
+            }
+
+        }
+    }
+    }
+    }
+}
+
 SCENARIO ("Experimenting with CutMonitor metrics",
           "[Sep][LP][pivot_age][CutMonitor][experiment]") {
     using namespace CMR;
