@@ -63,15 +63,19 @@ public:
     LPcutList(LPcutList &&L) noexcept;
     LPcutList &operator=(LPcutList &&L) noexcept;
 
-    void push_front(CCtsp_lpcut_in *new_head);
+    void push(CCtsp_lpcut_in *new_head);
+    void pop();
 
     void splice(LPcutList &&L);
 
     int size() const { return cutcount; }
-    bool empty() const { return cutcount == 0; }
+    bool empty() const { return cutcount == 0 || !head_cut; }
 
     CCtsp_lpcut_in *begin() { return head_cut.get(); }
     const CCtsp_lpcut_in *begin() const { return head_cut.get(); }
+
+    CCtsp_lpcut_in &front() { return *head_cut; }
+    const CCtsp_lpcut_in &front() const { return *head_cut; }
 
     void filter_primal(TourGraph &TG);
 
@@ -88,6 +92,7 @@ private:
             }
         }
     };
+
     std::unique_ptr<CCtsp_lpcut_in, hungry_delete> head_cut;
     int cutcount;
 };

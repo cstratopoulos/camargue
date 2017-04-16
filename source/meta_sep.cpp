@@ -171,7 +171,7 @@ bool MetaCuts::tighten_cuts()
     }
 
     for (const CutViol &cv : found_cuts)
-        meta_q.push_front(cv.first);
+        meta_q.push(cv.first);
 
     st = util::zeit() - st;
 
@@ -328,7 +328,7 @@ bool MetaCuts::find_cuts(Type meta_type)
     }
 
     for (const CutViol &cv : found_cuts)
-        meta_q.push_front(cv.first);
+        meta_q.push(cv.first);
 
     st = util::zeit() - st;
 

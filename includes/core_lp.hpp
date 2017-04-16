@@ -12,10 +12,12 @@
 #include "process_cuts.hpp"
 #include "datagroups.hpp"
 #include "hypergraph.hpp"
+#include "err_util.hpp"
 #include "util.hpp"
 
-#include <list>
+#include <iostream>
 #include <queue>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -40,18 +42,8 @@ public:
 
     void pivot_back(bool prune_slacks); //!< Pivot back to active_tour.
 
-    /**@name Cut addition routines.
-     * Pop cuts from a queue, adding them to the LP until none remain.
-     */
-    ///@{
-
-    void add_cuts(Sep::LPcutList &cutq);
-    void add_cuts(std::list<Sep::dominoparity> &dp_q);
-    void add_cuts(std::queue<LP::SparseRow> &gmi_q);
-    void add_cuts(std::queue<Sep::ex_blossom> &ex2m_q);
-    void add_cuts(std::queue<Sep::HyperGraph> &pool_q);
-
-    ///@}
+    template <typename CutQType>
+    void add_cuts(CutQType &cut_q);
 
     /// Add the edges in \p add_batch to the LP, modifying CoreLP#core_graph.
     void add_edges(const std::vector<Graph::Edge> &add_batch,
@@ -100,6 +92,12 @@ private:
 
     void purge_gmi(bool instate); //!< Get rid of any GMI cuts in the LP.
 
+    void get_and_add(const CCtsp_lpcut_in &cc_cut);
+    void get_and_add(const Sep::dominoparity &dp_cut);
+    void get_and_add(const Sep::ex_blossom &ex2m_cut);
+    void get_and_add(Sep::HyperGraph &H);
+    void get_and_add(SparseRow &gmi_cut);
+
     Graph::CoreGraph &core_graph;
     Data::BestGroup &best_data;
     Data::SupportGroup supp_data;
@@ -119,6 +117,22 @@ private:
 
     bool steepest_engaged = false;
 };
+
+template <typename CutQType>
+void CoreLP::add_cuts(CutQType &cut_q)
+{
+    std::runtime_error err("Problem in CoreLP::add_cuts");
+    prev_numrows = num_rows();
+
+    while(!cut_q.empty()) {
+        try {
+            auto &cut = cut_q.front();
+            get_and_add(cut);
+        } CMR_CATCH_PRINT_THROW("expanding/adding cut", err);
+
+        cut_q.pop();
+    }
+}
 
 
 }

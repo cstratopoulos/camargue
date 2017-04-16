@@ -5,6 +5,7 @@
 #include "config.hpp"
 
 #include <iostream>
+#include <list>
 #include <memory>
 #include <stdexcept>
 
@@ -31,7 +32,7 @@ namespace Sep {
 SimpleDP::SimpleDP(Data::KarpPartition &_kpart,
                    const LP::ActiveTour &active_tour,
                    Data::SupportGroup &supp_dat,
-                   std::list<dominoparity> &_dp_q,
+                   std::queue<dominoparity> &_dp_q,
                    int seed) try :
     candidates(active_tour, supp_dat), kpart(_kpart), dp_q(_dp_q),
     random_seed(seed)
@@ -85,7 +86,9 @@ bool SimpleDP::find_cuts()
             cout << "\t\t" << mini_q.size() << " cuts from partition "
                  << i << "\n";
 
-        dp_q.splice(dp_q.end(), mini_q);
+        for (dominoparity &dp : mini_q)
+            dp_q.emplace(std::move(dp));
+
         if(dp_q.size() >= 250) {
             if (verbose)
                 cout << "\t\tBreaking early.\n";
@@ -170,7 +173,8 @@ bool SimpleDP::find_cuts()
                 cout << "\t" << mini_q.size() << " cuts from partition "
                      << i << "\n";
 
-            dp_q.splice(dp_q.end(), mini_q);
+            for (dominoparity &dp : mini_q)
+                dp_q.emplace(std::move(dp));
 
             if(dp_q.size() >= 250 && !at_capacity) {
                 if (verbose)

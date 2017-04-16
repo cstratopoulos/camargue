@@ -90,11 +90,23 @@ LPcutList &LPcutList::operator=(LPcutList &&L) noexcept {
   return *this;
 }
 
-void LPcutList::push_front(CCtsp_lpcut_in *new_head)
+void LPcutList::push(CCtsp_lpcut_in *new_head)
 {
     ++cutcount;
     new_head->next = head_cut.release();
     head_cut.reset(new_head);
+}
+
+void LPcutList::pop()
+{
+    if (empty() || !head_cut)
+        throw runtime_error("Popped from empty LPcutList");
+
+    CCtsp_lpcut_in *new_head = head_cut->next;
+    head_cut->next = nullptr;
+    head_cut.reset(new_head);
+
+    --cutcount;
 }
 
 void LPcutList::splice(LPcutList &&L)

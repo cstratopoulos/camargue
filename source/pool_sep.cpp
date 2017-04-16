@@ -179,7 +179,7 @@ bool PoolCuts::find_tour_tight()
                 throw err;
             }
 
-            cutq.push_front(newc);
+            cutq.push(newc);
         }
 
     return true;

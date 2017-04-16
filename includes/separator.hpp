@@ -13,7 +13,6 @@
 #include "graph.hpp"
 #include "hypergraph.hpp"
 
-#include <list>
 #include <memory>
 #include <queue>
 #include <vector>
@@ -54,7 +53,7 @@ public:
     LPcutList &blockcomb_q()  { return blkcomb_q; }
 
     std::queue<ex_blossom> &exblossom_q()  { return ex2m_q; }
-    std::list<dominoparity> &simpleDP_q()  { return dp_q; }
+    std::queue<dominoparity> &simpleDP_q()  { return dp_q; }
 
     LPcutList &connect_cuts_q()  { return connect_q; }
     LPcutList &exact_sub_q() { return exsub_q; }
@@ -88,7 +87,7 @@ private:
     LPcutList blkcomb_q;
 
     std::queue<ex_blossom> ex2m_q;
-    std::list<dominoparity> dp_q;
+    std::queue<dominoparity> dp_q;
 
     LPcutList connect_q;
     LPcutList exsub_q;
