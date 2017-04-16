@@ -1,8 +1,7 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/** @file
- * @brief Managing Core LP relaxations of TSP instances.
- */
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
+ * @file
+ * @brief Managing core LP relaxations of TSP instances.
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_CORE_LP_H
 #define CMR_CORE_LP_H
@@ -15,7 +14,8 @@
 #include "hypergraph.hpp"
 #include "util.hpp"
 
-#include <algorithm>
+#include <list>
+#include <queue>
 #include <utility>
 #include <vector>
 
@@ -46,10 +46,10 @@ public:
     ///@{
 
     void add_cuts(Sep::LPcutList &cutq);
-    void add_cuts(Sep::CutQueue<Sep::dominoparity> &dp_q);
-    void add_cuts(Sep::CutQueue<LP::SparseRow> &gmi_q);
-    void add_cuts(Sep::CutQueue<Sep::ex_blossom> &ex2m_q);
-    void add_cuts(Sep::CutQueue<Sep::HyperGraph> &pool_q);
+    void add_cuts(std::list<Sep::dominoparity> &dp_q);
+    void add_cuts(std::queue<LP::SparseRow> &gmi_q);
+    void add_cuts(std::queue<Sep::ex_blossom> &ex2m_q);
+    void add_cuts(std::queue<Sep::HyperGraph> &pool_q);
 
     ///@}
 

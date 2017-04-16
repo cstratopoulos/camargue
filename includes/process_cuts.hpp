@@ -17,83 +17,10 @@
 #include <memory>
 #include <vector>
 #include <limits>
-#include <list>
 #include <utility>
-
-
 
 namespace CMR {
 namespace Sep {
-
-/// Class template for queue of cuts in some form.
-template<typename cut_rep>
-class CutQueue {
-public:
-    /// Construct a CutQueue with unlimited capacity.
-    CutQueue() : q_cap(std::numeric_limits<int>::max()) {}
-
-    /// Construct a CutQueue with capacity \p cap.
-    CutQueue(const int cap) : q_cap(cap) {}
-
-    int q_capacity() const { return q_cap; }
-
-    /// A reference to the most recently added cut.
-    const cut_rep &peek_front() const { return cut_q.front(); }
-    cut_rep &peek_front() { return cut_q.front(); }
-
-    /// Push a new cut to the front, popping from the back if at capacity.
-    void push_front(const cut_rep &H)
-        {
-            cut_q.push_front(H);
-            if(cut_q.size() > q_capacity()) cut_q.pop_back();
-        }
-
-    template <typename ...Args>
-    void emplace_front(Args &&...args)
-        {
-            cut_q.emplace_front(std::forward<Args>(args)...);
-            if (cut_q.size() > q_capacity()) cut_q.pop_back();
-        }
-
-    /// Push to the back, popping from back first if at capacity.
-    void push_back(const cut_rep &H)
-        {
-            if(cut_q.size() >= q_capacity()) cut_q.pop_back();
-            cut_q.push_back(H);
-        }
-
-    template <typename ...Args>
-    void emplace_back(Args &&...args)
-        {
-            if(cut_q.size() >= q_capacity()) cut_q.pop_back();
-            cut_q.emplace_back(std::forward<Args>(args)...);
-        }
-
-    void pop_front() { cut_q.pop_front(); }  //!< Pop the front cut.
-
-    /// Add the cuts in Q to this list, emptying Q.
-    void splice(CutQueue<cut_rep> &Q){ cut_q.splice(cut_q.end(), Q.cut_q); }
-
-
-    bool empty() const { return cut_q.empty(); }
-    int size() const { return cut_q.size(); }
-
-    void clear() { cut_q.clear(); } //!< Clear the queue.
-
-    using Itr = typename std::list<cut_rep>::iterator;
-    using ConstItr = typename std::list<cut_rep>::const_iterator;
-
-    Itr begin() { return cut_q.begin(); }
-    Itr end() { return cut_q.end(); }
-
-    ConstItr begin() const { return cut_q.begin(); }
-    ConstItr end() const { return cut_q.end(); }
-
-private:
-    std::list<cut_rep> cut_q;
-    int q_cap;
-};
-
 
 /// SparseRow corresponding to Concorde cut.
 LP::SparseRow get_row(const CCtsp_lpcut_in &cc_cut,

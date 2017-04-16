@@ -44,7 +44,7 @@ inline static double density(const LP::SparseRow &r, const int numcols)
 
 SafeGomory::SafeGomory(LP::Relaxation &rel, const vector<double> &_tour_edges,
                        const vector<double> &lp_edges) try
-    : lp_relax(rel), gmi_q(15), tour_edges(_tour_edges), frac_x(lp_edges)
+    : lp_relax(rel), tour_edges(_tour_edges), frac_x(lp_edges)
 {
     lp_relax.init_mir_data(mir_data);
 } catch (const exception &e) {
@@ -200,12 +200,12 @@ bool SafeGomory::find_cuts()
     // if the best cut is more than 5% dense we only add one.
     if (density(primal_found.front(), numcols) >= 0.05)
         primal_found.resize(1);
-    else if (primal_found.size() >= gmi_q.q_capacity())
-        primal_found.resize(gmi_q.q_capacity());
+    else if (primal_found.size() >= MaxAdd)
+        primal_found.resize(MaxAdd);
 
     try {
         for (SparseRow &a : primal_found)
-            gmi_q.push_back(std::move(a));
+            gmi_q.push(std::move(a));
     } CMR_CATCH_PRINT_THROW("putting found cuts in cut q", err);
 
     if (verbose)

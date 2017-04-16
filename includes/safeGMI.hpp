@@ -1,8 +1,7 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/** @file
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
+ * @file
  * @brief Primal safe Gomory cut separation.
- *
-\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef CMR_SAFEGMI_H
 #define CMR_SAFEGMI_H
@@ -16,6 +15,7 @@
 #include "mirgroup.hpp"
 #include "process_cuts.hpp"
 
+#include <queue>
 #include <vector>
 
 
@@ -30,15 +30,17 @@ public:
                const std::vector<double> &lp_x);
 
     bool find_cuts();
-    CutQueue<LP::SparseRow> &gomory_q() { return gmi_q; }
+    std::queue<LP::SparseRow> &gomory_q() { return gmi_q; }
 
     bool verbose = false;
     bool filter_primal = true;
 
+    static constexpr int MaxAdd = 15;
+
 private:
     LP::Relaxation &lp_relax;
     MIRgroup mir_data;
-    CutQueue<LP::SparseRow> gmi_q;
+    std::queue<LP::SparseRow> gmi_q;
 
     const std::vector<double> &tour_edges;
     const std::vector<double> &frac_x;

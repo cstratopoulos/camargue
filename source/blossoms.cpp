@@ -27,7 +27,7 @@ namespace Sep {
 ExBlossoms::ExBlossoms(const vector<Graph::Edge> &_edges,
                        const LP::ActiveTour &active_tour_,
                        Data::SupportGroup &s_dat,
-                       CutQueue<ex_blossom> &_blossom_q) :
+                       std::queue<ex_blossom> &_blossom_q) :
     edges(_edges),
     active_tour(active_tour_), supp_data(s_dat), blossom_q(_blossom_q) {}
 
@@ -132,14 +132,8 @@ bool ExBlossoms::find_cuts() {
         return false;
     }
 
-    std::sort(intermediate_cuts.begin(), intermediate_cuts.end(),
-              [](const ex_blossom &B, const ex_blossom &C)
-              { return B.cut_val < C.cut_val; });
-
-    for (auto it = intermediate_cuts.rbegin(); it != intermediate_cuts.rend();
-         ++it) {
-        blossom_q.push_front(*it);
-    }
+    for (ex_blossom &B: intermediate_cuts)
+        blossom_q.emplace(std::move(B));
 
     return true;
 }
@@ -282,14 +276,8 @@ bool ExBlossoms::find_cuts() {
         return false;
     }
 
-    std::sort(intermediate_cuts.begin(), intermediate_cuts.end(),
-              [](const ex_blossom &B, const ex_blossom &C)
-              { return B.cut_val < C.cut_val; });
-
-    for (auto it = intermediate_cuts.rbegin(); it != intermediate_cuts.rend();
-         ++it) {
-        blossom_q.push_front(*it);
-    }
+    for (ex_blossom &B: intermediate_cuts)
+        blossom_q.emplace(std::move(B));
 
     return true;
 }

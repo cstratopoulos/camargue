@@ -5,7 +5,7 @@
 #include "tooth.hpp"
 #include "process_cuts.hpp"
 
-
+#include <list>
 #include <vector>
 
 extern "C" {
@@ -24,7 +24,7 @@ public:
     ~DPwitness();
 
     /// Create a cutgraph and grab odd cuts from it.
-    bool simple_DP_sep(CutQueue<dominoparity> &domino_q);
+    bool simple_DP_sep(std::list<dominoparity> &domino_q);
 
 private:
     void build_light_tree();  //!< Build the tooth inequality tree.
@@ -37,7 +37,7 @@ private:
     void expand_cut(CC_GHnode *n, std::vector<int> &cut_nodes);
 
     /// Get simple DP inequalities from fundamental cuts of the GH tree.
-    void grab_dominos(CutQueue<dominoparity> &domino_q);
+    void grab_dominos(std::list<dominoparity> &domino_q);
 
     std::vector<std::vector<SimpleTooth>> light_teeth;
 
@@ -52,13 +52,12 @@ private:
     std::vector<int> odd_nodes_list;
     std::vector<bool> node_marks;
 
-    CutQueue<CC_GHnode *> CC_gh_q;
+    std::list<CC_GHnode *> CC_gh_q;
 
     CC_GHtree gh_tree;
     const int random_seed;
 
-    void grab_cuts(CutQueue<dominoparity> &domino_q);
-
+    void grab_cuts(std::list<dominoparity> &domino_q);
 };
 
 }

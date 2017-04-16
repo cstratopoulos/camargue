@@ -229,7 +229,7 @@ private:
         {"ConnectCuts", {Timer("ConnectCuts", &time_overall), false}},
         {"ExactSub", {Timer("ExactSub", &time_overall), false}},
         {"FastBlossoms", {Timer("FastBlossoms", &time_overall), false}},
-        {"ExactBlossoms", {Timer("FastBlossoms", &time_overall), false}},
+        {"ExactBlossoms", {Timer("ExactBlossoms", &time_overall), false}},
         {"BlockCombs", {Timer("BlockCombs", &time_overall), false}},
         {"SimpleDP", {Timer("SimpleDP", &time_overall), false}},
         {"LocalCuts", {Timer("LocalCuts", &time_overall), false}},

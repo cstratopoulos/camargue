@@ -18,6 +18,7 @@ using std::runtime_error;
 using std::exception;
 
 namespace CMR {
+namespace Sep {
 
 /**
  * Constructs a separator from a core LP graph and LP solution.
@@ -27,11 +28,11 @@ namespace CMR {
  * @param[in] supp_dat the SupportGroup for the current LP solution.
  * @param[in] _dp_q the CutQueue where all found cuts will be stored.
  */
-Sep::SimpleDP::SimpleDP(Data::KarpPartition &_kpart,
-                        const LP::ActiveTour &active_tour,
-                        Data::SupportGroup &supp_dat,
-                        Sep::CutQueue<dominoparity> &_dp_q,
-                        int seed) try :
+SimpleDP::SimpleDP(Data::KarpPartition &_kpart,
+                   const LP::ActiveTour &active_tour,
+                   Data::SupportGroup &supp_dat,
+                   std::list<dominoparity> &_dp_q,
+                   int seed) try :
     candidates(active_tour, supp_dat), kpart(_kpart), dp_q(_dp_q),
     random_seed(seed)
     {} catch (const exception &e) {
@@ -41,7 +42,7 @@ Sep::SimpleDP::SimpleDP(Data::KarpPartition &_kpart,
 
 #if !(CMR_USE_OMP)
 /////////////////////// SERIAL IMPLEMENTATION //////////////////////////////////
-bool Sep::SimpleDP::find_cuts()
+bool SimpleDP::find_cuts()
 {
 
     runtime_error err("Problem in SimpleDP::find_cuts.");
@@ -73,8 +74,7 @@ bool Sep::SimpleDP::find_cuts()
     Timer search_wit("Make/search witness", &find_total);
     search_wit.start();
     for (int i = 0; i < kpart.num_parts(); ++i) {
-        CutQueue<dominoparity> mini_q;
-
+        std::list<dominoparity> mini_q;
 
         try {
             DPwitness cutgraph(candidates, kpart[i], random_seed);
@@ -84,9 +84,11 @@ bool Sep::SimpleDP::find_cuts()
         if (verbose)
             cout << "\t\t" << mini_q.size() << " cuts from partition "
                  << i << "\n";
-        dp_q.splice(mini_q);
+
+        dp_q.splice(dp_q.end(), mini_q);
         if(dp_q.size() >= 250) {
-            cout << "\t\tBreaking early.\n";
+            if (verbose)
+                cout << "\t\tBreaking early.\n";
             break;
         }
     }
@@ -105,12 +107,12 @@ bool Sep::SimpleDP::find_cuts()
         }
     }
 
-    return(!dp_q.empty());
+    return !dp_q.empty();
 }
 
 #else
 /////////////////////// OMP PARALLEL IMPLEMENTATION ////////////////////////////
-bool Sep::SimpleDP::find_cuts()
+bool SimpleDP::find_cuts()
 {
     runtime_error err("Problem in SimpleDP::find_cuts.");
 
@@ -144,7 +146,8 @@ bool Sep::SimpleDP::find_cuts()
     for (int i = 0; i < kpart.num_parts(); ++i) {
         if(at_capacity || caught_exception)
             continue;
-        CutQueue<dominoparity> mini_q;
+
+        std::list<dominoparity> mini_q;
 
         try {
             DPwitness cutgraph(candidates, kpart[i], random_seed);
@@ -163,11 +166,11 @@ bool Sep::SimpleDP::find_cuts()
 
         #pragma omp critical
         {
-        if (verbose)
-            cout << "\t" << mini_q.size() << " cuts from partition "
-                 << i << "\n";
+            if (verbose)
+                cout << "\t" << mini_q.size() << " cuts from partition "
+                     << i << "\n";
 
-            dp_q.splice(mini_q);
+            dp_q.splice(dp_q.end(), mini_q);
 
             if(dp_q.size() >= 250 && !at_capacity) {
                 if (verbose)
@@ -201,5 +204,5 @@ bool Sep::SimpleDP::find_cuts()
 }
 
 #endif
-
+}
 }

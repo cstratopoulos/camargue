@@ -1,8 +1,7 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/** @file
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */ /**
+ * @file
  * @brief Primal light simple DP separation.
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ */ /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "active_tour.hpp"
 #include "witness.hpp"
@@ -11,7 +10,7 @@
 #include "karp.hpp"
 #include "process_cuts.hpp"
 
-#include <vector>
+#include <list>
 
 namespace CMR {
 namespace Sep {
@@ -21,7 +20,7 @@ class SimpleDP {
 public:
     /// Construct a separator to separate over partitioned DPwitness graphs.
     SimpleDP(Data::KarpPartition &_kpart, const LP::ActiveTour &active_tour,
-             Data::SupportGroup &supp_dat, Sep::CutQueue<dominoparity> &_dp_q,
+             Data::SupportGroup &supp_dat, std::list<dominoparity> &_dp_q,
              int seed);
 
     bool find_cuts(); //!< Separator invocation, returns true iff cuts found.
@@ -31,7 +30,7 @@ public:
 private:
     CandidateTeeth candidates;
     Data::KarpPartition &kpart;
-    CutQueue<dominoparity> &dp_q;
+    std::list<dominoparity> &dp_q;
 
     const int random_seed;
 };

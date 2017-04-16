@@ -16,34 +16,22 @@ camargue
 
 #no softlink to problems folder or scripts
 problems
-sloc
-run_LKH.sh
-LKH
 
-#no tramp history from using local emacs to ssh
+#no emacs config stuff
 .tramp_history
-
-#no compile commands
+*.el
+.ycm_extra_conf.py
 .clang_complete
 
 #no temporary files created by emacs or backup files from scripts
 *~
 *.bak
 
-#none of the doxygen output
-docs
-
 #none of the modified doxygen files for GitHub pages
 Doxyfile-gh-pages
 README_dx.md
 externals/extdeps_dx.md
 source/tests/unittests_dx.md
-
-#ignore gv files, softlinks, and output
-*.png
-*.gv
-viz
-circo
 
 #ignore my own notes/orgs
 *.org
@@ -52,7 +40,7 @@ notes
 #ignore test data and solutions
 *.x
 *.sol
-.ycm_extra_conf.py
+
 
 #ignore external deps/softlinks
 externals/concorde

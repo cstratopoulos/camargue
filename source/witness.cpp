@@ -14,17 +14,16 @@ using std::string;
 using std::exception;
 using std::runtime_error;
 
-namespace CMR {
-
 using IntPair = std::pair<int, int>;
 
+namespace CMR {
 namespace Sep {
 
 DPwitness::DPwitness(CandidateTeeth &cands,
                      const vector<int> &partition_nodes, int seed)
 try :
 light_teeth(vector<vector<SimpleTooth>>(cands.light_teeth.size())),
-supp_dat(cands.supp_dat), perm(cands.active_tour.tour_perm()), CC_gh_q(1000),
+supp_dat(cands.supp_dat), perm(cands.active_tour.tour_perm()),
 random_seed(seed)
 {
     CCcut_GHtreeinit(&gh_tree);
@@ -41,7 +40,7 @@ random_seed(seed)
 
 DPwitness::~DPwitness() { CCcut_GHtreefree(&gh_tree); }
 
-bool DPwitness::simple_DP_sep(CutQueue<dominoparity> &dp_q)
+bool DPwitness::simple_DP_sep(std::list<dominoparity> &dp_q)
 {
     try {
         build_light_tree();
@@ -49,7 +48,8 @@ bool DPwitness::simple_DP_sep(CutQueue<dominoparity> &dp_q)
         add_web_edges();
 
         build_gh_tree();
-        if (CC_gh_q.empty()) return false;
+        if (CC_gh_q.empty())
+            return false;
 
         grab_dominos(dp_q);
     } catch (const exception &e) {
@@ -57,7 +57,7 @@ bool DPwitness::simple_DP_sep(CutQueue<dominoparity> &dp_q)
         throw runtime_error("Problem in DPwitness::simple_DP_sep.");
     }
 
-    return (!dp_q.empty());
+    return !dp_q.empty();
 }
 
 void DPwitness::build_light_tree()
@@ -211,7 +211,7 @@ void DPwitness::build_gh_tree()
     } CMR_CATCH_PRINT_THROW("dfsing tree for odd cuts", err);
 }
 
-void DPwitness::grab_dominos(CutQueue<dominoparity> &dp_q)
+void DPwitness::grab_dominos(std::list<dominoparity> &dp_q)
 {
     runtime_error err("Problem in DPwitness::grab_dominos");
     int special_ind = cutgraph_nodes.size() - 1;
@@ -219,7 +219,7 @@ void DPwitness::grab_dominos(CutQueue<dominoparity> &dp_q)
     while (!CC_gh_q.empty()) {
         vector<int> cut_shore_nodes;
 
-        try { expand_cut(CC_gh_q.peek_front(), cut_shore_nodes); }
+        try { expand_cut(CC_gh_q.front(), cut_shore_nodes); }
         CMR_CATCH_PRINT_THROW("expanding cut nodes", err);
 
         vector<int> cutgraph_delta;
@@ -288,7 +288,7 @@ inline void DPwitness::dfs_odd_cuts(CC_GHnode *n)
 {
     if (n->parent)
     if (n->ndescendants % 2 == 1 && n->ndescendants > 1 && n->cutval < 0.9) {
-        if (CC_gh_q.empty() || n->cutval <= CC_gh_q.peek_front()->cutval)
+        if (CC_gh_q.empty() || n->cutval <= CC_gh_q.front()->cutval)
 	CC_gh_q.push_front(n);
     }
 
