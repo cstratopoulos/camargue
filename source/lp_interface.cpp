@@ -1,4 +1,5 @@
 #include "lp_interface.hpp"
+#include "cpx_util.hpp"
 #include "err_util.hpp"
 #include "util.hpp"
 #include "config.hpp"
@@ -40,18 +41,11 @@ using std::logic_error;
 using std::exception;
 
 
-using cpx_err = CMR::util::retcode_error;
-
-
 namespace CMR {
 
 namespace Eps = CMR::Epsilon;
 
 namespace LP {
-
-constexpr double CPXzero = 1E-10;
-constexpr double CPXint_tol = 0.0001;
-
 
 struct Relaxation::solver_impl {
     solver_impl();
@@ -132,157 +126,6 @@ Relaxation::solver_impl::~solver_impl()
     }
 }
 
-/// Template for getting a ranged result vector from CPLEX.
-/** @tparam cplex_query the function type of the query.
- * @param F the function to call.
- * @param Fname the function name, if an error message needs to be printed.
- * @returns a vector obtained by calling \p F to obtain info for the range
- * \p begin to \p end.
- */
-template <typename cplex_query>
-std::vector<double> info_vec(cplex_query F, const char* Fname,
-                             const CPXENVptr cplex_env,
-                             const CPXLPptr cplex_lp,
-                             int begin, int end)
-{
-    std::vector<double> result(end - begin + 1);
-
-    int rval = F(const_cast<CPXENVptr>(cplex_env),
-                 const_cast<CPXLPptr>(cplex_lp), &result[0], begin, end);
-    if (rval)
-        throw cpx_err(rval, Fname);
-
-    return result;
-}
-
-/// Like info_vec, but modifies a vector rather than returning one.
-template <typename cplex_query, typename vectype>
-void set_info_vec(cplex_query F, const char *Fname,
-                  const CPXENVptr cplex_env, const CPXLPptr cplex_lp,
-                  vector<vectype> &info_vec, int begin, int end)
-{
-    info_vec.resize(end - begin + 1);
-
-    int rval = F(cplex_env, cplex_lp, &info_vec[0], begin, end);
-    if (rval)
-        throw cpx_err(rval, Fname);
-}
-
-/// Gets callback info of a particular type from a user-written callback.
-/**
- * @tparam info_type the data type of the info to be returned.
- * See CPXgetcallbackinfo documentation for more info.
- */
-template <typename info_type>
-void get_callback_info(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
-                       int which_info, info_type *result_p,
-                       const char *query_description)
-{
-    int rval = CPXgetcallbackinfo(cpx_env, cbdata, wherefrom, which_info,
-                                  result_p);
-    if (rval)
-        throw cpx_err(rval, query_description);
-}
-
-/**@name Optimization callback implementations.
- * These are optimization callbacks that implement certain Relaxation methods.
- */
-///@{
-
-/// Relaxation::primal_recover.
-static int pfeas_cb(CPXCENVptr cpx_env, void *cbdata, int wherefrom,
-                    void *cbhandle)
-{
-    int pfeas = 0;
-
-    int rval = CPXgetcallbackinfo(cpx_env, cbdata, wherefrom,
-                                  CPX_CALLBACK_INFO_PRIMAL_FEAS,
-                                  &pfeas);
-    if (rval)
-        throw cpx_err(rval, "CPXgetcallbackinfo pfeas.");
-
-    return pfeas;
-}
-
-///@}
-
-
-/**@name CPLEX Parameter guards.
- * Limited versions of util::ScopeGuard used to make temporary changes to
- *  CPLEX env parameters. Their destructor reverts the parameter, aborting
- * the program if an error occurs (because destructors cannot throw).
- */
-///@{
-
-/// Template alias for signature of CPXgetintparam, CPXgetdblparam, etc.
-template<typename numtype>
-using CPXgetType = int(*)(CPXCENVptr, int, numtype *);
-
-/// Template alias for signature of CPXsetintparam, CPXsetdblparam, etc.
-template<typename numtype>
-using CPXsetType = int(*)(CPXENVptr, int, numtype);
-
-/** A scope guard for making temporary changes to a CPLEX parameter.
- * @tparam numtype the numeric type of the parameter to change.
- * @tparam GetP a pointer to a function for getting a parameter of type
- * \p numtype.
- * @tparam SetP a pointer to a function for setting a parameter of type
- * \p numtype.
- */
-template
-<typename numtype, CPXgetType<numtype> GetP, CPXsetType<numtype> SetP>
-class CPXparamGuard {
-public:
-    /// Construct a parameter guard. See private members for arguments.
-    CPXparamGuard(int which, numtype new_value, CPXENVptr env,
-                  const string p_desc) try
-        : which_param(which), cplex_env(env), param_desc(p_desc)
-    {
-        int rval = GetP(cplex_env, which_param, &old_value);
-        if (rval)
-            throw cpx_err(rval, "Get param " + param_desc);
-
-        rval = SetP(cplex_env, which_param, new_value);
-        if (rval)
-            throw cpx_err(rval, "Set param " + param_desc);
-    } catch (const exception &e) {
-        cerr << e.what() << endl;
-        throw runtime_error("CPXparamGuard constructor failed");
-    }
-
-    /// Revert the parameter, terminating the program upon failure.
-    ~CPXparamGuard()
-    {
-        int rval = SetP(cplex_env, which_param, old_value);
-        if (rval) {
-            cerr << "\tFATAL: Failed to revert " << param_desc << ", rval "
-                 << rval << " in destructor" << endl;
-            exit(1);
-        }
-    }
-
-private:
-    const int which_param; //!< The CPLEX enumeration index of the parameter.
-    CPXENVptr cplex_env; //!< The environemnt to change the param in.
-    const string param_desc; //!< A string describing the change being made.
-    numtype old_value; //!< Set by constructor to the old value to revert to.
-};
-
-/// Integer parameter guard.
-using CPXintParamGuard = CPXparamGuard<int,
-                                       &CPXgetintparam,
-                                       &CPXsetintparam>;
-/// Double parameter guard.
-using CPXdblParamGuard = CPXparamGuard<double,
-                                       &CPXgetdblparam,
-                                       &CPXsetdblparam>;
-/// CPXLONG parameter guard.
-using CPXlongParamGuard = CPXparamGuard<CPXLONG,
-                                        &CPXgetlongparam,
-                                        &CPXsetlongparam>;
-
-
-///@}
 
 Relaxation::Relaxation()
 try : simpl_p(util::make_unique<solver_impl>())
@@ -926,9 +769,6 @@ void Relaxation::primal_strong_branch(const vector<double> &tour_vec,
                 if (!have_bases) {
                     copy_base(colstat, rowstat);
                     primal_recover();
-                    // cout << "P feas after prim recover: "
-                    //      << primal_feas() << ", "
-                    //      << it_count() << " iterations\n";
                     if (!primal_feas())
                         cout << "Infeasible with stat "
                              << CPXgetstat(simpl_p->env, simpl_p->lp) << "\n";
