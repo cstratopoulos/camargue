@@ -32,8 +32,7 @@ BranchTourFind::BranchTourFind(const Data::Instance &inst,
                                LP::CoreLP &corelp) try
     : tsp_inst(inst), best_data(bestdata), core_graph(coregraph),
       core_lp(corelp),
-      fix_degrees(inst.node_count(), 0),
-      tour_edge_tracker(10 * inst.node_count())
+      fix_degrees(inst.node_count(), 0)
 {
     int ncount = tsp_inst.node_count();
     int gen_ecount = 0;
@@ -78,17 +77,11 @@ BranchTourFind::BranchTourFind(const Data::Instance &inst,
 
     lengths.reserve(lengths_size);
 
-    for (const Graph::Edge &e : core_graph.get_edges()) {
+    for (const Graph::Edge &e : core_graph.get_edges())
         lengths.push_back(e.len);
-        tour_edge_tracker.add(e.end[0], e.end[1],
-                              static_cast<int>(EdgeStats::Core));
-    }
 
-    for (const Graph::Edge &e : extra_edges) {
+    for (const Graph::Edge &e : extra_edges)
         lengths.push_back(e.len);
-        tour_edge_tracker.add(e.end[0], e.end[1],
-                              static_cast<int>(EdgeStats::Supply));
-    }
 
     default_length = *std::max_element(lengths.begin(), lengths.end());
     large_length = large_len(core_graph.node_count(), core_graph.get_edges());
@@ -135,9 +128,6 @@ void BranchTourFind::instate_branch_tour(const BranchNode &B,
 
     vector<Graph::Edge> missing_edges;
     int ncount = tsp_inst.node_count();
-    EdgeStats addstat = EdgeStats::Added;
-    if (tour_val < best_data.min_tour_value)
-        addstat = EdgeStats::Core;
 
     try {
         for (int i = 0; i < ncount; ++i) {
@@ -145,11 +135,8 @@ void BranchTourFind::instate_branch_tour(const BranchNode &B,
             int e0 = e.end[0];
             int e1 = e.end[1];
             int ind = core_graph.find_edge_ind(e0, e1);
-            if (ind == -1) {
+            if (ind == -1)
                 missing_edges.emplace_back(e0, e1, tsp_inst.edgelen(e0, e1));
-                tour_edge_tracker.set(e0, e1,
-                                      static_cast<int>(addstat));
-            }
         }
 
         int num_new = missing_edges.size();
@@ -180,51 +167,6 @@ void BranchTourFind::estimate_tour(const vector<EndsDir> &constraints,
 } catch (const exception &e) {
     cerr << e.what() << " computing tour for estimate" << endl;
     throw runtime_error("BranchTourFind::estimate_tour failed");
-}
-
-/**
- * To avoid the core edge set becoming extremely large, this function can be
- * called to delete all edges from BranchTourFind#core_graph which are marked
- * in BranchTourFind#tour_edge_tracker as having been added in computing a
- * branch tour. Before doing this, it will mark all edges in the best tour as
- * core graph edges, so as not to accidentally delete edges that helped find
- * an augmenting tour.
- */
-void BranchTourFind::prune_edges()
-{
-    runtime_error err("Problem in BranchTourFind::prune_edges");
-    vector<int> delstat;
-    int ecount = core_graph.edge_count();
-
-    const vector<int> &best_edges = best_data.best_tour_edges;
-    try {
-        for (int i = 0; i < best_edges.size(); ++i)
-            if (best_edges[i] == 1) {
-                const EndPts &e = core_graph.get_edge(i);
-                tour_edge_tracker.set(e.end[0], e.end[1],
-                                      static_cast<int>(EdgeStats::Core));
-            }
-    } CMR_CATCH_PRINT_THROW("freezing best tour edges", err);
-
-    try { delstat.resize(0, core_graph.edge_count()); }
-    CMR_CATCH_PRINT_THROW("reserving delstat", err)
-
-    int num_prune = 0;
-
-      for (int i = 0; i < ecount; ++i) {
-          const Graph::Edge &e = core_graph.get_edge(i);
-          int hval = tour_edge_tracker.get_val(e.end[0], e.end[1]);
-          if (hval == EdgeStats::Added) {
-              delstat[i] = 1;
-              tour_edge_tracker.erase(e.end[0], e.end[1]);
-              ++num_prune;
-          }
-      }
-
-    try { core_lp.remove_edges(delstat, false); }
-    CMR_CATCH_PRINT_THROW("modifying core LP", err);
-
-    cout << "\tPruned " << num_prune << " branch tour edges" << endl;
 }
 
 /**
@@ -492,7 +434,7 @@ void BranchTourFind::compute_tour(const vector<EndsDir> &edge_stats,
 
         if (for_use)
             for (const Graph::Edge &e : extra_edges)
-                if (tour_edge_tracker.get_val(e.end[0], e.end[1]) == -1)
+                if (core_graph.find_edge_ind(e.end[0], e.end[1]) == -1)
                     edges_copy.push_back(e);
 
         Graph::get_elist(edges_copy, elist, ecap);

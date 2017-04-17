@@ -51,10 +51,6 @@ protected:
     /// Execute variable changes if \p done was just done and \p next is next.
     void common_prep_next(const BranchNode &done, const BranchNode &next);
 
-    /// Should branch tour edges be pruned before going to the next problem.
-    bool prune_btour_edges(const BranchNode &done, const BranchNode &next,
-                           const BranchNode &common_anc);
-
     /// Set next_itr to the next subproblem to be examined.
     /// This is effectively the implementation of the node selection rule.
     virtual void fetch_next() = 0;

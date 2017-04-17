@@ -33,8 +33,6 @@ public:
     void estimate_tour(const std::vector<EndsDir> &constraints,
                        bool &feas, double &tour_val);
 
-    void prune_edges(); //!< Prune edges which were added by branch tours.
-
     /// Is the \p tour compliant with \p constraints.
     bool tour_compliant(const std::vector<int> &tour,
                         const std::vector<EndsDir> &constraints);
@@ -69,15 +67,6 @@ private:
 
     std::vector<int> fix_degrees; //!< Tracking degrees for fixed up edges.
 
-    /// Values to be assigned in the BranchTourFind#tour_edge_tracker.
-    /// These enum values will be used to monitor edges added by branch tours.
-    enum EdgeStats : int {
-        Core = 0, //!< Edge added to the core LP from starting set or pricing.
-        Supply = 1, //!< An edge from BranchTourFind#extra_edges.
-        Added = 2, //!< An edge added by chained LK in finding a branch tour.
-    };
-
-    util::EdgeHash tour_edge_tracker; //!< Tracking edges added by branch tours.
     std::vector<Graph::Edge> extra_edges; //!< Extra edges for tour finding.
 
     /// Default length assigned to edges not explictly in sparse instances.

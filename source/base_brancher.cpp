@@ -117,32 +117,6 @@ void BaseBrancher::do_unbranch(const BranchNode &B)
 }
 
 /**
- * @param done the node that was just examined.
- * @param next the next node as per the current node selection rule.
- * @param common_anc the common ancestor of \p done and \p next.
- * @returns true if, before examining the node \p next, edges added by
- * branch tour computation should be removed.
- * @remark This function assumes that \p next is not a child of \p done, since
- * \p common_anc is known. Possible implementation choices include familial
- * relationship (e.g., return true unless siblings or cousins), depth of
- * \p common_anc (e.g., return true if common ancestor depth is lower than
- * some fixed value), or a combination of both.
- */
-bool BaseBrancher::prune_btour_edges(const BranchNode &done,
-                                     const BranchNode &next,
-                                     const BranchNode &common_anc)
-{
-    int ca_depth = common_anc.depth;
-    bool cousins = ((done.parent->parent == &common_anc) &&
-                    (next.parent->parent == &common_anc));
-
-    if (cousins && ca_depth > 2)
-        return false;
-    else
-        return true;
-}
-
-/**
  * @param done the BranchNode that was just examined/pruned.
  * @param next the BranchNode that will succeed \p done in the current search.
  * Compute the common ancestor A of \p done and \p next, undoing all the clamps
@@ -150,7 +124,7 @@ bool BaseBrancher::prune_btour_edges(const BranchNode &done,
  * \p next.
  */
 void BaseBrancher::common_prep_next(const BranchNode &done,
-                                   const BranchNode &next)
+                                    const BranchNode &next)
 {
     runtime_error err("Problem in BaseBrancher::common_prep_next");
 
