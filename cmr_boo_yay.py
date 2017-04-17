@@ -37,13 +37,16 @@ def log_tuple(inst_name):
     """Returns a tuple of files for logging a run on inst_name"""
     return (inst_name + ".run", inst_name + ".yay", inst_name + ".boo")
 
-def run_camargue(inst_name):
+def run_camargue(inst_name, seed=None):
     """Runs Camargue on inst_name with a time limit if specified"""
 
     fpath = tsp_path(inst_name)
     (run_f, yay_f, boo_f) = log_tuple(inst_name)
 
     cmr_cmd = ["./camargue", "-T", fpath]
+    if seed is not None:
+        cmr_cmd.append("-s" + str(seed))
+
     print "At time %s, running: " % time.ctime()
     print cmr_cmd
 
@@ -70,6 +73,9 @@ if __name__ == "__main__":
                        metavar=('LINENUM', 'FILENAME'),
                        help="Get problem name from line LINENUM of FILENAME")
 
+    parser.add_argument("-s", "--seed", nargs=1,
+                        help="Fix the random seed for execution")
+
     if len(sys.argv) == 1:
         parser.print_help()
         print
@@ -89,4 +95,7 @@ if __name__ == "__main__":
             lines = read_probs.readlines()
             pname = lines[LINE_NUM - 1].strip()
 
-    run_camargue(pname)
+    if args.seed:
+        run_camargue(pname, int(args.seed[0]))
+    else:
+        run_camargue(pname)
