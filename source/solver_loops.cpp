@@ -470,9 +470,16 @@ void Solver::opt_check_prunable(bool do_price, ABC::BranchNode &prob)
 
             if (pstat == Price::ScanStat::FullOpt) {
                 prob.stat = BranchStat::Pruned;
-                cout << "Problem pruned by LB, do not cut." << endl;
+                printf("Cutting preempted with LB %.2f, %d cols in LP",
+                       core_lp.get_objval(), core_lp.num_cols());
+                cout << endl;
+            } else {
+                cout << "Column count after scan is " << core_lp.num_cols()
+                     << ", more cutting needed" << endl;
             }
         }
+    } else {
+        cout << "Weak optimal objective value, more cutting needed" << endl;
     }
 
 }
@@ -551,7 +558,8 @@ PivType Solver::abc_bcp(bool do_price)
                 cur->stat = BranchStat::NeedsBranch;
             else if (piv == PivType::FathomedTour) {
                 cur->stat = BranchStat::Pruned;
-                printf("\tPruned with opt objval %.2f", core_lp.get_objval());
+                printf("\tPruned with opt objval %.2f, %d cols in LP",
+                       core_lp.get_objval(), core_lp.num_cols());
                 cout << endl;
                 if (lb_fathom()) {
                     cout << "Terminating ABC search by lower bound." << endl;

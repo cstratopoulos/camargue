@@ -27,7 +27,6 @@ namespace CMR {
 
 using LP::PivType;
 using CutType = Sep::HyperGraph::Type;
-using f64 = util::Fixed64;
 
 namespace Eps = Epsilon;
 
@@ -115,10 +114,8 @@ ScanStat Pricer::gen_edges(LP::PivType piv_stat, bool try_elim)
 
     edge_hash.clear();
 
-    try {
-        reg_duals = util::make_unique<LP::DualGroup<double>>(false, core_lp,
-                                                             ext_cuts);
-    } CMR_CATCH_PRINT_THROW("populating clique pi", err);
+    try { util::ptr_reset(reg_duals, false, core_lp, ext_cuts); }
+    CMR_CATCH_PRINT_THROW("populating clique pi", err);
 
     edgegen_impl *current_eg;
 
