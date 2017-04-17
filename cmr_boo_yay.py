@@ -43,7 +43,7 @@ def run_camargue(inst_name):
     fpath = tsp_path(inst_name)
     (run_f, yay_f, boo_f) = log_tuple(inst_name)
 
-    cmr_cmd = ["./camargue", fpath]
+    cmr_cmd = ["./camargue", "-T", fpath]
     print "At time %s, running: " % time.ctime()
     print cmr_cmd
 
